@@ -91,10 +91,10 @@ ImageBase=4194304
 ExeDescription=
 [Directories]
 OutputDir=..\dev
-UnitOutputDir=e:\Temp\Delphi\Movie Catalog\AMCReport
+UnitOutputDir=..\dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=..\;..\..\Common
+SearchPath=..\;..\Common
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;dclOffice2k;eltreeD6;Ant;HTMLParser;FthGUI60;embedwb;FlatStyle_D6;GR32_D6;GR32_DSGN_D6;GR32_Add;GXOutD6;mxFlatPack_D5;mylittlebase;OfficeVCL6;SynEdit_D6;tb2k_d6;tms;mozilla;ThemeManager;VirtualTreesD6;Indy60;JVCL200_R60;dclDesignExperienceD6;GmPrintSuite_D6;FreeRep6
 Conditionals=JPEG
 DebugSourceDirs=
@@ -134,8 +134,6 @@ OriginalFilename=AMCReport.exe
 ProductName=Ant Movie Catalog Report Designer
 ProductVersion=4
 Comments=http://www.antp.be/software   This program uses FreeReport's Report Designer, from http://freereport.sourceforge.net/
-[Excluded Packages]
-C:\Windows\system32\ibevnt70.bpl=Borland Interbase Event Alerter Component
 [HistoryLists\hlConditionals]
 Count=2
 Item0=JPEG
@@ -144,19 +142,22 @@ Item1=SCRIPT_DEBUG
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=..\;..\..\Common
-Item1=..\
+Count=4
+Item0=..\;..\Common
+Item1=..\;..\Common;D:\Projetos\Componentes\AntComponents\TRegExpr
+Item2=..\;..\..\Common
+Item3=..\
 [HistoryLists\hlUnitOutputDirectory]
-Count=8
-Item0=e:\Temp\Delphi\Movie Catalog\AMCReport
-Item1=..\..\..\Temp\Delphi\Movie Catalog\AMCReport
-Item2=..\..\Temp\Delphi\Movie Catalog\AMCReport
-Item3=..\Delphi-DCU\AMCReport
-Item4=t:\Delphi\DCU\AMCReport
-Item5=t:\Delphi\DCU\Movie Catalog
-Item6=t:\DCU\Movie Catalog
-Item7=t:\Delphi\DCU
+Count=9
+Item0=..\dcu
+Item1=e:\Temp\Delphi\Movie Catalog\AMCReport
+Item2=..\..\..\Temp\Delphi\Movie Catalog\AMCReport
+Item3=..\..\Temp\Delphi\Movie Catalog\AMCReport
+Item4=..\Delphi-DCU\AMCReport
+Item5=t:\Delphi\DCU\AMCReport
+Item6=t:\Delphi\DCU\Movie Catalog
+Item7=t:\DCU\Movie Catalog
+Item8=t:\Delphi\DCU
 [HistoryLists\hlOutputDirectorry]
 Count=2
 Item0=..\dev

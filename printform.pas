@@ -999,7 +999,7 @@ begin
   begin
     Handled := True;
     if WheelDelta <> 0 then
-      with TAntfrPreview(frPreview1).FWindow.VScrollBar do
+      with frPreview1.FWindow.VScrollBar do
         Position := Position - (LargeChange * Sign(WheelDelta));
   end;
 end;
