@@ -24,7 +24,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ComCtrls, ActnList, Contnrs, FileCtrl, CommCtrl,
+  Dialogs, ExtCtrls, StdCtrls, ComCtrls, ActnList, Contnrs, FileCtrl, 
 
   TBXDkPanels,
   AntStringList, AntJvLinkLabel,

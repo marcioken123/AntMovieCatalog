@@ -9,10 +9,10 @@ object MainWindow: TMainWindow
   ClientHeight = 594
   ClientWidth = 958
   Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
+  Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Shell Dlg 2'
+  Font.Name = 'Tahoma'
   Font.Style = []
   Icon.Data = {
     0000010006001010100000000000280100006600000010100000010008006805
@@ -433,118 +433,29 @@ object MainWindow: TMainWindow
         Constraints.MinHeight = 458
         Constraints.MinWidth = 533
         Color = clWindow
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
         ParentBackground = False
         ParentColor = False
+        ParentFont = False
         TabOrder = 0
         OnMouseMove = FrmMovieMouseMove
         inherited MoviePanel: TPanel
+          Width = 533
+          Height = 458
           inherited PanelMain: TPanel
-            inherited LYear: TLabel
-              Width = 26
-            end
-            inherited LWriter: TLabel
-              Width = 34
-            end
-            inherited LURL: TLabel
-              Width = 23
-            end
-            inherited LTranslatedTitle: TLabel
-              Width = 78
-            end
-            inherited LProducer: TLabel
-              Width = 47
-            end
-            inherited LLength: TLabel
-              Width = 37
-            end
-            inherited LLengthMin: TLabel
-              Width = 20
-            end
-            inherited LOriginalTitle: TLabel
-              Width = 63
-            end
-            inherited LDirector: TLabel
-              Width = 42
-            end
-            inherited LDescription: TLabel
-              Width = 57
-            end
-            inherited LCountry: TLabel
-              Width = 43
-            end
-            inherited LComposer: TLabel
-              Width = 52
-            end
-            inherited LComments: TLabel
-              Width = 54
-            end
-            inherited LRating10: TLabel
-              Width = 19
-            end
-            inherited LRating: TLabel
-              Width = 35
-            end
-            inherited LUserRating10: TLabel
-              Width = 19
-            end
-            inherited LUserRating: TLabel
-              Width = 52
-            end
-            inherited LCertification: TLabel
-              Width = 62
-            end
-            inherited LActors: TLabel
-              Width = 35
-            end
-            inherited LCategory: TLabel
-              Width = 49
-            end
+            Width = 533
+            Height = 266
           end
           inherited PanelMedia: TPanel
-            inherited LBorrower: TLabel
-              Width = 48
-            end
-            inherited LMedia: TLabel
-              Width = 60
-            end
-            inherited LDate: TLabel
-              Width = 61
-            end
+            Width = 533
           end
           inherited PanelVideo: TPanel
-            inherited LVideoKbps: TLabel
-              Width = 22
-            end
-            inherited LVideoFormat: TLabel
-              Width = 67
-            end
-            inherited LSubtitles: TLabel
-              Width = 45
-            end
-            inherited LSizeUnit: TLabel
-              Width = 14
-            end
-            inherited LResolution: TLabel
-              Width = 54
-            end
-            inherited LFramerateFPS: TLabel
-              Width = 15
-            end
-            inherited LFramerate: TLabel
-              Width = 60
-            end
-            inherited LFilePath: TLabel
-              Width = 45
-            end
-            inherited LDisks: TLabel
-              Width = 53
-            end
-            inherited LAudioKbps: TLabel
-              Width = 22
-            end
-            inherited LAudioFormat: TLabel
-              Width = 68
-            end
+            Top = 338
+            Width = 533
           end
         end
       end
@@ -687,20 +598,20 @@ object MainWindow: TMainWindow
       CustomPlusMinus = True
       DoInplaceEdit = False
       DragCursor = crDrag
-      Font.Charset = DEFAULT_CHARSET
+      Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
-      Font.Name = 'MS Shell Dlg 2'
+      Font.Name = 'Tahoma'
       Font.Style = []
       HeaderHeight = 19
       HeaderHotTrack = False
       HeaderInvertSortArrows = True
       HeaderSections.Data = {
-        F6FFFFFF02000000B4666300002C0000FFFFFFFF000001010100630028000000
-        00000000640000000101026C7096540600000000000000000000000000000179
+        F6FFFFFF02000000D847161600000000FFFFFFFF000001010100C12F28000000
+        00000000640000000101022F70965406000000000000C12F000000000000012F
         000000000000000000010000030000004E720001000000000000000000000000
-        B4666300002C0000FFFFFFFF0000010100006300780000000000000010270000
-        0001006CE0805606010000000000000000000000000001790000000000000000
+        D847161600000000FFFFFFFF000001010000C12F780000000000000010270000
+        0001002FE0805606010000000000C12F000000000000012F0000000000000000
         00010000060000005469746C650001000000000000000000000000}
       HeaderFlat = True
       HideHorzScrollBar = True

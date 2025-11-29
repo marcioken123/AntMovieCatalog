@@ -26,8 +26,8 @@ unit threaddownload;
 interface
 
 uses
-  SysUtils, Classes, IdBaseComponent, IdComponent, IdTCPConnection,
-  IdTCPClient, IdHTTP, IdException;
+  SysUtils, Classes, IdComponent, IdTCPConnection,
+  IdHTTP;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

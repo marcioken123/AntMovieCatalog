@@ -26,10 +26,10 @@ uses
   Windows, Messages, SysUtils, Controls, Forms, Dialogs,
   StdCtrls, Buttons, ComCtrls, ExtCtrls, Classes,
 
-  AntCorelButton, AntAutoHintLabel, AntJvEdit,
+  AntJvEdit,
   AntJvSpin, AntJvExControls,
 
-  base, movieclass, TBXDkPanels;
+  base, movieclass, TBXDkPanels, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

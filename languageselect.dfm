@@ -5,6 +5,7 @@ inherited LanguageWin: TLanguageWin
   Caption = 'Select a language'
   ClientHeight = 463
   ClientWidth = 396
+  OldCreateOrder = True
   Position = poOwnerFormCenter
   OnActivate = FormActivate
   PixelsPerInch = 96

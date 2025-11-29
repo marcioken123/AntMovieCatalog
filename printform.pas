@@ -24,12 +24,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, AntCorelButton, ComCtrls, ExtCtrls, ActnList, Menus,
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, ActnList, Menus,
 
   PNGImage, JPEG, AntJvGIF, FR_DSet, FR_Class, TB2Item, TBX, AntStringList,
-  FR_View, TB2ExtItems, TB2Dock, TB2Toolbar, AntAutoHintLabel,
+  FR_View, TB2ExtItems, TB2Toolbar, 
 
-  base, framesortby, movieclass, frameincludemov, TBXExtItems;
+  base, framesortby, movieclass, frameincludemov, TBXExtItems, TB2Dock,
+  AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

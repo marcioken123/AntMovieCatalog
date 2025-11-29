@@ -23,7 +23,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, AntCorelButton, AntAutoHintLabel, ExtCtrls;
+  Dialogs, base, StdCtrls, ExtCtrls, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

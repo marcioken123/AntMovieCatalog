@@ -529,7 +529,7 @@ implementation
 uses
   Windows, Sysutils,
 
-  tb2toolbar,
+  
 
   functions_sys, functions_str, functions_xml, Global;
 

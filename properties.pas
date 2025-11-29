@@ -26,9 +26,9 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Buttons, shellAPI, ComCtrls,
 
-  AntCorelButton, AntJvExControls, AntJvToolEdit, AntAutoHintLabel,
+  AntJvExControls, AntJvToolEdit, 
 
-  base, movieclass;
+  base, movieclass, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

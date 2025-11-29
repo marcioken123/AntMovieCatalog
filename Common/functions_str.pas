@@ -124,7 +124,7 @@ function AnsiBestFitUS(const AInput: string): string;
 implementation
 
 uses
-  IdCoderMIME, StrUtils;
+  IdCoderMIME;
 
 type
   TCmpChar = array[0..255, 0..255] of Byte;

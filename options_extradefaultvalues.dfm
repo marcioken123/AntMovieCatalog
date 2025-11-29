@@ -6,6 +6,7 @@ inherited ExtraDefaultValuesWin: TExtraDefaultValuesWin
   ClientWidth = 416
   Constraints.MinHeight = 341
   Constraints.MinWidth = 432
+  OldCreateOrder = True
   PixelsPerInch = 96
   TextHeight = 13
   inherited Bevel1: TBevel

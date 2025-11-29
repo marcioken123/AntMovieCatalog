@@ -24,14 +24,15 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Buttons, shellAPI, ComCtrls, Clipbrd,
+  StdCtrls, ExtCtrls, Buttons, ComCtrls, Clipbrd,
 
-  ConstValues, AntCorelButton, AntJvExControls, AntJvToolEdit, AntAutoHintLabel,
+  ConstValues, AntJvExControls, AntJvToolEdit, 
 
   base, movieclass, AntStringList, TBX, TBXDkPanels, Menus, TB2Item,
-  TB2Dock, TB2Toolbar, ActnList,
+  TB2Toolbar, ActnList,
 
-  JPEG, PNGImage, AntJvGIF, AntJvEdit, AntJvSpin, frameextra;
+  JPEG, PNGImage, AntJvGIF, AntJvSpin, frameextra, TB2Dock, AntCorelButton,
+  AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}
@@ -133,7 +134,7 @@ var
 implementation
 
 uses
-  Math, Global, fields, ProgramSettings, functions_str, functions_tbx, functions_sys,
+  Global, fields, ProgramSettings, functions_str, functions_sys,
   functions_files,
 
   FramePictureSelectionOptions, PictureSelection, PictureDragDrop,

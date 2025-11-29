@@ -1,19 +1,25 @@
 object MovieFrame: TMovieFrame
   Left = 0
   Top = 0
-  Width = 533
-  Height = 458
+  Width = 677
+  Height = 491
   AutoScroll = False
   Constraints.MinHeight = 458
   Constraints.MinWidth = 533
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
   ParentBackground = False
+  ParentFont = False
   TabOrder = 0
   OnResize = FrameResize
   object MoviePanel: TPanel
     Left = 0
     Top = 0
-    Width = 533
-    Height = 458
+    Width = 677
+    Height = 491
     Align = alClient
     BevelOuter = bvNone
     ParentBackground = False
@@ -22,20 +28,20 @@ object MovieFrame: TMovieFrame
     object PanelMain: TPanel
       Left = 0
       Top = 72
-      Width = 533
-      Height = 266
+      Width = 677
+      Height = 299
       Align = alClient
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 1
       OnResize = PanelMainResize
       DesignSize = (
-        533
-        266)
+        677
+        299)
       object LYear: TLabel
-        Left = 234
+        Left = 378
         Top = 152
-        Width = 25
+        Width = 26
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'Year:'
@@ -45,7 +51,7 @@ object MovieFrame: TMovieFrame
       object LWriter: TLabel
         Left = 8
         Top = 104
-        Width = 31
+        Width = 34
         Height = 13
         Caption = 'Writer:'
         FocusControl = EWriter
@@ -54,7 +60,7 @@ object MovieFrame: TMovieFrame
       object LURL: TLabel
         Left = 8
         Top = 199
-        Width = 25
+        Width = 23
         Height = 13
         Caption = 'URL:'
         FocusControl = EURL
@@ -63,7 +69,7 @@ object MovieFrame: TMovieFrame
       object LTranslatedTitle: TLabel
         Left = 8
         Top = 30
-        Width = 76
+        Width = 78
         Height = 13
         Caption = 'T&ranslated Title:'
         FocusControl = ETranslatedTitle
@@ -72,16 +78,16 @@ object MovieFrame: TMovieFrame
       object LProducer: TLabel
         Left = 8
         Top = 80
-        Width = 46
+        Width = 47
         Height = 13
         Caption = 'Producer:'
         FocusControl = EProducer
         Transparent = True
       end
       object LLength: TLabel
-        Left = 376
+        Left = 520
         Top = 152
-        Width = 36
+        Width = 37
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'Length:'
@@ -89,9 +95,9 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LLengthMin: TLabel
-        Left = 508
+        Left = 652
         Top = 152
-        Width = 19
+        Width = 20
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'min.'
@@ -100,7 +106,7 @@ object MovieFrame: TMovieFrame
       object LOriginalTitle: TLabel
         Left = 8
         Top = 6
-        Width = 61
+        Width = 63
         Height = 13
         Caption = '&Original Title:'
         FocusControl = EOriginalTitle
@@ -109,7 +115,7 @@ object MovieFrame: TMovieFrame
       object LDirector: TLabel
         Left = 8
         Top = 56
-        Width = 40
+        Width = 42
         Height = 13
         Caption = 'Director:'
         FocusControl = EDirector
@@ -118,7 +124,7 @@ object MovieFrame: TMovieFrame
       object LDescription: TLabel
         Left = 8
         Top = 224
-        Width = 56
+        Width = 57
         Height = 13
         Caption = 'Description:'
         FocusControl = EDescription
@@ -127,7 +133,7 @@ object MovieFrame: TMovieFrame
       object LCountry: TLabel
         Left = 8
         Top = 152
-        Width = 39
+        Width = 43
         Height = 13
         Caption = 'Country:'
         FocusControl = ECountry
@@ -136,7 +142,7 @@ object MovieFrame: TMovieFrame
       object LComposer: TLabel
         Left = 8
         Top = 128
-        Width = 50
+        Width = 52
         Height = 13
         Caption = 'Composer:'
         FocusControl = EComposer
@@ -144,8 +150,8 @@ object MovieFrame: TMovieFrame
       end
       object LComments: TLabel
         Left = 8
-        Top = 247
-        Width = 52
+        Top = 280
+        Width = 54
         Height = 13
         Anchors = [akLeft, akBottom]
         Caption = 'Comments:'
@@ -153,18 +159,18 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LRating10: TLabel
-        Left = 508
+        Left = 652
         Top = 30
-        Width = 20
+        Width = 19
         Height = 13
         Anchors = [akTop, akRight]
         Caption = '/ 10'
         Transparent = True
       end
       object LRating: TLabel
-        Left = 376
+        Left = 520
         Top = 30
-        Width = 34
+        Width = 35
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'Rating:'
@@ -172,18 +178,18 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LUserRating10: TLabel
-        Left = 508
+        Left = 652
         Top = 6
-        Width = 20
+        Width = 19
         Height = 13
         Anchors = [akTop, akRight]
         Caption = '/ 10'
         Transparent = True
       end
       object LUserRating: TLabel
-        Left = 376
+        Left = 520
         Top = 6
-        Width = 51
+        Width = 52
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'My Rating:'
@@ -193,7 +199,7 @@ object MovieFrame: TMovieFrame
       object LCertification: TLabel
         Left = 376
         Top = 177
-        Width = 58
+        Width = 62
         Height = 13
         Caption = 'Certification:'
         FocusControl = ECertification
@@ -202,7 +208,7 @@ object MovieFrame: TMovieFrame
       object LActors: TLabel
         Left = 376
         Top = 48
-        Width = 33
+        Width = 35
         Height = 13
         Caption = 'Actors:'
         FocusControl = EActors
@@ -211,7 +217,7 @@ object MovieFrame: TMovieFrame
       object LCategory: TLabel
         Left = 8
         Top = 177
-        Width = 45
+        Width = 49
         Height = 13
         Caption = 'Category:'
         FocusControl = ECategory
@@ -256,7 +262,7 @@ object MovieFrame: TMovieFrame
       end
       object ImgExpand2: TImage
         Left = -1
-        Top = 251
+        Top = 284
         Width = 16
         Height = 16
         Anchors = [akLeft, akBottom]
@@ -306,7 +312,7 @@ object MovieFrame: TMovieFrame
       object EDescription: TMemo
         Left = 104
         Top = 220
-        Width = 424
+        Width = 568
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         ScrollBars = ssVertical
@@ -319,7 +325,7 @@ object MovieFrame: TMovieFrame
       object ECountry: TComboBox
         Left = 104
         Top = 148
-        Width = 115
+        Width = 259
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akTop, akRight]
@@ -345,8 +351,8 @@ object MovieFrame: TMovieFrame
       end
       object EComments: TMemo
         Left = 104
-        Top = 244
-        Width = 424
+        Top = 277
+        Width = 568
         Height = 21
         Anchors = [akLeft, akRight, akBottom]
         ScrollBars = ssVertical
@@ -389,7 +395,7 @@ object MovieFrame: TMovieFrame
       object EActors: TMemo
         Left = 376
         Top = 61
-        Width = 152
+        Width = 296
         Height = 84
         Anchors = [akLeft, akTop, akRight]
         ScrollBars = ssVertical
@@ -400,7 +406,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EYear: TAntJvSpinEdit
-        Left = 306
+        Left = 450
         Top = 148
         Width = 55
         Height = 21
@@ -417,7 +423,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EUserRating: TAntJvSpinEdit
-        Left = 448
+        Left = 592
         Top = 2
         Width = 55
         Height = 21
@@ -435,7 +441,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object ERating: TAntJvSpinEdit
-        Left = 448
+        Left = 592
         Top = 26
         Width = 55
         Height = 21
@@ -466,7 +472,7 @@ object MovieFrame: TMovieFrame
       object EOriginalTitle: TEdit
         Left = 104
         Top = 2
-        Width = 257
+        Width = 401
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
@@ -476,7 +482,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object ELength: TAntJvSpinEdit
-        Left = 448
+        Left = 592
         Top = 148
         Width = 55
         Height = 21
@@ -506,7 +512,7 @@ object MovieFrame: TMovieFrame
       object ETranslatedTitle: TEdit
         Left = 104
         Top = 26
-        Width = 257
+        Width = 401
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
@@ -518,7 +524,7 @@ object MovieFrame: TMovieFrame
       object EURL: TAntJvComboEditXP
         Left = 104
         Top = 196
-        Width = 424
+        Width = 568
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         ButtonFlat = False
@@ -534,17 +540,17 @@ object MovieFrame: TMovieFrame
     object PanelMedia: TPanel
       Left = 0
       Top = 0
-      Width = 533
+      Width = 677
       Height = 72
       Align = alTop
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 0
       DesignSize = (
-        533
+        677
         72)
       object LMediaType: TLabel
-        Left = 297
+        Left = 441
         Top = 4
         Width = 59
         Height = 13
@@ -556,7 +562,7 @@ object MovieFrame: TMovieFrame
       object LBorrower: TLabel
         Left = 8
         Top = 54
-        Width = 45
+        Width = 48
         Height = 13
         Caption = 'Borrower:'
         FocusControl = EBorrower
@@ -565,16 +571,16 @@ object MovieFrame: TMovieFrame
       object LMedia: TLabel
         Left = 8
         Top = 6
-        Width = 61
+        Width = 60
         Height = 13
         Caption = 'Media Label:'
         FocusControl = EMedia
         Transparent = True
       end
       object LDate: TLabel
-        Left = 297
+        Left = 441
         Top = 30
-        Width = 60
+        Width = 61
         Height = 13
         Anchors = [akTop, akRight]
         Caption = 'Date Added:'
@@ -582,7 +588,7 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LDateWatched: TLabel
-        Left = 297
+        Left = 441
         Top = 54
         Width = 73
         Height = 13
@@ -677,7 +683,7 @@ object MovieFrame: TMovieFrame
       object EBorrower: TComboBox
         Left = 104
         Top = 50
-        Width = 179
+        Width = 323
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akTop, akRight]
@@ -690,7 +696,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EDateWatched: TDateTimePicker
-        Left = 387
+        Left = 531
         Top = 50
         Width = 141
         Height = 21
@@ -705,7 +711,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EDate: TDateTimePicker
-        Left = 387
+        Left = 531
         Top = 26
         Width = 141
         Height = 21
@@ -722,7 +728,7 @@ object MovieFrame: TMovieFrame
       object ESource: TComboBox
         Left = 104
         Top = 26
-        Width = 179
+        Width = 323
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akTop, akRight]
@@ -735,7 +741,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EMediaType: TComboBox
-        Left = 387
+        Left = 531
         Top = 2
         Width = 141
         Height = 21
@@ -753,7 +759,7 @@ object MovieFrame: TMovieFrame
       object EMedia: TEdit
         Left = 104
         Top = 2
-        Width = 179
+        Width = 323
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
@@ -765,20 +771,20 @@ object MovieFrame: TMovieFrame
     end
     object PanelVideo: TPanel
       Left = 0
-      Top = 338
-      Width = 533
+      Top = 371
+      Width = 677
       Height = 120
       Align = alBottom
       BevelOuter = bvNone
       ParentColor = True
       TabOrder = 2
       DesignSize = (
-        533
+        677
         120)
       object LVideoKbps: TLabel
-        Left = 258
+        Left = 402
         Top = 29
-        Width = 23
+        Width = 22
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'kbps'
@@ -787,7 +793,7 @@ object MovieFrame: TMovieFrame
       object LVideoFormat: TLabel
         Left = 8
         Top = 29
-        Width = 65
+        Width = 67
         Height = 13
         Anchors = [akLeft, akBottom]
         Caption = 'Video Format:'
@@ -797,7 +803,7 @@ object MovieFrame: TMovieFrame
       object LSubtitles: TLabel
         Left = 9
         Top = 101
-        Width = 43
+        Width = 45
         Height = 13
         Anchors = [akLeft, akBottom]
         Caption = 'Subtitles:'
@@ -805,16 +811,16 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LSizeUnit: TLabel
-        Left = 504
+        Left = 648
         Top = 79
-        Width = 16
+        Width = 14
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'MB'
         Transparent = True
       end
       object LSize: TLabel
-        Left = 297
+        Left = 441
         Top = 77
         Width = 52
         Height = 13
@@ -824,9 +830,9 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LResolution: TLabel
-        Left = 297
+        Left = 441
         Top = 29
-        Width = 53
+        Width = 54
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'Resolution:'
@@ -844,18 +850,18 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LFramerateFPS: TLabel
-        Left = 504
+        Left = 648
         Top = 53
-        Width = 14
+        Width = 15
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'fps'
         Transparent = True
       end
       object LFramerate: TLabel
-        Left = 297
+        Left = 441
         Top = 53
-        Width = 58
+        Width = 60
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'Frame Rate:'
@@ -865,7 +871,7 @@ object MovieFrame: TMovieFrame
       object LFilePath: TLabel
         Left = 8
         Top = 5
-        Width = 44
+        Width = 45
         Height = 13
         Anchors = [akLeft, akBottom]
         Caption = 'File Path:'
@@ -873,9 +879,9 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LDisks: TLabel
-        Left = 297
+        Left = 441
         Top = 101
-        Width = 55
+        Width = 53
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'Discs/Files:'
@@ -883,9 +889,9 @@ object MovieFrame: TMovieFrame
         Transparent = True
       end
       object LAudioKbps: TLabel
-        Left = 258
+        Left = 402
         Top = 53
-        Width = 23
+        Width = 22
         Height = 13
         Anchors = [akRight, akBottom]
         Caption = 'kbps'
@@ -894,7 +900,7 @@ object MovieFrame: TMovieFrame
       object LAudioFormat: TLabel
         Left = 8
         Top = 53
-        Width = 65
+        Width = 68
         Height = 13
         Anchors = [akLeft, akBottom]
         Caption = 'Audio Format:'
@@ -978,7 +984,7 @@ object MovieFrame: TMovieFrame
       object EVideoFormat: TComboBox
         Left = 104
         Top = 26
-        Width = 91
+        Width = 235
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akRight, akBottom]
@@ -992,7 +998,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EVideoBitrate: TAntJvSpinEdit
-        Left = 198
+        Left = 342
         Top = 26
         Width = 55
         Height = 21
@@ -1011,7 +1017,7 @@ object MovieFrame: TMovieFrame
       object ESubtitles: TComboBox
         Left = 104
         Top = 98
-        Width = 179
+        Width = 323
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akRight, akBottom]
@@ -1025,7 +1031,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object ESize: TEdit
-        Left = 386
+        Left = 530
         Top = 74
         Width = 113
         Height = 21
@@ -1037,7 +1043,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EResolution: TEdit
-        Left = 386
+        Left = 530
         Top = 26
         Width = 142
         Height = 21
@@ -1049,7 +1055,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EFramerate: TComboBox
-        Left = 386
+        Left = 530
         Top = 50
         Width = 113
         Height = 21
@@ -1067,7 +1073,7 @@ object MovieFrame: TMovieFrame
       object ELanguages: TComboBox
         Left = 104
         Top = 74
-        Width = 179
+        Width = 323
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akRight, akBottom]
@@ -1083,7 +1089,7 @@ object MovieFrame: TMovieFrame
       object EFilePath: TAntJvComboEditXP
         Left = 104
         Top = 2
-        Width = 424
+        Width = 568
         Height = 21
         Anchors = [akLeft, akRight, akBottom]
         ButtonFlat = False
@@ -1096,7 +1102,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EDisks: TAntJvSpinEdit
-        Left = 386
+        Left = 530
         Top = 98
         Width = 55
         Height = 21
@@ -1115,7 +1121,7 @@ object MovieFrame: TMovieFrame
       object EAudioFormat: TComboBox
         Left = 104
         Top = 50
-        Width = 91
+        Width = 235
         Height = 21
         AutoDropDown = True
         Anchors = [akLeft, akRight, akBottom]
@@ -1129,7 +1135,7 @@ object MovieFrame: TMovieFrame
         OnKeyUp = FieldKeyUp
       end
       object EAudioBitrate: TAntJvSpinEdit
-        Left = 198
+        Left = 342
         Top = 50
         Width = 55
         Height = 21

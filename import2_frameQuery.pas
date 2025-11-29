@@ -26,10 +26,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   ExtCtrls, StdCtrls, Dialogs, Menus, ActnList, ComCtrls,
 
-  TB2Item, TBX, TBXDkPanels,
-  AntJvLinkLabel, AntStringList,
+  TB2Item, TBXDkPanels,
+  
 
-  ProgramSettings, MovieClass, import2_frame, import2_engines, ElTree;
+  ProgramSettings, MovieClass, import2_frame, import2_engines,
+  AntStringList, TBX, AntJvLinkLabel, ElTree;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

@@ -3,6 +3,7 @@ inherited ListWin: TListWin
   Caption = 'ListWin'
   ClientHeight = 232
   ClientWidth = 223
+  OldCreateOrder = True
   PixelsPerInch = 96
   TextHeight = 13
   inherited Bevel1: TBevel

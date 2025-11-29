@@ -24,9 +24,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, framemovie, StdCtrls, ComCtrls, ExtCtrls,
+  Dialogs, base, framemovie, ComCtrls, ExtCtrls,
 
-  AntCorelButton, AntAutoHintLabel, AntJvExControls, AntJvToolEdit;
+  AntJvExControls, AntJvToolEdit, StdCtrls, AntCorelButton,
+  AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

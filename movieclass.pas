@@ -737,7 +737,7 @@ var
 implementation
 
 uses
-  IniFiles, DateUtils, Math, StrUtils, functions_str, functions_files
+  IniFiles, Math, StrUtils, functions_str, functions_files
   {$IFNDEF DLLMode}, ConstValues, Global, functions_xml, ProgramSettings,
   JPEG, functions_img{$ENDIF};
 

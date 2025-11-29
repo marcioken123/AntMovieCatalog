@@ -158,7 +158,7 @@ type
 implementation
 
 uses
-  Global, functions_files;
+  functions_files;
 
 {$R *.dfm}
 

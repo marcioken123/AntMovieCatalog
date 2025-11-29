@@ -26,11 +26,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   ComCtrls, Dialogs, ExtCtrls, StdCtrls, ActnList,
 
-  TBXDkPanels, TB2Item, TBX, Menus,
-  AntStringList, AntJvLinkLabel, AntJvExControls, AntJvEdit, AntJvSpin,
+  TB2Item, Menus,
+  AntJvExControls, 
 
-  ProgramSettings, MovieClass, import2_frame, import2_engines, getMedia,
-  AntCorelButton, ElTree;
+  ProgramSettings, MovieClass, import2_frame, import2_engines, 
+  AntCorelButton, AntStringList, TBX, AntJvLinkLabel, TBXDkPanels, ElTree;
 
 const
   msgSourceDir    = 10;
@@ -73,7 +73,7 @@ implementation
 {$R *.dfm}
 
 uses
-  ConstValues, Global, functions_tbx, functions_str, fields,
+  ConstValues, Global, functions_str, fields,
   stringfilter;
 
 {-------------------------------------------------------------------------------

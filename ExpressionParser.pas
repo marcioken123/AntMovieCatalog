@@ -47,7 +47,7 @@ unit ExpressionParser;
 interface
 
 uses
-  Windows, Classes, SysUtils, StrUtils, Contnrs, Math;
+  Windows, Classes, SysUtils, Contnrs, Math;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

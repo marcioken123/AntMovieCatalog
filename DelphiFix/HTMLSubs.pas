@@ -62,7 +62,7 @@ unit Htmlsubs;
 interface
 uses
   SysUtils, WinTypes, Windows, WinProcs, Messages, Classes, Graphics, Controls, 
-  Forms, Dialogs, StdCtrls, ExtCtrls, HTMLUn2, HTMLGif2, mmSystem,
+  Forms, Dialogs, StdCtrls, ExtCtrls, HTMLUn2, HTMLGif2, 
   {$ifdef UseTNT}    
   TntStdCtrls,
   {$endif}

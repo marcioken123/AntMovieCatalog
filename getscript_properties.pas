@@ -26,9 +26,10 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, base, StdCtrls, ExtCtrls, Grids, ValEdit,
 
-  AntCorelButton, AntAutoHintLabel, AntStringList,
+  AntStringList,
 
-  getscript_readscripts, memoform, TBXDkPanels;
+  getscript_readscripts, memoform, TBXDkPanels, AntCorelButton,
+  AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

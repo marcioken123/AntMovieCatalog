@@ -25,12 +25,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls,
-  ImgList, ActnList, Menus, shellApi,
+  ActnList, Menus, 
   
-  AntStringList, ElTree, AntCorelButton, TB2Item,
-  TBX, TB2Dock, TB2Toolbar,
+  AntStringList, ElTree, TB2Item,
+  TBX, TB2Toolbar,
 
-  MovieClass, base, loanhistory, TB2ExtItems, AntAutoHintLabel, TBXExtItems;
+  MovieClass, base, loanhistory, TB2Dock, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

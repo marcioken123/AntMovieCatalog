@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  fields, Global, ConstValues, functions_tbx;
+  fields, ConstValues, functions_tbx;
 
 {$R *.DFM}
 

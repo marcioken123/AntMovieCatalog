@@ -27,7 +27,7 @@ uses
   ExtCtrls, ActnList, ImgList, Menus, StdCtrls, Buttons, Clipbrd, ComCtrls,
   StdActns, Contnrs,
 
-  ElTree, ElList, ElHeader, TB2Common, TB2Item, TB2MRU, TB2Toolbar, TB2Dock,
+  ElTree, ElHeader, TB2Common, TB2Item, TB2MRU, TB2Toolbar, TB2Dock,
   TB2ToolWindow, TBX, TBXExtItems, TBXSwitcher, TBXStatusBars,
 
   AntJvDragDrop, AntStringList, AntCorelButton,
@@ -36,7 +36,7 @@ uses
   framemovie, fields, MovieClass, FileManager, ConstValues,
   FramePictureSelectionOptions,
 
-  HTMLSubs, HtmlView, MetaFilePrinter, PrintStatusForm, PreviewForm,
+  HTMLSubs, HtmlView, 
 
   JPEG, PNGImage, AntJvGIF, rkIntegerList, rkSmartView, framemoviecustom,
   framemovieextras, TBXDkPanels, AppEvnts;
@@ -879,7 +879,7 @@ var
 implementation
 
 uses
-  CommDlg, ExtDlgs, Math, DateUtils, StrUtils,
+  CommDlg, Math, DateUtils, StrUtils,
 
   IdURI,
 
@@ -889,13 +889,13 @@ uses
   TBXOfficeXPTheme,
   {$ENDIF}
 
-  functions_str, functions_sys, functions_video, functions_files, functions_gui,
+  functions_str, functions_sys, functions_files, functions_gui,
   functions_xml, functions_img,
 
   Global, options, about, export, number, loan, splash, stats, customfieldsmanager,
   renumber, properties, loanhistory, getscript, Languageselect,
   ProgramSettings, printform, PictureSelection, PictureDragDrop, pictureform,
-  progress, getmedia, import2, Variants, SyncObjs, Types, stringfilter,
+  progress, getmedia, import2, Variants, Types, 
   picturesmanager, getscript_results, HTMLEditor, sort, ExpressionParser;
 
 {$R *.DFM}

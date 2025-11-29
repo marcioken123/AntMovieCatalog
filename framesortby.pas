@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  sort, fields, Global, ConstValues, functions_tbx;
+  sort, fields, ConstValues, functions_tbx;
 
 {$R *.dfm}
 

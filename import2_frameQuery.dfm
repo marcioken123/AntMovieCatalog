@@ -11,7 +11,7 @@ inherited ImportFrameQuery: TImportFrameQuery
       HeaderSections.Data = {F6FFFFFF00000000}
     end
   end
-  object grpQuery: TGroupBox
+  object grpQuery: TGroupBox [4]
     Left = 0
     Top = 143
     Width = 550

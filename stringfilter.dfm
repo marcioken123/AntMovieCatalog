@@ -7,6 +7,7 @@ inherited StringFilterWin: TStringFilterWin
   ClientWidth = 524
   Constraints.MinHeight = 400
   Constraints.MinWidth = 540
+  OldCreateOrder = True
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13

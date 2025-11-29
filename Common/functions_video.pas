@@ -83,7 +83,7 @@ function ExtractAVIInfos(const AVIFileName: string; out ResX, ResY, Length: Inte
 implementation
 
 uses
-  Sysutils, Dialogs, ShellAPI, classes;
+  Sysutils, Dialogs, classes;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

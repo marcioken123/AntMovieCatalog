@@ -24,8 +24,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, FrameHtmlTemplateEdit, StdCtrls, AntCorelButton,
-  AntAutoHintLabel, ExtCtrls, MovieClass, TB2Item, TBX;
+  Dialogs, base, FrameHtmlTemplateEdit, 
+  ExtCtrls, MovieClass, TB2Item, StdCtrls, AntCorelButton, AntAutoHintLabel;
 
 type
   THTMLEditorWin = class(TBaseDlg)

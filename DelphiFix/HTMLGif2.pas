@@ -155,7 +155,7 @@ function CreateAGif(const Name: string; var NonAnimated: boolean): TGifImage;
 implementation
 
 uses
-  Styleun, htmlsubs;
+  Styleun;
 
 function CreateBitmap(Width, Height: integer): TBitmap;
 begin

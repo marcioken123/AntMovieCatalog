@@ -86,7 +86,7 @@ implementation
 {$R *.dfm}
 
 uses
-  ShellAPI, IdCoderMIME, IniFiles,
+  ShellAPI, IdCoderMIME, 
 
   {$IFDEF ANTUNICODE}
   TntSysUtils, TntClasses,

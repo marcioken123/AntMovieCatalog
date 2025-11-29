@@ -25,7 +25,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, ExtCtrls, ActnList, Menus,
-  Tabs, ImgList, IniFiles,
+  Tabs, ImgList, 
 
   ifspas, ifs_var, ifpsclass, ifpsdate,
   IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
@@ -357,11 +357,11 @@ var
 implementation
 
 uses
-  strUtils,
+  
 
   IdHTTPHeaderInfo, IdURI, IdGlobal,
-  stdimport, formsimport, stdctrlsimport, ifpslib, ifpstrans,
-  ifpsdll, ifpsdll2, ifpsdelphi,
+  stdimport, formsimport, stdctrlsimport, 
+  ifpsdelphi,
   JvSimpleXml, SynEditTypes,
 
   Global, ConstValues, fields, functions_html, functions_files, functions_str,

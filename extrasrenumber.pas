@@ -26,10 +26,10 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, base, StdCtrls, ComCtrls, ExtCtrls,
 
-  AntStringList, AntCorelButton,
+  AntStringList, 
 
-  MovieClass, framesortbyextras, AntAutoHintLabel, framesortby,
-  frameincludemov;
+  MovieClass, framesortbyextras, 
+  frameincludemov, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

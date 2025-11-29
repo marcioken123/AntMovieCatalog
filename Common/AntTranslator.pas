@@ -61,7 +61,7 @@ implementation
 
 uses
   SysUtils, comctrls, Controls, Dialogs,
-  IniFiles{$IFDEF ANTTRANSLATOR_USEELTREE}, Eltree, ElHeader{$ENDIF};
+  IniFiles{$IFDEF ANTTRANSLATOR_USEELTREE}, ElHeader{$ENDIF};
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

@@ -23,9 +23,9 @@ unit import2_engines;
 interface
 
 uses
-  Windows, Classes, Types, SysUtils, ComCtrls, Contnrs, IniFiles, Forms, Dialogs,
+  Windows, Classes, Types, SysUtils, ComCtrls, Contnrs, Forms, Dialogs,
 
-  movieclass, interfaces, fields, ElTree, ElList, ElHeader;
+  movieclass, interfaces, fields, ElTree, ElHeader;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

@@ -59,7 +59,7 @@ var
 implementation
 
 uses
-  Math,
+  
 
   AntJvGIF, JPEG, PNGImage,
 

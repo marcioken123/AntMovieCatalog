@@ -24,16 +24,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  StdCtrls, Buttons, ExtCtrls, shellapi, ComCtrls, dialogs, ImgList,
-  inifiles,
+  StdCtrls, Buttons, ExtCtrls, ComCtrls, dialogs, 
+  
 
   TBX, TBXDkPanels,
 
   AntCorelButton, AntJvToolEdit, AntJvExControls, AntJvEdit,
-  AntJvSpin, AntAutoHintLabel, AntJvLinkLabel,
+  AntJvSpin, AntJvLinkLabel,
 
   base, ConstValues, ProgramSettings, FramePictureSelectionOptions, Menus,
-  TB2Item, movieclass, framefilenaming;
+  TB2Item, movieclass, framefilenaming, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

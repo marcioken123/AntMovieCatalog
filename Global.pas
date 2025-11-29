@@ -27,7 +27,7 @@ uses
 
   AntTranslator,
 
-  ProgramSettings, MessageForm, InputForm, Progress, StringFilter;
+  ProgramSettings, MessageForm, InputForm, Progress;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

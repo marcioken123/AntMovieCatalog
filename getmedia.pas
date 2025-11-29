@@ -23,7 +23,7 @@ unit getmedia;
 interface
 
 uses
-  Windows, Classes, SysUtils, StrUtils, Contnrs, Math, Forms, Controls, Dialogs,
+  Windows, Classes, SysUtils, Contnrs, Forms, Controls, Dialogs,
 
   functions_files, framemovie, framemoviecustom, fields, movieclass;
 
@@ -227,7 +227,7 @@ uses
   IniFiles,
 
   ConstValues, Global, functions_str, functions_video, MediaInfo,
-  ProgramSettings, AntJvSpin, functions_gui, stringfilter, RegExpr;
+  ProgramSettings, functions_gui, stringfilter, RegExpr;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

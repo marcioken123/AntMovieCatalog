@@ -24,8 +24,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, AntCorelButton, AntAutoHintLabel, ExtCtrls,
-  TBXDkPanels, ComCtrls, ImgList, AntStringList, AntJvLabel, AntJvHotLink;
+  Dialogs, base, StdCtrls, ExtCtrls,
+  TBXDkPanels, ComCtrls, ImgList, AntStringList, AntJvHotLink, AntJvLabel,
+  AntCorelButton, AntAutoHintLabel;
 
 type
   TStringFilterWin = class(TBaseDlg)

@@ -184,7 +184,7 @@ implementation
 
 uses
   Math, StrUtils, 
-  Global, ConstValues, functions_str, movieclass, functions_files;
+  ConstValues, functions_str, movieclass, functions_files;
 
 {-------------------------------------------------------------------------------
   TScriptList

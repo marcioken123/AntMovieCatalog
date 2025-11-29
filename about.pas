@@ -24,13 +24,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls,
-  Dialogs, Forms, StdCtrls, ExtCtrls, Buttons, ComCtrls, ShellApi,
+  Dialogs, Forms, StdCtrls, ExtCtrls, Buttons, ComCtrls, 
 
   AntJvScrollText,
   AntStringList, AntJvLinkLabel,
-  AntCorelButton, AntAutoHintLabel,
+  
 
-  base;
+  base, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

@@ -25,7 +25,7 @@ interface
 uses
   SysUtils, Classes, Graphics, Types, stdctrls,
 
-  ifspas, SynEdit, TBXDkPanels, jvsimplexml;
+  SynEdit, TBXDkPanels, jvsimplexml;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

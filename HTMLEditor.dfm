@@ -8,6 +8,7 @@ inherited HTMLEditorWin: THTMLEditorWin
   ClientWidth = 764
   Constraints.MinHeight = 400
   Constraints.MinWidth = 600
+  OldCreateOrder = True
   OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13

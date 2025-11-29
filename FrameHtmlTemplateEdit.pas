@@ -24,15 +24,15 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, ShellAPI, ImgList, ComCtrls, Menus,
+  Buttons, ExtCtrls, ComCtrls, Menus,
   ActnList,
 
-  AntCorelButton, AntStringList, AntJvLabel, AntJvHotLink,
+  AntStringList, 
   TB2Item, TBX, TB2MRU, TBXExtItems,
-  TB2Dock, TB2Toolbar, AntAutoHintLabel, AntJvLinkLabel,
+  TB2Dock, TB2Toolbar, 
   SynEdit, SynEditHighlighter, SynHighlighterHtml,
 
-  framefields, MovieClass, FileManager, base, ConstValues;
+  MovieClass, FileManager, ConstValues;
 
 type
   THTMLTemplateEdit = class(TFrame)
@@ -434,10 +434,10 @@ type
 implementation
 
 uses
-  StrUtils,
+  
 
-  fields, sort, Global, functions_files, functions_str, functions_sys,
-  ProgramSettings, progress;
+  fields, Global, functions_files, functions_str, functions_sys,
+  ProgramSettings;
 
 {$R *.dfm}
 

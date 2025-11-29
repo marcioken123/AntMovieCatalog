@@ -7,6 +7,7 @@ inherited ScriptPropertiesWin: TScriptPropertiesWin
   ClientWidth = 584
   Constraints.MinHeight = 500
   Constraints.MinWidth = 600
+  OldCreateOrder = True
   OnDestroy = FormDestroy
   OnResize = FormResize
   DesignSize = (

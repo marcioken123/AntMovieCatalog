@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, AntCorelButton, AntAutoHintLabel, ExtCtrls,
-  frameextra;
+  Dialogs, base, ExtCtrls,
+  frameextra, StdCtrls, AntCorelButton, AntAutoHintLabel;
 
 type
   TExtraDefaultValuesWin = class(TBaseDlg)

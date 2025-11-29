@@ -24,11 +24,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, ImgList,
+  Dialogs, ExtCtrls, ComCtrls, 
 
-  AntCorelButton, AntAutoHintLabel,
+  
 
-  base, MovieClass, AntStringList, import2_frame;
+  base, MovieClass, AntStringList, import2_frame, ImgList, StdCtrls,
+  AntCorelButton, AntAutoHintLabel;
 
 type
   TImportWin2 = class(TBaseDlg)

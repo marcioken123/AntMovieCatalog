@@ -26,7 +26,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ExtCtrls, StdCtrls, Contnrs, DateUtils, Clipbrd,
 
-  AntJvDragDrop, AntJvEdit, AntJvSpin, AntJvExControls, AntJvToolEdit,
+  AntJvExControls, AntJvToolEdit,
 
   fields, movieclass, ConstValues, ComCtrls, ActnList, TB2Item, TBX, Menus,
   TB2Dock, TB2Toolbar,
@@ -375,7 +375,7 @@ type
 implementation
 
 uses
-  Global, StrUtils, Math, Variants,
+  Global, Math, Variants,
 
   functions_str, functions_files, functions_sys, functions_img,
 

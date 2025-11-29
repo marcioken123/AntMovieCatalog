@@ -24,8 +24,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, FramePictureSelectionOptions, AntCorelButton,
-  AntAutoHintLabel, ExtCtrls;
+  Dialogs, base, StdCtrls, FramePictureSelectionOptions, 
+  ExtCtrls, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

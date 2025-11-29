@@ -24,11 +24,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, ExtCtrls, Contnrs,
+  Dialogs, base, ExtCtrls, Contnrs,
 
-  ComCtrls, AntStringList, AntCorelButton, AntAutoHintLabel,
+  ComCtrls, AntStringList, 
 
-  movieclass, FileManager, fields, ActnList, TB2Item, TBX, Menus, ElTree;
+  movieclass, FileManager, fields, ActnList, TB2Item, TBX, Menus, ElTree,
+  StdCtrls, AntCorelButton, AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}
@@ -226,7 +227,7 @@ implementation
 {$R *.dfm}
 
 uses
-  CommCtrl,
+  
 
   Global, functions_files, functions_str, constValues, pictureform,
   getscript_extrasresults;

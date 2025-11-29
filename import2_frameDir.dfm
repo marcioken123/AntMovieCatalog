@@ -5,7 +5,7 @@ inherited ImportFrameDir: TImportFrameDir
     DesignSize = (
       550
       172)
-    object lblBrowseDepth: TLabel
+    object lblBrowseDepth: TLabel [3]
       Left = 8
       Top = 79
       Width = 153
@@ -13,7 +13,7 @@ inherited ImportFrameDir: TImportFrameDir
       Caption = 'Browse subfolders with depth of:'
       FocusControl = edtBrowseDepth
     end
-    object lblExtVideo: TLabel
+    object lblExtVideo: TLabel [4]
       Left = 8
       Top = 148
       Width = 54
@@ -21,7 +21,7 @@ inherited ImportFrameDir: TImportFrameDir
       Caption = 'Extensions:'
       FocusControl = edtExtVideo
     end
-    object lblDiskTag: TLabel
+    object lblDiskTag: TLabel [5]
       Left = 349
       Top = 122
       Width = 42
@@ -29,13 +29,16 @@ inherited ImportFrameDir: TImportFrameDir
       Caption = 'Disk tag:'
       FocusControl = edtDiskTag
     end
-    object lblExtractProcess: TLabel
+    object lblExtractProcess: TLabel [6]
       Left = 349
       Top = 75
       Width = 76
       Height = 13
       Anchors = [akTop, akRight]
       Caption = 'Extract process:'
+    end
+    inherited cmbExtraPictures: TComboBox
+      TabOrder = 12
     end
     object edtBrowseDepth: TComboBox
       Left = 273
@@ -60,9 +63,6 @@ inherited ImportFrameDir: TImportFrameDir
         '3'
         '*')
     end
-    inherited cmbExtraPictures: TComboBox
-      TabOrder = 12
-    end
     object chkMultiDisks: TCheckBox
       Left = 8
       Top = 120
@@ -78,7 +78,7 @@ inherited ImportFrameDir: TImportFrameDir
       Width = 124
       Height = 22
       Hint = 
-        '|E.g. choose tag ''cd'' for name like moviename.cd1, moviename.cd2' +
+        '|E.g. choose tag '#39'cd'#39' for name like moviename.cd1, moviename.cd2' +
         ', ...'
       AutoComplete = False
       Anchors = [akLeft, akTop, akRight]

@@ -25,11 +25,12 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, MovieClass,
-  TeeProcs, TeEngine, Chart, ActnList, ImgList, Menus, Series, Contnrs,
+  TeeProcs, TeEngine, Chart, ActnList, Menus, Series, Contnrs,
 
-  AntCorelButton, AntStringList, TB2Item, TBX, TB2Dock, TB2Toolbar,
+  AntStringList, TB2Item, TBX, TB2Toolbar,
 
-  base, AntAutoHintLabel, frameincludemov, AppEvnts;
+  base, frameincludemov, AppEvnts, TB2Dock, AntCorelButton,
+  AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

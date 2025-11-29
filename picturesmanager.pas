@@ -24,12 +24,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, base, StdCtrls, ComCtrls, ExtCtrls,
+  Dialogs, base, ComCtrls, ExtCtrls,
 
-  AntStringList, AntCorelButton,
+  AntStringList, 
 
-  MovieClass, AntAutoHintLabel, FramePictureOperation,
-  frameincludemov, frameincludepic;
+  MovieClass, FramePictureOperation,
+  frameincludemov, frameincludepic, StdCtrls, AntCorelButton,
+  AntAutoHintLabel;
 
 {-------------------------------------------------------------------------------
 -------------------------------------------------------------------------------}

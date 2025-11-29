@@ -24,17 +24,18 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Buttons, ExtCtrls, ShellAPI, ImgList, ComCtrls, Menus,
+  StdCtrls, Buttons, ExtCtrls, ComCtrls, Menus,
   ActnList,
 
-  AntCorelButton, AntStringList, AntJvLabel, AntJvHotLink,
-  TB2Item, TBX, TB2MRU, TBXExtItems,
-  TB2Dock, TB2Toolbar, AntAutoHintLabel, AntJvLinkLabel,
+  AntStringList, 
+  TB2Item, 
+  
   SynEdit, SynEditHighlighter, SynHighlighterHtml,
 
-  ConstValues, ProgramSettings, base, MovieClass, FileManager, framefields,
+  ConstValues, ProgramSettings, base, MovieClass, framefields,
   framesortby, frameincludemov, FramePictureOperationExport, FrameHtmlTemplateEdit,
-  framefilenaming, frameincludepic;
+  framefilenaming, frameincludepic, ImgList, AntCorelButton,
+  AntAutoHintLabel;
 
 
 {-------------------------------------------------------------------------------

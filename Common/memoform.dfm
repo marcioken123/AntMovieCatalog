@@ -7,6 +7,7 @@ inherited MemoWin: TMemoWin
   ClientWidth = 392
   Constraints.MinHeight = 172
   Constraints.MinWidth = 381
+  OldCreateOrder = True
   PixelsPerInch = 96
   TextHeight = 13
   inherited Bevel1: TBevel
