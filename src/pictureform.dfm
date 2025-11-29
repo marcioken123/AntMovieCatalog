@@ -4,7 +4,7 @@ object PictureWin: TPictureWin
   BorderStyle = bsToolWindow
   Caption = 'PictureWin'
   ClientHeight = 97
-  ClientWidth = 116
+  ClientWidth = 120
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
