@@ -163,12 +163,7 @@ begin
       ProgressBar1.Position := 11;
       ProgressBar1.Position := 10;
       Application.CreateForm(TMainWindow, MainWindow);
-  Application.CreateForm(TCustomFieldsManagerWin, CustomFieldsManagerWin);
-  Application.CreateForm(TRenumberWin, RenumberWin);
-  Application.CreateForm(TGoPageForm, GoPageForm);
-  Application.CreateForm(TImportMethodWin, ImportMethodWin);
-  Application.CreateForm(TPrnStatusForm, PrnStatusForm);
-  strFields := MainWindow.Fields.Strings;
+      strFields := MainWindow.Fields.Strings;
       strExtraFields := MainWindow.ExtraFields.Strings;
       strMedia := MainWindow.Media.Strings;
       strPictureStatus := MainWindow.PictureStatus.Strings;

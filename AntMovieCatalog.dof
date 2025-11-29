@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=Ant Movie Catalog
 [Directories]
-OutputDir=dev
+OutputDir=bin
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -149,5 +149,6 @@ Item2=Common;ifps
 Count=1
 Item0=dcu
 [HistoryLists\hlOutputDirectorry]
-Count=1
-Item0=dev
+Count=2
+Item0=bin
+Item1=dev
