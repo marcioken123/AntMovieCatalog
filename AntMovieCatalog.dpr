@@ -123,7 +123,8 @@ uses
   Gopage in 'src\Gopage.pas' {GoPageForm},
   importmethod in 'src\importmethod.pas' {ImportMethodWin},
   PreviewForm in 'src\PreviewForm.pas' {PreviewForm},
-  PrintStatusForm in 'src\PrintStatusForm.pas' {PrnStatusForm};
+  PrintStatusForm in 'src\PrintStatusForm.pas' {PrnStatusForm},
+  provider.log in 'src\providers\provider.log.pas';
 
 {$R *.res}
 {$R MANIFEST.RES}
@@ -163,7 +164,7 @@ begin
       ProgressBar1.Position := 11;
       ProgressBar1.Position := 10;
       Application.CreateForm(TMainWindow, MainWindow);
-      strFields := MainWindow.Fields.Strings;
+  strFields := MainWindow.Fields.Strings;
       strExtraFields := MainWindow.ExtraFields.Strings;
       strMedia := MainWindow.Media.Strings;
       strPictureStatus := MainWindow.PictureStatus.Strings;
