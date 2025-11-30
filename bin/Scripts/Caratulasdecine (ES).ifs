@@ -1,0 +1,294 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=raulsara, japg2000
+Title=CaratulasDeCine
+Description=Extrae las caratulas de www.caratulasdecine.com
+Site=www.caratulasdecine.com
+Language=ES
+Version=2.01
+Requires=3.5.0
+Comments=Mod.Raulsara 11/05/2020. No funcionaba la "Q" ni las peliculas con acentos.
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.|
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program CaratulasdecineImport;
+
+var
+  Title: string;
+  c: Char;
+  PageOfLetter: Array of string;
+  Index: Integer;
+  sw1: Integer;
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+ // Funcion para cambiar acentos, dieresis, acento circumflejo en nombres
+ 
+function Acentos(var ite: string): string;
+begin
+     Ite := StringReplace (Ite, 'Ã¡' , 'á');
+     Ite := StringReplace (Ite, 'Ã©' , 'é');
+     Ite := StringReplace (Ite, 'Ã­' , 'í');
+     Ite := StringReplace (Ite, 'Ã³' , 'ó');
+     Ite := StringReplace (Ite, 'Ãº' , 'ú');
+     Ite := StringReplace (Ite, 'Â¡' , '¡');
+     Ite := StringReplace (Ite, 'Â!' , '!');
+     Ite := StringReplace (Ite, 'Ã±' , 'ñ');
+     Ite := StringReplace (Ite, 'Â¿' , '¿');
+     Ite := StringReplace (Ite, 'Â?' , '?');
+     Ite := StringReplace (Ite, 'Ã¤' , 'ä');
+     Ite := StringReplace (Ite, 'Ã«' , 'ë');
+     Ite := StringReplace (Ite, 'Ã¯' , 'ï');
+     Ite := StringReplace (Ite, 'Ã¶' , 'ö');
+     Ite := StringReplace (Ite, 'Ã¼' , 'ü');
+     Ite := StringReplace (Ite, 'Ã'  , 'à');
+     Ite := StringReplace (Ite, 'Ã¨' , 'è');
+     Ite := StringReplace (Ite, 'Ã¬' , 'ì');
+     Ite := StringReplace (Ite, 'Ã²' , 'ó');
+     Ite := StringReplace (Ite, 'Ã¹' , 'ù');
+     Ite := StringReplace (Ite, 'Ã"' , '"');
+     Ite := StringReplace (Ite, 'Â·' , '·');
+
+     result:= Ite;
+end;
+
+function EliminaInicio(S: string; CR: string): string;
+begin
+  result := S;
+  while Pos(CR, result) = 1 do
+  begin
+    Delete(result, 1, Length(CR));
+  end;
+end;
+
+function CadenaEntre(var S: string; StartTag: string; EndTag: string): string;
+var
+  InicioPos: Integer;
+begin
+  InicioPos := Pos(StartTag, S);
+  Delete(S, 1, InicioPos + Length(StartTag) - 1);
+  InicioPos := Pos(EndTag, S);
+  result := copy(S, 1, InicioPos - 1);
+  Delete(S, 1, InicioPos + 1);
+end;
+
+function PreparaTitulo(T: string): string;
+var
+  i: Integer;
+begin
+
+  result := Acentos(T);
+  HTMLDecode(result ) ;
+
+  result := AnsiLowerCase(result);
+
+    result := StringReplace(result, chr(146), '');
+  result := StringReplace(result, chr(39), '');
+  result := StringReplace(result, '´', '');
+  result := StringReplace(result, '`', '');
+  result := StringReplace(result, '"', '');
+  result := StringReplace(result, '¿', '');
+  result := StringReplace(result, '?', '');
+  result := StringReplace(result, '¡', '');
+  result := StringReplace(result, '!', '');
+  result := StringReplace(result, '.', '');
+  result := StringReplace(result, ',', '');
+  result := StringReplace(result, ':', '');
+  result := StringReplace(result, ';', '');
+  result := StringReplace(result, '-', '');
+  result := StringReplace(result, '/', '');
+  result := StringReplace(result, '\', '');
+  result := StringReplace(result, '_', '');
+  result := StringReplace(result, 'á', 'a');
+  result := StringReplace(result, 'é', 'e');
+  result := StringReplace(result, 'í', 'i');
+  result := StringReplace(result, 'ó', 'o');
+  result := StringReplace(result, 'ú', 'u');
+  result := StringReplace(result, 'ä', 'a');
+  result := StringReplace(result, 'ë', 'e');
+  result := StringReplace(result, 'ï', 'i');
+  result := StringReplace(result, 'ö', 'o');
+  result := StringReplace(result, 'ü', 'u');
+  result := StringReplace(result, 'ñ', 'n');
+
+
+end;
+
+function GetCaratulasDeCineDir(MovieTitle: string; SubPage: Integer): string;
+var
+
+d: string;
+
+begin
+  Setarraylength(PageOfLetter,36);
+  PageOfLetter[0]:='0';  PageOfLetter[1]:='1';  PageOfLetter[2]:='2';  PageOfLetter[3]:='3';
+  PageOfLetter[4]:='4';  PageOfLetter[5]:='5';  PageOfLetter[6]:='6';  PageOfLetter[7]:='7';
+  PageOfLetter[8]:='8';  PageOfLetter[9]:='9';  PageOfLetter[10]:='a'; PageOfLetter[11]:='b';
+  PageOfLetter[12]:='c'; PageOfLetter[13]:='d'; PageOfLetter[14]:='e'; PageOfLetter[15]:='f';
+  PageOfLetter[16]:='g'; PageOfLetter[17]:='h'; PageOfLetter[18]:='i'; PageOfLetter[19]:='j';
+  PageOfLetter[20]:='k'; PageOfLetter[21]:='l'; PageOfLetter[22]:='m'; PageOfLetter[23]:='n';
+  PageOfLetter[24]:='o'; PageOfLetter[25]:='p'; PageOfLetter[26]:='q'; PageOfLetter[27]:='r';
+  PageOfLetter[28]:='s'; PageOfLetter[29]:='t'; PageOfLetter[30]:='u'; PageOfLetter[31]:='v';
+  PageOfLetter[32]:='w'; PageOfLetter[33]:='x'; PageOfLetter[34]:='y'; PageOfLetter[35]:='z';
+
+  C:= copy(MovieTitle, 1, 1);
+  if (C >= '0') and (C <= '9') then
+
+  begin
+    d:= '9';
+    Index := Ord(C) - Ord('0');
+  end
+  else
+  begin
+     Index := 10 + Ord(C) - Ord('a');
+     d:= c;
+  end;
+
+ if sw1 = 0 then
+    begin
+    result:='http://www.caratulasdecine.com/listado.php?inicial=' + c + '-' + d;
+    sw1:= 1;
+    end
+ else
+ begin
+    SubPage := SubPage*60;
+    result:='http://www.caratulasdecine.com/listado.php?primero=' + (inttostr (subpage)) + '&inicial=' + c + '-' + d;
+ end
+end;
+
+procedure AnalyzePageCaratulasDeCine(Ttl: string);
+var
+  CaratulasdecinePage, MoviePage: TStringList;
+  PageDir, MovieDir, Line, LineTmp, TitleWeb, PageWeb: string;
+  SubPage, Encontrado, Salir, SalirTodo, BeginPos, EndPos, LineNr, LineMov : Integer;
+begin
+  PickTreeClear;
+  PickTreeAdd('Resultados de la búsqueda para "' + Title + '" (www.caratulasdecine.com):', '');
+
+  SubPage := 0;
+  SalirTodo:= 0;
+  Encontrado := 0;
+
+  repeat begin
+    PageDir := GetCaratulasDeCineDir(Ttl, SubPage);
+
+    SubPage := SubPage + 1;
+    CaratulasdecinePage := TStringList.Create;
+    CaratulasdecinePage.Text := GetPage(PageDir);
+
+    LineNr := FindLine('padding-left: 8pt;', CaratulasdecinePage, 0);
+    LineNr := LineNr + 1;
+    Line := CaratulasdecinePage.GetString(LineNr);
+    Line := EliminaInicio(Line, ' ');
+
+    Salir := 0;
+
+    while (Pos('<br>', Line) = 0) and (Pos('</td>', Line) = 0) and (LineNr < 20000) do
+    begin
+      if copy(Line, Length(Line), 1) <> ' ' then
+      Line := Line + ' ';
+      LineNr := LineNr + 1;
+      LineTmp := CaratulasdecinePage.GetString(LineNr);
+      LineTmp := EliminaInicio(LineTmp, ' ');
+      Line := Line + LineTmp;
+    end;
+      if (Pos('>anterior</a>', Line) = 0)  then
+
+      begin
+      end else
+      begin
+       SalirTodo := 1;
+      end
+      repeat
+        if Pos('<a class="A" href="', Line) > 0 then
+        begin
+          MovieDir := 'http://www.caratulasdecine.com/' + CadenaEntre(Line, '<a class="A" href="', '"');
+          TitleWeb := CadenaEntre(Line, '">', '<');
+          LineTmp := PreparaTitulo(TitleWeb);
+
+          if Pos(Title, LineTmp) > 0 then
+            begin
+              PageWeb := MovieDir;
+              TitleWeb := PreparaTitulo(TitleWeb);
+              PickTreeAdd(TitleWeb, PageWeb);
+              Encontrado := Encontrado + 1;
+            end;
+        end
+        else
+        begin
+          MovieDir := '';
+          Salir := 1;
+        end;
+
+      until Salir = 1;
+
+    CaratulasdecinePage.Free;
+
+  end until SalirTodo = 1;
+
+
+  if (Encontrado >= 1) then
+   begin
+     if PickTreeExec(PageWeb) then
+      begin
+        MoviePage := TStringList.Create;
+        MoviePage.Text := GetPage(PageWeb);
+        LineMov := FindLine('<td><img src="', MoviePage, 0);
+        LineTmp := MoviePage.GetString(LineMov);
+        LineTmp := CadenaEntre(LineTmp, '<td><img src="', '" ');
+        PageWeb := 'http://www.caratulasdecine.com/' + LineTmp;
+        MoviePage.Free;
+        GetPicture(PageWeb);
+     end;
+   end else if (Encontrado = 1) then
+    begin
+      MoviePage := TStringList.Create;
+      MoviePage.Text := GetPage(PageWeb);
+      LineMov := FindLine('<td><img src="', MoviePage, 0);
+      LineTmp := MoviePage.GetString(LineMov);
+      LineTmp := CadenaEntre(LineTmp, '<td><img src="', '" ');
+      PageWeb := 'http://www.caratulasdecine.com/' + LineTmp;
+      MoviePage.Free;
+      GetPicture(PageWeb);
+
+    end else
+    
+      ShowMessage('Titulo ' + Title + ' no encontrado en Caratulas de cine')
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    Title := GetField(fieldTranslatedTitle);
+    if Title = '' then Title := GetField(fieldOriginalTitle);
+    Title := PreparaTitulo(Title);
+    if Input('Importar de caratulasdecine.com', 'Por favor, introduce el titulo:', Title) then begin
+      Title := PreparaTitulo(Title);
+      AnalyzePageCaratulasDeCine(Title);
+    end;
+  end else
+    ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

@@ -1,0 +1,249 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Lrrr, georgeso
+Title=fdb.cz
+Description=Import dat ze serveru fdb.cz
+Site=www.fdb.cz
+Language=CZ
+Version=1.0 RC2
+Requires=3.5.0
+Comments=ReUpdate 13.9.2008 - georgeso: Opraveno naèítání hercù u animovaných filmù|10.9.2008 - georgeso: Zprovoznìní skriptu pro naèítání z aktuálního designu stránek|skript na ziskavani dat z www.fdb.cz
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program fdb_cz;
+const
+  BaseAddress = 'http://fdb.cz/';
+
+var
+  MovieName,osoby_address,popis_Address,Line: string;
+  LineNr : integer;
+// vraci cislo radku s prvnim nalezem hledaneho textu
+function FindLine(Pattern: String; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+
+  // vzdy se zacne hledat od nuly
+  if (StartAt < 0) then
+    StartAt := 0;
+
+  // cyklus od prvniho do posledniho radku stranky
+  for i := StartAt to List.Count - 1 do
+  begin
+    // pokud byl nalezen vyskyt,
+    if (Pos(Pattern, List.GetString(i)) <> 0) then
+      begin
+        // vrati se cislo radku na kterem byl text nalezen
+        result := i;
+        // a ukonci se cyklus hledani
+        Break;
+      end;
+      end;
+end;
+
+function Min(A, B : Integer) : Integer;
+begin
+  if (A < B) then
+    result := A
+  else
+    result := B;
+    
+  if (B=0) then
+    result := A;
+
+  if (A=0) then
+    result := B;
+
+end;
+
+
+// analyzuje stranku s vysledky hledani
+procedure AnalyzePage(Address: String);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  BeginPos, EndPos, i : Integer;
+  FilmName, FilmAddr : String;
+begin
+  Page := TStringList.Create;
+  // nacte si stranku s vysledkem hledani - kazda radka je poloza StringListu
+  Page.Text := GetPage(Address);
+  // najdeme radku na ktere je odkaz na nalezeny film
+          LineNr := FindLine('<a  href="./filmy/', Page, LineNr);
+          // pokud takovou radku najdeme
+          if (LineNr > -1) then
+            begin
+              // vycisti strom okna se seznamem filmu
+              PickTreeClear;
+              // prida vetev se seznamem nalezenych filmu
+              PickTreeAdd('Nalezene filmy: ' + MovieName, '');
+              // vezme si obsah radku na kterem se vyskytuje prvni tag "a href" na film
+              Line := Page.GetString(LineNr);
+              //showmessage(Line);
+
+              // projde vsechny tagy s nalezem filmu a nacpe je do stromu filmu,
+              // ktery se pak formou dialogoveho okna pro vyber filmu zobrazi
+             repeat
+               delete(Line,1,pos('<a  href="./filmy/',Line));
+               filmaddr:=copy(Line,12,pos('class',Line)-14);
+               filmname:=copy(Line,pos('std">',Line)+5,Min(pos('</a> <span',Line), pos('</a> <br /',Line)) - pos('std">',Line) - 5);
+               PickTreeAdd(FilmName, BaseAddress + FilmAddr);
+               until
+                 pos('<a  href="./filmy/',Line)=0;
+                 end;
+
+             if PickTreeExec(Address) then
+
+             begin
+             SetField(fieldURL, Address);
+             osoby_address:=Address;
+             insert('-obsazeni',osoby_Address,20);
+             popis_address:=Address;
+             insert('-popis-obsah',popis_Address,20);
+             getMainInfo(Address);
+             getActors(osoby_address);
+             getPopis(popis_Address);
+
+
+                  end;
+                         end;
+procedure getMainInfo(Address:string) ;
+var
+  stranka, value, nazev, tmp: string;
+  i:Integer;
+begin
+  stranka := GetPage(address);
+
+  //hodnoceni
+  delete(stranka,1,pos('<h2>Hodnocení filmu</h2>',stranka));
+  value:= copy(stranka,pos('<strong>',stranka)+8,3);
+  SetField(fieldRating, trim(Value));
+  //prelozeny nazev
+  delete(stranka,1,pos('20px;">',stranka)+6);
+  nazev:=copy(stranka,1,pos('(',stranka)-1);
+  SetField(fieldTranslatedTitle,  nazev);
+  //rok
+  value:=copy(stranka,pos('(',stranka)+1,4);
+   SetField(fieldYear, trim(value));
+   
+  //obrazek
+  if pos('"http://img.fdb.cz/obrazky/',stranka) <> 0 then
+  begin
+    delete(stranka,1,pos('"http://img.fdb.cz/obrazky/',stranka));
+    value:=copy(stranka,0,pos('" />',stranka)-1);
+    GetPicture(value);
+  end;
+   
+  // orig. nazev
+  if pos('<h3 style="font-size: 100%;">',stranka) <> 0 then
+  begin
+    delete(stranka,1,pos('<h3 style="font-size: 100%;">',stranka)+28);
+    value := copy(stranka,1,pos('</h3>',stranka)-1)
+  end
+  else value:=nazev;
+  SetField(fieldOriginalTitle, Value);
+
+  //kategorie
+  delete(stranka,1,pos('Žánr:</strong>',stranka)+19);
+  value:= copy(stranka,1,pos('<br>',stranka)-1);
+  SetField(fieldCategory, Value);
+  //zeme
+  delete(stranka,1,pos('Zemì:</strong>',stranka)+19);
+  value:= copy(stranka,1,pos('<br>',stranka)-1);
+  SetField(fieldCountry, Value);
+  //delka
+  delete(stranka,1,pos('Délka:</strong>',stranka)+15);
+  value:= copy(stranka,1,pos('min.',stranka)-1);
+  SetField(fieldLength, trim(Value));
+
+end;
+
+procedure getPopis(address:string);
+var
+  stranka:string;
+  i:integer;
+begin
+  stranka := GetPage(address);
+  i := pos('Popis / Obsah / Info:</strong><br>',stranka);
+  delete(stranka,1,pos('Popis / Obsah / Info:</strong><br>',stranka)+33);
+  stranka:=copy(stranka, 1, pos('<br><br><strong>',stranka));
+  HTMLRemoveTags(stranka);
+  HTMLDecode(stranka);
+  SetField(fieldDescription, stranka);
+end;
+
+  procedure GetActors(address:string);
+  var Page  : Tstringlist;
+  stranka,tmp, value: string;
+  hrany :boolean;
+  begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(address);
+  // najdeme radku na ktere jsou herci
+          LineNr := FindLine('<div id="stranka_obsah">', Page, LineNr);
+          // pokud takovou radku najdeme
+          if (LineNr > -1) then
+          begin
+          Line := Page.GetString(LineNr);
+           //HTMLRemoveTags(Line);
+           HTMLDecode(Line);
+        stranka:=Line;
+    if pos('hraje:',stranka)=0 then hrany := false
+    else hrany:= true;
+    //reziser
+    delete(stranka,1,pos('režie:</th></tr>',stranka));
+    tmp := copy(stranka, 1, pos('</table>',stranka));
+    value:= '';
+    repeat
+      delete(tmp,1,pos('alt="',tmp)+4);
+      value := value + copy(tmp,0, min(pos('" align',tmp),pos('" heigh',tmp)) - 1) + ', ';
+    until (pos('alt="',tmp) = 0);
+    delete(value,length(value)-1,1);
+    SetField(fieldDirector, trim(Value));
+    //herci
+    if hrany then
+      delete(stranka,1,pos('hraje:</th></tr>',stranka))
+    else
+      delete(stranka,1,pos('mluví:</th></tr>',stranka));
+    tmp := copy(stranka, 1, pos('</table>',stranka));
+    value:= '';
+    repeat
+      delete(tmp,1,pos('alt="',tmp)+4);
+      value := value + copy(tmp,0, min(pos('" align',tmp),pos('" heigh',tmp)) - 1) + ', ';
+    until (pos('alt="',tmp) = 0);
+    delete(value,length(value)-1,1);
+    SetField(fieldActors, trim(Value));
+end;
+end;
+
+begin
+  // kontrola verze movie catalogu
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldTranslatedTitle);
+
+      // pokud je prelozene jmeno filmu prazdne, vem jmeno originalni
+      if (MovieName = '') then
+        MovieName := GetField(fieldOriginalTitle);
+
+      // zadani z inputu
+      if Input('Import movie from www.fdb.cz', 'Enter the title of the movie:', MovieName) then
+        begin
+          // analyzuj stranku http://fdb.cz/vyhledavani.php?hledat=nazev_filmu&co=filmy
+          AnalyzePage(BaseAddress + 'vyhledavani.html?hledat=' + UrlEncode(MovieName));
+        end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

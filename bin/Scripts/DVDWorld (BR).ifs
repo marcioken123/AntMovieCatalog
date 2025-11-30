@@ -1,0 +1,187 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com/forum/viewtopic.php?t=81</link>
+Title=DVD World
+Description=Movie importation script for DVD World
+Site=www.dvdworld.com.br
+Language=BR
+Version=1.4 (09 Setembro 2008)
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.dvdworld.com.br"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=81</link>
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program dvdworld;
+uses
+  StringUtils1;
+var
+  MovieName: string;
+
+function HTMLRemove(Value: string): string;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+
+function UpFirstLetterWord(texto: string): string; //Function Made By O Guardião
+var espaco: integer;
+  sst: string;
+begin
+  texto := AnsiUpFirstLetter(AnsiLowerCase(texto));
+  repeat
+    espaco := Pos(' ', texto);
+    sst := AnsiUpperCase(Copy(texto, espaco + 1, 1));
+
+    texto := Copy(texto, 1, espaco - 1) + '/|\' + sst + Copy(texto, espaco + 2, length(texto));
+  until Pos(' ', texto) = 0;
+  texto := StringReplace(texto, '/|\', ' ');
+  if Copy(texto, 1, 1) = ' ' then
+    texto := Copy(texto, 2, length(texto));
+  result := texto;
+end;
+
+procedure AnalyzeFilmPage(Address: string);
+var
+  Page: TStringList;
+  Line, value: string;
+  LineNr, BeginPos, EndPos: Integer;
+begin
+  Page := TStringList.Create;
+  value := 'http://images.dvdworld.com.br/images/' + TextBetween(Address, 'hts?+', '+') + '.jpg';
+  GetPicture(Value);
+
+  Page.Text := GetPage(Address);
+  SetField(fieldURL, Address);
+
+  value := TextBetween(Page.Text, '<b>Título Original: </b>', '</p>');
+  value := HTMLRemove(value);
+  SetField(fieldOriginalTitle, value);
+
+  value := TextBetween(Page.Text, '<font face="Arial, Helvetica, sans-serif" size="4" color="#000066">', '</font>');
+  value := StringReplace(value, '- (DVD SIMPLES)', '');
+  value := HTMLRemove(value);
+  value := UpFirstLetterWord(value);
+  SetField(fieldTranslatedTitle, trim(value));
+
+  LineNr := FindLine('<b>Diretor:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr);
+    BeginPos := pos('/b>', value);
+    EndPos := pos('</f', value);
+    value := copy(value, BeginPos + 3, EndPos);
+    value := HTMLRemove(value);
+    SetField(fieldDirector, value);
+  end;
+
+  LineNr := FindLine('Atores: </b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr);
+    BeginPos := pos('/b>', value);
+    EndPos := pos('</f', value);
+    value := copy(value, BeginPos + 3, EndPos);
+    value := HTMLRemove(value);
+    SetField(fieldActors, value);
+  end;
+
+  LineNr := FindLine('G&Ecirc;NERO', Page, 0) + 4;
+  if LineNr > 4 then
+  begin
+    value := HTMLRemove(Page.GetString(LineNr));
+    SetField(fieldCategory, value);
+  end;
+
+  LineNr := FindLine('DE PRODU&Ccedil;&Atilde;', Page, 0) + 4;
+  if LineNr > 4 then
+  begin
+    value := HTMLRemove(Page.GetString(LineNr));
+    SetField(fieldYear, value);
+  end;
+
+  Value := TextBetween(Page.Text, 'DURA&Ccedil;&Atilde;O', 'minutos');
+  HTMLRemoveTags(value);
+  SetField(fieldLength, FullTrim(value));
+
+  LineNr := FindLine('<b>ESTUDIO</b>', Page, 0) + 4;
+  if LineNr > 4 then
+  begin
+    value := HTMLRemove(Page.GetString(LineNr));
+    SetField(fieldProducer, value);
+  end;
+
+  LineNr := FindLine('<b>Sinopse:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr);
+    BeginPos := pos('/b>', value);
+    EndPos := pos('</f', value);
+    value := copy(value, BeginPos + 3, EndPos);
+    value := HTMLRemove(value);
+    SetField(fieldDescription, value);
+  end;
+
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndPos: Integer;
+  Line: string;
+  url, nome_filme: string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  if (pos('títulos que contém a palavra chave', Page.Text) > 0) and (pos('Nada achado!.', Page.Text) = 0) then
+  begin
+    LineNr := 0;
+    repeat
+      LineNr := FindLine('+acha', Page, LineNr); //alterado
+      if LineNr > 0 then begin
+        Line := Page.GetString(LineNr);
+        StartPos := pos('hts?+', Line) + 1;
+        url := (copy(line, StartPos + 4, 7));
+        StartPos := pos('+acha">', Line) + 7;
+        EndPos := pos('</A>', Line) - 1;
+        nome_filme := HTMLRemove(copy(Line, StartPos, EndPos - StartPos));
+        Line := Page.GetString(LineNr + 1);
+        EndPos := pos('&nbsp;&nbsp;', Line) - 1;
+        Line := copy(Line, 1, EndPos);
+        Line := HTMLRemove(Line);
+        nome_filme := Line + ' - ' + nome_filme;
+        PickTreeAdd(nome_filme, 'http://dvdworld.com.br/dvdworld.hts?+' + url + '+acha');
+        LineNr := LineNr + 1;
+      end;
+    until (LineNr < 1);
+    if PickTreeExec(Address) then begin
+      AnalyzeFilmPage(Address);
+    end;
+  end
+  else
+    ShowMessage('Nada achado!')
+  Page.Free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do DVDWorld', 'Escreva o nome do filme:', MovieName)
+    then begin
+    MovieName := StringReplace(MovieName, ' ', '%20');
+
+    AnalyzePage('http://dvdworld.com.br/dvdworld.hts?+search+' + MovieName + '+titulo');
+  end;
+end.
+

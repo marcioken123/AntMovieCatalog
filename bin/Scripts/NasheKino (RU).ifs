@@ -1,0 +1,230 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Yan Sorkin (<link>ysorkin@mail.ru</link>)
+Title=NasheKino
+Description=Imports russian movies info from NasheKino
+Site=http://www.nashekino.ru/
+Language=RU
+Version=
+Requires=3.5.0
+Comments= Known issues: - Movie length not supported
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program NasheKino;
+const
+  BaseAddress = 'http://www.nashekino.ru/';
+var
+  MovieName: string;
+
+function GetTextBlockFrom(Text: string; StartAt: string): string;
+var
+  TextBlock: string;
+  StartPos, EndPos: Integer;
+begin
+  TextBlock := Text;
+  StartPos := pos(StartAt, TextBlock);
+  if StartPos > 0 then
+  begin
+    Delete(TextBlock, 1, StartPos - 1);
+    result := TextBlock;
+  end;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  TextBlock: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('Наше кино /поиск/', Page.Text) = 0 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page);
+  end else
+  if pos('Найдено ', Page.Text) = 0 then
+  begin
+    ShowMessage('No movies found');
+  end else
+  begin
+    PickTreeClear;
+    LineNr := FindLine('<hr width="100%" size=1 color="black">', Page, 0);
+    if LineNr > -1 then
+    begin
+      PickTreeAdd('Movies', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Value, PageText, Text: string;
+  LineNr, MovieLength: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  // All the info is in one line
+  PageText := GetTextBlockFrom( Page.Text, '<a name=' );
+  EndPos := pos('</td>', PageText);
+  if EndPos > 0 then
+  begin
+    PageText := copy( PageText, 1, EndPos - 1 );
+  end;
+
+  if Length(PageText) > 0 then
+  begin
+    // Original Title
+    BeginPos := 1;
+    EndPos := pos('</a>', PageText);
+    Value := copy(PageText, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldOriginalTitle, Value);
+    Delete(PageText, 1, EndPos - 1);
+   
+    // Alternative titles (skip)
+    BeginPos := pos('другие названия:', PageText);
+    if BeginPos > 0 then Delete(PageText, 1, BeginPos - 1);
+
+    // Year
+    EndPos := pos(' год.', PageText);
+    if EndPos > 0 then
+    begin
+        Value := copy(PageText, EndPos-4, 4);
+        SetField(fieldYear, Value);
+        Delete(PageText, 1, EndPos - 1);
+    end;
+   
+    // Length
+    BeginPos := pos('год., ', PageText) + 6;
+    EndPos := pos('мин.', PageText) - 1;
+    if EndPos > BeginPos then
+    begin
+        Value := copy(PageText, BeginPos, EndPos - BeginPos);
+        SetField(fieldLength, Value);
+        Delete(PageText, 1, EndPos - 1);
+    end;
+  end;
+
+  // Director
+  Text := GetTextBlockFrom( PageText, 'Режиссер(ы): ' );
+  if Length(Text) > 0 then
+  begin
+    BeginPos := 14;
+    EndPos := pos('<br>', Text);
+    if EndPos > BeginPos then
+    begin
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      SetField(fieldDirector, Value);
+    end;
+  end;
+
+  // Actors
+  Text := GetTextBlockFrom( PageText, 'Актер(ы): ' );
+  if Length(Text) > 0 then
+  begin
+
+    BeginPos := 11;
+    EndPos := pos('<br>', Text);
+    if EndPos > BeginPos then
+    begin
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      SetField(fieldActors, Value);
+    end;
+  end;
+
+  // Description
+  Text := GetTextBlockFrom( PageText, 'О фильме:' );
+  if Length(Text) > 0 then
+  begin
+    BeginPos := pos('<a class="ab10"> ', Text) + 17;
+    EndPos := pos('<hr', Text);
+    if EndPos > BeginPos then
+    begin
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      Value := StringReplace(Value, '<br>', #13#10);
+      Value := StringReplace(Value, '<p', #13#10#13#10 + '<p');
+      HTMLRemoveTags(Value);
+      SetField(fieldDescription, Value);
+    end;
+  end;
+
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress, AddrPrefix: string;
+  StartPos, EndPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('showfilm.cgi', Line);
+    AddrPrefix := 'cgi-bin/';
+    if StartPos = 0 then
+    begin
+      StartPos := pos('data.movies', Line);
+      AddrPrefix := '';
+    end;
+    EndPos := pos('</div>', Line);
+    if (StartPos > 0) and (EndPos = 0) then
+    begin
+      MovieAddress := copy(Line, StartPos, pos('">', Line) - StartPos);
+      MovieTitle := Line;
+      HTMLDecode(Movietitle);
+      HTMLRemoveTags(MovieTitle);
+      PickTreeAdd(MovieTitle, BaseAddress + AddrPrefix + MovieAddress);
+    end;
+  until EndPos > 0;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import from NasheKino', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.nashekino.ru/data.find?t=0&sval='+UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

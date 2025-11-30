@@ -1,0 +1,143 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com/forum/viewtopic.php?t=78</link>, Ronaldo Assis Alves
+Title=e-Pipoca
+Description=Movie importation script for e-Pipoca
+Site=www.epipoca.com.br
+Language=BR
+Version=1.6 (16 de Novembro de 2010)
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.epipoca.com.br"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=78</link>|Ou enviem email para ronaldoassis@gmail.com|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program EPipoca;
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+
+procedure AnalyzeFilmPage(Address: string);
+var
+  Page: TStringList;
+  value, valor: string;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  SetField(fieldURL, Address);
+  LineNr := FindLine('<font class="titulo">', Page, 0);
+  LineNr := FindLine('<font class="titulo">', Page, LineNr + 1);
+  value := Page.GetString(LineNr);
+  valor := TextBetween(value, '<font class="titulo">', '<');
+  SetField(fieldTranslatedTitle, valor);
+  valor := TextBetween(value, '<br>(', ',');
+  SetField(fieldOriginalTitle, valor);
+  valor := TextBetween(value, 'opc=pais&busca=', '"');
+  SetField(fieldCountry, valor);
+  valor := TextBetween(value, 'opc=ano&busca=', '"');
+  SetField(fieldYear, valor);
+  valor := TextBetween(Page.Text, 'Duração: </b>', ' min');
+  SetField(fieldLength, valor);
+  valor := TextBetween(Page.Text, 'Produtora(s): </b>', '</tr>');
+  HTMLRemoveTags(valor);
+  SetField(fieldProducer, valor);
+  valor := TextBetween(Page.Text, '<b>Gênero: </b>', '</tr>');
+  HTMLRemoveTags(valor);
+  SetField(fieldCategory, valor);
+  valor := TextBetween(Page.Text, 'Diretor(es): ', '</tr>');
+  HTMLRemoveTags(valor);
+  SetField(fieldDirector, valor);
+  valor := TextBetween(Page.Text, '<b>Elenco: </b>', '<b>mais...</b>');
+  HTMLRemoveTags(valor);
+  valor := FullTrim(valor);
+  if copy(valor, length(valor), 1) = ',' then
+  begin
+    valor := copy(valor, 1, length(valor) - 1);
+    valor := valor + '.';
+  end;
+  SetField(fieldActors, valor);
+  valor := TextBetween(Page.Text, '<b>SINOPSE</b>', '</td>');
+  HTMLRemoveTags(Valor);
+  SetField(fieldDescription, valor);
+  valor := TextBetween(Page.Text, 'images/filmes/poster/', '"');
+  if length(valor) > 0 then
+  begin
+    valor := 'http://epipoca.com.br/images/filmes/poster/' + valor;
+    GetPicture(valor);
+  end;
+  valor := TextBetween(Page.Text, 'Cotação: </b>', ' ');
+  SetField(fieldRating, valor);
+  Page.Free;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  BeginPos,EndPos: integer;
+  BeginAno, BeginOriginal, BeginOrigem, BeginGenero : Integer;
+  Line, url, encontrar, encontrarAno,encontrarOrigem,EncontrarGenero,
+  LinhaAno,LinhaOrigem,linhaGenero,
+  nome,nomeOriginal,Ano,Origem,Genero: string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := PostPage(Address, 'busca=' + MovieName);
+  if (pos('Nenhuma ocorrência com a palavra <b>', Page.Text) = 0) then
+  begin
+    encontrar := '<font class="titulo"><a href="';
+    repeat
+      LineNr := FindLine(encontrar, Page, LineNr + 1);
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos(encontrar, line);
+      if BeginPos = 0 then break;
+      line := Copy(line, BeginPos + length(encontrar), length(line));
+      nome := TextBetween(line, '>', '<');
+      EndPos := Pos('>', line) - 2;
+
+      NomeOriginal := TextBetween(line, '<i>', '</i>');
+      
+      encontrarGenero := 'href="busca_mais.php?opc=genero&busca=';
+      BeginGenero := Pos(EncontrarGenero,line);
+      linhaGenero := Copy(line, BeginGenero + length(encontrarOrigem), length(line));
+      Genero := TextBetween(linhaGenero, '>', '<');
+
+      encontrarOrigem := 'href="busca_mais.php?opc=pais&busca=';
+      BeginOrigem := Pos(EncontrarOrigem,line);
+      linhaOrigem := Copy(line, BeginOrigem + length(encontrarOrigem), length(line));
+      Origem := TextBetween(linhaOrigem, '>', '<');
+      
+      encontrarAno:= 'href="busca_mais.php?opc=ano&busca=';
+      BeginAno := Pos(EncontrarAno,line);
+      linhaAno := Copy(line, BeginAno + length(encontrarAno), length(line));
+      ano := TextBetween(linhaAno, '>', '<');
+
+      url := Copy(line, 1, EndPos);
+      if pos('filmes_detalhes.php', url) > 0 then
+        PickTreeAdd(nome+ ' <'+nomeOriginal+'> '+'('+ano+') '+origem+' "'+genero+'"', 'http://epipoca.com.br/' + url);
+        
+    until (line = '');
+    if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  end
+  else
+    showmessage('Filme não encontrado');
+   Page.Free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do e-Pipoca', 'Escreva o nome do filme:', MovieName) then
+    AnalyzePage('http://epipoca.com.br/busca.php');
+end.

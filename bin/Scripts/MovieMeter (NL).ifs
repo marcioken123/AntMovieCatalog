@@ -1,0 +1,259 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten
+Title=MovieMeter.nl
+Description=MovieMeter.nl import script
+Site=www.moviemeter.nl
+Language=NL
+Version=3.00
+Requires=4.2.2
+Comments=Imports data from <link>www.moviemeter.nl</link> via the site API.|This version does not yet support series/shows.|Rewritten by Antoine Potten after a site change, then a second time for using the API.|First version made by JanC and corrections by rolandb5, wvd, tsjarlie, Miss_Kitty, Kaas, bad4u, antp, raoul_volfoni, RoWi.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+AllCountries=0|1|0=Take only first country|1=Take all countries (separated by "/")|2=Take all countries (separated by ", ")
+AllCategories=1|1|0=Take only first category/genre|1=Take all categories (separated by "/")|2=Take all categories (separated by ", ")
+Image=3|1|0=Small|1=Large|2=Regular|3=Thumbnail
+BatchMode=0|1|0=Normal mode, prompts for movie title|1=Use URL field if available
+IMDB_Link=1|1|0=Do not store IMDB Link|1=Store IMDB Link in "Writer" field|2=Store IMDB Link in Custom field (You need at least 4.0.0 version of AMC and you have to create a custom field with "IMDBLink" for Tag and "URL" for Type)
+Number of votes=1|1|0=No|1=Yes in "Comments" field
+
+[Parameters]
+
+***************************************************)
+
+program MovieMeter;
+
+const
+
+  // If you also want to use the MovieMeter API in your own application, please request your own key on https://www.moviemeter.nl/api
+  // This key is registered for Ant Movie Catalog for non-commercial use only.
+  ApiKey = 'fb74f0b2e2266c142cdb3980863fd8cd';
+
+uses
+  // This script requires the new file JsonUtils.pas
+  // if you don't have it, get it by running "Update Scripts" or download it from https://update.antp.be/amc/scripts/
+  StringUtils1, JsonUtils;
+
+var
+  MovieName: string;
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  Line, PageText, MovieText, MovieAddress, MovieId, MovieTitle: string;
+  aantal: integer;
+begin
+  aantal := 0;
+  PageText := GetPage('https://www.moviemeter.nl/api/film/?q=' + UrlEncode(StringReplace(Address, ' ', '+')) + '&api_key=' + ApiKey);
+  PickTreeClear;
+  PickTreeAdd('Zoekresultaten voor ' + MovieName + ' :', '');
+  while Pos('{', PageText) > 0 do
+  begin
+    MovieText := TextBetween(PageText, '{', '}');
+    PageText := RemainingText;
+    MovieId := GetJsonValue(MovieText, 'id', '');
+    if MovieId <> '' then
+    begin
+      MovieAddress := 'https://www.moviemeter.nl/film/' + MovieId;
+      MovieTitle := GetJsonValue(MovieText, 'title', '') + ' (' + GetJsonValue(MovieText, 'year', '') + ')';
+      PickTreeAdd(MovieTitle, MovieAddress);
+      aantal := aantal + 1;
+    end;
+  end;
+  if aantal = 0 then
+  begin
+    ShowMessage('Geen resultaten gevonden...');
+    Exit;
+  end;
+  if aantal = 1 then
+  // only one result, importing that page (last -and only- address added to the picktree)
+  begin
+    AnalyzeMoviePage(MovieAddress);
+  end
+  else if PickTreeExec(Address) then
+  begin
+    // if user picks a movie from the results list, import movie details
+    Address := Fulltrim(Address);
+    AnalyzeMoviePage(Address);
+  end;
+end;
+  
+procedure AnalyzeMoviePage(Address: string);
+var
+  List, Value, PageText, id: string;
+begin
+  id := '';
+  if Pos('/film/', Address) > 0 then
+  begin
+    id := TextAfter(Address, '/film/');
+  end;
+  if Pos('/series/show/', Address) > 0 then
+  begin
+    ShowMessage('Import from show is currently not supported');
+    Exit;
+  end;
+  if id = '' then
+  begin
+    ShowMessage('Page address not recognized: ' + Address);
+    Exit;
+  end;
+  PageText := GetPage('https://www.moviemeter.nl/api/film/' + id + '?api_key=' + ApiKey);
+  SetField(fieldURL, GetJsonValue(PageText, 'url', Address));
+  Value := GetJsonValue(PageText, 'title', '');
+  if Value <> '' then
+    SetField(fieldOriginalTitle, Value);
+  Value := GetJsonValue(PageText, 'alternative_title', '');
+  if Value <> '' then
+    SetField(fieldTranslatedTitle, Value);
+  Value := GetJsonValue(PageText, 'year', '');
+  if Value <> '' then
+    SetField(fieldYear, Value);
+  List := GetJsonValue(PageText, 'posters', '');
+  case GetOption('Image') of
+    0: Value := GetJsonValue(List, 'small', '');
+    1: Value := GetJsonValue(List, 'large', '');
+    2: Value := GetJsonValue(List, 'regular', '');
+    3: Value := GetJsonValue(List, 'thumb', '');
+  else
+    Value := '';
+  end;
+  if Value <> '' then
+    GetPicture(Value);
+  Value := GetJsonValue(PageText, 'average', '');
+  if Value <> '' then
+  begin
+    Value := FloatToStr(StrToFloat(Value) * 2);
+    SetField(fieldRating, Value);
+  end;
+  List := GetJsonValue(PageText, 'countries', '');
+  Value := ConvertJsonArray(List, GetArrayDelimiter('AllCountries'));
+  if Value <> '' then
+    SetField(fieldCountry, Value);
+  List := GetJsonValue(PageText, 'genres', '');
+  Value := ConvertJsonArray(List, GetArrayDelimiter('AllCategories'));
+  if Value <> '' then
+    SetField(fieldCategory, Value);
+  Value := GetJsonValue(PageText, 'duration', '');
+  if Value <> '' then
+    SetField(fieldLength, Value);
+  List := GetJsonValue(PageText, 'directors', '');
+  Value := GetNames(List, ', ');
+  if Value <> '' then
+    SetField(fieldDirector, Value);
+  List := GetJsonValue(PageText, 'actors', '');
+  Value := GetNames(List, ', ');
+  if Value <> '' then
+    SetField(fieldActors, Value);
+  Value := GetJsonValue(PageText, 'plot', '');
+  if Value <> '' then
+    SetField(fieldDescription, Value);
+  if GetOption('IMDB_Link') > 0 then
+  begin
+    Value := GetJsonValue(PageText, 'imdb', '');
+    if Value <> '' then
+      Value := 'https://www.imdb.com/title/' + Value;
+    if GetOption('IMDB_Link') = 1 then
+       SetField(fieldWriter, Value);
+    if GetOption('IMDB_Link') = 2 then
+    begin
+      if CustomFieldExists('IMDBLink') = True then
+        SetCustomField('IMDBLink', Value)
+      else
+        ShowInformation('In order to store the IMDB link in a custom field,'+#13#10+'You need to create a Custom field with "IMDBLink" for Tag and "URL" for Type'+#13#10#13#10+'If you don''t want to use custom field and see this message again,'+#13#10+'please set the "IMDB_Link" option to 0 or 1.');
+    end;
+  end;
+  if GetOption('Number of votes') = 1 then
+  begin
+    Value := GetJsonValue(PageText, 'votes_count', '');
+    if Value <> '' then
+      SetField(fieldComments, 'Stemmen: ' + Value);
+  end;
+end;
+
+function GetArrayDelimiter(OptionName: string): string;
+begin
+  case GetOption(OptionName) of
+    1: Result := '/';
+    2: Result := ', ';
+  else
+    Result := '';
+  end;
+end;
+
+function GetNames(list: string; delimiter: string): string;
+var
+  item, name: string;
+begin
+  Result := '';
+  while Pos('{', list) > 0 do
+  begin
+    item := TextBetween(list, '{', '}');
+    list := RemainingText;
+    name := GetJsonValue(item, 'name', '');
+    if name <> '' then
+    begin
+      if Result <> '' then
+        Result := Result + delimiter;
+      Result := Result + name;
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAM
+//------------------------------------------------------------------------------
+begin
+  if not CheckVersion(4,2,2) then
+  begin
+    ShowMessage('Dit script vereist een nieuwere versie van Ant Movie Catalog (minstens versie 4.2.2)');
+    Exit;
+  end;
+  if StringUtils1_Version < 7 then
+  begin
+    ShowMessage('The file "StringUtils1.pas" is outdated, please find a new version of it (at least version 7)');
+    Exit;
+  end;
+  if JsonUtils_Version < 1 then
+  begin
+    ShowMessage('The file "JsonUtils.pas" is outdated, please find a new version of it (at least version 1)');
+    Exit;
+  end;
+  if GetOption('BatchMode') = 1 then
+  begin
+    MovieName := GetField(fieldUrl);
+    if Pos('moviemeter.nl/film', MovieName) > 0 then
+    begin
+      // recode possible entries of 'http://' URL
+      MovieName := StringReplace(MovieName, 'http://', 'https://');
+      AnalyzeMoviePage(MovieName);
+      Exit;
+    end;
+    //add line for series url
+    if Pos('moviemeter.nl/series/show', MovieName) > 0 then
+    begin
+      // recode possible entries of 'http://' URL
+      MovieName := StringReplace(MovieName, 'http://', 'https://');
+      AnalyzeMoviePage(MovieName);
+      Exit;
+    end;
+  end; //end batch mode
+  MovieName := GetField(fieldOriginalTitle);
+  if MovieName = '' then
+    MovieName := GetField(fieldTranslatedTitle);
+  if Input('MovieMeter.nl Import', 'Geef de titel of URL van de film:', MovieName) then
+  begin
+    if Pos('moviemeter.nl/', MovieName) > 0 then
+    begin
+      MovieName := StringReplace(MovieName, 'http://', 'https://');
+      AnalyzeMoviePage(MovieName)
+    end
+    else
+      AnalyzeResultsPage(MovieName);
+  end;
+end.

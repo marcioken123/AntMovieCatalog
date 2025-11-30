@@ -1,0 +1,261 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=n'alf  (<link>nalf75014@yahoo.fr</link>)
+Title=tv.com
+Description=TV series import from tv.com
+Site=http://www.tv.com
+Language=EN
+Version=0.5 beta (30/09/2005)
+Requires=3.5.0
+Comments=inspired by the tvtome script by Alex Iribarren
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program TvCom;
+
+var
+  EpName, EpNumber, SeName: string;
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzeEpListing(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndLine, Res: Integer;
+  Line, Season, EpTitle, EpNr, found: string;
+begin
+  Page := TStringList.Create;
+  Address := Address + 'episode_listings.html';
+  Page.Text := PostPage(Address, URLEncode('season=0'));
+  LineNr := FindLine('Click here to continue to TV.com', Page, 0);
+  if LineNr > -1 then
+  begin
+      Line := Page.GetString(LineNr);
+      AnalyzeResults(SeName);
+      Exit;
+  end
+
+  PickTreeClear;
+  PickTreeAdd('Results for "' + EpName + '"', '');
+  LineNr := FindLine('</th>', Page, LineNr);
+  Address := '';
+  Res := 0;
+  EndLine := FindLine('</table>', Page, 0);
+
+  repeat
+    LineNr := FindLine('<tr class="', Page, LineNr);
+    LineNr := LineNr + 1;
+    LineNr := FindLine(EpName, Page, LineNr + 4);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      StartPos := pos('">', Line) + 2;
+      EpTitle := copy(Line, StartPos, pos('</a', Line) - StartPos);
+      HTMLDecode(EpTitle);
+      StartPos := pos('"', Line) + 1;
+      Address := copy(Line, StartPos, pos('">', Line) - StartPos);
+      PickTreeAdd(EpTitle, Address);
+      Res := Res + 1;
+      LineNr := LineNr + 1;
+    end
+  until (LineNr < 0) or (LineNr > EndLine);
+
+  LineNr := FindLine('<tr class="', Page, LineNr);
+  EndLine := FindLine('</table>', Page, LineNr);
+ 
+  if (Res = 0) then
+  begin
+  repeat
+    LineNr := FindLine('<a href="', Page, LineNr);
+    Line := Page.GetString(LineNr);
+    if (LineNr > -1) and (pos ('class="f-930"', Line) = 0) and (pos ('img src', Line) = 0)  then
+    begin
+      StartPos := pos('">', Line) + 2;
+      EpTitle := copy(Line, StartPos, pos('</a', Line) - StartPos);
+      HTMLDecode(EpTitle);
+      StartPos := pos('"', Line) + 1;
+      Address := copy(Line, StartPos, pos('">', Line) - StartPos);
+      PickTreeAdd(EpTitle, Address);
+    end
+    LineNr := LineNr + 1;
+  until (LineNr > EndLine);
+  if PickTreeExec(Address) then
+      AnalyzeEpisodePage(Address);
+  end
+ 
+ 
+  if (Res = 1) then
+  begin
+    AnalyzeEpisodePage(Address);
+  end
+ 
+  if (Res > 1) then
+  begin
+      if PickTreeExec(Address) then
+      AnalyzeEpisodePage(Address);
+  end
+  Page.Free;
+end;
+
+procedure AnalyzeEpisodePage(Address: string);
+var
+  Line, TempStr, ProdCode, TempStr2, GuestStars, EpNr, Season, EpTitle: string;
+  BeginPos, Tmp, StartPos: Integer;
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // URL - OK
+  SetField(fieldURL, Address);
+
+  // First Aired + Production Code - OK
+  LineNr := FindLine('First Aired:', Page, 0);
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'<span class="f-bold f-666">');
+  SetField(fieldYear, copy(Line, pos(', ',Line)+2, 4));
+  SetField(fieldComments,'Production Code: ' + copy(Line, pos('Code: ', Line) + 6, 4))
+
+  // Rating  - OK
+  LineNr := FindLine('<span class="f-28 f-bold mt-10 mb-10 f-FF9 db lh-18">', Page, 0);
+  Line := Page.GetString(LineNr);
+  StartPos := pos('">', Line) + 2;
+  SetField(fieldRating, Copy(Line, StartPos, 3));
+
+  // Writer - OK
+  LineNr := FindLine('Writer:', Page, 0) + 3;
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'>');
+  TempStr := copy(Line, 1, pos('</a>',Line)-1);
+  HTMLRemoveTags(TempStr);
+  SetField(fieldProducer, 'Writer: ' + TempStr);
+
+  // Director - OK
+  LineNr := FindLine('Director:', Page, 0) + 3;
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'>');
+  TempStr := copy(Line, 1, pos('</a>',Line)-1);
+  HTMLRemoveTags(TempStr);
+  SetField(fieldDirector, TempStr);
+
+  // Description - OK
+  LineNr := FindLine('<div id="main-col">', Page, 0) + 3;
+  Line := Page.GetString(LineNr);
+  TempStr := Trim(Line);
+  HTMLRemoveTags(Line);
+  SetField(fieldDescription, TempStr);
+
+  // Cast
+  // Guest Stars
+
+  LineNr := FindLine('Guest Star:', Page, 0) + 3;
+  Line := Page.GetString(LineNr);
+  TempStr := Trim(Line);
+  HTMLRemoveTags(TempStr);
+  repeat
+    Tmp := Length(TempStr);
+    TempStr := StringReplace(TempStr, '  ', ' ');
+  until Length(TempStr) = Tmp;
+  TempStr := StringReplace(TempStr, ' ,', ',');
+  TempStr := StringReplace(TempStr, '&nbsp;', '');
+  GuestStars := TempStr;
+ 
+  LineNr := FindLine('Star:', Page, 0) + 3;
+  Line := Page.GetString(LineNr);
+  TempStr := Trim(Line);
+  HTMLRemoveTags(TempStr);
+  repeat
+    Tmp := Length(TempStr);
+    TempStr := StringReplace(TempStr, '  ', ' ');
+  until Length(TempStr) = Tmp;
+  TempStr := StringReplace(TempStr, ' ,', ',');
+  TempStr := StringReplace(TempStr, '&nbsp;', '');
+  SetField(fieldActors, TempStr + #13#10 + 'Guest stars: ' + GuestStars);
+
+  Page.Free;
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+procedure AnalyzeResults(var Search: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndLine, Res: Integer;
+  Line, Name, Address: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage('http://www.tv.com/search.php?qs=' + URLEncode(Search) + '&type=11&stype=all&tag=search%3Bbutton');
+  LineNr := FindLine('<table id="search-results"', Page, 0);
+  EndLine := FindLine('</table>', Page, LineNr);
+ 
+  PickTreeClear;
+  PickTreeAdd('Results for "' + Search + '"', '');
+
+  LineNr := FindLine('<a href="', Page, LineNr);
+  repeat
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      SeName := Trim(Line);
+      SeName := StringReplace(SeName, '   ', '');
+      HTMLRemoveTags(Sename);
+      HTMLDecode(SeName);
+      StartPos := pos('"', Line) + 1;
+      Address := copy(Line, StartPos, pos('?', Line) - StartPos - 12);
+      PickTreeAdd(SeName, Address);
+      LineNr := LineNr + 1;
+      LineNr := FindLine('<a href="', Page, LineNr);
+    end
+  until (LineNr < 0) or (LineNr > EndLine);
+ 
+  if PickTreeExec(Address) then AnalyzeEpListing(Address);
+     
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+
+      Input('TV.com Import', 'Enter the name of the series:', SeName);
+  //      SeName := GetField(fieldMedia);
+  //      EpName := GetField(fieldOriginalTitle);
+  //      Delete(EpName,1,7);
+  if (EpName = '') then EpName := GetField(fieldTranslatedTitle);
+        if (EpName = '') then Input('TV.com Import', 'Enter the title of the episode:', EpName);
+        AnalyzeResults(SeName);
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

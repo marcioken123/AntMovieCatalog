@@ -1,0 +1,646 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Dedej (origine Draco31.fr)
+Title=CinemaMontreal
+Description=Texte et Image de CinemaMontreal
+Site=http://www.cinemamontreal.com
+Language=FR
+Version=1.2 du 28/02/2014
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mise à jour du Script=1|1|0=Pas de mise à jour|1=Mise à jour du script
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Lancement automatique sur l'adresse web
+Format du Titre=2|2|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule|4=Formatage identique au site d'origine
+Recherche sur le titre=1|0|0=Version canadienne|1=Original
+Affichage des résultats=0|0|0=Uniquement si plus de 2 résultats|1=Toujours, même si un seul résultat
+Affiche=1|1|0=Pas d'affiche|1=Avec affiche
+Extra : Photos du film=1|0|0=Pas d' extra|1=Avec photos du film en extra
+Lien URL=0|0|0=Lien vers la fiche de CinemaMontreal|1=Lien vers le site officiel
+Critiques=1|1|0=Pas de critique|1=Prends la première page de critique (50 max)|2=Prends la totalité des critiques
+Champs personnalisés=1|0|0=Ne pas utiliser de champs personnalisés|1=Utiliser des champs personnalisés
+Garder commentaires=1|0|0=Ne pas garder anciens commentaires|1=Garder les anciens commentaires
+
+[Parameters]
+
+***************************************************)
+
+program CinemaMontreal;
+uses
+  BatchCommon7552, ScorEpioNCommonScript;
+
+const
+  VersionScript = '1.2 du 28/02/2014';
+  NomScript = 'CinemaMontreal';
+  urlDomain = 'http://www.cinemamontreal.com';
+  urlCMSearch = 'http://www.cinemamontreal.com/recherche?r=que&m=Montreal&aga=&key=';     // http://www.cinemamontreal.com/recherche?r=que&m=Montreal&aga=&key=prometheus&mysubmit=Go!
+  urlCMSearchGo = '&mysubmit=Go';
+  ScriptName = 'CinemaMontreal (FR).ifs';
+  SiteUrl = 'http://joel.desseaux.free.fr/CinemaMontreal (FR)/';
+  timetosleep = 500;
+
+var
+  MovieName, Titre, urlTitre, temp, pgphotos : string;
+  Maj, PMaj, Nb : Integer;
+
+
+//--OK--------------------------------------------------------------------------
+// ANALYSE RESULTAT DE RECHERCHE
+//------------------------------------------------------------------------------
+
+procedure AnalyzeSearchPage(urlSearch: string);
+var
+  Line : string;
+  nbchoix, i : integer;
+begin
+  Line := GetPage(urlSearch);
+  PickTreeClear;
+ // Controle le nb de résultat dans la liste
+  nbchoix := 0;
+  urlTitre := '';
+  Titre := '';
+ // Supprimme le haut de la page
+  Delete(Line,1,Pos('<div class="CT"',Line));
+ // Supprimme jusqu'à la liste des films
+  Delete(Line,1,Pos('<div class="BD">',Line));
+ // Supprimme la 1ère ligne de la liste des films
+  Delete(Line,1,Pos('<div class="movieblock',Line)-2);
+ // Initialise la liste de choix
+  PickTreeAdd('Résultat trouvé pour : '+MovieName,'');
+ // Condition pour fin de la liste de résultats
+  i := Pos('<div class="movieblock',Line);
+  While (Pos('<div class="movieblock',Line) > 1) do
+  begin
+    temp := Copy(Line,1,Pos('Critiques</a>',Line)- 1);
+    TraiteInfo(temp);
+    PickTreeAdd(Titre,urlDomain + urlTitre);
+    nbchoix := nbchoix+1;
+   // Supprimme jusqu'à la prochaine ligne du tableau
+    Delete(Line,1,Pos('</div></div></div>',Line));
+  end
+  i := GetOption('Affichage des résultats');
+ // Verifie qu'un titre est trouvé
+  if nbchoix = 0 Then
+  ShowInformation('Aucun titre correspondant à "'+MovieName+'" !'+#13#10+'Relancez le script en donnant un autre mot clé !')
+ // Affiche la liste de choix puis verifie qu'il y a une selection
+  else
+  begin
+    if (nbchoix = 1) and (i = 0) Then
+   // Lance directement la récup des données, n'affiche pas de choix
+    AnalyzeMoviePage(urlDomain + urlTitre)
+    else
+    begin
+      if (PickTreeExec(urlTitre)) then
+     // Analyse la page du film selectionné
+      AnalyzeMoviePage(urlTitre);
+    end
+  end
+end;
+
+
+
+//--OK--------------------------------------------------------------------------
+// RECUPERE LE TITRE ET L'URL DE LA PAGE DE RECHERCHE
+//------------------------------------------------------------------------------
+
+procedure TraiteInfo(infos: string);
+var
+  temp1, temp2 : string;
+begin
+  temp1 := '';
+  temp2 := '';
+  urlTitre := '';
+  Titre := '';
+  urlTitre := FindInfo('<div class="smallposter"><a href="','">',infos,'0');
+  Delete(infos,1,Pos('</small></div></a></div>',infos)-1);
+  Titre := FindInfo('html">','</a>',infos,'0');
+  temp1 := FindInfo('<i>','</i>',infos,'0');
+  if (temp1 <> '') then
+  Titre := Titre+' '+temp1;
+  if (temp2 <> '') then
+  Titre := Titre+' ('+temp2+')';
+    // Analyse la syntaxe du texte
+  Titre := Texte(Titre);
+end;
+
+
+
+//------------------------------------------------------------------------------
+// ANALYSE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(url : string);
+var
+  Line, Comments, Resume, PageC, PageAnn, PageI, minute, heure, temp1, t1, t2, t3, url1, Nom, Tag : string;
+  i, j, m, h, NumPage : Real;
+begin
+  temp := '';
+  Comments := '';
+  Line := GetPage(url);
+// Supprimme les parties inutiles
+  Delete(Line,1,Pos('<style type="text/css">',Line));
+  pgphotos := StringReplace(url,'/films','/photos');
+
+//--OK--------------------------------------------------------------------------
+// Stoque l'url
+  temp := '';
+  i := GetOption('Lien URL');
+  if i = 0 then
+  Setfield(fieldURL,url)
+  else
+  begin
+    temp := FindInfo('<em>Liens</em><i><a href="','" target=new_window>Site Web officiel</a>',Line,'4');
+    if temp <> '' then
+     Setfield(fieldURL,temp)
+    else
+     Setfield(fieldURL, url);
+  end
+  
+//--OK--------------------------------------------------------------------------
+// Prend le titre traduit
+  temp := '';
+  temp := Texte(FormatTitre(FindInfo('.html" title="','"><img src="',Line,'0'),GetOption('Format du Titre')));
+  if temp = '' then
+   temp := Texte(FormatTitre(FindInfo('<h3>','</h3>',Line,'0'),GetOption('Format du Titre')));
+  SetField(fieldTranslatedTitle,temp);
+  Delete(Line,1,Pos('<style type="text/css">',Line));
+
+//--OK--------------------------------------------------------------------------
+// Stoque les URL des critiques et du DVD
+  PageAnn := urlDomain + FindInfo('<a class="btn btn-mini btn-movie" href="','"><span class="glyp trailer">',Line,'4');
+  PageC := urlDomain + FindInfo('Photos</a> <a class="btn btn-mini btn-movie" href="','"><span class="glyp reviews">',Line,'4');
+  Delete(Line,1,Pos('<style type="text/css">',Line));
+
+//--OK--------------------------------------------------------------------------
+// Recherche et Prend le titre original version étrangère
+  if (Pos('</i><em>Titre&nbsp;orig.</em><i>',Line) > 0) Then
+  SetField(fieldOriginalTitle,Texte(FormatTitre(FindInfo('</i><em>Titre&nbsp;orig.</em><i>','</i><em>',Line,'0'),GetOption('Format du Titre'))))
+  else
+// Recherche et Prend le titre original version anglaise
+  if (Pos('Version anglaise :</span><span class=verdanab2> ',Line) > 0) Then
+  SetField(fieldOriginalTitle,FormatTitre(FindInfo('Version anglaise :</span><span class=verdanab2> ','</span>',Line,'0'),GetOption('Format du Titre')))
+  else
+  SetField(fieldOriginalTitle,GetField(fieldTranslatedTitle));
+  Delete(Line,1,Pos('<div class="BDblock">',Line));
+  PageI := FindInfo('"><img src="','" ',Line,'4');  // Adresse image
+  If Pos('/posters/',PageI) = 0 then
+   PageI := '';
+
+//--OK----OK--------------------------------------------------------------------
+// Récupère Année
+  temp := '';
+  temp := FindInfo('<em>Ann&eacute;e</em></td><td><i>','</i>',Line,'4');
+  SetField(fieldYear,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend le genre
+  temp := '';
+  temp := FindInfo('<em>Genre</em></td><td><i>','</i>',Line,'4');
+  temp := Texte(temp);
+  SetField(fieldCategory,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend la durée
+  temp := '';
+  temp := FindInfo('<em>Dur&eacute;e</em></td><td><i>','</i>',Line,'4');
+  if Pos(':',temp) > 0 Then
+  begin
+    heure := Copy(temp,1,Pos(':',temp)-1);
+    minute := Copy(temp,Pos(':',temp)+1,length(temp));
+    h := StrToFloat(heure);
+    m := StrToFloat(minute);
+    Setfield(fieldLength,FloatToStr(h*60+m));
+  end
+  else
+  Setfield(fieldLength,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend les réalisateurs
+  temp := '';
+  temp := FindInfo('<em>R&eacute;alis&eacute;&nbsp;par</em></td><td><i>','</i>',Line,'4');
+  temp := StringReplace(temp,'<br>',',<br>');
+  temp := Texte(temp);
+  SetField(fieldDirector,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend la compagnie
+  temp := '';
+  temp := FindInfo('<em>Studio</em></td><td><i>','</i>',Line,'4');
+  temp := Texte(temp);
+  Setfield(fieldProducer,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend les auteurs
+  temp := '';
+  temp := FindInfo('<em>&Eacute;crit&nbsp;par</em></td><td><i>','</i>',Line,'4');
+  temp := StringReplace(temp,'<br>',',<br>');
+  temp := Texte(temp);
+  if GetOption('Garder commentaires')= 0 then
+   Setfield(fieldComments,'');
+  if CheckVersion(4,2,0) then
+   SetField(fieldWriter, temp)
+   else
+  if (Getfield(fieldComments) <> '') and (temp <> '') then
+   Setfield(fieldComments,Getfield(fieldComments)+ #13#10 + 'Auteur(s): '+ temp + #13#10)
+  else
+   if temp <> '' then
+   Setfield(fieldComments,'Auteur(s): '+ temp + #13#10);
+
+//--OK--------------------------------------------------------------------------
+// Prend les pays
+  temp := '';
+  temp := FindInfo('<em>Pays</em></td><td><i>','</i>',Line,'4');
+  temp := StringReplace(temp,' / ',', ');
+  temp := Texte(temp);
+  temp := StringReplace(temp,'É.-U.','USA');
+  if temp <> '' then
+   Setfield(fieldCountry, Trim(temp));
+
+//--OK--------------------------------------------------------------------------
+// Récupère Avis C.S.A.
+  temp := '';
+  temp := FindInfo('<em>MPAA','<em>',Line,'4');
+  temp := FindInfo('</em></td><td><i>','</i>',temp,'4');
+  temp := StringReplace(temp,'PG-13','Interdit aux moins de 12 ans');
+  temp := StringReplace(temp,'R','Interdit aux moins de 16 ans');
+  temp := StringReplace(temp,'NC-17','Interdit aux moins de 18 ans');
+  temp := StringReplace(temp,'PG','Accord parental');
+  temp := StringReplace(temp,'G','Tous publics');
+  if temp = '' then
+   begin
+   temp := FindInfo('QC</sup></em></td><td><i>','</i>',Line,'4');
+   temp := StringReplace(temp,'13+','Interdit aux moins de 12 ans');
+   temp := StringReplace(temp,'16+','Interdit aux moins de 16 ans');
+   temp := StringReplace(temp,'18+','Interdit aux moins de 18 ans');
+   temp := StringReplace(temp,'G','Tous publics');
+   end;
+  if (GetOption('Champs personnalisés') = 1) and (CheckVersion(4,0,0)) and not (CheckVersion(4,2,0)) and (temp <> '') then    // test s'il y a des champs personnalisés
+  begin
+   Nom := 'Avis C.S.A.';
+   if Nb = 0 then                               // Non répétition du choix lors d'une multisélection
+    Tag := CustomField(Nom);
+   if Tag <> 'Champs d''origine' then            // choix en dehors des champs modifiables
+    SetCustomField(Tag, temp)
+   else
+   begin
+    if (GetField(fieldComments) <> '') then
+     temp := 'Avis C.S.A. : ' + temp + #13#10 + GetField(fieldComments)
+    else
+     temp := 'Avis C.S.A. : ' + temp;
+     SetField(fieldComments, temp);
+   end;
+  end else
+  if (GetField(fieldComments) <> '') and not (CheckVersion(4,2,0)) and (temp <> '') then
+   temp := 'Avis C.S.A. : ' + temp + #13#10 + GetField(fieldComments)
+  else
+   if (temp <> '') and not (CheckVersion(4,2,0)) then temp := 'Avis C.S.A. : ' + temp;
+  if (GetOption('Champs modifiables') = 0) and (not (CheckVersion(4,2,0)) and (temp <> '')) then     // choix sans champs modifiables
+   SetField(fieldComments, temp);
+  if (CheckVersion(4,2,0) and (temp <> '')) then
+   SetField(fieldCertification, temp);
+
+//--OK--------------------------------------------------------------------------
+// Récupère Bande annonce
+  if (GetOption('Champs personnalisés') = 1) and (CheckVersion(4,0,0)) and (PageAnn <> 'http://www.cinemamontreal.com') then    // test s'il y a des champs modifiables
+  begin
+   Nom := 'Bande annonce';
+   if Nb = 0 then                               // Non répétition du choix lors d'une multisélection
+    Tag := CustomField(Nom);
+   if Tag <> 'Champs d''origine' then            // choix en dehors des champs modifiables
+    SetCustomField(Tag, PageAnn)
+   else
+   begin
+    if (GetField(fieldComments) <> '') then
+     PageAnn := 'Bande annonce : ' + PageAnn + #13#10 + GetField(fieldComments)
+    else
+     PageAnn := 'Bande annonce : ' + PageAnn;
+     SetField(fieldComments, PageAnn);
+   end;
+  end else
+  if (GetField(fieldComments) <> '') and (PageAnn <> 'http://www.cinemamontreal.com') then
+   temp := 'Bande annonce : ' + PageAnn + #13#10 + GetField(fieldComments)
+  else
+   if PageAnn <> '' then PageAnn := 'Bande annonce : ' + PageAnn;
+  if (GetOption('Champs modifiables') = 0) or (not (CheckVersion(4,0,0)) and (PageAnn <> 'http://www.cinemamontreal.com')) then     // choix sans champs modifiables
+   SetField(fieldComments, PageAnn);
+
+//--OK--------------------------------------------------------------------------
+// Prend la liste des acteurs
+  temp := '';
+  temp := FindInfo('<em>En&nbsp;vedette</em></td><td><div id="actors1" style="display: inline-block;"><i>','</div></i></div>',Line,'4');
+  temp := StringReplace(temp,'et autres...',',');
+  temp := StringReplace(temp,'<br>',',<br>');
+  temp := Texte(temp);
+  SetField(fieldActors,temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend sortie DVD
+  temp := '';
+  temp := FindInfo('<em>Sur DVD</em></td><td><i>','</i></td></tr><tr><td>',Line,'0');
+  temp := Texte(temp);
+  if temp <> '' then
+   if (Getfield(fieldComments) <> '') then
+    SetField(fieldComments,GetField(fieldComments) + #13#10 + 'Sortie DVD: ' + temp)
+   else
+    SetField(fieldComments,'Sortie DVD: ' + temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend la note
+  Delete(Line,1,Pos('html"><strong>',Line)-1);
+  temp := '';
+  temp := FindInfo('html"><strong>','<span style="font-size:0.8em;"',Line,'4');
+  temp := temp + FindInfo('<span style="font-size:0.8em;">','</span></strong>',Line,'4');
+  i := StrToFloat(Texte(temp));           // Format
+  SetField(fieldRating,FloatToStr(i));
+
+//--OK--------------------------------------------------------------------------
+// Prend le synopsis
+  temp := '';
+  temp := FindInfo('<em><br>Synopsis</em></td></tr><tr><td><i STYLE="text-align: justify">','</i></td></tr></table></div>',Line,'0');
+  temp := Texte(temp);
+  Setfield(fieldDescription,temp);
+
+//--OK--------------------------------------------------------------------------
+// Stoque l'image si necessaire
+  if CanSetPicture then
+    if (GetOption('Affiche')= 1) and (PageI <> '') Then
+       GetPicture(PageI);
+
+//--OK--------------------------------------------------------------------------
+// Prend les critiques
+  temp1 := '';
+  temp := '';
+  i := -1;
+  NumPage := 1;
+  i := GetOption('Critiques');
+  //PageC := StringReplace(PageC,'critiques/','critiques/0/');
+  if i <> 0 Then
+  begin
+   // Test si il reste des pages à prendre pour les critiques
+    While NumPage <> -1 Do
+    begin
+      Line := GetPage(PageC);
+      Delete(Line,1,Pos('<div class="reviews"',Line));
+      temp := copy(PageC, Pos('critiques',PageC), (length(PageC)- Pos('critiques',PageC)));
+     // Si critique de la 1ère page seulement
+      if (i = 1) or (Pos('/'+FloatToStr(NumPage-1)+'/', Line) = 0) then
+       NumPage := -1
+     // Toutes les pages de critiques
+      else
+       begin
+       // Test si il reste d'autres pages
+       if Pos('/'+FloatToStr(NumPage)+'/',Line) > 0 then
+        begin
+        if Pos('/'+FloatToStr(NumPage-1)+'/',temp) = 0 then
+         PageC := StringReplace(PageC, TextBefore(PageC,'.html','/'), '0/' + TextBefore(PageC,'.html','/'));
+        PageC := StringReplace(PageC,'/'+FloatToStr(NumPage-1)+'/','/'+FloatToStr(NumPage)+'/');
+        NumPage := NumPage+1;
+        end else
+        NumPage := -1;
+      end;
+     // Test si il reste des critiques
+      While Pos('<div class="reviews"',Line) > 0 Do
+       begin
+        temp := '';
+        t1 := '';
+        t2 := '';
+//        t3 := '';
+       // Texte de la critique
+        temp := FindInfo('<p STYLE="padding:0;margin-bottom:0;text-align: justify;">','/Repondre.html">',Line,'4');
+       // Note de la critique
+        t1 := FindInfo('<strong>','</strong>',temp,'0');
+        Delete(temp,Pos('<strong>',temp),length(temp));
+        temp := Texte(temp);
+       // Nom du critique & Age si présent
+        t2 := FindInfo('/Repondre.html">',' </small>',Line,'4');
+        if t2 = '' then
+         t2 := FindInfo('/Repondre.html">','</small><br>',Line,'4');
+        if Pos(' <small>',t2) > 0 then
+         Delete(t2,Pos(' <small>',t2),length(t2));
+        if Pos('</small><br>',t2) > 0 then
+         Delete(t2,Pos('</small><br>',t2),length(t2));
+        t2 := Texte(t2);
+        if pos('critiques', t2) > 0 then
+         t2 := StringReplace(t2,'critiques','critiques - ')
+        else
+         t2 := StringReplace(t2,'critique','critique - ');
+        temp1 := temp1 +'Critique de : '+t2+#13#10+'Note : '+t1+'/10'+#13#10+temp+#13#10#13#10;
+        Delete(Line,1,Pos('</p></div></div>',Line));
+       end;
+     end;
+     //Texte(temp)
+     if GetField(fieldComments) <> '' then
+      SetField(fieldComments,GetField(fieldComments) + #13#10 + temp1)
+     else
+      SetField(fieldComments,temp1);
+    end;
+  extractPhotos;
+end;
+
+//------------------------------------------------------------------------------
+// extraction des photos
+// pgphotos = adresse de la page
+// idphotos = nom de l'onglet
+//------------------------------------------------------------------------------
+procedure extractPhotos;
+var
+  Table, infos : String;
+
+begin
+  if (CheckVersion(4,2,0)= False) or (GetOption('Extra : Photos du film') = 0) or (pgphotos = '') or (not CanAddExtras) or (not CanSetExtraPicture) then exit;
+	infos := GetPage(pgphotos);
+  Table := TextBetween(infos, '<div class="ws_images"><ul>', '<div class=""></div>');
+  Extra_Photos_Film(Table);
+  Table := RemainingText;
+end;
+
+//------------------------------------------------------------------------------
+// IMPORTE LES PHOTOS DU FILM COMME EXTRAS
+//------------------------------------------------------------------------------
+
+procedure Extra_Photos_Film(Value : String);
+Var
+  AdressePhoto, AdresseExtra, Comparaison, infos : String;
+  BeginPos, idx, NbrExtra, i : Integer;
+
+  begin
+   NbrExtra := GetExtraCount;
+   if Pos('<div class="ws_thumbs">', Value) > 0 then  // s'assure que l'adresse de l'image existe
+    begin
+     BeginPos := Pos('<div class="ws_thumbs">', Value);
+     repeat
+      Sleep(500);
+      delete(Value, 1, BeginPos);
+      AdressePhoto := TextBetween(Value, '<a href="', '" title="');
+      //AdressePhoto := URLEncode(CinefilUrl + AdressePhoto);
+	    //infos := GetPage(AdressePhoto);
+      //AdressePhoto := Textbetween(infos, '<img src="', '" title=');
+      if AdressePhoto <> '' then  // s'assure que l'adresse de l'image n'est pas vide
+       begin
+        For i := 0 to NbrExtra-1 do  //  Début boucle pour comparer les adresses des images déja dans la base avec celles du site
+        if GetExtraField(i, eCategory) = 'Photos du film' then  // ne compare que les extras ayant pour catégorie : 'Photos du film'
+         begin
+          AdresseExtra := GetExtraField(i , extraFieldURL);
+          if (AdresseExtra = AdressePhoto) then
+           begin
+            Comparaison := 'OK';
+            Break;
+           end else
+           begin
+            Comparaison := 'KO';
+           end;                  // fin boucle comparaison
+         end else
+          Comparaison := 'KO';
+          if ((Comparaison = 'KO') or (NbrExtra = 0)) then  // Ajoute l'extra si la comparaison n'est pas bonne ou que le nombre d'extra est égale à 0
+           begin
+            idx := AddExtra; // Crée un extra et stock sa position dans la valeur idx
+            SetExtraField(idx, extraFieldCategory, 'Photos du film'); // Stocke la valeur 'Photos du film' dans le champ catégorie de l'extra
+            SetExtraField(idx, extraFieldURL, AdressePhoto); // Stocke dans le champ URL de l'extra, l'adresse de la photo sur le site pour la comparer ultérieurement et ne téléchargé que les photos que l'on n'a pas déjà
+            SetExtraField(idx, extraFieldDescription, FullTrim(findInfo('title="', '"', Value,'0'))); // Stocke la description de la photo donnée par le site dans le champ description de l'extra
+            SetExtraField(idx, extraFieldTitle, TextBefore(Value, '.jpg', '_')); // Stocke le nom de la photo sur les serveurs du site dans le champ titre de l'extra
+            GetExtraPicture(idx, AdressePhoto); // Récupère l'image
+            if GetExtraPictureWidth(idx) < 1 then // Evite de récupérer un extra sans image en supprimant l'extra si l'image fait moins de 1 pixel de large
+             DeleteExtraOfScript(idx);
+           end;
+       end;
+     BeginPos := Pos('/></a>', Value);
+     until (BeginPos = 0);
+    end;
+  end;
+
+
+//--OK--------------------------------------------------------------------------
+// Formatte les titres (Merci ScorEpioN)
+//------------------------------------------------------------------------------
+
+procedure Format(name : string);
+var
+  option: integer;
+begin
+  option := GetOption('Format du Titre');
+  name := formatTitre(name,option);
+end;
+
+//--OK--------------------------------------------------------------------------
+// Formatte les textes
+//------------------------------------------------------------------------------
+
+function Texte(Valeur : string) : String;
+
+begin
+  Valeur := UTF8Decode(Valeur);
+  HTMLRemoveTags(Valeur);
+  Valeur := StringReplace(Valeur,'&acirc;','â');
+  Valeur := StringReplace(Valeur,'&eacute;','é');
+  Valeur := StringReplace(Valeur,'&egrave;','è');
+  result := Valeur;
+end;
+
+//------------------------------------------------------------------------------
+// Vérifie s'il existe une nouvelle version du script
+// et propose de la télécharger
+//------------------------------------------------------------------------------
+procedure CheckScriptVersion();
+var
+  Page, Script: TStringList;
+  Line, ScriptsDirectory, FileName, ScriptText, Fich: string;
+  LineNr, BeginPos, EndPos: Integer;
+  CurrentVersion, NewVersion: real;
+
+begin
+  Page := TStringList.Create;
+  FileName := UrlEncode(ScriptName);
+	FileName := StringReplace(FileName, '%2E', '.');
+	FileName := StringReplace(FileName, '+', '%20');
+  Page.Text := GetPage(UrlEncode(SiteUrl) + FileName);
+  ScriptsDirectory := GetStatic('path');
+  //SetStatic('path', ScriptsDirectory);
+  LineNr := FindLine('Version=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Version=', Line) + 8;
+    EndPos := pos(' du', Line);
+    CurrentVersion := StrToFloat(copy(VersionScript, 1, pos('du', VersionScript) - 2));
+    NewVersion := StrToFloat(copy(Line, BeginPos, EndPos - BeginPos));
+    if (NewVersion > CurrentVersion) then
+    begin
+      if ShowConfirmation('Une nouvelle version du script est disponible : ' + copy(Line, BeginPos, EndPos - BeginPos)+ #13#10#13#10 + '- Cliquez sur ''''Oui'''' pour effectuer la mise à jour.' + #13#10#13#10 + '- Cliquez sur ''''Non'''' dans le cas contraire.') = True then
+        begin
+          Sleep(500);
+          ScriptText := GetPage(UrlEncode(SiteUrl) + FileName);
+          Script := TStringList.Create;
+          Script.Add(ScriptText);
+          FileName := ScriptName;
+          FileName := StringReplace(FileName, '%20', ' ');
+          if (CheckVersion(4,1,2)) then
+           Script.SaveToFile(dirScripts + FileName)
+          else
+           Script.SaveToFile(ScriptsDirectory + FileName);
+          Maj := 1;
+          ShowInformation('Vous avez mis à jour le script, quitter la fenêtre de scripts et relancez la.');
+          Script.Free;
+        end;
+    end else
+  end;
+end;
+
+//--OK--------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+begin
+  if CheckVersion(3,5,0) then
+   begin
+   PMaj := PMaj+ 1;
+   Maj := 0;
+   if (GetOption('Mise à jour du Script') = 1) and (PMaj = 1) then
+    begin
+    CheckScriptVersion();
+    if Maj = 1 then exit;
+    end;
+   MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+   MovieName := supprimeLesAccents(MovieName);
+   // Choix du lancement
+   // Demande du titre
+   if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' par Dedej', 'Entrez le titre du film :',MovieName) then
+      begin
+       // Si adresse web
+        if Pos(urlDomain, MovieName) > 0 then
+        AnalyzeMoviePage(MovieName)
+        else
+        AnalyzeSearchPage(urlCMSearch+urlEncode(MovieName)+urlCMSearchGo);    // http://www.cinemamontreal.com/recherche?r=que&m=Montreal&aga=&key=prometheus&mysubmit=Go!
+      end
+    end
+    else
+    begin
+     // Ne demande pas le titre
+      if (GetOption('Type de Lancement') = 1) then
+      AnalyzeSearchPage(urlCMSearch+urlEncode(MovieName)+urlCMSearchGo)
+      else
+      begin
+       // Directement sur l'adresse web
+        if (GetOption('Type de Lancement') = 2) then
+        begin
+          urlTitre := GetField(fieldURL);
+          if Pos(urlDomain,urlTitre) > 0 Then
+          AnalyzeMoviePage(urlTitre)
+          else
+          ShowError('L''adresse web ne correspond pas à une page web de CinemaMontreal !');
+        end
+      end
+    end
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+ Nb := 1;
+end.

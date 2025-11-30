@@ -1,0 +1,26 @@
+### Wstêp.
+Template przeznaczony dla polskich u¿ytkowników Ant Movie Catalog.
+Jest to modyfikacja oryginalnego wzorca.
+
+Testowany na wersji 3.5.
+Info filmów g³ównie œci¹gane z IMDb, opisy Polskich filmów z FilmWeb.pl
+
+### Rady.
+Przy œci¹ganiu z IMDb radzê wybraæ "tylko aktorów oddzielonych przecinkiem" oraz np. w pole opisu filmu tagline i short summary.
+Je¿eli aktorzy lub opis bêdzie zbyt du¿y wtedy uk³ad siê nie³adnie rozje¿d¿a.
+Nasze rodzime serwisy lubi¹ wstawiaæ d³ugie streszczenia, wiêc albo zmieñcie serwis albo samemu skróccie, aby to mia³o rêce i nogi.
+
+### Techniczne dane.
+wyeksportowany dokument HTML nale¿y wyedytowaæ w programie umo¿liwiaj¹cym zmianê kodowania i zmieniæ je na ISO-8859-2 (do tego celu polecam prosty
+edytor PitPad http://www.szczepanik.org/
+
+To chyba wszystko.
+
+Pozdrawiam,
+Marburg
+
+
+contact me --- marburg82@gmail.com --- kontakt
+
+
+

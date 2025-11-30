@@ -1,0 +1,256 @@
+(***************************************************
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+[Infos]
+Authors=dmitry501
+Title=DVD-film-shop.ru
+Description=Import data & picture from dvd-film-shop.ru
+Site=dvd-film-shop.ru
+Language=RU
+Version=1.0
+Requires=3.5.0
+Comments=
+License=This program is free software;
+GetInfo=1
+[Options]
+Picture=1|1|0=Без картинки|1=С картинкой
+Comments=1|1|0=Без сценаристов в комментарии|1=Включать сценаристов в комментарий
+***************************************************)
+program dvd_film_shop_ru;
+var
+  MovieName: string;
+  PictureURL : string;
+// ************************************************
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+result := -1;
+if StartAt < 0 then
+  StartAt := 0;
+for i := StartAt to List.Count-1 do
+  if Pos(Pattern, List.GetString(i)) <> 0 then
+  begin
+   result := i;
+   Break;
+  end;
+end;
+// ***** analyzes the results page that asks to select a movie from a list *****
+procedure AnalyzeResultsPage(Address: string);
+var
+  Page: TStringList;
+  Value: string;
+  LineNr : Integer;
+begin
+	Page := TStringList.Create;
+	Page.Text := GetPage(Address);
+	LineNr := FindLine('<p>Найденные фильмы:<ul></ul></p><p><font color=#FF0000 size=+1><b>К сожалению, ничего не найдено!', Page, 0);
+	if LineNr =-1 then begin
+  	PickTreeClear;
+  	AddMoviesTitles(Page);
+	  if PickTreeExec(Address) then
+   	begin
+    	SetField(fieldURL, Address);
+    	Page.Text := GetPage(Address);
+      PictureURL := StringReplace(Address, 'page.html', 'i.jpg');
+    	AnalyzeMoviePage(Page);
+   	end;
+  end;
+	Page.Free;
+end;
+// ***** adds the titles *****
+procedure AddMoviesTitles(Page: TStringList);
+var
+	LineNr: Integer;
+	NewLineNr: Integer;
+	Line: string;
+	MovieTitle, MovieAddress: string;
+	BeginPos, EndPos: Integer;
+begin
+	LineNr := FindLine('<p>Найденные фильмы:<ul>',Page,LineNr);
+	Line := Page.GetString(LineNr);
+	PickTreeAdd('Найдено:','');
+	BeginPos := pos('<li><a href=''',Line)+13;
+	while BeginPos > 13 do
+	begin
+  	EndPos := pos('''>',Line);
+  	MovieAddress := 'http://dvd-film-shop.ru'+copy(Line,BeginPos,EndPos-BeginPos);
+  	Delete(Line,1,EndPos + 1);
+  	BeginPos := 1;
+    EndPos := pos('</li>',Line);
+  	MovieTitle := copy(Line,BeginPos,EndPos-BeginPos);
+  	HTMLRemoveTags(MovieTitle);
+  	HTMLDecode(Movietitle);
+  	PickTreeAdd(MovieTitle, MovieAddress);
+    Delete(Line,1,EndPos + 1);
+  	BeginPos := pos('<li><a href=''',Line)+13;
+	end;
+end;
+// ***** analyzes the page containing movie information *****
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  LineNr : Integer;
+  Line : String;
+  Value : String;
+  BeginPos, EndPos : Integer;
+begin
+  Page.Text := StringReplace(Page.Text, '&nbsp;', ' ');
+  LineNr := FindLine('<center><H3><b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    // Title
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+  	BeginPos := 1;
+    EndPos := pos('(',Line);
+  	Value := trim(copy(Line,BeginPos,EndPos-BeginPos));
+    SetField(fieldTranslatedTitle,Value);
+  	BeginPos := EndPos+1;
+    EndPos := Length(Line)-1;
+    Value := copy(Line,BeginPos,EndPos-BeginPos);
+    SetField(fieldOriginalTitle, trim(Value));
+  end;
+  LineNr := FindLine('<i>Коротко о фильме:</i>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Description
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    HtmlRemoveTags(Line);
+    SetField(fieldDescription, trim(Line));
+  end;
+  LineNr := FindLine('<b>Жанр:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Category
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+  	Delete(Line,1,5);
+    SetField(fieldCategory, trim(Line));
+  end;
+  LineNr := FindLine('<b>Звуковые дорожки:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Languages
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+  	Delete(Line,1,17);
+    SetField(fieldLanguages, trim(Line));
+  end;
+  LineNr := FindLine('<b>Субтитры:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Subtitles
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+   	Delete(Line,1,9);
+    SetField(fieldSubtitles, trim(Line));
+  end;
+  LineNr := FindLine('<b>Производитель:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Producer
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+   	Delete(Line,1,14);
+    SetField(fieldProducer, trim(Line));
+  end;
+  LineNr := FindLine('<b>Вес:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Country, Length and Year
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    BeginPos := 1;
+    EndPos := pos('г',Line);
+  	Value := copy(Line,BeginPos,EndPos-BeginPos);
+    HTMLRemoveTags(Value);
+    SetField(fieldYear, trim(Value));
+  	BeginPos := pos('<b>',Line);
+    EndPos := pos(' мин</b>',Line);
+  	Value := copy(Line,BeginPos,EndPos-BeginPos);
+    HTMLRemoveTags(Value);
+    SetField(fieldLength, trim(Value));
+  	BeginPos := pos('<a href=',Line);
+    EndPos := pos('</a>',Line);
+    Value := copy(Line,BeginPos,EndPos-BeginPos);
+    HTMLRemoveTags(Value);
+    SetField(fieldCountry, trim(Value));
+  end;
+  //Director
+  LineNr := FindLine('<b> Режиссер </b>', Page, 0)+3;
+  Value := '';
+  if LineNr > 2 then
+  begin
+    Line := Page.GetString(LineNr);
+  	BeginPos := pos('title=''',Line)+7;
+  	while BeginPos > 7 do
+    begin
+      EndPos := pos('''>',Line);
+  	  Value := Value + copy(Line,BeginPos,EndPos-BeginPos)+ ', ';
+      LineNr := LineNr+3;
+      Line := Page.GetString(LineNr);
+    	BeginPos := pos('title=''',Line)+7;
+	  end;
+	  Delete(Value,Length(Value)-1,2);
+    SetField(fieldDirector, Value);
+  end;
+  //List of Actors
+  LineNr := FindLine('<b> В ролях </b>', Page, 0)+3;
+  Value := '';
+  if LineNr > 2 then
+  begin
+    Line := Page.GetString(LineNr);
+  	BeginPos := pos('title=''',Line)+7;
+  	while BeginPos > 7 do
+    begin
+      EndPos := pos('''>',Line);
+  	  Value := Value + copy(Line,BeginPos,EndPos-BeginPos)+ ', ';
+      LineNr := LineNr+3;
+      Line := Page.GetString(LineNr);
+    	BeginPos := pos('title=''',Line)+7;
+	  end;
+	  Delete(Value,Length(Value)-1,2);
+    SetField(fieldActors, Value);
+  end;
+  // Comments
+  if GetOption('Comments') = 1 then
+  begin
+    LineNr := FindLine('<b> Сценарист </b>', Page, 0)+3;
+    Value := '';
+    if LineNr > 2 then
+    begin
+      Line := Page.GetString(LineNr);
+    	BeginPos := pos('title=''',Line)+7;
+    	while BeginPos > 7 do
+      begin
+        EndPos := pos('''>',Line);
+    	  Value := Value + copy(Line,BeginPos,EndPos-BeginPos)+ ', ';
+        LineNr := LineNr+3;
+        Line := Page.GetString(LineNr);
+      	BeginPos := pos('title=''',Line)+7;
+  	  end;
+  	  Delete(Value,Length(Value)-1,2);
+  	  Value := 'Сценарий: '+ Value;
+      SetField(fieldComments, Value);
+    end;
+  end;
+  // Import Picture
+  if GetOption('Picture') = 1 then
+  begin
+    GetPicture (PictureURL);
+  end;
+end;
+// ***** beginning of the program *****
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then MovieName := GetField(fieldTranslatedTitle);
+    if not Input('dvd-film-shop.ru Import', 'Enter the title:', MovieName) then Exit;
+    MovieName := LowerCase(MovieName);
+    if MovieName <> '' then AnalyzeResultsPage('http://dvd-film-shop.ru/cgi-bin/search.cgi?text=' + UrlEncode(MovieName))
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

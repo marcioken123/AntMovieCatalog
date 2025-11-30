@@ -1,0 +1,84 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Soulsnake
+Title=GetEmbeddedTrailerFromYouTube
+Description=Get embedded trailer link from YouTube and set it in URL field by default
+Site=
+Language=EN/FR
+Version=1.4 (18/05/2015)
+Requires=4.2.1
+Comments=
+License=
+GetInfo=0
+RequiresMovies=1
+
+[Options]
+Title=0|0|0=Search on original title first|1=Search on translated title first
+Year=0|0|0=Do not add movie year in search|1=Add movie year in search
+Keyword=0|0|0=Add 'Trailer' keyword in search|1=Add 'Bande Annonce' keyword in search|2=Add custom keywords specified in parameter Keywords
+Store=0|0|0=Store trailer in URL field|1=Store trailer in custom field 'Trailer'|2=Store trailer in custom field specifed in parameter CFTrailer
+
+[Parameters]
+Keywords=||Custom keywords to add in search (See option Keyword)
+CFTrailer=||Custom field tag to store trailer (See option Store)
+
+***************************************************)
+
+program GetEmbeddedTrailerFromYouTube;
+uses
+  ScorEpioNCommonScript, StringUtils1;
+var
+  youtube: string;
+  param: string;
+  address: string;
+  page: string;
+  videoId: string;
+begin
+  // Fix HTTPS address V1.4 (Need AMC 4.2.1 to handle HTTPS)
+  youtube := 'https://www.youtube.com';
+  param := '';
+  if GetOption('Title') = 0 then
+  begin
+    param := GetField(fieldOriginalTitle);
+    if (param = '') then
+      param := GetField(fieldTranslatedTitle);
+  end
+  else if GetOption('Title') = 1 then
+  begin
+    param := GetField(fieldTranslatedTitle);
+    if (param = '') then
+      param := GetField(fieldOriginalTitle);
+  end;
+  if (param = '') then
+    exit;
+  if (GetOption('Year') = 1) and (GetField(fieldYear) <> '') then
+    param := param + ' ' + GetField(fieldYear);
+  if GetOption('Keyword') = 0 then
+    param := param + ' Trailer'
+  else if GetOption('Keyword') = 1 then
+    param := param + ' Bande Annonce'
+  else if (GetOption('Keyword') = 2) and (GetParam('Keywords') <> '') then
+    param := param + ' ' + GetParam('Keywords');
+  param := UrlEncode(UTF8Encode(param));
+  address := youtube + '/results?search_query=' + param;
+  page := GetPage(address);
+  // Fix Filter (not needed) V1.3
+  //page := TextAfter(page, 'id="search-results"');
+  // Fix videoId V1.2: Thanks to Raoul_Volfoni for report and fix the problem
+  //videoId := findInfo('data-context-item-id="', '"', page,'4');
+  videoId := findInfo('<a href="/watch?v=', '"', page,'4');
+  if videoId <> '' then
+  begin
+    address := youtube + '/embed/'+videoId;
+    if GetOption('Store') = 0 then
+      SetField(fieldURL, address)
+    else if GetOption('Store') = 1 then
+      SetCustomField('Trailer', address)
+    else if GetOption('Store') = 2 then
+      SetCustomField(GetParam('CFTrailer'), address);
+  end;
+end.

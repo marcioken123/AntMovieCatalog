@@ -1,0 +1,194 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com</link>
+Title=Em Cena
+Description=Movie importation script for Em Cena
+Site=www.emcena.com
+Language=PT
+Version=1.1 (15 Maio 2008)
+Requires=3.5.0
+Comments=Script feito por Guardião para o site "www.emcena.com"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forums/viewtopic.php?t=332</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program emcena;
+uses  StringUtils1;
+var MovieName:string;
+
+function HTMLRemove(Value: String): String;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+
+procedure AnalyzeFilmPage(Address: String);
+var valor, procurar:String;
+    Page:TStringList;
+    x:integer;
+begin
+   Page := TStringList.Create;
+   Page.Text := GetPage(Address);
+   SetField(fieldURL, Address);
+  
+   x:=FindLine('Titulo Original:',Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     x:=Pos('</font>',valor)+7;
+     valor:=trim(Copy(valor,x,length(valor)));
+     SetField(fieldOriginalTitle, valor);
+   end;
+   
+   x:=FindLine('<td class=F18B>',Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x+1);
+     HTMLRemoveTags(valor);
+     valor:=StringReplace(valor,'					','');
+     SetField(fieldTranslatedTitle, valor);
+   end;
+   
+   procurar:='<font class=F13B>Realização: </font>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=StringReplace(valor,procurar,'');
+     valor:=StringReplace(valor,'	','');
+     valor:=HTMLRemove(valor);
+     SetField(fieldDirector, valor);
+   end;
+   
+   procurar:='<font class=F12B>Interpretes:</font>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=StringReplace(valor,procurar,'');
+     valor:=StringReplace(valor,'	','');
+     valor:=HTMLRemove(valor);
+     SetField(fieldActors, valor);
+   end;
+   
+   procurar:='<font class=F13B>Ano:<br>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=StringReplace(valor,procurar,'');
+     valor:=StringReplace(valor,'	','');
+     valor:=HTMLRemove(valor);
+     SetField(fieldYear, valor);
+   end;
+   
+   procurar:='<font class=F13B>País:<br>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=StringReplace(valor,procurar,'');
+     valor:=HTMLRemove(valor);
+     SetField(fieldCountry, valor);
+   end;
+   
+   procurar:='<font class=F13B>Género:</font>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=StringReplace(valor,procurar,'');
+     valor:=StringReplace(valor,'	','');
+     valor:=HTMLRemove(valor);
+     SetField(fieldCategory, valor);
+   end;
+   
+   procurar:='<font class=F13B>Duração:<br>';
+   x:=FindLine(procurar,Page,0);
+   if x>-1 then
+   begin
+     valor:=Page.GetString(x);
+     valor:=trim(TextBetween(valor,'</font>', 'min'));
+     SetField(fieldLength, valor);
+   end;
+
+   valor:=TextBetween(Page.Text,'<p class=F12 align=justify>','</font>');
+   HTMLRemoveTags(valor);
+   SetField(fieldDescription, valor);
+   
+   procurar:='http://www.emcena.com/fotos/';
+   valor:=TextBetween(Page.Text,'http://www.emcena.com/fotos/','''');
+   valor:=procurar+ valor;
+   if valor<>'' then
+   begin
+    GetPicture(valor);
+   end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  valor, nome, url:string;
+  x, pagina, MovCount:integer;
+  mais_paginas:boolean;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  pagina:=0;
+  MovCount := 0;
+repeat
+  url:=Address+'&offset='+IntToStr(pagina)+'&_=';
+  Page.Text := GetPage(url);
+  x:=FindLine('images/b_proxima.jpg',Page,0);
+  If x>-1 then
+  begin
+    mais_paginas:=true;
+    pagina:=pagina+25;
+  end
+  else
+    mais_paginas:=false;
+  Page.Text:=TextBetween(Page.Text,'<table','</table');
+  Page.Text:=StringReplace(Page.Text,'</tr>',#10#13);
+  for x:=0 to Page.Count-1 do
+  begin
+    valor:=Page.GetString(x);
+    if Pos('filme.asp?id_filme=',valor)>0 then
+    begin
+      nome:=TextBetween(valor,'class=''F13''>','</a>');
+      url:=TextBetween(valor,'id_filme=','''');
+      if (nome<>'') and (url<>'') then
+      begin
+        PickTreeAdd(nome,'http://www.emcena.com/filme.asp?id_filme='+url);
+        MovCount := MovCount+1;
+      end;
+    end;
+  end;
+until mais_paginas=false;
+
+   if (MovCount = 0) then
+     showmessage('O filme não foi encontrado')
+   else
+   if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address)
+  Page.free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do Em Cena.com', 'Escreva o nome do filme:', MovieName) then
+  begin
+    MovieName:=StringReplace(MovieName,' ','+');
+    AnalyzePage('http://www.emcena.com/getPesquisaFilmes.asp?pesquisa='+MovieName);
+  end
+
+end.

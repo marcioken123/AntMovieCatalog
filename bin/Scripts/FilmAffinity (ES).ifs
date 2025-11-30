@@ -1,0 +1,971 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=aviloria (aviloria@yahoo.com) modded by: rodpedja (rodpedja@gmail.com), kreti (bisoft@hotmail.com), MrK, gilistico, juliojs, Albher, Arturo, jacqlittle, AgustinG, Fulvio53s03, MrObama2022, Garada
+Title=FilmAffinity (ES)
+Description=Movie importation script for FilmAffinity Spain
+Site=https://www.filmaffinity.com
+Language=ES
+Version=5.0
+Requires=4.2.3.3
+Comments=Adaptation for compatibility with 4.2 version. |Added Extras capture. |Changed Charset ISO-> utf8 - new search page structure. |Added cURL compatibility, need ExternalCurlHandler.pas (MrObama2022)|Optional standard or advanced search mode. (Thanks to Radagast for testing and suggestions) (Garada)
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+AdvancedSearch=1|1|0=Desactivada, usa búsqueda estándar|1=Activada, usa búsqueda avanzada
+DontAsk=0|0|1=Método rápido: No te pregunta el titulo al principio, ni te pide confirmar si sólo hay un resultado|0=Método lento: Confirmas la información manualmente
+ActorsInALine=1|0|1=Actores separados por comas|0=Actores en lineas independientes
+Force350=0|0|1=force the behavior of 3.5.0 version|0=Version auto
+DontWantExtras=1|1|1=No se recopilan extras|0=Se recopilan extras: enlaces, imágenes
+GroupImages=1|1|1=Agrupa todas las imagenes en una misnma categoría 'Imagenes'|0=Divide las imágenes por categorias
+SortByYear=0|0|1=Ordena lista de busqueda por año|0=Ordena lista de busqueda por relevancia
+SearchByFromToYears=0|0|0=No buscar por año|1=Buscar dentro de un período de años
+SearchByTitle=1|1|0=No buscar por título|1=Buscar por título
+SearchByDirector=0|0|0=No buscar por director|1=Buscar por director
+SearchByCast=0|0|0=No buscar por reparto|1=Buscar por reparto
+SearchByScript=0|0|0=No buscar por guión|1=Buscar por guión
+SearchByPhoto=0|0|0=No buscar por fotografía|1=Buscar por fotografía
+SearchByMusic=0|0|0=No buscar por música|1=Buscar por música
+SearchByProducer=0|0|0=No buscar por productor|1=Buscar por productor
+
+[Parameters]
+ExtraCriticsLimit=|99|Límite de criticas en Extras
+ExtraImagesLimit=|99|Límite de imágenes en Extras
+ExtraTrailersLimit=|99|Límite de Trailers en Extras
+
+***************************************************)
+
+program FilmAffinity;
+uses ExternalCurlHandler;
+//uses StringUtils7552;
+
+
+const
+  BaseURL = 'https://www.filmaffinity.com';
+  folder  = 'c:\temp\';
+  debug_search = False;
+  debug_movie = false;
+var
+  DUMMY, initchar, endchar : string;
+  MovieName    : string;
+  MovieURL     : string;
+  MovieYear    : string;
+
+  YearFrom     : string;
+  YearTo       : string;
+
+  AdvQuery     : string;
+
+//------------------------------------------------------------------------------------
+
+function LineDecode(S: string):string;
+begin
+  S:= UTF8Decode(S);
+  HTMLDecode(S);
+  Result := S;
+end;
+
+//------------------------------------------------------------------------------------
+
+//
+//  ConvertAlphaNum: Quita todo menos letras (mayusculas y minusculas) y numeros
+//
+
+Function ConvertAlphaNum(s: string) : string;
+var
+  i: Integer;
+  s2, ch: string;
+begin
+  s2 := '';
+  For i := 1 To Length(s) do
+  begin
+    ch := copy(s, i, 1);
+    if ((ch >= 'a') and (ch <= 'z')) or ((ch >= '0') and (ch <= '9')) or ((ch >= 'A') and (ch <= 'Z'))  then
+    s2 := s2 + ch;
+  end;
+  result := s2;
+end;
+
+//------------------------------------------------------------------------------------
+
+function DeleteTags(S: string): string;
+var
+  n, len, tag: Integer;
+  c, p: char;
+begin
+  len    := Length(S);
+  tag    := 0;
+  p      := ' ';
+  Result := '';
+  for n := 1 to len do
+  begin
+    c := Copy(S,n,1);
+
+      // Eliminamos los tabuladores
+    if c = #9 then c := ' ';
+
+      // Los espacios redundantes no se procesan
+    if (c <> ' ') or (p <> ' ') then
+    begin
+         // Eliminamos los tags de HTML
+      if tag = 0 then
+      begin
+        if c <> '<' then
+        begin
+          Result := Result + c;
+          p := c;
+        end
+        else tag := 1;
+      end
+      else if c = '>' then tag := 0;
+    end;
+  end
+  if p = ' ' then Result := Copy(Result, 1, Length(Result) - 1);
+end;
+//------------------------------------------------------------------------------------
+
+function Occurrences(Subtext: string; Text: string): integer;
+var
+  offset: Integer;
+begin
+  result := 0;
+  while true do
+  begin
+    offset := Pos(Subtext, Text);
+    if offset = 0 then break;
+    Result := Result + 1;
+    Text := TextAfter(Text, Subtext);
+  end;
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeAdvPage(Busqueda: string);
+var
+  Page: TStringList;
+  Pagestr, Blockestr, Linestr : string;             //fs2025
+  BeginChar, LastChar : string;
+  LineNr,LineNrax,NextPageNr,Pages: Integer;
+  Line, PageNr: string;
+  Count: Integer;
+  MoviesList, MovieTitle, MovieAddress, MovieDirector: string;
+  MovieYear, PagSig:String;
+  PickMessaggio2, PickMessaggio3 : string;
+  Numpage: Integer;  // Indica el numero de pagina. Raulsara. 22/02/25.
+  Finalpaginas: Integer; // Indica cuando acaban todas las paginas encontradas. Raulsara. 22/02/25
+  Address: string;
+begin
+  Numpage:= 1;
+  Finalpaginas:=0;
+  Address := (BaseUrl + '/es/advsearch.php' + '?page=1&stext=' + Busqueda); // Inicialmente pone la pagina num. 1, después, si hay mas
+                                                                            // ira sumando 1 a la pagina. Raulsara. 22/02/25
+  repeat
+    PickTreeClear;
+    PickTreeTitle('Resultados Filmaffinity(ES) para "' + UrlDecode(MovieName) + '"');
+    
+    Count := 0;
+    Page  := TStringList.Create;
+    pagestr := GetPage5Advanced(Address, '', '', '', '');
+    Page.Text := pagestr;
+    if debug_search then
+       DumpPage(folder + 'Filmaffinity_search.html', pagestr);                //fs2025.01.30
+
+    Count := 0;
+
+    initchar := '<div class="fa-card">';
+    endchar := '<div class="text-center mt-3">';
+
+    Blockestr := initchar + TextBetween(Pagestr, initchar, endchar) + endchar;                   //fs2025.02.01 elenco dei film trovati
+    if debug_search then
+       DumpPage(folder + 'Filmaffinity_search_' + intToStr(count) + '.html', blockestr);                //fs2025.01.30
+
+
+    repeat
+       initchar := '<a class="d-none d-md-inline-block" ';
+       endchar  := '</a>';
+       Linestr  := initchar + textbetween(Blockestr, initchar, endchar) + endchar;        //first movie title found
+       
+       MovieTitle := textbetween(Linestr,'>', endchar);
+       MovieTitle := LineDecode(MovieTitle);
+       if MovieTitle <> '' then
+       begin
+         MovieAddress := textbetween(Linestr,'href="', '"');
+    //     BlockEstr := StringReplace(BlockEstr, Linestr, '');
+         BlockEstr := textafter(BlockEstr, Linestr);
+
+         initchar := '<span class="mc-year ms-1">';
+         endchar  := '</span>';
+         MovieYear := initchar + textbetween(Blockestr, initchar, endchar) + endchar;       // movie year
+    //     BlockEstr := StringReplace(BlockEstr, MovieYear, '');
+         BlockEstr := TextAfter(BlockEstr, MovieYear);
+
+         HTMLremovetags(MovieYear);
+
+         initchar := '<div class="mt-2 mc-director">';
+         endchar  := '<div class="mt-2 mc-cast">';
+         MovieDirector  := initchar + textbetween(Blockestr, initchar, endchar) + endchar;  // movie director
+    //     BlockEstr := StringReplace(BlockEstr, MovieDirector, '');
+         BlockEstr := TextAfter(BlockEstr, MovieDirector);
+
+         HTMLremovetags(MovieDirector);
+         MovieDirector := LineDecode(MovieDirector);
+         MovieDirector := fulltrim(MovieDirector);
+
+         PickMessaggio2 := MovieTitle + ' (' + MovieYear + ') ' + MovieDirector;
+         PickTreeAdd(PickMessaggio2, MovieAddress);
+         Count := Count + 1;
+       end;
+       DUMMY := DUMMY;
+       if debug_search then
+          DumpPage(folder + 'Filmaffinity_search_' + intToStr(count) + '.html', blockestr);     //2025.01.30
+
+    until MovieTitle = '';
+
+  // Buscamos la linea donde estan los caracteres ">>" que indican que hay mas paginas, si hay mas paginas
+  // sumamos 1 a la pagina y formamos la url con el numero de pagina correspondiente y analizamos la pagina. Si ya no esta ">>" es
+  // que es la ultima pagina y acabamos. Ponemos un 1 en el campo Finalpaginas y acabamos el bucle (repeat/until). Raulsara. 22/02/25
+
+    LineNr := FindLine('fa-regular fa-chevrons-right', Page, 0);    //si no lo encuentra es que es la ultima pagina. Raulsara. 22/02/2025
+    if LineNr > 0 then
+    begin
+      Numpage := Numpage+1;
+      Address := (BaseUrl + '/es/advsearch.php' + '?page=' + intTostr (Numpage)+ '&stext=' + Busqueda);// Crea la url sumandole 1 a la pagina para su analisis. Raulsara. 22/02/25
+    end
+    else
+    begin
+      Finalpaginas := 1; // Pone el campo Finalpaginas a 1 cuando ya no hay mas paginas y acaba el bucle. Raulsara. 22/02/2025
+      Address := '';
+    end;
+
+    // muestra selección
+    if Count = 0  then
+    begin
+      if Pos('<meta name="description" content="Too many request">', Page.Text) > 0 then
+        ShowMessage('Demasiadas búsquedas en poco tiempo'#13'FilmAffinity te ha bloqueado por un tiempo')
+      else
+        ShowMessage ('No hay resultados');
+        
+      Finalpaginas := 1;
+    end
+    else if ((Count = 1) and (GetOption('DontAsk') = 1)) then
+    begin
+      AnalyzeMoviePageURL(MovieAddress)
+      Finalpaginas := 1;
+    end
+    else
+    begin
+      PickTreeMoreLink(Address);
+      LineNr := 2;
+      PickTreeExec2(MovieAddress, LineNr);
+      
+      case LineNr of
+        -2: FinalPaginas := 0; // buscar mas
+        -1: FinalPaginas := 1;// cancelar
+        else // selección
+        begin
+          AnalyzeMoviePageURL(MovieAddress);
+          FinalPaginas := 1;
+        end;
+      end;
+    end;
+  until Finalpaginas = 1;
+  
+  DUMMY := DUMMY;
+
+  Page.Free;
+end;
+
+//------------------------------------------------
+// Analiza los resultados de una búsqueda estándar
+//------------------------------------------------
+
+procedure AnalyzeStdPage(Busqueda: string);
+var
+  PageStr, BlockStr, LineStr : string;
+  BeginTag, EndTag: string;
+  MovieTitle, MovieAddress, MovieDirector, MovieYear: string;
+  Count: Integer;
+//  Numpage: Integer;
+  FinalPaginas: Boolean;
+  Address: string;
+  ItemSel: Integer;
+begin
+  Address := BaseUrl + '/es/search.php?stext=' + Busqueda;
+
+  FinalPaginas := False;
+  while not FinalPaginas do
+  begin
+    PickTreeClear;
+    PickTreeTitle('Resultados Filmaffinity(ES) para "' + UrlDecode(MovieName) + '"');
+
+    PageStr := GetPage5Advanced(Address, '', '', '', '');
+    if debug_search then
+       DumpPage(folder + 'Filmaffinity_search.html', PageStr);
+       
+    if Pos('<meta name="description" content="Too many request">', PageStr) > 0 then
+    begin
+      ShowMessage('Demasiadas búsquedas en poco tiempo'#13'FilmAffinity te ha bloqueado por un tiempo')
+      Exit;
+    end;
+
+    if Pos('<div class="z-movie">', PageStr) > 0 then // 1 resultado, página de la película
+    begin
+      if GetOption('DontAsk') = 1 then // no preguntar, ir al resultado
+      begin
+        AnalyzeMoviePageContent(PageStr);
+        Exit;
+      end
+      else // mostrar el resultado para confirmarlo
+      begin
+        // enlace
+        MovieAddress := TextBetween(PageStr, '<link rel="canonical" href="', '"');
+      
+        // Titulo
+        MovieTitle := TextBetween(PageStr, '<h1 id="main-title">' , '</h1>');
+        MovieTitle := TextBetween(MovieTitle, '<span itemprop="name">' , '</span>');
+        MovieTitle := LineDecode(MovieTitle);
+        
+        // Año
+        MovieYear := TextBetween(PageStr, '<dd itemprop="datePublished">', '</dd>');
+        
+        // Director(es)
+        MovieDirector := TextBetween(PageStr, '<dd class="directors">', '</dd>');
+        HTMLremoveTags(MovieDirector);
+        MovieDirector := LineDecode(MovieDirector);
+        MovieDirector := FullTrim(MovieDirector);
+
+        PickTreeAdd(MovieTitle + ' (' + MovieYear + ') ' + MovieDirector, MovieAddress);
+
+        Address := '';
+        Count := 1;
+        FinalPaginas := True;
+      end;
+    end
+    else // resultados de búsqueda
+    begin
+      BeginTag := '<div class="item-search">';
+      EndTag := '</li>';
+      BlockStr := TextBetween(PageStr, BeginTag, EndTag);
+      Count := 0;
+      while BlockStr <> '' do
+      begin
+        if debug_search then
+          DumpPage(folder + 'Filmaffinity_search_' + intToStr(Count) + '.html', BlockStr);
+
+        PageStr := TextAfter(PageStr, BeginTag);
+
+        // Titulo y enlace
+        LineStr  := TextBetween(BlockStr, '<a class="d-none d-md-inline-block"', '</a>');
+        MovieAddress := TextBetween(LineStr,'href="', '"');
+        MovieTitle := TextAfter(Linestr,'>');
+        MovieTitle := LineDecode(MovieTitle);
+
+        // Año
+        MovieYear := TextBetween(BlockStr, '<span class="mc-year ms-1">', '</span>');
+        HTMLremovetags(MovieYear);
+
+        // Director
+        MovieDirector := TextBetween(BlockStr, '<div class="mt-2 mc-director">', '</div>');
+        HTMLremoveTags(MovieDirector);
+        MovieDirector := LineDecode(MovieDirector);
+        MovieDirector := FullTrim(MovieDirector);
+
+        PickTreeAdd(MovieTitle + ' (' + MovieYear + ') ' + MovieDirector, MovieAddress);
+
+        BlockStr := TextBetween(PageStr, BeginTag, EndTag);
+        Count := Count + 1;
+      end;
+
+      // Mas resultados?
+      BlockStr  := TextBetween(PageStr, '<div class="d-flex justify-content-center">', '</div>');
+      if Pos('>>', BlockStr) > 0 then
+      begin
+        Address := BaseUrl + '/es/' + TextBetween(BlockStr, 'href="', '"');
+        Address := StringReplace2(Address, '&amp;', '&', True, True);
+      end
+      else
+        Address := '';
+    end;
+
+    // muestra selección
+    if Count = 0  then
+    begin
+      ShowMessage ('No hay resultados');
+      FinalPaginas := True;
+    end
+    else if (Count = 1) and (GetOption('DontAsk') = 1) then
+    begin
+      AnalyzeMoviePageURL(MovieAddress)
+      FinalPaginas := True;
+    end
+    else
+    begin
+      PickTreeMoreLink(Address);
+      PickTreeExec2(MovieAddress, ItemSel);
+
+      case ItemSel of
+        -2: FinalPaginas := False; // buscar mas
+        -1: FinalPaginas := True;// cancelar
+        else // selección
+        begin
+          AnalyzeMoviePageURL(MovieAddress);
+          FinalPaginas := True;
+        end;
+      end;
+    end;
+  end;
+end;
+
+//-----------------------------------------------------------------------------------------------------
+// Analiza la pagina seleccionada para extraer toda la informacion y pasarla alos campos de la pelicula
+// Dos versiones: pasando l aURL o el contanido descargado
+//-----------------------------------------------------------------------------------------------------
+procedure AnalyzeMoviePageURL(Address: string);
+begin
+  AnalyzeMoviePageContent(GetPage5Advanced(Address, '', '', '', ''));
+end;
+
+procedure AnalyzeMoviePageContent(PageContent: string);
+var
+  Page: TStringList;
+  LineNr, LineInc: Integer;
+  sinossi : string;
+  Line: string;
+  Item: string;
+  Comments: string;
+  CharStar: string;
+  auxItem: string;
+begin
+  Comments := '';
+
+  Page := TStringList.Create;
+  Page.Text := PageContent;
+  
+   // URL
+  SetField(fieldURL, TextBetween(PageContent, '<link rel="canonical" href="', '"'));
+
+   // Translated Title
+  LineNr := FindLine('<h1 id="main-title">', Page, 0);
+  Line   := Page.GetString(LineNr+1);
+  Item   := DeleteTags(TextBetween(Line, '<span itemprop="name">', '</span>'));
+  Item   := LineDecode(Item);
+  SetField(fieldTranslatedTitle, Item);
+
+   // Picture
+  LineNr := FindLine('href="https://pics.filmaffinity.com/', Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween(Line, '<a class="lightbox" style="display: block;" href="', '" title="');
+    if Length(Item) = 0 then
+    Item := TextBetween(Line, '" src="', '"></a>');
+    GetPicture(Item);
+  end;
+
+   // Rating
+  LineNr := FindLine('<div id="movie-rat-avg" itemprop="ratingValue"', Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := DeleteTags(Line);
+    Item := LineDecode(Item);
+    SetField(fieldRating, StringReplace(Item, ',', '.'));
+  end;
+
+   // Original Title
+  LineNr := FindLine(UTF8Encode('<dt>Título original</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+
+      // Eliminar aka
+    if Pos('>aka <',Line) <>0 then
+    Line:= StringReplace(Line,'>aka <','');
+
+    Item := DeleteTags(TextBetween(Line, '<dd>', '</dd>'));
+    Item := LineDecode(Item);
+    if Length(Item) = 0 then
+    begin
+      Line := Page.GetString(LineNr + 2);
+
+      // Eliminar aka
+      if Pos('>aka <',Line) <>0 then
+      Line:= StringReplace(Line,'>aka <','');
+
+      Item := DeleteTags(Line);
+      Item := LineDecode(Item);
+    end;
+    SetField(fieldOriginalTitle, Item);
+  end;
+
+   // Year
+  LineNr := FindLine(UTF8Encode('<dt>Año</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := DeleteTags(TextBetween(Line, '">', '</dd>'));
+    Item := LineDecode(Item);
+    SetField(fieldYear, Item);
+  end;
+
+   // Length, si no la tiene...
+  if GetField(fieldLength) = '' then
+  begin
+    LineNr := FindLine(UTF8Encode('<dt>Duración</dt>'), Page, LineNr);
+    if LineNr <> -1 then
+    begin
+      Line := Page.GetString(LineNr + 1);
+      Item := DeleteTags(TextBetween(Line, 'duration">', 'min.</dd>'));
+      Item := LineDecode(Item);
+      SetField(fieldLength, Item);
+    end;
+  end;
+
+   // Country
+  LineNr := FindLine(UTF8Encode('<dt>País</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := DeleteTags(TextBetween(Line, 'alt="', '"></span'));
+    Item := LineDecode(Item);
+    SetField(fieldCountry, Item);
+  end;
+
+   // Director
+  LineNr := FindLine(UTF8Encode('class="directors">'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := TextBetween(Line, '<span itemprop="name">', '</div>');
+    Item := LineDecode(Item);
+    Item := DeleteTags(Item);
+    SetField(fieldDirector, Item);
+  end;
+
+   // Script writer
+  LineNr := FindLine(UTF8Encode('<dt>Guion</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := TextBetween(Line, '<span class="nb">', '</div>');
+    Item := LineDecode(Item);
+    Item := DeleteTags(Item);
+    if ((CheckVersion(4,2,0) = true) and (GetOption('Force350') = 0)) then SetField(fieldWriter, Item)
+    else   Comments := Comments + 'Guión: ' + Item + #13#10 + #13#10;
+  end;
+
+   // Actors
+  LineNr := FindLine(UTF8Encode('<div class="cast-wrapper">'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := LineDecode(Line);
+    Item := StringReplace(Item, '</li>', ', ');
+    Item := DeleteTags(Item);
+    Item := Trim(StringReplace(Item, ' Ver todos los créditos', ''));
+    while StrGet(Item, Length(Item)) = ',' do
+    begin
+      Item := Copy(Item, 1, Length(Item) - 1);
+    end;
+    if GetOption('ActorsInALine') = 0 then
+      Item := StringReplace(Item, ', ', ', '#13#10);
+    SetField(fieldActors, Item);
+  end;
+
+   // Composer
+  LineNr := FindLine(UTF8Encode('<dt>Música</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := TextBetween(Line, '<span class="nb">', '</div>');
+    Item := LineDecode(Item);
+    Item := DeleteTags(Item);
+    if ((CheckVersion(4,2,0) = true) and (GetOption('Force350') = 0)) then SetField(fieldComposer, Item)
+    else Comments := Comments + 'Música: ' + Item + #13#10 + #13#10;
+  end;
+
+   // Photography
+  LineNr := FindLine(UTF8Encode('<dt>Fotografía</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := TextBetween(Line, '<span class="nb">', '</div>');
+    Item := LineDecode(Item);
+    Item := DeleteTags(Item);
+    Comments := Comments + 'Fotograf&iacute;a: ' + Item + #13#10 + #13#10;
+  end;
+
+// Productor
+  LineNr := FindLine(UTF8Encode('<dt>Compañías</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    Item := TextBetween(Line, '<span class="nb">', '</div>');
+    Item := LineDecode(Item);
+    Item := DeleteTags(Item);
+    SetField(fieldProducer, Item);
+  end;
+
+   // Category
+  LineNr := FindLine(UTF8Encode('<dt>Género</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    Item := DeleteTags(Line);
+    Item := LineDecode(Item);
+    Item := StringReplace(Item, ' | ', ', ');
+    Item := StringReplace(Item, '. ', ', ');
+    SetField(fieldCategory, Item);
+  end;
+
+   // Official Webpage
+  LineNr := FindLine(UTF8Encode('<dt>Web oficial</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Item := DeleteTags(TextBetween(Line, ' href="', '">'));
+    Item := LineDecode(Item);
+    Comments := Comments + 'Web oficial: ' + Item + #13#10 + #13#10;
+  end;
+
+   // Synopsis
+  LineNr := FindLine(UTF8Encode('<dt>Sinopsis</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+//2025.02.09 inizio fulvio53s03
+  begin
+  initchar := '<dt>Sinopsis</dt>';
+  endchar :=  '</dd>';
+  sinossi :=  textbetween(PageContent, initchar, endchar) + endchar;
+  sinossi := DeleteTags(sinossi);
+  sinossi := LineDecode(sinossi);
+  sinossi := fulltrim(sinossi);
+  if Copy(sinossi, Length(sinossi) - 13, 14) = '(FILMAFFINITY)' then
+    sinossi := FullTrim(Copy(sinossi, 1, Length(sinossi) - 14));
+  SetField(fieldDescription, sinossi);
+  end;
+//2025.02.09 fine fulvio53s03
+
+{
+    Line := Page.GetString(LineNr + 1);
+    if debug_movie then
+       DumpPage(folder + 'Filmaffinity_sinopsis1.html', line);             //fs2025.02.09
+
+    Item := DeleteTags(Line);
+    Item := LineDecode(Item);
+    SetField(fieldDescription, Item);
+  end;
+}
+
+   // Awards
+  LineNr := FindLine(UTF8Encode('<dt>Premios</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+    LineNr   := LineNr + 1;
+    Line     := Page.GetString(LineNr);
+    Comments := Comments + 'Premios: ' + #13#10;
+    while Pos ('</dd>', Line) = 0 do
+    begin
+      if Pos ('<span id="show-all-awards">', Line) = 0 then
+      begin
+        Item := DeleteTags(Line);
+        Item := LineDecode(Item);
+        if (Length(Item) <> 0) then
+        begin
+          Comments := Comments + '  - ' + Item + #13#10;
+        end;
+      end;
+      LineNr := LineNr + 1;
+      Line   := Page.GetString(LineNr);
+    end;
+    Comments := Comments + #13#10;
+  end;
+
+   // Critic
+  LineNr := FindLine(UTF8Encode('<dt>Críticas</dt>'), Page, LineNr);
+  if LineNr <> -1 then
+  begin
+      // El unico objeto de esta linea es poder presentar en el foro el listado
+      // del script sin que se produzca la conversión del caracter estrella
+
+    CharStar       := '&'+'#9733;';
+    Comments := Comments + 'Críticas: ' + #13#10 + #13#10;
+    LineNr := FindLine('<div class="pro-review"', Page, LineNr + 1);
+    while LineNr <> -1 do
+    begin
+      LineNr := LineNr + 2;
+      Line := Page.GetString(LineNr);
+      if Pos (UTF8Encode('<a title="Leer crítica completa" href='), Line) <> 0 then
+      begin
+        LineNr := LineNr + 1;
+        Line := Page.GetString(LineNr);
+      end;
+      Line:= StringReplace(Line, CharStar, '*');
+      Item := DeleteTags(Line);
+      Item := LineDecode(Item);
+      if (Length(Item) <> 0) then
+      begin
+        Comments := Comments + Item + #13#10;
+        LineNr := FindLine('div class="pro-crit-med"', Page, LineNr + 1);
+        Line := Page.GetString(LineNr);
+        Item := DeleteTags(TextBetween(Line, ' itemprop="author">', '<i'));
+        Item := LineDecode(Item);
+        if (Length(Item) <> 0) then
+        begin
+          Comments := Comments + Item + #13#10;
+        end;
+        Comments := Comments + '________________________________________' + #13#10 + #13#10;
+      end;
+      LineNr := FindLine('<div class="pro-review"', Page, LineNr + 1)
+    end;
+  end;
+
+  HTMLDecode(Comments);
+  SetField(fieldComments, Comments);
+  if GetOption('DontWantExtras') = 0 then
+  AnalyzeExtras(Page,Address);
+end;
+
+//------------------------------------------------------------------------------------
+// Extras
+procedure AnalyzeExtras(Page: TStringList; Address: string);
+var
+  LineNr,NumImages,NumTrailers, i,CountC: Integer;
+  Line: string;
+  TrailersAddress: string;
+  ImagesAddress: string;
+  ImageTitle: string;
+  ExtraIndex: Integer;
+  ExtraString: string;
+  ExtraURL: string;
+  ExtraTagBase: string;
+  LimitImages,LimitTrailers,LimitCritics: Integer;
+
+begin
+  ExtraTagBase :=  'FA'+TextBetween(Address, '/film', '.html');
+  ClearExtrasOfScript;
+  LimitImages := StrtoInt (GetParam('ExtraImagesLimit'),0);
+  if LimitImages < 0 then LimitImages := 0;
+  LimitTrailers := StrtoInt (GetParam('ExtraTrailersLimit'),0);
+  if LimitTrailers < 0 then LimitTrailers := 0;
+  LimitCritics := StrtoInt (GetParam('ExtraCriticsLimit'),0);
+  if LimitCritics < 0 then LimitCritics := 0;
+
+// Enlaces a Criticas
+  LineNr := FindLine(UTF8Encode('<dt>Críticas</dt>'), Page, LineNr);
+  CountC := 0;
+  if LineNr <> -1 then
+  begin
+    LineNr := FindLine('<div class="pro-review"', Page, LineNr + 1);
+    while LineNr <> -1 do
+    begin
+      LineNr := LineNr + 2;
+      Line := Page.GetString(LineNr);
+      if Pos (UTF8Encode('<a title="Leer crítica completa" href='), Line) <> 0 then
+      begin
+        Line := Page.GetString(LineNr);
+        ExtraURL:= TextBetween(Line, 'href="', '" ');
+        if (Length(ExtraURL))>0 then
+        begin
+          ExtraIndex := AddExtra();
+          SetExtraField(ExtraIndex, extraFieldURL, ExtraURL);
+          SetExtraField(ExtraIndex, extraFieldCategory, 'Críticas');
+          SetExtraField(ExtraIndex, extraFieldTitle, TextBetween(ExtraURL, '//', '/'));
+          SetExtraField(ExtraIndex, extraFieldTag, ExtraTagBase+'C'+IntToStr(ExtraIndex));
+        end;
+        LineNr := LineNr + 1;
+        Line := Page.GetString(LineNr);
+      end;
+      LineNr := FindLine('<div class="pro-review"', Page, LineNr + 1);
+      CountC := CountC+1;
+      if CountC = LimitCritics then
+      break;
+    end;
+  end;
+
+   // Imágenes  y Trailers
+  NumTrailers := 0;
+  NumImages := 0;
+
+  LineNr := FindLine(UTF8Encode('>Tráilers&nbsp;<em>'), Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    NumTrailers := StrToInt(TextBetween(Line, '<em>[', ']</em>'),0);
+    TrailersAddress := TextBetween(Line, 'href="', '"');
+  end
+
+  LineNr := FindLine(UTF8Encode('>Imágenes&nbsp;<em>'), Page, LineNr+1);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    NumImages := StrToInt(TextBetween(Line, '<em>[', ']</em>'),0);
+    ImagesAddress := TextBetween(Line, 'href="', '"');
+  end
+
+   // Imágenes
+  If NumImages > LimitImages then NumImages := LimitImages;
+  if NumImages >0 then
+  begin
+    Page.Text := GetPage5Advanced(ImagesAddress, '', '', '', '');
+    LineNr := FindLine(UTF8Encode('<span>Posters</span>'), Page,0);
+    if LineNr = -1 then
+    LineNr := FindLine(UTF8Encode('<span>Movie Posters</span>'), Page,0);
+    if LineNr =-1 then
+    LineNr := FindLine(UTF8Encode('<span>Fotogramas</span>'), Page,0);
+    if LineNr =-1 then
+    LineNr := FindLine(UTF8Encode('span>Otros</span>'), Page,0);
+    if LineNr <> -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      for i := 1 to NumImages do
+      begin
+        LineNr := FindLine('<a href="', Page, LineNr + 1);
+        if LineNr <> -1 then
+        begin
+          Line := Page.GetString(LineNr);
+          ExtraString := TextBetween(Line, 'href="', '"');
+          ImageTitle := TextBetween(Line, 'Tipo: </strong>', '</div>');
+          ExtraIndex := AddExtra();
+          if GetOption('GroupImages') = 1 then
+          begin
+            SetExtraField(ExtraIndex, extraFieldCategory, 'Imágenes');
+            SetExtraField(ExtraIndex, extraFieldTitle, ImageTitle);
+          end
+          else
+          begin
+            SetExtraField(ExtraIndex, extraFieldCategory, ImageTitle);
+            SetExtraField(ExtraIndex, extraFieldTitle, 'Imágenes')
+          end;
+
+          SetExtraField(ExtraIndex, extraFieldTag, ExtraTagBase+'I'+IntToStr(ExtraIndex));
+          GetExtraPicture(ExtraIndex, ExtraString);
+        end;
+      end;
+    end;
+  end;
+
+  If NumTrailers > LimitTrailers then NumTrailers := LimitTrailers;
+  if NumTrailers > 0 then
+  begin
+    Page.Text := GetPage5Advanced(TrailersAddress, '', '', '', '');
+    LineNr := FindLine(UTF8Encode('>Mostrar video<'),Page,0);
+    if LineNr <> -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      for i:= 1 to NumTrailers do
+      begin
+        LineNr := FindLine('src="', Page,LineNr + 1);
+        if LineNr <> -1 then
+        begin
+          Line := Page.GetString(LineNr);
+          ExtraString := TextBetween(Line, 'src="', '"');
+          ExtraURL := TextAfter(ExtraString, '//');
+          ExtraIndex := AddExtra();
+          SetExtraField(ExtraIndex, extraFieldURL, ExtraURL);
+          SetExtraField(ExtraIndex, extraFieldCategory, 'Trailers');
+          SetExtraField(ExtraIndex, extraFieldTitle, TextBetween(ExtraString, '//', '/'))
+          SetExtraField(ExtraIndex, extraFieldTag, ExtraTagBase+'T'+IntToStr(ExtraIndex));
+          LineNr := FindLine(UTF8Encode('Mostrar video'), Page,LineNr + 1);
+        end;
+      end;
+    end;
+  end;
+end;
+
+
+//------------------------------------------------------------------------------------
+
+begin
+  if (CheckVersion(4,2,3) = false) then
+  begin
+    if ShowWarning('This script requires a newer version of Ant Movie Catalog, at least the version 4.2.3.3 - do you wish to open the link to download it?)') = true then
+    begin
+      Launch('https://www.antp.be/software/moviecatalog/download', '');
+    end;
+    exit;
+  end;
+
+  MovieName     := GetField(fieldOriginalTitle);
+  MovieYear     := GetField(fieldYear);
+
+  YearFrom      := MovieYear;
+  YearTo        := MovieYear;
+
+  if Length(MovieName) = 0 then
+  MovieName := GetField(fieldTranslatedTitle);
+
+  if (GetOption('DontAsk') = 0) or (MovieName = '') then
+    Input('FilmAffinity (ES)', 'Título: ' + GetField(fieldFilePath), MovieName);
+
+  if Pos('filmaffinity.com', MovieName) > 0 then
+    AnalyzeMoviePageURL(MovieName)
+  else if GetOption('AdvancedSearch') = 1 then
+  begin
+    AdvQuery := UrlEncode(MovieName);
+    if GetOption('SearchByFromToYears') = 1 then
+    begin
+      if GetOption('DontAsk') = 0 then
+      begin
+        Input('FilmAffinity (ES)', 'Desde el año: ', YearFrom);
+        Input('FilmAffinity (ES)', 'Hasta el año: ', YearTo);
+      end;
+      AdvQuery := AdvQuery + '&fromyear=' + YearFrom;
+      AdvQuery := AdvQuery + '&toyear=' + YearTo;
+    end;
+
+    {
+    stype[]=title         Título
+    stype[]=director      Director
+    stype[]=cast          Reparto
+    stype[]=script        Guión
+    stype[]=photo         Fotografía
+    stype[]=music         Música
+    stype[]=producer      Productor
+    }
+
+    if GetOption('SearchByTitle') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=title';
+
+    if GetOption('SearchByDirector') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=director';
+
+    if GetOption('SearchByCast') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=cast';
+
+    if GetOption('SearchByScript') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=script';
+
+    if GetOption('SearchByPhoto') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=photo';
+
+    if GetOption('SearchByMusic') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=music';
+
+    if GetOption('SearchByProducer') = 1 then
+    AdvQuery := AdvQuery + '&stype[]=producer';
+
+    if GetOption('SortByYear') = 1 then
+    AdvQuery := AdvQuery + '&orderby=year';
+
+    AnalyzeAdvPage(AdvQuery);
+  end
+  else
+  begin
+    AdvQuery := UrlEncode(MovieName);
+
+    if GetOption('SearchByTitle') = 1 then
+    AdvQuery := AdvQuery + '&stype=title';
+
+    if GetOption('SearchByCast') = 1 then
+    AdvQuery := AdvQuery + '&stype=cast';
+
+    if GetOption('SortByYear') = 1 then
+    AdvQuery := AdvQuery + '&orderby=year';
+
+    AnalyzeStdPage(AdvQuery);
+  end;
+end.

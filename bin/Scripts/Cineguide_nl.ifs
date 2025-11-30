@@ -1,0 +1,182 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Epsilon, Antoine Potten
+Title=Cineguide / Cinebel
+Description=Cineguide / Cinebel - Dutch (BE) import
+Site=http://www.cineguide.be
+Language=NL
+Version=2.00
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+PictureKind=1|0|0=Small picture|1=Large picture
+Categories=1|0|0=Take only first category (genre)|1=Take all available values, separated by commas
+Release=1|0|0=Do not get release date|1=Store release date in comments
+Countries=0|0|0=Take only first country|1=Take all available values, separated by commas
+
+***************************************************)
+
+program CINEGUIDE_NL;
+
+uses
+  StringUtils1;
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  PageText: string;
+  Block: string;
+  ResultBlock: Integer;
+  BeginPos, EndPos: Integer;
+  ValueTitle, ValueAddress: string;
+begin
+  PageText := GetPage(Address);
+//  PageText := GetLocalPage(Address);
+  if pos('<span class="title01">', PageText) > 0 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(PageText)
+  end
+  else
+  begin
+    PickTreeClear;
+    ResultBlock := Pos('<td class="cadre" height="16">', PageText);
+    while ResultBlock > 0 do
+    begin
+      Delete(PageText, 1, ResultBlock + 35);
+      EndPos := Pos('</td>', PageText);
+      PickTreeAdd(StringReplace(Copy(PageText, 1, EndPos - 1), #13#10 + '                   ', ''), '');
+      BeginPos := EndPos;
+      EndPos := Pos('<td height="10"> </td>', PageText);
+      Block := Copy(PageText, BeginPos, EndPos - BeginPos);
+      Delete(PageText, 1, EndPos);
+      BeginPos := Pos('<a href="/nl/film.asp', Block);
+      while BeginPos > 0 do
+      begin
+        Delete(Block, 1, BeginPos - 1);
+        EndPos := Pos('</a>', Block);
+        ValueTitle := Copy(Block, 1, EndPos - 1);
+        HTMLRemoveTags(ValueTitle);
+        BeginPos := Pos('"', Block);
+        EndPos := Pos('" class', Block);
+        ValueAddress := 'http://www.cinebel.be' + Copy(Block, BeginPos + 1, EndPos - BeginPos - 1);
+        PickTreeAdd(ValueTitle, ValueAddress);
+        EndPos := Pos('</td>', Block);
+        Delete(Block, 1, EndPos);
+        BeginPos := Pos('<a href="/nl/film.asp', Block);
+      end;
+      ResultBlock := Pos('<td class="cadre" height="16">', PageText);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+end;
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value, FullValue: string;
+  IntValue: Integer;
+  BeginPos, EndPos: Integer;
+begin
+  PageText := UTF8Decode(TextAfter(PageText, '<span class="title01">'));
+  
+  // Original Title
+  Value := TextBetween(PageText, '<u>', '</u>');
+  SetField(fieldOriginalTitle, Value);
+
+  // Picture
+  Value := TextBetween(PageText, #9'src="/portal/resources/movie/', '.jpg');
+  if Value <> '' then
+  begin
+    FullValue := StringReplace(StringReplace(Value, '/ma', '/ba'), '/a', '/ba');
+    if (GetOption('PictureKind') <> 1) or (Pos(FullValue, PageText) = 0) then
+      GetPicture('http://www.cinebel.be/portal/resources/movie/' + Value + '.jpg')
+    else
+      GetPicture('http://www.cinebel.be/portal/resources/movie/' + FullValue + '.jpg');
+  end;
+
+  PageText := TextAfter(PageText, '<table width="120" border="0" cellpadding="0" cellspacing="0">');
+  Value := FullTrim(TextBetween(PageText,' class="classique">', '</td>'));
+  PageText := RemainingText;
+  if (GetOption('Countries') = 0) and (Pos(',', Value) > 0) then
+    Value := TextBefore(Value, ',', '');
+  SetField(fieldCountry, FullTrim(Value));
+  
+  Value := FullTrim(TextBetween(PageText, ' class="classique">', '</td>'));
+  PageText := RemainingText;
+  SetField(fieldYear, FullTrim(Value));
+
+  Value := FullTrim(TextBetween(PageText, ' class="classique">', '</td>'));
+  PageText := RemainingText;
+  if (GetOption('Categories') = 0) and (Pos(',', Value) > 0) then
+    Value := TextBefore(Value, ',', '');
+  SetField(fieldCategory, Value);
+
+  Value := FullTrim(TextBetween(PageText, ' class="classique">', '</td>'));
+  PageText := RemainingText;
+  IntValue := StrToInt(TextBefore(Value, 'u', ''), 0) * 60 + StrToInt(TextBetween(Value, 'u', 'min'), 0);
+  SetField(fieldLength, IntToStr(IntValue));
+
+  if GetOption('Release') > 0 then
+  begin
+    Value := FullTrim(TextBetween(PageText, ' class="classique">', '</td>'));
+    if Pos(#13#10, Value) = 0 then
+      SetField(fieldComments, 'Release: ' + Value);
+  end;
+  
+  Value := FullTrim(TextBetween(PageText, '<div align="justify">', '<br/>'));
+  SetField(fieldDescription, Value);
+
+  PageText := TextAfter(PageText, '<table width="150" border="0" align="right" cellpadding="0" cellspacing="1" style="margin-left:1px; margin-bottom:5px; " class="classique">');
+  Value := TextBetween(PageText, 'Regisseur:</td></tr>', '</tr>');
+  HTMLRemoveTags(Value);
+  SetField(fieldDirector, FullTrim(Value));
+  PageText := TextAfter(TextBetween(PageText, 'Acteurs:</td></tr>', '</tr>'), '<a');
+  FullValue := '';
+  while PageText <> '' do
+  begin
+    Value := TextBetween(PageText, '">', '</a>');
+    PageText := RemainingText;
+    if Value = '' then
+      PageText := ''
+    else
+    begin
+      if FullValue <> '' then
+        FullValue := FullValue + ', ';
+      FullValue := FullValue + Value;
+    end;
+  end;
+  SetField(fieldActors, FullValue);
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if StringUtils1_Version < 4 then
+    begin
+      ShowMessage('Old version of "stringutils1.pas", this script needs at least version 4');
+      Exit;
+    end;
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Cineguide (Cinebel) Import', 'Enter the title (or the URL) of the movie:', MovieName) then
+    begin
+      if Pos('cinebel.be', MovieName) > 0 then
+        AnalyzePage(MovieName)
+      else
+        AnalyzePage('http://www.cinebel.be/nl/srch.asp?mot='+UrlEncode(MovieName));
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

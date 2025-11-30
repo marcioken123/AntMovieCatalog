@@ -1,0 +1,33 @@
+<html><head>
+<style TYPE="text/css">
+  text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+  HR { color: black; }
+  A:link { COLOR: #003399; background: white; }
+  A:visited { COLOR: #003399; background: white; }
+  A:hover { COLOR: #CC0000; background: white; }
+  A:active { COLOR: #CC0000; background: white; }
+  td.blk { color: white; background: black; border: solid; border-color: black; }
+  table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+  table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  p.title { font-size: 18pt; font-weight: bold; }
+</style></head><body>
+<p>Catalog created on $$DATE with <a href="http://www.antp.be/software/moviecatalog/" target="_blank">Ant Movie Catalog</a>.</p>
+<table class="blk" border="1" cellspacing="0" cellpadding="5"><tr>
+<td class="blk" nowrap>Number</td>
+<td class="blk" nowrap>Original Title</td>
+<td class="blk" nowrap>Translated Title</td>
+<td class="blk" nowrap>Size (Mb)</td>
+<td class="blk" nowrap>Format</td>
+<td class="blk" nowrap>Languages</td>
+<td class="blk" nowrap>Subtitles</td>
+</tr>$$ITEM_BEGIN<tr>
+<td rowspan="2" class="lgt"><strong>$$ITEM_NUMBER&nbsp;$$ITEM_APPRECIATION<br>$$ITEM_PICTURE</strong></td>
+<td class="lgt"><strong>$$ITEM_ORIGINALTITLE&nbsp;</strong></td>
+<td class="lgt">$$ITEM_TRANSLATEDTITLE&nbsp;</td>
+<td class="lgt">$$ITEM_SIZE&nbsp;</td>
+<td class="lgt">$$ITEM_VIDEOFORMAT&nbsp;</td>
+<td class="lgt">$$ITEM_LANGUAGES&nbsp;</td>
+<td class="lgt">$$ITEM_SUBTITLES&nbsp;</td>
+</tr><tr><td colspan="6" class="lgt">$$ITEM_DESCRIPTION&nbsp;</td></tr><tr><td colspan="7" class="blk"></td>
+</tr>$$ITEM_END</table><p><strong>Total: $$TOTALMOVIES movies</strong></p></body></html>

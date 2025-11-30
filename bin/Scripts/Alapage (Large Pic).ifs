@@ -1,0 +1,297 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Thierry Colier
+Title=Alapage
+Description=Alapage (FR) Descriptif et image
+Site=http://www.alapage.com
+Language=FR
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program ALAPAGE_FR;
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, value2, nomImg: string;
+  LineNr: Integer;
+  BeginPos, EndPos, BeginVal2: Integer;
+  OnContinue : Boolean;
+begin
+   // Titre
+   LineNr := FindLine('<TD width="100%" class="tx14dvdbold">', Page, 0);
+   if LineNr > -1 then
+   begin
+      Value := Page.GetString(LineNr + 1);
+      value := trim(StringReplace (Value, #9, #32)); // pour remplacer les tabulations du debut par des espaces
+      HTMLRemoveTags(Value);
+      Value := AnsiUpFirstLetter(AnsiLowerCase(Value));
+      SetField(fieldTranslatedTitle, Value);
+   end;
+    
+   // Acteurs
+   LineNr := FindLine('<B>avec : </B>"<U><A', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      Value := '';    
+      repeat
+         BeginPos := pos('X_LF_1" class="roll">', Line);
+         if (BeginPos > 0) then
+         begin
+            Delete(Line, 1, BeginPos+20);
+            EndPos := pos('</A></U>"', Line);
+            Value := Value + Copy(Line, 1, EndPos-1) + ' - ';
+         end;
+      until ( BeginPos = 0);
+      SetField(fieldActors, Value);
+   end;
+    
+   // Image
+   LineNr := FindLine('href="javascript:{agrandir(', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginVal2 := pos ('agrandir(', Line);
+      Delete(Line, 1, BeginVal2+9);
+      BeginVal2 := pos (',', Line);
+      value2 := copy (Line, 1, BeginVal2-2);
+      Line := Page.GetString(LineNr+1);
+
+      BeginPos := pos('src="', Line) + 4;
+      Delete(Line, 1, BeginPos);
+      EndPos := pos('ref=v', Line);
+      Value := copy(Line, 1, EndPos + 4);
+      nomImg := 'http://www.alapage.com'+Value+Value2+'r.jpg';
+//      nomImgVerso := 'http://www.alapage.com'+Value+Value2+'v.jpg';
+      GetPicture(nomImg); // False = stocke l'image dans la base
+   end;
+
+   // Réalisateur
+   LineNr := FindLine('">R&eacute;alisateur :&nbsp;&nbsp;</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr+1);
+      BeginPos := pos('"roll"><SPAN class="tx12noir">', Line);
+      EndPos := pos('</SPAN></A>', Line);
+      Value := Copy(Line, BeginPos+30, EndPos - BeginPos-30);
+      SetField(fieldDirector, Value);
+   end;
+
+   // Genre
+   LineNr := FindLine('">Genre :&nbsp;&nbsp;</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr+1);
+      BeginPos := pos('"roll"><SPAN class="tx12noir">', Line);
+      EndPos := pos('</SPAN></A>', Line);
+      Value := Copy(Line, BeginPos+30, EndPos - BeginPos-30);
+      SetField(fieldCategory, Value);
+   end;
+
+   // Editeur
+   LineNr := FindLine('">Editeur :&nbsp;&nbsp;</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr+1);
+      BeginPos := pos('<SPAN class="tx12noir">', Line);
+      EndPos := pos('</SPAN></TD>', Line);
+      Value := Copy(Line, BeginPos+23, EndPos - BeginPos-23);
+      SetField(fieldProducer, Value);
+   end;
+
+   // Zone
+   LineNr := FindLine('">Zone :&nbsp;&nbsp;</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr+1);
+      BeginPos := pos('<SPAN class="tx12noir">', Line);
+      EndPos := pos('</SPAN></TD>', Line);
+      Value := Copy(Line, BeginPos+23, EndPos - BeginPos-23);
+      SetField(fieldVideoFormat, 'DVD Zone '+Value);
+   end;
+
+   // Description
+   LineNr := FindLine('class="tx14grisbold">Commentaires</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Value := StringReplace(Page.GetString(LineNr+12), '<br>', #13#10); ;
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      value := StringReplace (Value, #9, #32); // pour remplacer les tabulations du debut par des espaces
+      SetField(fieldDescription, Trim(Value));
+   end;
+
+   // Bonus
+   LineNr := FindLine('">Bonus / Interactivit&eacute;</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Value := 'Bonus / Interactivité :'+#13#10;
+      repeat
+           OnContinue := False;
+         repeat
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+            BeginPos := pos('/puce_grise.gif" border="0" alt="">', Line);
+         until ( (BeginPos > 0) or (pos('<a name="donneravis">', Line)>0) );
+         if (BeginPos > 0) then
+         begin
+            OnContinue := True;
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+            BeginPos := pos('"tx12noir" colspan="2">', Line);
+            EndPos := pos('<BR></TD>', Line);
+            Value := Value + Copy(Line, BeginPos+23, EndPos - BeginPos-23) + #13#10;
+         end;
+      until ( OnContinue = False);
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldComments, Value);
+   end;
+
+   //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+  EndPos: Integer;
+  LastLine: Integer;
+
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    LastLine := Page.count;
+    StartPos := pos('&VID_NUMERO=', Line);
+    if ((Startpos>0) and (pos('>&nbsp;Disponible en <b>occasion</b>', Line) > 0 )) then StartPos := 0; // pour ne pas prendre les lignes d'occasions
+    if StartPos > 0 then 
+    begin
+         LineNr := LineNr + 3;
+         Line := Page.GetString(LineNr);
+         StartPos := pos('href="/mx/?id=', Line);
+         Delete(Line, 1, StartPos);
+         MovieAddress := copy(Line, 6, pos('class="tx12noirbold"><u>', Line)-8 );
+         Delete(Line, 1, pos('><u>', Line)+3);
+         EndPos := pos('</u></A>', Line);
+         MovieTitle := copy(Line, 1, EndPos-1);
+         HTMLDecode(Movietitle);
+         PickTreeAdd(MovieTitle, 'http://www.alapage.com' + MovieAddress);
+    end;
+  until ((pos('Recherche&nbsp;rapide&nbsp;', Line) > 0) or (pos('Page&nbsp;suivante&nbsp;&raquo</DIV>', Line) > 0) or (pos('&laquo; Page pr&eacute;c&eacute;dente</a>', Line) > 0)) ;
+  if (pos('&laquo; Page pr&eacute;c&eacute;dente</a>', Line) > 0) then
+  begin
+     StartPos := pos('<a href="', Line);
+     EndPos :=     pos('" class="roll">&laquo; Page', Line);
+     PickTreeAdd('... << Résultats précédents', 'http://www.alapage.com' + copy (Line, StartPos+9, Endpos-StartPos-9));
+  end;
+  if (pos('Page&nbsp;suivante&nbsp;&raquo</DIV>', Line) > 0) then
+  begin
+     StartPos := pos('|&nbsp;&nbsp;<A href="', Line);
+     EndPos :=     pos('" class="roll">Page&nbsp;suivante&nbsp;', Line);
+     PickTreeAdd('Résultats suivants >> ...', 'http://www.alapage.com' + copy (Line, StartPos+22, Endpos-StartPos-22));
+  end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line : String;
+  StartPos, EndPos : integer;
+  Adr : String;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  if pos('>&nbsp;Caract&eacute;ristiques</TD>', Page.Text) > 0 then 
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page)
+  end
+  else
+     begin
+     if pos('>1 r&eacute;ponse</SPAN> pour', Page.Text) > 0 then // 1 réponse, on ouvre directement la page
+     begin
+       LineNr := 0;
+       LineNr := FindLine('&VID_NUMERO=', Page, LineNr);
+       Line := Page.GetString(LineNr+3);
+       StartPos := pos('href="/mx/?id=', Line);
+       Delete(Line, 1, StartPos);
+       Adr := 'http://www.alapage.com' + copy(Line, 6, pos('class="tx12noirbold"><u>', Line)-8 );
+       SetField(fieldURL, Adr);
+       Page.Text := GetPage(Adr);
+       AnalyzeMoviePage(Page)
+     end 
+     else 
+     begin
+         if pos('pas trouv&eacute; de r&eacute;ponses', Page.Text) > 0 then // aucune réponse
+         begin
+              ShowMessage('Aucun Film Trouvé pour : ' + MovieName);
+         end 
+         else
+         begin
+              PickTreeClear;
+              LineNr := 0;
+              LineNr := FindLine('r&eacute;ponses</SPAN> pour "', Page, LineNr); // trouvé plusieurs réponse
+              if LineNr > -1 then
+              begin
+                   Line := Page.GetString(LineNr);
+                   StartPos := pos ('<SPAN class="tx14orangefoncebold">', Line);
+                   EndPos := pos('r&eacute;ponses</SPAN>', Line);
+                   PickTreeAdd(copy (Line, StartPos+34, EndPos-StartPos-35)+' Films Trouvés pour ' + MovieName + ' :', '');
+                   AddMoviesTitles(Page, LineNr);
+              end;
+              if PickTreeExec(Address) then
+                 AnalyzePage(Address);
+         end;
+     end;
+  end;
+  Page.Free;
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+
+    if Input('Alapage.com Import', 'Entrer le titre du film :', MovieName) then
+    begin
+       AnalyzePage('http://www.alapage.com/mx/?tp=L&type=4&id=75071065095581&donnee_appel=BIGBO&suv_type=1&dispo=0&sort=titre&mot_vid_titre='+UrlEncode(MovieName));
+    end;
+  end 
+  else
+      ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+end.

@@ -1,0 +1,245 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ronniewo2 (Ronnie Oliveira)
+Title=AdoroCinema
+Description=Movie importation script for adorocinema.com
+Site=http://adorocinema.com
+Language=BR
+Version=5.00
+Release date=27/12/16
+Requires=3.5.1
+Comments=Shows only 20 first results; only can find whole words (this is a bug of the site)...|Previous versions by NeiPCs / Guardião / MIKEPAX
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program AdoroCinema;
+var MovieName:string;
+uses StringUtils1;
+
+procedure AnalyzeFilmPage(Address:string);
+var Page:TStringList;
+    valor, Pag, Pag2, Text, valor2:String;
+    j, i, min, Code, min2:integer;
+begin
+  Page := TStringList.Create;
+  valor:= Address;
+  Page.Text:=GetPage(valor);
+  SetField(fieldURL,valor);
+ 
+  i:=FindLine('itemprop="aggregateRating"',Page,0);
+  valor:=Page.GetString(i+3);
+  valor:=TextBetween(valor,' ','</span>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  HTMLRemoveTags(valor);
+  SetField(fieldRating, trim(valor));
+
+  SetField(fieldMediaType,'DVD');
+
+  i:=FindLine('itemprop="description">',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(Page.Text,'itemprop="description">','</p>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  valor:= StringReplace(valor, '<br/>', #13#10);
+  HTMLRemoveTags(valor);
+  SetField(fieldDescription, trim(valor));
+
+  i:=FindLine('="og:title" content="',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'t="','" />');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  SetField(fieldTranslatedTitle, valor);
+
+  i:=FindLine('">Ano de produ',Page,0);
+  valor:=Page.GetString(i+1);
+  valor:=TextBetween(valor,'">' , '</span>');
+  //valor:=TextAfter(valor,'">');
+  SetField(fieldYear,valor);
+
+  i:=FindLine('class="that">',Page,0);
+  valor:=Page.GetString(i);
+  valor := TextBetween(valor, 'class="that">' , '</span>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  SetField(fieldOriginalTitle, valor);
+
+  Pag:=Page.Text;
+  Text:='';
+  repeat
+    i:=pos('<span itemprop="genre">',Pag);
+    if i>0 then begin
+       valor:=copy(Pag,i+20,Length(Pag));
+       valor := TextBetween(valor, '">' , '</span>');
+       valor:= Utf8Decode(valor);
+       delete(Pag,i,19);
+       Text:=Text+' / '+valor;
+    end;
+  until i=0;
+  Delete(Text,1,3);
+  SetField(fieldCategory,Text);
+
+  i:=FindLine('">Data de lan',Page,0);
+  valor:=Page.GetString(i+5);
+  HTMLRemoveTags(valor);
+  valor := trim(valor);
+  i:=pos('h',valor);
+  min2 := 0;
+  if i > 0 then begin
+     min2:=StrToInt(copy(valor,i-1,1),-1);
+     min:=StrToInt(copy(valor,i+2,2),-1);
+     if min2<>-1 then
+        min2:=min2*60;
+  end
+  else min:=0;
+  if min2<>-1 then
+     min:=min+min2;
+  valor:=IntToStr(min);
+  SetField(fieldLength,valor);
+
+  i:=FindLine('itemprop="director"',Page,0);
+  valor:=Page.GetString(i+1);
+  valor := TextBetween(valor, '="name">' , '</span>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  SetField(fieldDirector,valor);
+ 
+  Text := '';
+  j:=1;
+  i:=FindLine('<span class="light">Nacionalidade',Page,0);
+  repeat
+     valor := Page.GetString(i+1);
+     if pos('</div>',valor) > 0 then begin
+        j := 0;
+     end
+     else begin
+        valor := TextBetween(valor, '">' , '</span>');
+        valor := trim(valor);
+        if valor <> '' then
+           Text:=Text+' / '+valor;
+     end;
+     i:=i+1;
+  until j = 0;
+  Delete(Text,1,3);
+  valor:= Utf8Decode(Text);
+  HTMLDecode(valor);
+  HTMLRemoveTags(valor);
+  SetField(fieldCountry, trim(valor));
+
+  i:=FindLine('class="shot-img"',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'data-src="','" alt="');
+  //*valor:= StringReplace(valor,'195x289','290x478');
+  GetPicture(valor);
+
+  valor:= Address+'creditos/';
+  Page.Text:=GetPage(valor);
+  Text:='';
+  Pag:=TextBetween(Page.Text,'<div id="actors"','<div class="row md-table-row');
+  //if trim(Pag)='' then
+     //Pag:=TextBetween(Page.Text,'Atores e atrizes','</table>'#13#10);
+  repeat
+    i:=FindLine('Personagem :',Page,0);
+    valor:=Page.GetString(i-5);
+    valor2:=Page.GetString(i);
+    Delete(valor2,pos('Personagem :',valor2),13);
+    Page.SetString(i,'nothing important'); //exclui a linha de referência já utilizada
+    HTMLRemoveTags(valor);
+    HTMLRemoveTags(valor2);
+    valor:=trim(valor)+' ... '+trim(valor2);
+    if Length(valor)>5 then
+       Text:=Text+#13#10+valor;
+  until i=-1;
+ 
+  repeat
+       i:=pos('<div class="tab_tooltip',Pag);
+       valor:=TextBetween(Pag,'<div class="tab_tooltip',#13#10'</span>');//</a>');
+       j:=pos('<span itemprop="name">',valor);
+       if j>0 then
+          valor:=TextAfter(valor,'<span itemprop="name">'#13#10)
+       else begin
+          valor:=TextAfter(valor,'">'#13#10);
+          valor:=TextAfter(valor,'">'#13#10);
+       end;
+
+       valor:=trim(valor);
+       valor2:=TextBetween(Pag,'<td>'#13#10,#13#10'</td>');
+       valor:=valor+' - '+valor2;
+       j:=pos('<td>',Pag);
+       Delete(Pag,j,5);
+       j:=pos('<td>',Pag);
+       Delete(Pag,j,5);
+       Delete(Pag,i,23);
+
+       valor:= StringReplace(valor, #13#10, ' - ');
+       valor:=trim(valor);
+       HTMLRemoveTags(valor);
+       if Length(valor)>1 then
+          Text:=Text+#13#10+valor;
+  until i=0;
+  Text:= Utf8Decode(Text);
+  valor:=copy(Text,3,Length(Text));
+  SetField(fieldActors,valor);
+
+  Page.free;
+end;
+
+procedure AnalyzePage(Address: String);
+var Page:string;
+    i:integer;
+    nome, nome2, ano, url, Pag, Search:string;
+begin
+  PickTreeClear;
+  Search:='busca/1/?q=';
+  Page := GetPage(Address+Search+MovieName);
+  Pag:=Page;
+  repeat
+    i:=pos('"margin-top:-5px;">', Pag);
+    url:=copy(Pag,i+30,100);
+    url:=TextBetween(url,'/','''');
+    nome:=copy(Pag,i+30,pos('<br',Pag));
+    nome:=TextBetween(nome,'>'#13#10,'<div>');
+    nome:=copy(nome,1,Length(nome)-2);
+    nome2:=nome;
+    ano:=nome;
+    nome:=copy(nome,1,pos(#13#10,nome)-1);
+    nome2:=copy(nome2,pos(#13#10,nome2)+2,length(nome2));
+    ano:=nome2;
+    nome2:=copy(nome2,1,pos(#13#10,nome2)-1);
+    ano:=TextBetween(ano,'="fs11">'#13#10,'<br />');
+    nome:=nome+' '+nome2+' - '+ano;
+    nome:= Utf8Decode(nome);
+    HTMLRemoveTags(nome);
+    delete(Pag,i,19);
+    nome:=trim(nome);
+    if (length(nome)>2) and (pos('AdoroCinema',nome)=0) then begin
+      url:='http://www.adorocinema.com/'+url;
+      PickTreeAdd(nome,url);
+    end;
+  until i=0;
+ if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+end;
+
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do AdoroCinema.com', 'Escreva o nome do filme:', MovieName) then
+  begin
+    MovieName := StringReplace(MovieName, ' ', '+');
+    AnalyzePage('http://www.adorocinema.com/');
+  end;
+end.

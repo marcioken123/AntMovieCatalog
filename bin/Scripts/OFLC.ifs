@@ -1,0 +1,265 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Thermal Ions
+Title=OFLC (Australia)
+Description=Import classification data from the Office of Film and Literature Classification (Australia)
+Site=www.oflc.gov.au
+Language=EN
+Version=1.00
+Requires=3.5.0
+Comments=Thanks must go to Antoine for AMC and the IMDB script, which I cut my scripting teeth on with a bit of tweaking before embarking on this effort. Any issues or comments with the script should be posted in the script section of the AMC forums (http://forum.antp.be/)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+BatchMode=0|0|0=Prompt user to select movie from search window|1=Uses OFLC Link from Source field if available, else same as 0|2=Does not display search window, autoselects the first matching record|3=Uses OFLC Link from Source field if available, else same as 2
+ClassificationRating=0|0|0=Store Classification Rating in Media Type field|1=Do not store Classification Rating in Media Type field
+OFLCLink=0|0|0=Store Link to OFLC Classification in Source field|1=Do not store link to OFLC Classification
+ClassificationDetail=0|0|0=Append Rating and Consumer Advice Detail to Comments field|1=Append only Consumer Advice Detail to Comments field|2=Append only Rating to Comments field|3=Do not append any detail to Comments field
+ExactMatch=0|0|0=Do not require an exact match when searching|1=Requires an exact match when searching
+AdultContent=1|1|0=Search will not include Adult (Mature) or RC Material|1=Search includes Adult (Mature) and RC Material
+
+***************************************************)
+
+program OFLC;
+
+uses
+  StringUtils1;
+
+const
+  SEARCHPREFIX = 'http://www.oflc.gov.au/special.html?n=46&p=156&sTitle=';
+  EXACTSEARCH = '&sTitleExact=1';
+  SEARCHSUFFIX1 = '&sCreator=&sProducer=&sProductionCompany=&sCountry=';
+  ADULTSEARCH = '&sMature=1';
+  SEARCHSUFFIX2 = '&sMediaFilm=1&sDateFromM=1&sDateFromY=1970&sDateToM=4&sDateToY=2007&sRating=';
+
+var
+  MovieName, MovieLink, SearchStr : string;
+
+// ##### Analyse search page and autoselects or prompts to select movie from the list #####
+
+procedure AnalyseSearchPage(Address: string);
+
+var
+  PageText, MatchList, Value, ResultAddress: string;
+
+begin
+
+  // ^^^^ Grab search results page from OFLC site ^^^^
+  PageText := GetPage(Address);
+ 
+  // ^^^^ Test for matches and exit if none ^^^^
+  if pos('No matches.<br>', PageText) > 0 then
+  begin
+    if GetOption('BatchMode') < 2 then
+      ShowMessage('No movie found for this search');
+    Exit;
+  end
+  else
+ 
+  // ^^^^ Process search results page ^^^^
+  begin
+    // ^^^^ Trim page to results table ^^^^
+    MatchList := TextBetween(PageText, '<tr class="background-olive-pale">', '</table>');
+   
+    if GetOption('BatchMode') < 2 then
+   
+    // ^^^^ Not in Batch mode - Build List to pick movie from ^^^^
+    begin
+      PickTreeClear;
+      //  ^^^^ Cycle through search results to extract link and movie detail for each result ^^^^
+      repeat
+        Value := TextBefore(MatchList, '</tr>','');
+        if Value <> '' then
+        begin
+          ResultAddress := 'http://www.oflc.gov.au/' + TextBetween(Value,'<a class="link" href="','">');
+          HTMLRemoveTags(Value);
+          HTMLDecode(Value);
+          Value := StringReplace(Value,#13#10,'');
+          Value := StringReplace(Value,'  ',' ');
+          Value := Trim(Value);
+          PickTreeAdd(Value, ResultAddress);
+        end;
+        MatchList := TextAfter(MatchList, '</tr>');
+      until pos('</tr>',MatchList) = 0;
+     
+      // ^^^^ Display search results list and await selection or cancellation ^^^^
+      if PickTreeExec(Address) then
+        // Movie selected - proceed to retrieve and analyse page
+        AnalyseMoviePage(Address);
+    end
+    else
+
+    // ^^^^ Batch mode active - extract link from first movie in search results ^^^^
+    begin
+      Value := TextBefore(MatchList, '</tr>','');
+      if Value <> '' then
+      begin
+        ResultAddress := 'http://www.oflc.gov.au/' + TextBetween(Value,'<a class="link" href="','">');
+        // ^^^^ Proceed to retrieve and analyse page for autoselected movie ^^^^
+        AnalyseMoviePage(ResultAddress);
+      end;
+    end;
+  end;
+end;
+// ***** End of AnalyseSearchPage procedure *****
+
+
+// ##### Analyse the page for the selected movie #####
+
+procedure AnalyseMoviePage(Address: string);
+var
+  PageText, Rating, Advice, OFLCLink, Value, Value2 : string;
+
+begin
+
+  // ^^^^ Grab movie page from OFLC site ^^^^
+    PageText := GetPage(Address);
+
+  // ^^^^ Get Classification Rating from Page ^^^^
+  Rating := TextBetween(PageText, '<b>Classification</b></td>', '</td>');
+  HTMLRemoveTags(Rating);
+  HTMLDecode(Rating);
+  Rating := Trim(StringReplace(Rating,#13#10,''));
+  // ^^^^ Strip out any bracketed text description of the classification ^^^^
+  if pos('(',Rating) > 0 then
+    Rating := Trim(TextBefore(Rating,'(',''));
+  // ^^^^ Strip out any 15+ or 18+ suffix from the classification ^^^^
+  if pos(' ',Rating) > 0 then
+    Rating := Trim(TextBefore(Rating,' ',''));
+ 
+  // ^^^^ Get Consumer Advice from Page ^^^^
+  Advice := TextBetween(PageText, '<b>Consumer Advice</b></td>', '</td>');
+  HTMLRemoveTags(Advice);
+  HTMLDecode(Advice);
+  Advice := Trim(StringReplace(Advice,#13#10,''));
+
+  // ^^^^ Get Classification Number from Page ^^^^
+  OFLCLink := TextBetween(PageText, '<b>Classification Number</b></td>', '</td>');
+  HTMLRemoveTags(OFLCLink);
+  HTMLDecode(OFLCLink);
+  OFLCLink := 'http://www.oflc.gov.au/special.html?n=115&p=36&sCertificate=' + Trim(StringReplace(OFLCLink,#13#10,''));
+
+  // ^^^^ Store Rating in MediaType field ^^^^
+  if GetOption('ClassificationRating') = 0 then
+  begin
+    if CanSetField(fieldMediaType) then
+      SetField(fieldMediaType, Rating);
+  end;
+
+  // ^^^^ Append Rating and/or Consumer Advice to Comments field ^^^^
+  if CanSetField(fieldComments) then
+  begin
+    if GetOption('ClassificationDetail') < 3 then
+    begin
+      Case GetOption('ClassificationDetail') of
+         0 : begin
+               if (Rating <> '') or (Advice <> '') then
+                 Value2 := 'Rated ';
+               if Rating <> '' then
+                 Value2 := Value2 + Rating + ' ';
+               if Advice <> '' then
+                 Value2 := Value2 + 'for ' + Advice;
+             end;
+         1 : begin
+               if Advice <> '' then
+                 Value2 := 'Rated for ' + Advice;
+             end;
+         2 : begin
+               if Rating <> '' then
+                 Value2 := 'Rated ' + Rating;
+             end;
+      end;
+      Value := Getfield(fieldComments);
+      if (Value <> '') and (Value2 <> '') then
+        Value := Value + #13#10 + #13#10;
+      Value := Value + Value2;
+      SetField(fieldComments, Value);
+    end;
+  end;
+
+  // ^^^^ Store OFLC Link in Source field ^^^^
+  if GetOption('OFLCLink') = 0 then
+  begin
+    if CanSetField(fieldSource) then
+      SetField(fieldSource, OFLCLink);
+  end;
+
+end;
+// ***** End of AnalyseMoviePage procedure *****
+
+
+// ##### Beginning of the program #####
+
+begin
+  // ^^^^ Test AMC version ^^^^
+  if CheckVersion(3,5,0) then
+  begin
+    MovieLink := '';
+   
+    if (GetOption('BatchMode') = 1) or (GetOption('BatchMode') = 3) then
+    // ^^^^ Option to use OFLC Link if available has been selected ^^^^
+    begin
+      // ^^^^ Test if Source field appears to contain OFLC link ^^^^
+      MovieLink := GetField(fieldSource);
+      if Pos('http://www.oflc.gov.au/special.html?', MovieLink) = 0 then
+        // Not an OFLC Link
+        MovieLink := '';
+    end;
+   
+    if MovieLink <> '' then
+    // ^^^^ OFLC Link available for use - jump straight to Analysing Movie page ^^^^
+    begin
+      AnalyseMoviePage(MovieLink);
+    end
+    else
+   
+    // ^^^^ Utilise Movie Title or Manually entered OFLC Link for search ^^^^
+    begin
+      // ^^^^ Grab OriginalTitle to use as default search text ^^^^
+      MovieName := GetField(fieldOriginalTitle);
+     
+      // ^^^^ Not in batch mode - prompt for Title to search or entered OFLC Link ^^^^
+      if GetOption('BatchMode') = 0 then
+      begin
+        if not Input('OFLC Import', 'Enter the Title or the OFLC Link of the movie:', MovieName) then
+          Exit;
+      end;
+
+      if MovieName <> '' then
+      begin
+        // ^^^^ Test if OFLC Link has been entered ^^^^
+        if Pos('http://www.oflc.gov.au/special.html?', MovieName) > 0 then
+        begin
+          // OFLC Link entered - jump straight to Analysing Movie page
+          AnalyseMoviePage(MovieName);
+        end
+        else
+       
+        // ^^^^ Perform search using movie name ^^^^
+        begin
+          MovieName := StringReplace(MovieName, '&', 'and');
+
+          // ^^^^ Build up search string based upon options ^^^^
+          SearchStr := SEARCHPREFIX + UrlEncode(MovieName);
+          if GetOption('ExactMatch') = 1 then
+             SearchStr := SearchStr + EXACTSEARCH;
+          SearchStr := SearchStr + SEARCHSUFFIX1;
+          if GetOption('AdultContent') = 1 then
+             SearchStr := SearchStr + ADULTSEARCH;
+          SearchStr := SearchStr + SEARCHSUFFIX2;
+
+          // ^^^^ Jump to Analyse the Search page ^^^^
+          AnalyseSearchPage(SearchStr);
+         
+        end;
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,333 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=REALexMSG (realexmsg@mail.ru) 2005; Norst 2006; bad4u 2008; anton.mints 2010;
+Title=KinoExpert.ru
+Description=Import data from KinoExpert.ru
+Site=http://www.kinoexpert.ru/
+Language=RU
+Version=1.04
+Requires=3.5.0
+Comments=модифицированный скрипт NasheKino
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+ForceUpdate=1|1|1=Обрабатывать все фильмы|0=Пропускать обработанные ранее фильмы (обработанными считаются фильмы с заполненным полем "по-русски")
+BatchMode=0|0|1=Автоматический режим работы. Будут обработаны только однозначно определенные фильмы|0=Диалоговый режим работы
+
+***************************************************)
+
+program KinoExpert;
+
+uses
+  AutoUtils,
+  StringUtils7552,
+  Debug;
+
+const
+  BaseAddress = 'http://www.kinoexpert.ru/';
+var
+  MovieName: string;
+
+function GetTextBlockFrom(Text: string; StartAt: string): string;
+var
+  TextBlock: string;
+  StartPos, EndPos: Integer;
+begin
+  TextBlock := Text;
+  StartPos := pos(StartAt, TextBlock);
+  if StartPos > 0 then
+  begin
+    Delete(TextBlock, 1, StartPos - 1);
+    result := TextBlock;
+  end;
+end;
+
+// AMI2010
+function GetValueByName(Name: string; const Text: string): string;
+begin
+  Result := TextBetween(Text, 'name="' + Name + '" value="', '"');
+end;
+
+// AMI2010
+function GetMovieTitle(Index: Integer; const TextBlock: string): string;
+var
+  s: string;
+begin
+  s := GetValueByName('name' + IntToStr(Index), TextBlock);
+
+  HTMLDecode(s);
+  HTMLRemoveTags(s);
+
+  Result := s;
+end;
+
+// AMI2010
+function GetMovieAddress(Index: Integer; const TextBlock: string): string;
+begin
+  Result := 'http://www.kinoexpert.ru/index.asp?comm=4&num=' +
+      GetValueByName('id' + IntToStr(Index), TextBlock) + '#1';
+end;
+ 
+// AMI2010 - updated
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  PageText: string;
+  FilmCount: Integer;
+  i: Integer;
+  s: string;
+
+begin
+  // DEBUG
+  // PageText := GetLocalPage('KinoExpert');
+  //
+  PageText := GetPage(Address);
+  FilmCount := StrToInt(GetValueByName('colvo_all', PageText), 0);
+  
+  if (FilmCount = 0) then
+  begin
+    if (GetOption('BatchMode')=0) then
+      if Input('Import from KinoExpert', 'Фильм "'+MovieName+'" не найден.'+#13+'Исправьте название фильма.', MovieName) then
+      begin
+        // to be corrected!!!
+        AnalyzePage('http://www.kinoexpert.ru/index.asp?comm=1&kw='+UrlEncode(MovieName)+'&fop=false&pack=0#1');
+        Exit;
+      end;
+  end else
+  begin
+    // exact match
+    if (FilmCount = 1) then
+    begin
+      Address := GetMovieAddress(1, PageText);
+      
+    // if multiple movies found and in a 'dialog' mode
+    end else if (FilmCount > 1) and (GetOption('BatchMode')=0) then
+    begin
+      PickTreeClear;
+      PickTreeAdd('Movies ['+MovieName+']', '');
+      for i := 1 to FilmCount do
+        PickTreeAdd(
+          GetMovieTitle(i, PageText),
+          GetMovieAddress(i, PageText));
+       PickTreeExec(Address);
+    end;
+       
+    if (Address <> '') then
+    begin
+      SetField(fieldURL, Address);
+
+      Page := TStringList.Create;
+      try
+        Page.Text := GetPage(Address);
+        AnalyzeMoviePage(Page);
+      finally
+        Page.Free;
+      end;
+    end;
+  end;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Value, Value1, Value2, Value3, PageText, Text: string;
+  LineNr, MovieLength: Integer;
+  BeginPos, EndPos: Integer;
+begin
+// Original Title and Translated Title and Country
+  PageText := GetTextBlockFrom( Page.Text, '<h1>' );
+  if Length(PageText) > 0 then
+  begin
+    Delete(PageText,1,4);
+
+    EndPos := pos('</font><br>', PageText) -1;
+    Value := copy(PageText,1,EndPos);
+    Delete(PageText, 1, EndPos);
+    
+    Value1 := Value;
+    Value2 := Value1;
+    EndPos := pos('<font', Value);
+    if EndPos<>0 then
+    begin
+      Value1 := copy(Value, 1, EndPos-1);
+      Value2 := copy(Value, pos('</font>', Value)+7, Length(Value));
+    end;
+
+    EndPos := pos('<b>',PageText) +2;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('</b></font', PageText)-1;
+    Value3 := copy(PageText, 1, EndPos);
+
+    SetField(fieldOriginalTitle, Value2);
+    SetField(fieldTranslatedTitle, Value1);
+    SetField(fieldCountry, Value3);
+
+    Delete(PageText, 1, EndPos);
+// Year
+    EndPos := pos('<BR>', PageText) +4;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('&year=', PageText)+6;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('#00', PageText) +8;
+    Delete(PageText, 1, EndPos);
+    Value := copy(PageText,1,4);
+    SetField(fieldYear, Value);
+  end;
+
+// Actors
+  PageText := GetTextBlockFrom( Page.Text, 'В ролях' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos('title=', PageText) +29;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('<b>', PageText);
+    Value := copy(PageText,1,EndPos);
+    Value2 := '';
+    repeat
+      if length(Value2) > 0 then Value2 := Value2 + ', ';
+      EndPos := pos('</a>', Value) -1;
+      Value1 := copy (Value, 1, EndPos);
+      Delete (Value, 1, pos('</a>', Value) -1);
+      Delete (Value, 1, pos('title=', Value) +6);
+
+      if copy(Value1,2,1) = '>' then
+         begin
+          Value1 := copy(Value1,3,length(Value1)-2);
+         end
+        else
+         begin
+          if pos('>', Value1) >1 then Value1 := copy(Value1, pos('>',Value1) +1, length(Value1) -pos('>',Value1)) +' /' + copy(Value1, 1, pos('>',Value1) -2) +'/';
+         end;
+      Value2 := Value2 + Value1;
+    until pos('</a>', Value) < 1;
+    SetField(fieldActors, Value2);
+  end;
+
+// Director
+  PageText := GetTextBlockFrom( Page.Text, 'Режиссер:<' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos('title=', PageText) +6;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('</a>', PageText)-1;
+    Value := copy(PageText,1,EndPos);
+    if copy(Value,2,1) = '>' then
+       begin
+        Value := copy(Value,3,length(Value)-2);
+       end
+      else
+       begin
+        if pos('>', Value) >1 then Value := copy(Value, pos('>',Value) +1, length(Value) -pos('>',Value)) +' /' + copy(Value, 1, pos('>',Value) -2) +'/';
+       end;
+    SetField(fieldDirector, Value);
+  end;
+
+// Awards
+  PageText := GetTextBlockFrom( Page.Text, 'Награды и примечания' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos(':</b><br>', PageText) +8;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('</div><br>', PageText);
+    Value := copy( PageText, 1, EndPos-1);
+    HTMLDecode(Value);
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<p', #13#10#13#10 + '<p');
+    HTMLRemoveTags(Value);
+    SetField(fieldComments, Value);
+  end;
+  
+
+// Description
+  PageText := GetTextBlockFrom( Page.Text, 'Краткое содержание' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos(':</b><br>', PageText) +8;
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('</div><BR>', PageText) -1;
+    Value := copy(PageText, 1, EndPos);
+    HTMLDecode(Value);
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<p', #13#10#13#10 + '<p');
+    HTMLRemoveTags(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+// Category
+  PageText := GetTextBlockFrom( Page.Text, 'Жанр</b></td>' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos('008000', PageText);
+    Delete(PageText, 1, EndPos);
+    Delete(PageText, 1, EndPos);
+    EndPos := pos('008000', PageText) +7;
+    Delete(PageText, 1, EndPos);
+//    EndPos := pos('008000', PageText) +7;
+//    Delete(PageText, 1, EndPos);
+    EndPos := pos('&nbsp', PageText) -1;
+    Value := copy(PageText, 1, EndPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldCategory, Value);
+// Length
+    Delete(PageText,1,EndPos);
+    EndPos := pos('#00',PageText) + 8;
+    Delete(PageText,1,EndPos);
+    Value := copy(PageText,1,pos('</font>', PageText)-1);
+    Value := StringReplace(Value, #13+#10, '');
+    SetField(fieldLength,Value);
+  end;
+  
+// Image
+  PageText := GetTextBlockFrom( Page.Text, 'Купить этот фильм:' );
+  if Length(PageText) > 0 then
+  begin
+    EndPos := pos('src="http://mmedia',PageText);
+    if EndPos<>0 then
+      begin
+        Delete(PageText,1,EndPos+4);
+        Value := copy(PageText,1,pos('"',PageText)-1);
+        Value := StringReplace(Value, 'small/', '');
+        Delete(Value,Length(Value)-2,3);
+        Value := Value+'jpg';
+      end
+    else
+      begin
+        EndPos := pos('http://www.kinomost.ru/video_cover/', PageText);
+        Delete(PageText,1,EndPos);
+        Value := copy(PageText,1,pos('"', PageText)-1);
+      end;
+    GetPicture(Value);
+  end;
+end;
+
+var
+  url: String;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+{    if not notShowDialog then
+    begin
+      OnlyNew := ShowConfirmation('Пропускать уже обработанные фильмы?'+#13+'(обработанными считаются фильмы с заполненным полем "По-русски")');
+      FirstPass := ShowConfirmation('Перейти в автоматический пакетный режим?'+#13+'(будут обработаны только фильмы с однозначным соответствием)');
+    end;
+    notShowDialog:=true;}
+    if (GetOption('ForceUpdate')=0) and (GetField(fieldTranslatedTitle)<>'') then
+      Exit;
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+      
+    url := 'http://search.kinoexpert.ru/searchrpc/results/?string=' + UrlEncode(MovieName) + '&colvo=50&start=0&type=1&id=1';
+    AnalyzePage(url);
+
+  end else
+  begin
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+  end;
+end.

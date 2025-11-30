@@ -1,0 +1,130 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com/forum/viewtopic.php?t=82</link>
+Title=VerVideo
+Description=Movie importation script for vervideo.com.br
+Site=www.vervideo.com.br
+Language=BR
+Version=1.3 (25 Setembro 2008)
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.vervideo.com.br"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=82</link>
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program VerVideo;
+uses StringUtils1;
+var
+  MovieName: string;
+
+procedure AnalyzeFilmPage(Address: String);
+var
+  Page: TStringList;
+  value: string;
+  LineNr: Integer;
+begin
+    Page := TStringList.Create;
+    Page.Text := GetPage(Address);
+    SetField(fieldURL, Address);
+
+    value := TextBetween(Page.text,'titulo_filme','</label>');
+    value := trim(Copy(value,4,length(value)));
+    SetField(fieldTranslatedTitle, value);
+    
+    LineNr:=FindLine('Título Original:',Page,0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldOriginalTitle, FullTrim(value));
+    
+    value := trim(TextBetween(Page.text,'class=''titulo'' >','<'));
+    SetField(fieldYear, value);
+
+    LineNr := FindLine('<b>País:</b>', Page, 0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldCountry, FullTrim(value));
+
+    value:=TextBetween(Page.text,'name=''genero''','</label>');
+    value:=TextBetween(value,'>','<');
+    HTMLDecode(value);
+    SetField(fieldCategory, value);
+
+    LineNr := FindLine('<b>Direção:</b>',Page,0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldDirector, FullTrim(value));
+
+    LineNr := FindLine('<b>Elenco:</b><', Page,0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldActors, FullTrim(value));
+      
+    value := TextBetween(Page.Text,'<b>Sinopse:</b>', '</label>');
+    HTMLDecode(value);
+    SetField(fieldDescription, FullTrim(value));
+    
+    LineNr:=FindLine('<b>Duração:</b>',Page,0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=FullTrim(StringReplace(value,'minutos',''));
+    SetField(fieldLength, value);
+    
+    LineNr:=FindLine('<b>Distribuidora:</b>',Page,0);
+    value := Page.GetString(LineNr+3);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldProducer, FullTrim(value));
+
+    value := TextBetween(Page.Text,'src="../files/images/item/','"');
+    value:='http://www.vervideo.com.br/files/images/item/'+value;
+    GetPicture(Value);
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  x: integer;
+  linha, nome, url: string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text :=PostPage(Address,'texto_busca='+MovieName);
+  if Pos('Encontrados <b>0</b>', Page.Text)>0  then
+      ShowMessage('O filme não foi encontrado.')
+  else
+  begin
+   for x:=0 to Page.Count-1 do
+   begin
+       linha := Page.GetString(x);
+       nome:=TextBetween(linha,'title="','"');
+       if length(nome)> 0 then
+       begin
+         url:=TextBetween(linha,'filme_id=','&');
+         PickTreeAdd(nome, 'http://www.vervideo.com.br/website_vervideo/acoes.php?hash=&chave=&pag=filme_item_det&filme_id='+url+'&last_page=acervo_geral_filme_locacao_lst');
+       end;
+   end;
+    if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  end;
+  Page.Free;
+end;
+
+begin
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do VerVideo', 'Escreva o nome do filme:', MovieName) then
+  begin
+    AnalyzePage('http://www.vervideo.com.br/website_vervideo/acoes.php?pag=acervo_geral_filme_locacao_lst');
+  end;
+end.

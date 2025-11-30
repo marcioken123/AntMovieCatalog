@@ -1,0 +1,281 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Alex Iribarren     (<link>alexiri@terra.es</link>)
+Title=TV Tome / StarGate SG-1
+Description=StarGate SG-1 TV Tome import
+Site=http://www.tvtome.com
+Language=EN
+Version=04/04/2004
+Requires=3.5.0
+Comments= Modified version of IMDB batch import
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program TvTome;
+
+//Constants
+Const
+  AddNotes = true;
+
+var
+  EpName, EpNumber: string;
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos: Integer;
+  Line, Season: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  PickTreeClear;
+  PickTreeAdd('Searching for ' + EpName, '');
+  LineNr := 0;
+  Address := '';
+ 
+  repeat
+    LineNr := FindLine('<tr><td colspan="6"><', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      StartPos := pos('<b>', Line) + 3;
+      Season := copy(Line, StartPos, pos('</b>', Line) - StartPos);
+      PickTreeAdd(Season + ':', '');
+      Address := AddEpisodeTitles(Page, LineNr);
+      if (Address <> '') then Break;
+      LineNr := LineNr + 1;
+    end;
+  until (LineNr < 0);
+
+  if (Address <> '') then
+  begin
+    AnalyzeEpisodePage(Address);
+  end else begin
+    if PickTreeExec(Address) then
+      AnalyzeEpisodePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeEpisodePage(Address: string);
+var
+  Line, TempStr: string;
+  BeginPos: Integer;
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+ 
+  // URL
+  SetField(fieldURL, Address);
+ 
+  // Episode Number
+  if EpNumber <> '' then
+    SetField(fieldTranslatedTitle, EpNumber);
+
+  // Original Title
+  LineNr := FindLine('<table width=777><tr><td align=center>', Page, 0)+1;
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'<h1>');
+  SetField(fieldOriginalTitle, copy(Line, 1, pos('</h1>',Line)-1));
+
+  // First Aired
+  LineNr := FindLine('>First Aired<', Page, 0);
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'First Aired</td><td class="row');
+  SetField(fieldComments, 'First aired: ' + copy(Line, 4, pos('</td></tr>',Line)-4));
+  SetField(fieldYear, copy(Line, pos(', ',Line)+2, 4));
+
+  // Rating
+  LineNr := FindLine('nowrap>Avg. Rating:</td>', Page, 0);
+  Line := Page.GetString(LineNr);
+  TempStr := Line + #13#10;
+  CutAfter(Line,'</td><td>');
+  SetField(fieldRating,copy(Line, 1, pos('.',Line)-1));
+  LineNr := FindLine('nowrap>Votes Cast:</td>', Page, 0);
+  Line := Page.GetString(LineNr);
+  TempStr := TempStr + Line + #13#10;
+  Line := Page.GetString(LineNr + 1);
+  TempStr := TempStr + Line + #13#10;
+  TempStr := StringReplaceAll(TempStr, '</td><td>', ' ');
+  HTMLRemoveTags(TempStr);
+  SetField(fieldComments, GetField(fieldComments)
+      + #13#10'-------------------------------------------------------------------------------'#13#10
+      +'RATINGS:' + #13#10 + TempStr);
+
+  // Production Code
+  LineNr := FindLine('>Production Code<', Page, 0);
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'Production Code</td><td class="row2">');
+  IF Line <> '' then SetField(fieldMedia,'Production Code: ' + copy(Line, 1, pos('</td></tr>',Line)-1));
+
+  // Writer
+  LineNr := FindLine('>Writer<', Page, 0);
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'<nobr>');
+  TempStr := copy(Line, 1, pos('</nobr><br></td></tr>',Line)-1);
+  HTMLRemoveTags(TempStr);
+  SetField(fieldProducer, 'Writer: ' + TempStr);
+
+  // Director
+  LineNr := FindLine('>Director<', Page, 0);
+  Line := Page.GetString(LineNr);
+  CutAfter(Line,'<nobr>');
+  TempStr := copy(Line, 1, pos('</nobr><br></td></tr>',Line)-1);
+  HTMLRemoveTags(TempStr);
+  SetField(fieldDirector, TempStr);
+
+  // Guest Stars
+  LineNr := FindLine('<b>Guest Stars:</b>', Page, 0) + 1;
+  TempStr := Page.GetString(LineNr-1);
+  repeat
+    Line := Page.GetString(LineNr);
+    TempStr := TempStr + copy(Line, pos('">',Line) + 2, pos('</nobr>',Line)) + #13#10;
+    LineNr := LineNr + 1;
+  until (pos('</td></tr>', Line) > 0);
+  HTMLRemoveTags(TempStr);
+  SetField(fieldActors, TempStr);
+
+  // Description
+  LineNr := FindLine('<a name="synopsis">', Page, 0);
+  LineNr := FindLine('<tr><td>', Page, LineNr) + 1;
+  TempStr := '';
+  repeat
+    Line := Page.GetString(LineNr);
+    TempStr := TempStr + Line;
+    LineNr := LineNr + 1;
+  until (pos('</td></tr>', Line) > 0);
+  TempStr := StringReplaceAll(TempStr, '<br>', #13#10);
+  HTMLRemoveTags(TempStr);
+  
+  // Notes
+  if AddNotes then
+  begin
+    LineNr := FindLine('<a name="notes">', Page, 0);
+    LineNr := FindLine('<tr><td>', Page, LineNr) + 1;
+    TempStr := TempStr + #13#10#13#10;
+    repeat
+      Line := Page.GetString(LineNr);
+      TempStr := TempStr + Line;
+      LineNr := LineNr + 1;
+    until (pos('</td></tr>', Line) > 0);
+    TempStr := StringReplaceAll(TempStr, '<br>', #13#10);
+    TempStr := StringReplaceAll(TempStr, '<li>', #13#10#43#32);
+    HTMLRemoveTags(TempStr);
+  end;
+
+  // Add Description to database
+  SetField(fieldDescription, TempStr);
+
+  Page.Free;
+  //DisplayResults;
+end;
+
+
+
+function AddEpisodeTitles(Page: TStringList; var LineNr: Integer): string;
+var
+  Line: string;
+  EpTitle, EpAddress, TempNum: string;
+  StartPos: Integer;
+begin
+  Result := '';
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('</td><td nowrap valign=top class="small"> ', Line);
+    //Feature Movie add need it code
+    if StartPos = 0 then
+        Begin
+          StartPos := pos('</td><td nowrap class="small"> ', Line);
+          if StartPos > 0 then StartPos := StartPos + 31
+        end
+      else
+        StartPos := StartPos + 42;
+    if StartPos > 0 then
+    begin
+      TempNum := copy(Line, StartPos, pos('-', Line) - StartPos);
+      EpNumber := 'S';
+      If Length(TempNum) < 2 then EpNumber := EpNumber + '0';
+      EpNumber := EpNumber + TempNum;
+     
+      CutAfter(Line,'-');
+      TempNum := copy(Line, 1, pos('<', Line) - 1);
+      EpNumber := EpNumber + 'E';
+      If Length(TempNum) < 2 then EpNumber := EpNumber + '0';
+      EpNumber := EpNumber + TempNum;
+
+      CutAfter(Line,'href="');
+      EpAddress := copy(Line, 1, pos('">', Line) - 1);
+      StartPos := pos('">', Line) + 2;
+      EpTitle := copy(Line, StartPos, pos('</a>', Line) - StartPos);
+      HTMLDecode(EpTitle);
+      if (pos(EpName,EpTitle) > 0) then
+      begin
+        Result := 'http://www.tvtome.com' + EpAddress;
+        Break;
+      end;
+      PickTreeAdd(EpNumber + ': ' + EpTitle, 'http://www.tvtome.com' + EpAddress);
+    end;
+    if Result <> '' then Break;
+  until ((pos('<tr><td colspan="6">&nbsp;</td></tr>', Line) > 0) or (pos('</table>', Line) > 0));
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if (GetField(fieldURL) <> '') then
+      AnalyzeEpisodePage(GetField(fieldURL))
+    else
+      begin
+        EpName := GetField(fieldOriginalTitle);
+        if (EpName = '') then
+          EpName := GetField(fieldTranslatedTitle);
+      end;
+    if (EpName = '') then Input('TV Tome Import', 'Enter the title of the episode:', EpName);
+      //AnalyzePage('http://www.tvtome.com/tvtome/servlet/EpisodeGuideServlet/showid-249/'); // Futurama
+      //AnalyzePage('http://www.tvtome.com/Simpsons/eplist.html'); // The Simpsons
+      AnalyzePage('http://www.tvtome.com/StargateSG1/eplist.html'); // Stargate SG-1
+      //AnalyzePage('http://www.tvtome.com/tvtome/servlet/EpisodeGuideServlet/showid-5382/'); // Garfield
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

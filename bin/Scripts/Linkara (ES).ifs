@@ -1,0 +1,355 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Linkara
+Description=
+Site=www.cine.linkara.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=La pagina no dispone de caratula
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program CineLinkara;
+var
+  MovieName: string;
+  MovieURL: string;
+  //---------------------------------------------------------------------
+function Numeros(Numero: string) :string;
+begin
+          Numero := StringReplace(Numero, '0' , '');
+          Numero := StringReplace(Numero, '1' ,  '');
+          Numero := StringReplace(Numero, '2' , '');
+          Numero := StringReplace(Numero, '3', '');
+          Numero := StringReplace(Numero, '4' , '');
+          Numero := StringReplace(Numero, '5',   '');
+          Numero := StringReplace(Numero, '6',  '');
+          Numero := StringReplace(Numero, '7' , '');
+          Numero := StringReplace(Numero, '8',  '');
+          Numero := StringReplace(Numero, '9',  '');
+          Numero := StringReplace(Numero, ',',  '');
+result := Numero;
+end;
+  //---------------------------------------------------------------------
+function Acentos(Acento: string) :string;
+begin
+          Acento := StringReplace(Acento, '√°' , '·');
+          Acento := StringReplace(Acento, '√' ,  '·');
+          Acento := StringReplace(Acento, '„°' , '·');
+          Acento := StringReplace(Acento, 'i„≥', '·');
+          Acento := StringReplace(Acento, '√Å' , '·');
+          Acento := StringReplace(Acento, '„',   '·');
+          Acento := StringReplace(Acento, '√©',  'È');
+          Acento := StringReplace(Acento, '„©' , 'È');
+          Acento := StringReplace(Acento, '„™',  'È');
+          Acento := StringReplace(Acento, '√≠',  'Ì');
+          Acento := StringReplace(Acento, '„≠',  'Ì');
+          Acento := StringReplace(Acento, '√≥',  'Û');
+          Acento := StringReplace(Acento, '„≥',  'Û');
+          Acento := StringReplace(Acento, '·≥',  'Û');
+          Acento := StringReplace(Acento, '√∫',  '˘');
+          Acento := StringReplace(Acento, '√±',  'Ò');
+          Acento := StringReplace(Acento, '„±',  'Ò');
+          Acento := StringReplace(Acento, '¬∫',  '∫');
+          Acento := StringReplace(Acento, '&#',   '');
+          Acento := StringReplace(Acento, '39;',  '');
+          Acento := StringReplace(Acento, '¬',    '');
+result := Acento;
+end;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>cine.linkara.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://cine.linkara.com/pelicula/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+39, EndPos-39);
+          MovieAddr := 'http://cine.linkara.com/pelicula/' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle , '>', '</a>');
+          MovieTitle  := Acentos(MovieTitle);
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://cine.linkara.com/pelicula/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+          BeginPos := -1;
+          PickTreeSort;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<title>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<title>', '</title>');
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('<strong>T&iacute;tulo Original:</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<strong>T&iacute;tulo Original:</strong>', ',');
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+ 
+  // aÒo
+  LineNr := FindLine('<strong>T&iacute;tulo Original:</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, ',', ',');
+    DeleteTags (Item);
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+
+  // pais
+  LineNr := FindLine('<strong>T&iacute;tulo Original:</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, ',', '<br />');
+    Item := StringReplace (Item, 'EE.UU', 'USA');
+    Item := Numeros (Item);
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+
+  // Rating
+  LineNr := FindLine('web/es/img/estrella_on.gif', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('web/es/img/estrella_on.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '&nbsp;<span class="gris11">(', '/');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldRating, Trim (Item));
+  end;
+ 
+   // pais
+  LineNr := FindLine('class="titulo">PaÌs:</span>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="titulo">PaÌs:</span>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '/">', '</div>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+ 
+   // director
+  LineNr := FindLine('<strong>Direcci&oacute;n:</strong> ', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Direcci&oacute;n:</strong> ',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'html">', '</a>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+
+  // Reparto
+  LineNr := FindLine('<strong>Int&eacute;rpretes:</strong> ', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Int&eacute;rpretes:</strong> ',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'html">', '</td>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+
+  // sinopsis
+ LineNr := FindLine('<h2>Argumento de', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<h2>Argumento de',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'class="gris"><p>', '</p>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+
+  // Caratula
+  LineNr := FindLine('<img src="/pub/peliculas/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, '<img src="/pub/peliculas/', '.jpg');
+     GetPicture ('http://cine.linkara.com//pub/peliculas/'+Item+'.jpg');
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('CineLinkara', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('CineLinkara', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=' + UrlEncode(MovieName)+'+site%3Acine.linkara.com&btnG=B%C3%BAsqueda&meta=');
+end.

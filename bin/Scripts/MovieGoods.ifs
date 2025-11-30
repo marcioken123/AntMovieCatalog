@@ -1,0 +1,201 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=KaraGarga, Miss Kitty, Azer
+Title=MovieGoods
+Description=Import big movie poster from moviegoods.com
+Site=www.moviegoods.com
+Language=EN
+Version=0.6
+Requires=3.5.0
+Comments=
+License=Made for Ant Movie Catalog and can be distributed freely...
+GetInfo=1
+
+[Options]
+ShowAllPages=0|0|0=Show only ressults from first page (fast)|1=Show ressults from all pages (slow)
+BatchMode=0|0|0=Choose image with dialog|1=Select first image, no dialog
+
+***************************************************)
+
+program MOVIEGOODS;
+
+var
+  MovieName: string;
+  MovieURL: string;
+  ImageURL: string;
+  ImageName: string;
+
+// STRING PROCEDURES (don't delete any part of this)
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+// GetStringFromHTML funtion
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    HTMLDecode(Result);
+  end;
+end;
+// END OF STRING PROCEDURES
+// Anaylze main title
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  PageNr: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  PageNr := 1;
+
+  // No results dor search string
+  if pos('Your search for', Page.Text) > 0 then
+  begin
+    if Input('Search string not found', 'Try another name:', MovieName) then
+        AnalyzePage('http://www.moviegoods.com/search/search.asp?keywords='+UrlEncode(MovieName))
+    else
+      Exit;
+  end;
+
+  // No posters for this movie
+  if pos('we currently have no items available for this title', Page.Text) > 0 then
+  begin
+    if Input('No cover available!', 'Try another name:', MovieName) then
+        AnalyzePage('http://www.moviegoods.com/search/search.asp?keywords='+UrlEncode(MovieName))
+    else
+      Exit;
+  end;
+  
+  // Multiple choice
+  if pos('Search Results for:', Page.Text) > 0 then
+  begin
+    PickTreeClear;
+    PickTreeAdd('Search results', '');
+    AddMoviesTitles(Page);
+    while ((pos('pagination-next_page.gif', Page.Text) > 0) AND (GetOption('ShowAllPages') = 1))  do
+    begin
+      PageNr:=PageNr + 1;
+      Page.Text := GetPage(Address+'&page='+IntToStr(PageNr));
+      AddMoviesTitles(Page);
+    end;
+    if PickTreeExec(Address) then
+    begin
+     if GetOption('BatchMode') = 1 then
+       GetPicture (Address);
+     if GetOption('BatchMode') = 0 then
+       AnalyzePage2(Address);
+    end;
+  end
+  
+  // Directly to page
+  else
+  begin
+    if GetOption('BatchMode') = 1 then
+    begin
+      Address := 'http://www.moviegoods.com/Assets/product_images/1020/'+GetStringFromHTML(Page.Text, '<img ', 'src="/Assets/product_images/1010/', '" alt=');
+      Address := StringReplace(Address, '1010.A', '1020.A');
+      GetPicture (Address);
+    end;
+    if GetOption('BatchMode') = 0 then
+       AnalyzePage2(Address);
+  end;
+
+  Page.Free;
+end;
+
+// Analyze exist posters for the main title
+procedure AnalyzePage2(Address: string);
+var
+  Page: TStringList;
+  URL: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+        PickTreeClear;
+        PickTreeAdd('Main page', Address);
+        PickTreeAdd('Available Poster Types', '');
+        AddMoviesTitles2(Page);
+        if PickTreeExec(Address) then
+        GetPicture (Address);
+  Page.Free;
+end;
+
+// Add the name of the searched movies
+procedure AddMoviesTitles(ResultsPage: TStringList);
+var
+  Page: string;
+  MovieTitle, MovieAddress: string;
+begin
+  Page := ResultsPage.Text;
+  while Pos('<table width="100%" height="100%">', Page) > 0 do
+  begin
+    CutBefore(Page, '<table width="100%" height="100%">');
+    MovieAddress := GetStringFromHTML(Page, '<a href="', 'href="', '" title=');
+    MovieTitle := GetStringFromHTML(Page, '<b>', '', '</a>');
+    MovieTitle := MovieTitle + ' (' + GetStringFromHTML(Page, '<b>YEAR:</b>', '</b> ', '</div>') + ')';
+    ImageURL:= GetStringFromHTML(Page, 'border=0 src=', 'src=', ' onerror=');
+    CutAfter(Page, '</table>');
+    ImageURL := StringReplace(ImageURL, '''', '');
+    ImageURL := StringReplace(ImageURL, '1000.a', '1020.A');
+    ImageURL := StringReplace(ImageURL, '1000/', '1020/');
+    HTMLRemoveTags(MovieTitle);
+    if GetOption('BatchMode') = 1 then
+      PickTreeAdd(MovieTitle, ImageURL);
+    if GetOption('BatchMode') = 0 then
+      PickTreeAdd(MovieTitle, MovieAddress);
+
+  end;
+end;
+
+// add the poster names for the searched title
+procedure AddMoviesTitles2(ResultsPage: TStringList);
+var
+  Page: string;
+  MovieTitle, MovieAddress: string;
+begin
+  Page := ResultsPage.Text;
+  while Pos('<div class="more_posters_option">', Page) > 0 do
+  begin
+    CutBefore(Page, '<div class="more_posters_option">');
+    MovieAddress := 'http://www.moviegoods.com/Assets/product_images/1020/'+GetStringFromHTML(Page, '<img ', 'src="/Assets/product_images/1010/', '" alt=');
+    MovieTitle := GetStringFromHTML(Page, '<br />', '', '</a>');
+    MovieAddress := StringReplace(MovieAddress, '1010.A', '1020.A');
+    CutAfter(Page, '</div>');
+    HTMLRemoveTags(MovieTitle);
+    PickTreeAdd(MovieTitle, MovieAddress);
+  end;
+end;
+
+// Main()
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if GetOption('BatchMode') = 1 then
+      AnalyzePage('http://www.moviegoods.com/search/search.asp?keywords='+UrlEncode(MovieName));
+    if GetOption('BatchMode') = 0 then
+    begin
+      if (Input('MovieGoods Poster Import 0.6', 'Please enter English title:', MovieName)) then
+      begin
+        AnalyzePage('http://www.moviegoods.com/search/search.asp?keywords='+UrlEncode(MovieName));
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,384 @@
+<html>
+<head>
+<!--
+Modèle proposé par mistervince
+Tris selon critères paramétrables en fonction des champs choisis
+Détails des films par clic sur le titre
+-->
+<style type="text/css">
+/* style de la page */
+body {
+   background: #DFDEE2;
+   color: black;
+   font-size: 13pt;
+   font-weight: normal;
+   margin-top: 5pt;
+}
+
+/* style du titre de la page */
+.titrePage {
+   text-align: center;
+   font-size: 17pt;
+   font-weight: bold;
+}
+
+table {
+   margin-left: 20px;
+   margin-top: 20px;
+}
+
+/* style du menu Liste complète */
+.menuListe {
+   margin-top: 5px;
+   padding-top: 7px;
+   padding-bottom: 7px;
+   width: 220px;
+   text-align: center;
+   font-size: 14pt;
+   font-weight: bold;
+   cursor: pointer;
+   cursor: hand;
+   background: #9D9AA5;
+}
+
+/* style des menus */
+.menu {
+   margin-top: 15px;
+   width: 220px;
+   padding-top: 7px;
+   padding-bottom: 7px;
+   border: 1px solid #DFDEE2;
+   text-align: center;
+   font-size: 14pt;
+   font-weight: bold;
+   cursor: pointer;
+   cursor: hand;
+   background: #9D9AA5;
+}
+
+/* style des sous-menus */
+.sousmenu {
+   height: 18px;
+   font-size: 12pt;
+   cursor: pointer;
+   cursor: hand;
+   color: black;
+   text-decoration: none;
+   background: #B6B4BC;
+}
+
+/* style des sous menus activé par la souris */
+.sousmenu-over {
+   height: 18px;
+   font-size: 12pt;
+   cursor:pointer;
+   cursor: hand;
+   color: white;
+   text-decoration: underline overline;
+   background: #B6B4BC;
+}
+
+/* style des sous menus déjà visités */
+.sousmenu-done {
+  height: 18px;
+   font-size: 12pt;
+   cursor: pointer;
+   cursor: hand;
+   color: #595663;
+   text-decoration: none;
+   background: #B6B4BC;
+}
+
+/* style des titres dans la liste de droite */
+.tabTitre {
+   font-size: 12pt;
+   cursor: pointer;
+   cursor: hand;
+}
+
+/* style des blocs de sous-menus */
+.fondSsMenu {
+   display: none;   // les sous-menus ne sont pas affichés à l'ouverture de la page
+   padding-top: 5px;
+   width: 220px;
+}
+
+a {
+   color: black;
+}
+
+</style>
+<script langage="JavaScript">
+/*************************************************************/
+/* tableau des différents tris voulus. Attention, les termes doivent être les mêmes que dans le bloc <film> défini en bas
+les tris s'affichent dans l'ordre indiqué ici
+*/
+var lesMenus = new Array("pays","genre");
+
+// récupère tous les films de la collection présente dans <film>
+var films;
+
+// indice du film affiché dans la catégorie en cours
+var index=0;
+
+// tableau des catégories visitées
+var tabLiens = new Array();
+
+// tableau indexé par le nom de la catégorie contenant un tableau avec les films de cette catégorie
+var toutesLesCategories = new Array();
+
+// categorie affichée
+var categorieEnCours;
+
+/*************************************************************/
+
+// fonction qui ouvre ou ferme les menus pour afficher les sous-menus ou pas
+ function clicMenu(idFond,nomTri) {
+   // Booléen reconnaissant le navigateur
+   isIE = (document.all)
+   isNN6 = (!isIE) && (document.getElementById)
+
+   // Compatibilité : l'objet menu est détecté selon le navigateur
+   if (isIE) menu = document.all[idFond];
+   if (isNN6) menu = document.getElementById(idFond);
+
+   if (menu.style.display == "") menu.style.display = "none";
+
+   // On ouvre ou ferme
+   if (menu.style.display == "none"){
+      // Cas ou le tableau est caché
+      menu.style.display = "block";
+   } else {
+      // On le cache
+      menu.style.display = "none";
+   }
+}
+
+// fonction appelée au démarrage pour trier les films et fabriquer les menus
+function init() {
+    // récupération de tous les films
+    films = document.body.getElementsByTagName("film");
+
+   // fabrication du menu Liste complète
+   document.getElementById('tousLesMenus').innerHTML = "<div class='menuListe' onclick='showCategorie(\"liste\")'>Liste complète &nbsp;&nbsp;&nbsp;<span style=\"font-size:12px;font-weight: normal;\">("+films.length+" films)</span></div>";
+
+   // ajout dans le tableau des catégories
+   toutesLesCategories["liste"] = films;
+
+   // début création des menus donnés
+   for (var a=0 ; a<lesMenus.length ; a++) {
+
+      // récuoération du nom du champ sur lequel doit s'effectuer le tri
+      var nomTri = lesMenus[a];
+
+      // fabrication du tableau des différentes catégories pour le tri en cours
+      var tabDifTris = "tab"+nomTri;
+      tabDifTris = new Array();
+
+      var compt=0;
+
+      // parcourt des films et rangement dans les différents tableaux
+      for (var i = 0; i < films.length; i++) {
+
+         // récupération du champ du film
+         var attribut = films[i].getAttribute(nomTri);
+
+         if (attribut != null && attribut != "") {
+
+            // sélection du tableau correspondant à la catégorie
+            var ssCat = toutesLesCategories[attribut];
+
+            // si la catégorie n'a pas encore été créée
+            if (ssCat == null) {
+               // création du tableau
+               ssCat = new Array();
+               // ajout du tableau
+               toutesLesCategories[attribut] = ssCat;
+               // ajout du film
+               ssCat[0] = films[i];
+               // ajout du nom de la catégorie
+               tabDifTris[compt]=attribut;
+               compt++;
+            }
+            // si la catégorie existe déjà
+            else {
+               // ajout du film en fin de tableau
+               ssCat[ssCat.length] = films[i];
+            }
+          }
+      }
+
+      // tri par ordre alphabétique des catégories pour le tri en cours
+      tabDifTris = tabDifTris.sort();
+
+      // initialisation  du tableau des liens
+      for (var d=0 ; d<compt ; d++) {
+         tabLiens[tabDifTris[d]] = 0;
+      }
+
+      var idFond = "fond"+nomTri;
+
+      // fabrication du menu
+      var codeMenu = "<div class='menu' onclick=\"clicMenu('"+idFond+"');\">Tri par "+nomTri+"&nbsp;&nbsp;&nbsp;<span style=\"font-size:12px;font-weight: normal;\">("+tabDifTris.length+")</span></div>";
+
+      // création des ous-menus
+      codeMenu = codeMenu + "<div class='fondSsMenu' id='"+idFond+"'>";
+      for (var t=0 ; t<compt ; t++){
+         codeMenu = codeMenu + "<div class='sousmenu' id='"+tabDifTris[t]+"' onclick='change(this,3,id);showCategorie(\""+tabDifTris[t]+"\");' onmouseover='change(this,1,id);' onmouseout='change(this,2,id);'>" + tabDifTris[t] + "&nbsp;&nbsp;&nbsp;&nbsp;("+ toutesLesCategories[tabDifTris[t]].length +")</div>";
+      }
+      codeMenu = codeMenu + "</div>";
+
+      document.getElementById('tousLesMenus').innerHTML += codeMenu;
+   }
+   // fin création menus
+
+   // initialisation du genre en cours
+   genre = "liste";
+
+   // initialisation de l'affichage (tous les titres)
+   document.getElementById('tabSelection').innerHTML = "<table width='100%' border='0'>$$ITEM_BEGIN<tr><td><span class='tabTitre' onClick='ouvreFenetre($$ITEM_NUMBER-1);'>$$ITEM_TRANSLATEDTITLE</span></td></tr>$$ITEM_END</table>";
+}
+
+/* fonction de changement du style des sous menus */
+function change(menu, option, id){
+
+   switch(option){
+
+      // cas du survol du menu par la souris
+      case 1 :    menu.className='sousmenu-over';
+               break;
+      // sortie du survol
+      case 2 :    if (tabLiens[id] == 0)
+                  menu.className='sousmenu';
+               else menu.className='sousmenu-done';
+               break;
+      // clic sur menu
+      case 3 :    tabLiens[id] = 1;
+               menu.className='sousmenu-done';
+               break;
+    }
+}
+
+/* affiche la liste des films selon le tri choisi */
+function showCategorie(name) {
+
+   // récupération des films correspondants à la catégorie choisie
+   var cat = toutesLesCategories[name];
+
+   var code = "<table width='100%' border='0'>";
+
+   // parcours des films
+   for (var h=0 ; h < cat.length ; h++){
+      // récupération du film en cours
+      var f = cat[h];
+      var titre = f.getAttribute('titre');
+
+      code += "<tr><td><span id='"+h+"' class='tabTitre' onClick='ouvreFenetre(id);'>"+titre+"</span></td></tr>";
+   }
+
+   // affichage des films de la catégorie
+   document.getElementById('tabSelection').innerHTML = code+"</table>";
+
+   // mise à jour du genre en cours
+   genre = name;
+}
+
+/* affiche les détails du film sélectionné dans une fenêtre de type popup */
+function ouvreFenetre(niv) {
+
+   index = eval(niv);
+
+   //récupération du film voulu
+   var film = toutesLesCategories[genre][index];
+
+   var rang = index+1;
+   var nbTotal = toutesLesCategories[genre].length
+
+   // dimension de la fenêtre
+   var largeur=700;
+   var hauteur=600;
+   var haut=(screen.height-hauteur)/2;
+   var gauche=(screen.width-largeur)/2;
+
+   fenetre = window.open("", "Détails", "top="+haut+", left="+gauche+", width="+largeur+", height="+hauteur+", scrollbars=yes, resizable=yes");
+   fenetre.focus();
+   fenetre.document.write("<html><head><title>"+film.getAttribute('titre')+"</title>");
+   fenetre.document.write("<style type='text/css'>");
+   fenetre.document.write("body {background: #DFDEE2; color: black; margin-top: 25pt; }");
+   fenetre.document.write(".button {      /* Next / Prev buttons */");
+   fenetre.document.write("height: 15px;padding-left: 18px;padding-right: 18px;border: 1px solid;font-weight: bold;cursor: pointer;cursor: hand;}");
+   fenetre.document.write(".titre {");
+   fenetre.document.write("text-align: center; width: 100%; font-size: 30pt; color: white;font-weight: bold;}");
+   fenetre.document.write(".tdGauche {");
+   fenetre.document.write("width: 120pt;text-align: right; color: #56545F;}");
+   fenetre.document.write(".tdDroite {");
+   fenetre.document.write("color: black;}");
+   fenetre.document.write("</style></head><body>");
+   fenetre.document.write("<table width='100%' height='50pt'>");
+   fenetre.document.write("<tr valign='top'><td align='center'>");
+   fenetre.document.write("<span id='prev' class='button' onClick='window.opener.prev()'>Prec.</span>");
+   fenetre.document.write("&nbsp;<b>"+rang+" / "+nbTotal+"</b>&nbsp;");
+   fenetre.document.write("<span id='next' class='button' onClick='window.opener.next()'>Suiv.</span></td></tr></table>");
+   fenetre.document.write("<hr><div class='titre'>"+film.getAttribute('titre')+"</div>");
+   fenetre.document.write("<table width='100%' cellspacing='20' cellpadding='0' border='0'>");
+   fenetre.document.write("<tr><td class='tdGauche'>Réalisateur : </td><td class='tdDroite'>"+film.getAttribute('real')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Genre : </td><td class='tdDroite'>"+film.getAttribute('genre')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Support : </td><td class='tdDroite'>"+film.getAttribute('support')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Durée : </td><td class='tdDroite'>"+film.getAttribute('duree')+" min</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Nombre de disque(s) : </td><td class='tdDroite'>"+film.getAttribute('nbDisks')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Année : </td><td class='tdDroite'>"+film.getAttribute('annee')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Pays : </td><td class='tdDroite'>"+film.getAttribute('pays')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche'>Titre original : </td><td class='tdDroite'>"+film.getAttribute('titreVO')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche' valign='top'>Acteurs : </td><td class='tdDroite'>"+film.getAttribute('acteurs')+"</td></tr>");
+   fenetre.document.write("<tr><td class='tdGauche' valign='top'>Description : </td><td class='tdDroite'>"+film.getAttribute('desc')+"</td></tr>");
+   fenetre.document.write("</table></body></html>");
+   fenetre.document.close();
+}
+
+/* passe au film suivant dans la liste en cours */
+function next() {
+   index++;
+   if (index >= toutesLesCategories[genre].length)
+      index = 0;
+   ouvreFenetre(index);
+}
+
+/* passe au film précédent dans la liste en cours */
+function prev() {
+   index--;
+   if (index < 0)
+      index = toutesLesCategories[genre].length - 1;
+   ouvreFenetre(index);
+}
+
+</script>
+<title>Collection de films</title>
+</head>
+</body>
+<body onLoad="init();" link="black" vlink="black" alink="black">
+   <a name="top"></a>
+   <p class='titrePage'>Collection de films du $$DATE</p><hr>
+   Cliquez sur les menus pour afficher les catégories ou sur un titre pour afficher les détails du film.
+   <table height="80%">
+      <tr>
+         <td valign="top" align="center">
+            <div id="tousLesMenus"></div>
+         </td>
+
+         <td width="100px">
+         </td>
+
+         <td valign="top">
+            <div id="tabSelection"></div>
+         </td>
+      </tr>
+   </table>
+   <p align="right"><a href="#top">haut de page</a></p>
+   $$ITEM_BEGIN
+   <film titre="$$ITEM_TRANSLATEDTITLE" num="$$ITEM_NUMBER" real=" $$ITEM_DIRECTOR" genre="$$ITEM_CATEGORY" support="$$ITEM_VIDEOFORMAT"
+   annee=" $$ITEM_YEAR" titreVO="$$ITEM_ORIGINALTITLE" pays="$$ITEM_COUNTRY" duree=" $$ITEM_LENGTH" acteurs="$$ITEM_ACTORS"
+   desc="$$ITEM_DESCRIPTION" nbDisks="$$ITEM_DISKS">
+   </film>
+   $$ITEM_END
+</body>
+</html>

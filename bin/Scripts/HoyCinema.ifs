@@ -1,0 +1,354 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=HoyCinema
+Description=
+Site=www.hoyCinema.com
+Language=ES
+Version=1.1
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program HoyCinema;
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+//------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.hoycinema.com<', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.hoycinema.com/sinopsis/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+40, EndPos-40);
+          MovieAddr := 'http://www.hoycinema.com/sinopsis/' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos(' -', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle , '>', '-');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã¡', 'á');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã©', 'é');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã­', 'í');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã³', 'ó');
+          MovieTitle  := StringReplace(MovieTitle , 'Ãº', 'ú');
+          MovieTitle  := StringReplace(MovieTitle , 'Â', '');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã±', 'ñ');
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://www.hoycinema.com/sinopsis/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+           PickTreeSort;
+        end;
+
+    end;
+    PickTreeExec(Address);
+    AnalyzeMoviePage(Address);
+    AnalyzeVideoPage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+  begin
+   //URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  // sinopsis
+ LineNr := FindLine('<span id="esp_sup__ctl0_sinopsis_lbl">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<span id="esp_sup__ctl0_sinopsis_lbl">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<span id="esp_sup__ctl0_sinopsis_lbl">', '</td>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+  end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeVideoPage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Address := StringReplace (Address,'sinopsis/','');
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<TITLE>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<TITLE>', '-');
+  Item  := UpFirstLetterWord(Item);
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // año
+  LineNr := FindLine('<strong>· Año:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>· Año:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"contenido_txt">', '</a>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+  // Categoria
+  LineNr := FindLine('<strong>· Género: ', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>· Género: ',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"contenido_txt">', '</a>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+   // pais
+  LineNr := FindLine('<strong>· País:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>· País:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'ctl0_pais_lbl">', '</span>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+   // director
+  LineNr := FindLine('<strong>· Director:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>· Director:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"contenido_txt">', '</a>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // reparto
+  LineNr := FindLine('Ficha artística</td>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('Ficha artística</td>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'htm">·', '</table>');
+    Item := StringReplace(Item , #13#10, '');
+    Item := StringReplace(Item ,'      ', '');
+    Item := StringReplace(Item ,'·', ', ');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    Item  := StringReplace(Item , '      ,', ',');
+    SetField(fieldActors, Trim (Item));
+  end;
+ // guion
+ LineNr := FindLine('<span id="tdsupizq__ctl0_guion_lbl"><a', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<span id="tdsupizq__ctl0_guion_lbl"><a',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'class="contenido_txt" >', '</span></td>');
+    Item := StringReplace(Item ,'</a>', ', ');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldComments, Trim ('Guión: '+Item));
+  end;
+  // Caratula
+  LineNr := FindLine('src="http://media.hoycinema.com/pic.aspx?img=', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, 'src="', '.jpg');
+     GetPicture (Item+'.jpg');
+     end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('HoyCinema', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('HoyCinema', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=' + UrlEncode(MovieName)+'+site%3Awww.hoycinema.com&btnG=B%C3%BAsqueda&meta=');
+end.

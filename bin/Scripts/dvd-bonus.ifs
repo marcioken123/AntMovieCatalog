@@ -1,0 +1,119 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Johan Venant
+Title=dvd-bonus(Menus cachés)
+Description=Ajoute des informations concernant l'accès aux menus cachés dans les commentaires
+Site=www.dvd-bonus.com
+Language=FR
+Version=0.3 (28 Jan 2005)
+Requires=3.5.0
+Comments=Pas encore parfait mais bon, quand ca marche... ca marche! ;).|Le moteur de recherche semble avoir du mal avec les titres compliqués (":", "-",...)
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Appends=1|1|0=Remplace les commentaires existant|1=S'ajoute aux commentaires existant
+
+***************************************************)
+
+program dvdworld;
+
+uses
+    StringUtils7552;
+
+const
+    baseUrl = 'http://www.dvd-bonus.com/';
+    searchUrl = baseUrl + 'moteur/recherche.php';
+    startStr = 'resultat_fiche.php?ID=';
+    endStr = '&type=Bonus cachés"';
+    dataStrStart = '<strong><span class="paragraphenoir">Comment faire ?</span></strong><br>';
+    dataStrEnd = '</span>';
+    separatorStart = CRLF+CRLF+CRLF+ '--------------------------------Bonus cachés--------------------------------' + CRLF;
+    separatorEnd =   CRLF + '----------------------------------------------------------------------------' + CRLF;
+var
+    MovieName: string;
+Function FindBefore(wordToFind: string; text: string; sPos: Integer):Integer;
+var
+    iPos, iFound: Integer;
+begin
+    Text:= Copy(Text, 1, sPos);
+    iPos:= Pos(wordToFind, Text);
+    iFound:= iPos;
+    while iPos > 0 do
+    begin
+      Delete(Text, 1, iPos);
+      iPos:= Pos(wordToFind, Text);
+      iFound:= iFound + iPos;
+    end;
+    result:= iFound;
+end;
+Procedure searchMovie(title : string);
+var
+    page,params,address,nodeName: string;
+    adrStart,adrEnd: Integer;
+    found: Boolean;
+begin
+    PickTreeClear;
+    found := False;
+    params := 'mot='+title+'&operateur=et';
+    PickTreeAdd('Résultats de la recherche de "' + title + '"', '');
+    page := PostPage(searchUrl,URLEncode(params));
+    adrEnd := Pos(endStr, page) ;
+    while adrEnd > 0 do
+    begin
+      found := True;
+      adrStart := FindBefore( '<a href="../'+startStr,page,adrEnd + Length(endStr))+Length('<a href="../')-1;
+      Delete(page, 1, adrStart);
+      address := TextBefore(page,'">','');
+      Delete(page, 1, Pos('">',page)+1);
+      nodeName := TextBefore(page,'</a>','');
+      HTMLRemoveTags(nodeName);
+      PickTreeAdd(nodeName,address);
+      Delete(page, 1, Pos('</a>',page)+1);
+      adrEnd := Pos(endStr, page);
+    end;
+    if found then
+    begin
+      if PickTreeExec(address)then
+        retreiveData(address);
+    end
+    else
+      ShowInformation('Aucun film trouvé pour "' + MovieName + '"');
+end;
+Procedure retreiveData(address : string);
+var
+    page,data,curComments: string;
+    dataStart,dataEnd : Integer;
+begin
+    page := GetPage(URLEncode(baseUrl+address));
+    dataStart := Pos(dataStrStart, page) + Length(dataStrStart);
+    Delete(page,1,dataStart );
+    data := TextBefore(page,dataStrEnd,'');
+    data := StringReplace(data, #9, '');
+    data := StringReplace(data, #10, '');
+    data := StringReplace(data, #13, '');
+    data := StringReplace(data, '<br>', CRLF);
+    HTMLRemoveTags(data);
+    data := Trim(data);
+    if GetOption('Appends') = 1 then
+      SetField(fieldComments, GetField(fieldComments) +  separatorStart + data + separatorEnd)
+    else
+      SetField(fieldComments, data);
+end;
+
+begin
+    if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldTranslatedTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldOriginalTitle);
+      if Input('Importation DVDFR', 'Entrez le titre du film :', MovieName) then
+        searchMovie(MovieName);
+    end
+    else
+      ShowError('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5)');
+end.

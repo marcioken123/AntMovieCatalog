@@ -1,0 +1,530 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=M.T.
+Title=Cinemagia.ro
+Description=Cinemagia.ro (RO) import with picture
+Site=http://www.cinemagia.ro
+Language=RO
+Version=0.91
+Requires=3.5.0
+Comments=The script imports the first article (usually Sinopsis) into the description field, and all the other articles into the Comments section.|Also, some xHTML formatting tags will appear in the text. They might not look nice in the AMC GUI, but once exported back to HTML, its pretty neat :)
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Cinemagia;
+
+var
+  MovieName: string;
+  MovieURL: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+
+  if StartAt < 0 then
+    StartAt := 0;
+
+  for i := StartAt to List.Count - 1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  if pos('Rezultatele cautarii', Page.Text) = 0 then
+  begin
+    AnalyzeMoviePage(Page)
+  end
+  else
+  begin
+    if pos('Nici un rezultat', Page.Text) > 0 then
+      ShowMessage('Sorry, no results were found for ' + MovieName)
+    else
+    begin
+      PickTreeClear;
+      AddMoviesTitles(Page);
+      if PickTreeExec(Address) then
+        AnalyzePage(Address);
+    end
+  end;
+  Page.Free;
+end;
+
+function FindValue(BeginTag, EndTag: string; Page: TStringList; var LineNr: Integer; var Line: string): string;
+var
+  BeginPos, EndPos: Integer;
+  Value: string;
+begin
+  Result := '';
+  Value := '';
+  BeginPos := Pos(BeginTag, Line);
+  if BeginPos > 0 then
+  begin
+    BeginPos := BeginPos + Length(BeginTag);
+    if BeginTag = EndTag then
+    begin
+      Delete(Line,1,BeginPos-1);
+      BeginPos := 1;
+    end;
+    EndPos := pos(EndTag, Line);
+    while ((EndPos = 0) and (LineNr < Page.Count-1 )) do
+    begin
+      Value := Value + copy(Line, BeginPos, Length(Line) - BeginPos);
+      // Next Line
+      BeginPos := 1;
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      if Value = '' then
+        Exit;
+      EndPos := Pos(EndTag, Line);
+    end;
+    Value := Value + copy(Line, BeginPos, EndPos - BeginPos);
+   end;
+  Result := Value;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2: string;
+  IsFirst, LineNr, BeginPos, EndPos, DescrImport: Integer;
+  HasPressReviews : Integer;
+  PressReviewAddress : string;
+begin
+  LineNr := FindLine('<h1 class="movie">', Page, 0);
+  if LineNr > 2 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<a href="', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 9;
+    EndPos := pos('style=', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos - 2);
+    HTMLDecode(Value);
+    MovieURL := 'http://www.cinemagia.ro' + Value;
+
+    // URL
+    SetField(fieldURL, MovieURL);
+   
+    Value := FindValue( '<b>', '</b>', Page, LineNr, Line);
+    HTMLDecode(Value);
+    SetField(fieldTranslatedTitle, Value);
+
+    Value := FindValue( '<i>(', ')</i>', Page, LineNr, Line);
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+
+    Value := FindValue( '<i>', '</i>', Page, LineNr, Line);
+    HTMLDecode(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  LineNr := FindLine('<img src="http://www.cinemagia.ro/getimg.php?id=', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<img src="http://www.cinemagia.ro/getimg.php?id=', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 10;
+    EndPos := pos('&size=s"', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos + 6) + 'm';
+    HTMLDecode(Value);
+
+    GetMoviePicture( Value);
+  end;
+ 
+  LineNr := FindLine('Regia<br>', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Regia<br>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 9;
+     
+    Delete( Line, 1, BeginPos);
+    EndPos := pos('<br>', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, 1, EndPos);
+
+    BeginPos := pos('">', Value) + 2;
+    EndPos := pos('</a>', Value);
+    Value := copy(Value, BeginPos, EndPos - BeginPos);
+
+    HTMLDecode(Value);
+    SetField(fieldDirector, Value);
+  end;
+
+  LineNr := FindLine('Gen<br>', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Gen<br>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 7;
+
+    Delete( Line, 1, BeginPos - 1);
+    EndPos := pos('<br>', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, 1, EndPos);
+
+    Value2 := '';
+    repeat
+      BeginPos := pos('">', Value) + 2;
+      EndPos := pos('</a>', Value);
+      Value2 := Value2 + ', ' + copy(Value, BeginPos, EndPos - BeginPos);
+      Delete( Value, 1, EndPos + 5);
+    until pos('">', Value) < 1;
+   
+    Delete( Value2, 1, 2);
+
+    HTMLDecode(Value2);
+    SetField(fieldCategory, Value2);
+  end;
+ 
+  LineNr := FindLine('what=cast', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<a href="', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 9;
+
+    EndPos := pos('" class', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+
+    SetField(fieldActors, GetCast('http://www.cinemagia.ro' + Value));
+  end;
+
+  LineNr := FindLine('Durata<br>', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Durata<br>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 10;
+
+    Delete( Line, 1, BeginPos);
+    EndPos := pos('</td>', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, 1, EndPos);
+
+    BeginPos := pos('">', Value) + 2;
+    EndPos := pos(' minute</span>', Value);
+    Value := copy(Value, BeginPos, EndPos - BeginPos);
+
+    HTMLDecode(Value);
+    SetField(fieldLength, Value);
+  end;
+ 
+  LineNr := FindLine('Produs de<br>', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Produs de<br>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 12;
+
+    Delete( Line, 1, BeginPos);
+    EndPos := pos('</td>', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, 1, EndPos);
+
+    BeginPos := pos('">', Value) + 2;
+    EndPos := pos('</span>', Value);
+    Value := copy(Value, BeginPos, EndPos - BeginPos);
+
+    HTMLDecode(Value);
+    SetField(fieldProducer, Value);
+  end;
+
+  HasPressReviews := 0;
+  IsFirst := 1;
+  Value2 := '';
+  LineNr := FindLine('Continuare</a>', Page, 0);
+  while (LineNr > -1) do
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<a href="/movie.php', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 9;
+     
+    EndPos := pos('">', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+
+    if pos( 'what=pressreviews', Value) > 0 then
+    begin
+      PressReviewAddress := Value;
+      HasPressReviews := 1;
+    end
+    else
+    begin
+      if IsFirst = 1 then
+      begin
+        SetField(fieldDescription, GetDescriptions( Value));
+        IsFirst := 0;
+      end
+      else
+      begin
+        Value2 := Value2 + GetDescriptions( Value) + '<br/>';
+      end;
+    end;
+
+    LineNr := FindLine('Continuare</a>', Page, LineNr + 1);
+  end;
+ 
+  if HasPressReviews = 1 then
+  begin
+    Value2 := Value2 + GetPressReviews( PressReviewAddress);
+  end;
+ 
+  SetField(fieldComments, Value2);
+
+  //DisplayResults;
+end;
+
+procedure GetMoviePicture( PictureAddress: string);
+begin
+   GetPicture(PictureAddress);
+end;
+
+function GetCast(Address: string): string;
+var
+  Line, Value: string;
+  LineNr: Integer;
+  NoInfiniteLoop : Integer;
+  BeginPos, EndPos: Integer;
+  Page: TStringList;
+begin
+  Result := '';
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  LineNr := FindLine('Distributie', Page, 0);
+  Value := '';
+  if LineNr > -1 then
+  begin
+    LineNr := LineNr + 2;
+    Line := Page.GetString(LineNr);
+   
+    NoInfiniteLoop := 0;
+    while ( pos('</table>', Line) < 1 ) and ( NoInfiniteLoop < 10) do
+    begin
+      NoInfiniteLoop := NoInfiniteLoop + 1;
+      Line := Page.GetString(LineNr + 1);
+      BeginPos := pos('">', Line);
+      if BeginPos > 0 then
+        BeginPos := BeginPos + 2;
+      EndPos := pos('</a>', Line);
+      if EndPos < 1 then
+        EndPos := Length(Line);
+      if Value <> '' then
+        Value := Value + '; ';
+      Value := Value + copy(Line, BeginPos, EndPos - BeginPos);
+
+      Line := Page.GetString(LineNr + 2);
+      BeginPos := pos('<td>', Line);
+      if BeginPos > 0 then
+        BeginPos := BeginPos + 4;
+      EndPos := pos('</td>', Line);
+      if EndPos < 1 then
+        EndPos := Length(Line);
+      if Value <> '' then
+        Value := Value + ' ';
+      Value := Value + '(in rolul ' + copy(Line, BeginPos, EndPos - BeginPos) + ')';
+   
+      Line := Page.GetString(LineNr + 4);
+      LineNr := LineNr + 4;
+    end;
+
+    HTMLDecode(Value);
+
+    Result := Value;
+  end;
+  Page.Free;
+end;
+
+function GetDescriptions(Address: string): string;
+var
+  Line, Value: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+  Page: TStringList;
+begin
+  Result := '';
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  LineNr := FindLine('Pagina principala', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    BeginPos := pos('<div class="section_title">', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 27;
+    EndPos := pos('</div>', Line);
+    if EndPos < 1 then
+      EndPos := Length(Line);
+
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLRemoveTags(Value);
+    Value := '<b>' + Value + '</b><br/>';
+
+    LineNr := LineNr + 2;
+    repeat
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('<div class="section">', Line);
+      if BeginPos > 0 then
+        BeginPos := BeginPos + 21
+      else
+        BeginPos := 1;
+      EndPos := pos('</div>', Line);
+      if EndPos < 1 then
+        EndPos := Length(Line) + 1;
+      if Value <> '' then
+        Value := Value + ' ';
+      Value := Value + copy(Line, BeginPos, EndPos - BeginPos);
+      LineNr := LineNr + 1;
+    until (pos('</div>', Line) > 0) or (LineNr = Page.Count);
+    HTMLDecode(Value);
+
+    Result := Value;
+  end;
+
+  Page.Free;
+end;
+
+function GetPressReviews(Address: string): string;
+var
+  Line, Value, Value2: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+  Page: TStringList;
+begin
+  Result := '';
+  Value2 := '';
+  Value := '';
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  LineNr := FindLine('<div class="section_title">', Page, 0);
+  while LineNr > -1 do
+  begin
+    Line := Page.GetString(LineNr);
+    if pos('a href=', Line) < 1 then
+    begin
+      BeginPos := pos('<div class="section_title">', Line);
+      if BeginPos > 0 then
+        BeginPos := BeginPos + 27;
+      EndPos := pos('</div>', Line);
+      if EndPos < 1 then
+        EndPos := Length(Line);
+
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLRemoveTags(Value);
+      Value := '<b>' + Value + '</b><br/>';
+
+      LineNr := LineNr + 2;
+      repeat
+        Line := Page.GetString(LineNr);
+        BeginPos := pos('<div class="section">', Line);
+        if BeginPos > 0 then
+          BeginPos := BeginPos + 21
+        else
+          BeginPos := 1;
+        EndPos := pos('</div>', Line);
+        if EndPos < 1 then
+          EndPos := Length(Line) + 1;
+        if Value <> '' then
+          Value := Value + ' ';
+        Value := Value + copy(Line, BeginPos, EndPos - BeginPos);
+        LineNr := LineNr + 1;
+      until (pos('</div>', Line) > 0) or (LineNr = Page.Count);
+   
+      Value2 := Value2 + Value;
+    end
+    else
+      LineNr := LineNr + 1;
+
+    LineNr := FindLine('<div class="section_title">', Page, LineNr);
+  end;
+ 
+  HTMLDecode(Value2);
+
+  Result := Value2;
+
+  Page.Free;
+end;
+
+procedure AddMoviesTitles(Page: TStringList);
+var
+  Line: string;
+  LineNr: Integer;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+begin
+  LineNr := FindLine( 'Rezultatele cautarii', Page, 0);
+  if LineNr > -1 then
+  begin
+    PickTreeAdd('Filme', '');
+    LineNr := LineNr + 3;
+    Line := Page.GetString(LineNr);
+    repeat
+      StartPos := pos('href="', Line) + 5;
+      Delete(Line, 1, StartPos);
+      MovieAddress := Copy(Line, 1, pos('"', Line) - 1);
+      StartPos := Pos('">', Line) + 2;
+      MovieTitle := Copy(Line, StartPos, Pos('</i>', Line) - StartPos);
+      HTMLDecode(Movietitle);
+      Delete( Movietitle, Pos('</a>', Movietitle), 4);
+      Delete( Movietitle, Pos('<i>', Movietitle), 3);
+      PickTreeAdd(MovieTitle, MovieAddress);
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+    until Pos('</div>', Line) > 0;
+  end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Cinemagia.RO Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.cinemagia.ro/search.php?q=' + UrlEncode(MovieName) + '&hist=0');
+    end;
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

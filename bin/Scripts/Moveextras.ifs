@@ -1,0 +1,243 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2015 ARiell
+Title=[Tool] Reorganize Extras folder.
+Description=Don't delete Aktor.adb if you use Central Database.
+Site=
+Language=Tool
+Version=1.0
+Requires=4.0.0.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=0
+RequiresMovies=1
+
+[Options]
+Actor=1|0|0=In movie dir (Aktorzy w katalogu filmu)|1=Create Central Database [Need Aktor.adb file] (Stworz centralna baze danych aktorow [Wymaga pliku Aktor.adb])
+ID=1|0|0=Use ID movie (Uzywaj ID filmu)|1=Use "[translated title] [year]" (Uzywaj polskiej nazwy filmu + [rok]
+DelExtras=1|0|0=Skip (Pozostaw dodatki bez zdjec |1=Delete Extras without pics (Usun dodatki bez zdjec)
+SeparatePosters=1|0|0=Movie Dir (Katalog filmu)|1=External Dir [param: PosterDir] (Osobny katalog)
+
+[Parameters]
+ActorsCategory=Aktor|Aktorzy|Actors category name
+ActorsPicDir=Aktorzy|Aktorzy|Actors dir name
+PosterDir=Okԡdki|Okԡdki|Poster dir name
+
+***************************************************)
+
+(*********************************************************
+ *                                                       *
+ *  VERSION HISTORY                                      *
+ *                                                       *
+ *  1.0.0.0 Alpha                                        *
+ *  - initial release                                    *
+ *  1.0.0.0 Official PL info                             *
+ *  - Aktorzy wsp�lna baza (Wymaga Aktor.adb)            *
+ *  - Parametry Katalog Aktor�w i nazwa kategorii        *
+ *  1.0.0.0 Official EN info                             *
+ *  - Actors Central Database                            *
+ *    (don't delete file Aktor.adb)                      *
+ *  - Set Actor Category and Folder in options           *
+ *********************************************************)
+ program ExtraMove;
+ uses
+	StringUtils7552;
+
+ var
+	ADir, MovieIDS, MovieIDS2, ExtraIDS, Dir, Cfile, Picfile, ExtrasIS, tests : String;
+	ExtraID ,Check, ExtrasI, testi: Integer;
+	AktorL, Extras : TStringList;
+ 
+ procedure Aktorek();
+ var
+	ExtraURL, AktorDane, AktorADD, AktorSubD : String;
+	i : integer;
+	
+ begin
+	i:=0;
+	AktorADD := '';
+	if (not DirectoryExists(Dir+ADir))then CreateFolder(Dir+ADir);
+	ExtraURL := GetExtraField(ExtraID, eURL);
+	Picfile := GetExtraPicturePath(ExtraID);
+	if Pos(ADir, Picfile)<1 then
+	begin
+		AktorDane := AktorL.GetValue(ExtraURL);
+		if AktorDane = '' then
+		begin
+			AktorDane := GetExtraField(ExtraID, eTitle);
+			AktorSubD := Copy(AktorDane,1,1);
+			Picfile := GetExtraPicturePath(ExtraID);
+			AktorDane := StringReplace(AktorDane, '?', '');
+			AktorDane := StringReplace(AktorDane, '/', '-');
+			AktorDane := StringReplace(AktorDane, '\', '-');
+			AktorDane := StringReplace(AktorDane, ':', ' -');
+			AktorDane := StringReplace(AktorDane, ';', '');
+			AktorDane := StringReplace(AktorDane, '|', '');
+			AktorDane := StringReplace(AktorDane, '#', '');
+			AktorDane := StringReplace(AktorDane, '%', '');
+			AktorDane := StringReplace(AktorDane, '&', '');
+			AktorDane := StringReplace(AktorDane, '*', '');
+			AktorDane := StringReplace(AktorDane, '?', '');
+			if (not DirectoryExists(Dir+ADir+AktorSubD))then CreateFolder(Dir+ADir+AktorSubD);
+			if Pos(ADir+AktorSubD +'\', Picfile)<1 then
+			begin
+				Picfile := StringReplace(Picfile, Cfile+'_pics', '');
+				while FileExists(Dir+ADir+AktorSubD +'\' + AktorDane + AktorADD + ExtractFileExt(Picfile)) do
+				begin
+					i:=i+1;
+					AktorADD := IntToStr(i);
+				end;
+				if (not FileExists(Dir+ADir+AktorSubD +'\' + AktorDane + AktorADD + ExtractFileExt(Picfile))) then
+				begin
+					CopyFile(Dir+Picfile, Dir+ADir+ AktorSubD +'\' + AktorDane + AktorADD + ExtractFileExt(Picfile),true);
+					AktorL.SetValue(ExtraURL, AktorDane + AktorADD + ExtractFileExt(Picfile));				
+				end;
+				ImportExtraPicture2(ExtraID, Dir+ADir+AktorSubD +'\' + AktorDane + AktorADD + ExtractFileExt(Picfile), picImportLinkRel);
+			end;
+		end	
+		else
+		begin
+			AktorSubD := Copy(AktorDane,1,1);
+			if FileExists(Dir+ADir+AktorSubD +'\' + AktorDane)then
+			begin
+				ImportExtraPicture2(ExtraID, Dir+ADir+AktorSubD + '\' + AktorDane, picImportLinkRel);
+			end
+			else
+			begin
+				if (not DirectoryExists(Dir+ADir+AktorSubD))then CreateFolder(Dir+ADir+AktorSubD);
+				Picfile := GetExtraPicturePath(ExtraID);
+				Picfile := StringReplace(Picfile, Cfile+'_pics', '');
+				CopyFile(Dir+Picfile, Dir+ADir+ AktorSubD + '\' + AktorDane,true);
+				ImportExtraPicture2(ExtraID, Dir+ADir+AktorSubD +'\' + AktorDane, picImportLinkRel);
+			end;
+		end;
+	end;
+ end;
+ 
+ begin
+	if CheckVersion(4,0,0) then
+	begin
+		ADir := GetParam('ActorsPicDir')+'\';
+		ExtraID := 0;
+		Cfile := fileCurrentCatalog;
+		Dir := Cfile + '_pics' + '\';
+		Cfile := ExtractFileName(Cfile);
+		AktorL := TStringList.Create;
+		Extras := TStringList.Create;
+		if FileExists(Dir+'Aktor.adb')then AktorL.LoadFromFile(Dir+'Aktor.adb');
+		MovieIDS := GetField(fNumber);
+		if GetOption('ID') = 1 then
+		begin
+			MovieIDS := GetField(fTranslatedTitle) + ' [' + GetField(fYear) + ']';
+			MovieIDS := StringReplace(MovieIDS, '/', '-');
+			MovieIDS := StringReplace(MovieIDS, '\', '-');
+			MovieIDS := StringReplace(MovieIDS, ':', ' -');
+			MovieIDS := StringReplace(MovieIDS, ';', '');
+			MovieIDS := StringReplace(MovieIDS, '|', '');
+			MovieIDS := StringReplace(MovieIDS, '#', '');
+			MovieIDS := StringReplace(MovieIDS, '%', '');
+			MovieIDS := StringReplace(MovieIDS, '&', '');
+			MovieIDS := StringReplace(MovieIDS, '*', '');
+			MovieIDS := StringReplace(MovieIDS, '?', '');
+			MovieIDS := StringReplace(MovieIDS, '"', '');
+		end;
+		while Length(MovieIDS) < 5 do
+		begin
+			MovieIDS := '0'+MovieIDS;
+		end
+		if DirectoryExists(Dir) then
+		begin
+			if PictureExists then
+			begin
+				MovieIDS2 := MovieIDS;
+				if (GetOption('SeparatePosters') = 1) then MovieIDS2 := GetParam('PosterDir');
+				if DirectoryExists(Dir+MovieIDS2) then
+				begin
+					Picfile := GetPicturePath;
+					if Pos(MovieIDS+'.', Picfile)<1 then
+					begin
+						Picfile := StringReplace(Picfile, Cfile+'_pics', '');
+						CopyFile(Dir+Picfile, Dir+MovieIDS2+'\'+MovieIDS+ExtractFileExt(Picfile),true);
+						ImportPicture2(Dir+MovieIDS2+'\'+MovieIDS+ExtractFileExt(Picfile), picImportLinkRel);
+					end;
+				end
+				else
+				begin
+					CreateFolder(Dir+MovieIDS2);
+					Picfile := GetPicturePath;
+					if Pos(MovieIDS+'.', Picfile)<1 then
+					begin
+						Picfile := StringReplace(Picfile, Cfile+'_pics', '');
+						CopyFile(Dir+Picfile, Dir+MovieIDS2+'\'+MovieIDS+ExtractFileExt(Picfile),true);
+						ImportPicture2(Dir+MovieIDS2+'\'+MovieIDS+ExtractFileExt(Picfile), picImportLinkRel);
+					end;
+				end;
+			end;
+			//dodatki
+			if GetExtraCount >= 0 then
+			begin
+				while ExtraID < GetExtraCount do
+				begin
+					if ((GetOption('DelExtras') = 1) and (ExtraPictureExists(ExtraID) = false)) then
+					begin
+						DeleteExtra(ExtraID);
+					end
+					else
+					begin
+						ExtraIDS := GetExtraField(ExtraID, eCategory);
+						if ((GetOption('Actor') = 1) and (ExtraIDS = GetParam('ActorsCategory'))) then
+						begin
+							Aktorek();
+							ExtraID := ExtraID+1;
+						end
+						else
+						begin
+							if DirectoryExists(Dir+MovieIDS+'\'+ExtraIDS) then
+							begin
+								Picfile := GetExtraPicturePath(ExtraID);
+								if Pos(MovieIDS+'\', Picfile)<1 then
+								begin
+									ExtrasIS := Extras.GetValue(ExtraIDS);
+									if ExtrasIS = '' then ExtrasIS:= '1';
+									ExtrasI := StrtoInt(ExtrasIS,0);
+									ExtrasIS := InttoStr(ExtrasI);
+									Picfile := StringReplace(Picfile, Cfile+'_pics', '');
+									while Length(ExtrasIS) < 3 do
+									begin
+									ExtrasIS := '0'+ExtrasIS;
+									end;
+									while FileExists(Dir+MovieIDS+'\'+ExtraIDS + '\' + ExtraIDS + ExtrasIS + ExtractFileExt(Picfile)) do
+									begin
+										Extras.SetValue(ExtraIDS, InttoStr(ExtrasI+1));
+										ExtrasIS := Extras.GetValue(ExtraIDS);
+										ExtrasI := StrtoInt(ExtrasIS,0);
+										while Length(ExtrasIS) < 3 do
+										begin
+											ExtrasIS := '0'+ExtrasIS;
+										end;
+									end;
+									CopyFile(Dir+Picfile, Dir+MovieIDS+'\'+ExtraIDS + '\' + ExtraIDS + ExtrasIS + ExtractFileExt(Picfile),true);
+									ImportExtraPicture2(ExtraID, Dir+MovieIDS+'\'+ExtraIDS + '\' + ExtraIDS + ExtrasIS + ExtractFileExt(Picfile), picImportLinkRel);
+									Extras.SetValue(ExtraIDS, InttoStr(ExtrasI+1));
+								end;
+								ExtraID := ExtraID+1;
+							end
+							else
+							begin
+								CreateFolder(Dir+MovieIDS);
+								CreateFolder(Dir+MovieIDS+'\'+ExtraIDS);
+							end;
+						end;
+					end;
+				end;
+			end;
+		end;
+		if AktorL.Count > 0 then AktorL.SaveToFile(Dir+'Aktor.adb'); 
+		AktorL.Free;
+		Extras.Free;
+	end;
+ end.

@@ -1,0 +1,336 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Carteles-Metropoli Global Sinposis
+Description=Sinopsis de MetropoliGlobal
+Site=carteles.metropoliglobal.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=Solo se busca la sinopsis y la primera caratula, recomendado buscar con una sola palabra del título
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Metropoliglobal;
+
+
+
+const
+
+  BaseURL = 'http://carteles.metropoliglobal.com/paginas/ficha.php?qbtitulo=';
+  BaseURL2 = '&qbbuscar=titulo&Submit=Buscar&qsec=buscar';
+
+ 
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      // quitamos los tabuladores
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('href="ficha.php?qsec=peli&qid=', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      //PickTreeAdd('Resultados para: ' + MovieName, '');
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="ficha.php?qsec=peli&qid=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+        //Delete(strPage =elimina beginpos superior y deja el resto direccion
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('">', strPage);
+          //MovieId direccion completa de carga datos
+          MovieId := Copy(strPage,+30, EndPos-30);
+          MovieAddr := 'http://carteles.metropoliglobal.com/paginas/ficha.php?qsec=peli&qid=' + MovieId;
+          BeginPoss := Pos('peli&qid=',strPage);
+          EndPoss := Pos('</td>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss-1, EndPoss+1);
+         MovieTitle := TextBetween (MovieTitle, '">', '</a>');
+          DeleteTags(MovieTitle)
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="ficha.php?qsec=peli&qid=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  BeginPoss: Integer ;
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+ 
+   // Título Traducido
+  LineNr := FindLine('class="title">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="title">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'class="title">', '(');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    DeleteTags(Item)
+  SetField(fieldTranslatedTitle, Trim (Item));
+  end;
+
+  // Título Original
+  LineNr := FindLine('align="bottom">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('align="bottom">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<br>', ',');
+   Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    DeleteTags(Item)
+  SetField(fieldOriginalTitle, Trim (Item));
+  end;
+   // Año
+  LineNr := FindLine('class="title">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="title">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '(', ')');
+   Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    DeleteTags(Item)
+    SetField(fieldYear, Trim (Item));
+  end;
+      // País
+  LineNr := FindLine('align="bottom"><br>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('align="bottom"><br>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, ',',',');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+       // Duración
+  LineNr := FindLine('align="bottom"><br>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('align="bottom"><br>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, ', ','Min');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := StringReplace(Item , ',', '');
+    Item  := StringReplace(Item , 'A', '');
+    Item  := StringReplace(Item , 'B', '');
+    Item  := StringReplace(Item , 'C', '');
+    Item  := StringReplace(Item , 'D', '');
+    Item  := StringReplace(Item , 'E', '');
+    Item  := StringReplace(Item , 'F', '');
+    Item  := StringReplace(Item , 'G', '');
+    Item  := StringReplace(Item , 'H', '');
+    Item  := StringReplace(Item , 'I', '');
+    Item  := StringReplace(Item , 'J', '');
+    Item  := StringReplace(Item , 'K', '');
+    Item  := StringReplace(Item , 'L', '');
+    Item  := StringReplace(Item , 'M', '');
+    Item  := StringReplace(Item , 'N', '');
+    Item  := StringReplace(Item , 'Ñ', '');
+    Item  := StringReplace(Item , 'O', '');
+    Item  := StringReplace(Item , 'P', '');
+    Item  := StringReplace(Item , 'Q', '');
+    Item  := StringReplace(Item , 'R', '');
+    Item  := StringReplace(Item , 'S', '');
+    Item  := StringReplace(Item , 'T', '');
+    Item  := StringReplace(Item , 'U', '');
+    Item  := StringReplace(Item , 'V', '');
+    Item  := StringReplace(Item , 'W', '');
+    Item  := StringReplace(Item , 'X', '');
+    Item  := StringReplace(Item , 'Y', '');
+    Item  := StringReplace(Item , 'Z', '');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    DeleteTags(Item)
+    SetField(fieldLength, Trim (Item));
+  end;
+ 
+  // Director
+  LineNr := FindLine('class="setperpageselect">Director:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="setperpageselect">Director:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'valign="top">','</td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // Actores
+  LineNr := FindLine('setperpageselect">Int&eacute;rpretes:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('setperpageselect">Int&eacute;rpretes:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'valign="top">','</td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+  // Descripcion
+  LineNr := FindLine('setperpageselect">Int&eacute;rpretes:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('setperpageselect">Int&eacute;rpretes:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<td colspan="2" valign="top">','</td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+  // Picture
+  LineNr := FindLine('src="../galerias/data/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, 'src="', '-thumb');
+   GetPicture (Item+'.jpg');
+  end;
+
+
+
+end;
+
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('MetropiliGlobal', 'Sinopsis', MovieName);
+
+     if(GetOption('No se ha encontrado') = 0) then  Input('MetropiliGlobal', 'Sinopsis', MovieName);
+
+   AnalyzePage(BaseURL + UrlEncode(MovieName) + BaseURL2);
+
+
+end.

@@ -1,0 +1,642 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=bettertwo, Fulvio53s03
+Title=IAFD
+Description=Get movie info from iafd.com
+Site=http://www.iafd.com
+Language=EN
+Version=3.01 - 22.04.2023
+Requires=3.5.0
+Comments=See code comments
+License=GPL
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program IAFD;
+// riportare le options prima del program IAFD
+// [Options]
+// BatchMode=1|0|0=Search Info using title info|1=Use FieldUrl to extract info
+// AutoSelect=1|1|0=Always show movie selection dialog|1=Auto-select movie if there is only one//
+// AddOldDescription=0|1|0=don't add previous description|1=add previous description to new description
+// GetOnlyCover=0|0|0=Process all fields|1=Get Only Cover from previous URL (Adult DVD Empire or AdultDVDMarketplace or Adult Supply Warehouse)
+// GetActressesInfo=1|1|0=Don't get actresses info|1=Get actresses info (has a pierced tongue?)
+// fine riportare
+
+uses
+  StringUtils7552;
+var
+  MovieName, pagina, pagestr, MovieNameHy: string;
+  MovieURL, TheMovieAddress: string;
+  performers: string;
+  PageURL: TStringList;
+  Line, strtmp, initchar, endchar: string;
+  LineNr, Beginaddress, EndAddress, pos_endChar, http_pos: Integer;
+  
+const
+  BaseURL =  'https://www.iafd.com/';
+  debug_search = false;
+  debug_film = false;
+  folder = 'H:\Complete Movies\Test\';
+  Apice =#39;
+
+// ---
+function UTF8Dec(AText: string): string;
+begin
+  Result := UTF8Decode(AText);
+  if Result = '' then
+    Result := AText; // in case of a UTF8 decoding error
+end;
+
+
+function RemovePar(wholetext: string) : string;
+var
+	str1: String;
+	i: Integer;
+
+begin
+
+  str1 := Trim(TextBefore(wholetext, '(', ''));
+
+  if str1 <> '' then
+  begin
+    if Pos(')', RemainingText) > 0 then
+      wholetext := str1+' '+Trim(TextAfter(RemainingText, ')'));  // + end of text or ''
+  end;
+  result := Trim(wholetext);
+end;
+// ---
+procedure AnalyzeSearchPage(Address: string);
+var
+Page, Page2: TStringList;
+BeginPos: integer;
+
+begin
+Page := TStringList.Create;
+
+Page.Text := GetPage(Address);
+pagestr := Page.Text;
+  if debug_search then
+     DumpPage(folder+'IAFD_search.html', Pagestr);                // debug
+LineNr := FindLine('notfound -  iafd.com - internet adult film database', Page, 0);
+if LineNr<>-1 then
+  begin
+     if GetOption('AutoSelect') = 0 then
+      ShowError('No match ' + UpperCase(MovieName));
+     Page.Free;
+     exit;
+  end;
+
+LineNr := FindLine('Showing 1 to 1 of 1 entries', Page, 0);
+if LineNr<>-1 then
+  begin
+     if GetOption('AutoSelect') = 0 then
+      ShowError('No match ' + UpperCase(MovieName));
+     Page.Free;
+     exit;
+  end;
+
+  LineNr := FindLine('<h1>comprehensive search results</h1>', Page, 0);
+
+  if LineNr<>-1 then
+     AddMoviesTitles(Page)
+  else
+     TheMovieAddress := Address;
+     
+    if TheMovieAddress = '' then
+      begin
+      if PickTreeExec(Address) then
+        begin
+        //don't select previous URL
+//        if GetField(fieldURL) = Address then
+//           exit;
+        //process movie
+        SetField(fieldURL, Address);
+        Page.Text := GetPage(Address);
+        Pagestr := Page.Text;
+        if debug_film then
+           DumpPage(folder+'IAFD_film1.html', Pagestr);                // debug
+        AnalyzeMoviePage(Page);
+        FindCover(Page);
+        end
+    end
+    if TheMovieAddress <> '' then
+      begin
+      //process movie
+      SetField(fieldURL, TheMovieAddress);
+      Page.Text := GetPage(TheMovieAddress);
+      Pagestr := Page.Text;
+      if debug_film then
+         DumpPage(folder+'IAFD_film2.html', TheMovieAddress + Pagestr);                // debug
+      AnalyzeMoviePage(Page);
+      FindCover(Page);
+      end
+//    end
+  //Page2.Free
+  Page.Free;
+  end;
+
+// ---
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  BeginPos, EndPos: Integer;
+  Scene, scene_breakdown: string;
+  URLActress, Piercing: string;
+  PageActress: TStringList;
+  LineNr1, LineNr2: Integer;
+  Actress: string;
+
+begin
+  Pagestr := Page.Text;
+  LineNr := FindLine('<h1>', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Translated Title + Year + NOChecked
+    Line := Page.GetString(LineNr);
+    HTMLRemoveTags(Line);
+    strTmp := TextBetween(Line, '(', ')');
+    SetField(fieldYear, strTmp);
+    strTmp := Textbefore(Line, '(', '');
+    SetField(fieldOriginalTitle, UTF8Dec(FullTrim(strTmp)));
+    SetField(fieldTranslatedTitle, UTF8Dec(FullTrim(strTmp)));
+//FS    SetField(fieldChecked, 'x');
+
+    // Length
+    LineNr := FindLine('<p class="bioheading">Minutes</p>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strTmp := fulltrim(StringReplace(strTmp, 'Minutes', ''));
+      SetField(fieldLength, strTmp);
+      end;
+
+    // Directors
+    LineNr := FindLine('<p class="bioheading">Director', Page, LineNr);
+    if LineNr <> -1 then
+    begin
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strTmp := StringReplace(strTmp, #9, '');
+      strTmp := StringReplace(strTmp, 'Directors', '');
+      strTmp := StringReplace(strTmp, 'Director', '');
+      SetField(fieldDirector, UTF8Dec(strTmp));
+    end;
+
+     // Distributor
+    LineNr := FindLine('<p class="bioheading">Distributor</p>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+//      strTmp := Page.GetString(LineNr+1);
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strTmp := StringReplace(RemovePar(strTmp), #9, '');
+      strTmp := StringReplace(strTmp, 'Distributor', '');
+      SetField(fieldProducer, UTF8Dec(strTmp));
+      end;
+
+    scene := '';
+    // Also Known As
+    LineNr := FindLine('<b>Also Known As</b>', Page, 0);
+    if LineNr <> -1 then
+      begin
+        strTmp := Page.GetString(LineNr);
+        strTmp := StringReplace(StrTmp, '</dd><dd>', CRLF);
+        HTMLRemoveTags(strTmp);
+        Scene := StringReplace(UTF8Dec(strTmp), 'Also Known As', ('Also Known As: ' + CRLF));
+//        Scene := Fulltrim(Scene) + '12345123459876' + CRLF;
+        Scene := Fulltrim(Scene);
+      end;
+
+    // All-Girl
+    LineNr := FindLine('<p class="bioheading">All-Girl</p>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strtmp := StringReplace(strtmp, 'All-Girl', '');
+      strTmp := UTF8Dec(fulltrim(strTmp));
+      if strTmp <> '' then
+          Scene := Scene + '- All-Girl: ' + strTmp + ';    ';
+     end;
+
+    // All-men
+    LineNr := FindLine('<p class="bioheading">All-Male</p>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strtmp := StringReplace(strtmp, 'All-Male', '');
+      strTmp := UTF8Dec(fulltrim(strTmp));
+      if strTmp <> '' then
+          Scene := Scene + '- All-Male: ' + strTmp + ';   ';
+     end;
+
+      // Compilation
+    LineNr := FindLine('<p class="bioheading">Compilation</p>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      HTMLRemoveTags(strTmp);
+      strtmp := StringReplace(strtmp, 'Compilation', '');
+      strTmp := fulltrim(strTmp);
+      if strTmp <> '' then
+          Scene := Scene + '- Compilation: ' + strTmp + CRLF;
+      end;
+      
+    // Comments
+    LineNr := FindLine('<h3>Comments</h3>', Page, LineNr);
+    if LineNr <> -1 then
+      begin
+        strTmp := Page.GetString(LineNr);
+        strTmp := StringReplace(Strtmp, '<h3>Magazine Reviews</h3>', (CRLF + CRLF + 'Magazine Reviews'));
+        strTmp := Stringreplace(Strtmp, '<b>', crlf);
+        strTmp := Stringreplace(Strtmp, '<li style="padding-bottom: 0.5em;">', crlf);                  //FS2020-11-03
+        if pos('<h3>Buy This Movie</h3>', strtmp) > 0 then
+        strTmp := Textbefore(Strtmp, '<h3>Buy This Movie</h3>', '');
+//        strTmp := StrinReplace(Strtmp, '<p>In an effort to provide with you with choices, the IAFD has partnered with <a href="/vendors.asp">leading online retailers</a> to provide you with purchase options. If you see an item that does not belong to this movie, or would like to suggest a retailer we should partner with, please use the "Submit Corrections" button above to let us know.</p>', '');
+        HTMLRemoveTags(strTmp);
+        strTmp := Stringreplace(Strtmp, 'Click here for a guide to the ratings.', '');
+        Scene := Scene + strTmp;
+      end;
+
+    setfield(Fieldcomments, UTF8Dec(Scene));
+
+    // Actress   &  Actors
+    LineNr := FindLine('<h3>Scene Breakdowns</h3>', Page, 1);
+    LineNr := FindLine('>Performers<', Page, 1);
+    initchar := '<';           //serve a completare il tag iniziale
+    endchar  := '</h3>';       //conclusione del tag iniziale completato
+    performers := textbetween(pagestr,'>Performers<', '>Scene Breakdowns<');
+
+    if performers = '' then                                                           //if scenes breakdown not found
+       performers := textbetween(pagestr,'>Performers<', '>Synopsis<') + endchar;     //  find Synopsis
+     if performers = endchar then
+       performers := textbetween(pagestr,'>Performers<', '>External Reviews<') + endchar;
+     if performers = endchar then
+       performers := textbetween(pagestr,'>Performers<', '>Buy This Movie<') + endchar;
+     if performers = endchar then
+       performers := textbetween(pagestr,'>Performers<', '>Usage Notice<') + endchar;
+       
+    performers := initchar + performers + endchar;
+
+    performers := stringreplace(Performers, '&nbsp;<br>&nbsp;<br>', 'XYZXYZXYZ');
+    HTMLRemoveTags(performers);
+    edit_tags;
+    performers := FullTrim(stringreplace(Performers, 'XYZXYZXYZ', CRLF));
+    setfield(fieldactors, UTF8Dec(performers));
+
+    scene := '';
+    // Scene Breakdowns
+    LineNr := FindLine('<h3>Scene Breakdowns</h3>', Page, LineNr);
+    Line := Page.GetString(LineNr);
+    if LineNr <> -1 then
+      begin
+        while Pos('</ul></div>', Line) < 1 do
+          begin
+            HTMLDecode(Line);
+            HTMLRemoveTags(Line);
+            Line := StringReplace(Line, 'Scene Breakdowns', '');
+            Scene := Scene + Line + CRLF;
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+          end;
+      end;
+    scene_breakdown := scene;
+    SetField(fieldDescription, Scene);
+    
+    end;
+end;
+
+procedure edit_tags;
+var
+lunghezza: integer;
+begin
+    lunghezza:= length(Performers);
+    performers := stringreplace(Performers, 'Anal',  ' Anal');
+    performers := stringreplace(Performers, 'DP',  ' DP');
+    performers := stringreplace(Performers, 'DPP',  ' DPP');
+    performers := stringreplace(Performers, 'DAP',  ' DAP');
+    performers := stringreplace(Performers, 'BJOnly',  ' BJOnly');
+    performers := stringreplace(Performers, 'A2M',  ' A2M');
+    performers := stringreplace(Performers, 'NonSex',  ' NonSex');
+    performers := stringreplace(Performers, 'LezOnly',  ' LezOnly');
+    performers := stringreplace(Performers, 'Facial',  ' Facial');
+    performers := stringreplace(Performers, 'Clip',  ' Clip');
+    performers := stringreplace(Performers, 'MastOnly',  ' MastOnly');
+    performers := stringreplace(Performers, 'Bald',  ' Bald');
+    performers := stringreplace(Performers, 'Toy',  ' Toy');
+    performers := stringreplace(Performers, '(Credited', '    (Credited');
+//FS    if length(Performers) <> lunghezza then
+//FS       performers :='(' + performers + ')';
+end;
+
+// ---
+procedure AddMoviesTitles(Page: TStringList);
+//this code work but isnt a code ;)
+var
+  NewLineNr: Integer;
+  MovieTitle, MovieTitleHy, MovieTitlePl, MovieAddress, titolo_ricerca: string;
+  BeginTitle, EndTitle: Integer;
+  YearSearch, AlsoKnownAs, Line1: string;
+begin
+    BeginAddress := LineNr;
+    TheMovieAddress := '*';
+    PickTreeClear;
+    if GetField(fieldYear) <> '' then
+       YearSearch := ' (' + GetField(fieldYear) + ')';
+    PickTreeAdd('Results for ' + UpperCase(MovieName) + YearSearch , '');
+    //1st element previous URL if exist
+//    if (GetField(fieldURL) <> '') then
+//       PickTreeAdd('previous URL ' + UpperCase(MovieName) + YearSearch , GetField(fieldURL));
+    YearSearch:= '';
+    
+//********************* preparazione loop *********************
+    LineNr := FindLine('title.rme/', Page, 1);                //cerca riga contenente titolo
+    Line := Page.GetString(LineNr);                        //estrae riga trovata
+    BeginAddress := pos('title.rme/', Line);               //posizione link (al titolo)  nella riga
+    EndAddress := pos('</a>',Line);                        //fine posizione link
+//************ inizio loop **************************
+    while LineNr > 0 do
+      begin
+      while BeginAddress > 0 do
+      begin
+          Delete(Line,1,BeginAddress -1);
+          initchar := 'title.rme/';
+          endchar  := '>';
+          pos_endChar := pos(endchar, Line);
+          MovieAddress := BaseURL + initchar + textbetween(Line, initchar, endchar);        //fs2020-10-31
+          delete(MovieAddress, length(MovieAddress), length(MovieAddress));                 //elimina apice finale
+
+          Delete(Line, 1, pos_endChar);
+    //FS      BeginTitle := 1;
+    //FS      EndTitle := pos('<',Line);
+    //      MovieTitle := copy(Line,BeginTitle,EndTitle-BeginTitle);
+          MovieTitle := TextBefore(Line,'</a>', '');
+          Line1:= Line;
+          Delete(Line1,1,Length(MovieTitle));
+          BeginTitle := pos(', ',Line1);
+          YearSearch := TextBetween(line, '<td>', '</td>');
+
+          //isn't a Year TODO check numeric
+          HTMLRemoveTags(MovieTitle);
+          HTMLDecode(Movietitle);
+          MovieTitleHy := UTF8Dec(StringReplace (MovieTitle, ' ' , '-'));
+          MovieTitlePl := UTF8Dec(StringReplace (MovieTitle, ' ' , '+'));
+          MovieAddress := BaseURL + initchar + 'title=' + MovieTitlePl + '/year=' + YearSearch + '/' + MovieTitleHy + '.htm';
+
+          BeginAddress := pos('title.rme/', Line);
+          if TheMovieAddress='*' then
+             TheMovieAddress := URLEncode(MovieAddress)
+          else
+             TheMovieAddress := '';
+          titolo_ricerca := MovieTitle + ' (' + YearSearch +')';
+          PickTreeAdd(UTF8Dec(titolo_ricerca), URLEncode(MovieAddress));
+       end;
+//********************* preparazione loop *********************
+// https://www.iafd.com/title.rme/title=ricordi+di+notte/year=1986/ricordi-di-notte.htm
+    LineNr := FindLine('title.rme/', Page, LineNr + 1);        //cerca riga successiva contenente titolo
+    Line := Page.GetString(LineNr);                        //estrae riga trovata
+    BeginAddress := pos('title.rme/', Line);               //posizione link (al titolo)  nella riga
+    EndAddress := pos('</a>',Line);                        //fine posizione link
+
+    end;
+//  fine loop
+    if TheMovieAddress='*' then
+       TheMovieAddress := '';
+  end;
+//------------------------------------------------------------------------------
+
+procedure FindCover(Page: TStringList);
+var
+  pict_dim: Double;
+  Page_cover: TStringList;
+  trova_cover, cover_ok: string;
+  begin                    // Picture
+  Page_cover := TStringList.Create;
+  cover_ok := 'no';
+  pict_dim := 0;
+
+
+//Adult DVD Empire
+  LineNr := FindLine('>AdultEmpire<', Page, 0);
+  if LineNr <> -1 then
+    begin
+    strTmp := Page.GetString(LineNr);
+    strTmp := BaseURL + TextBetween(strTmp, '" href="/', '">');
+    Page_cover.Text := GetPage(strTmp);
+    Pagestr := Page_cover.Text;
+    if debug_film then
+       DumpPage(folder+'IAFD_Adult Empire.html', Pagestr);                // debug
+    trova_cover := '<link rel=' + apice + 'image_src' + apice + ' href="';
+    LineNr := FindLine(trova_cover, Page_cover, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page_cover.GetString(LineNr);
+      strTmp := TextBetween(strTmp, 'href="', '"');
+      GetPicture (strTmp);
+      Pict_dim	 := GetPictureSize;
+      if Pict_dim > 22000  then
+         cover_ok := 'yes_AdultEmpire';
+      end;
+    end
+
+// Gamelink
+  if  cover_ok = 'no' then
+    begin
+    LineNr := FindLine('>Gamelink<', Page, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      strTmp := BaseURL + TextBetween(strTmp, 'href="', '">');
+      strTmp := StringReplace(strTmp, 'com//', 'com/');
+      Page_cover.Text := GetPage(strTmp);
+      Pagestr := Page_cover.Text;
+      if debug_film then
+         DumpPage(folder+'IAFD_Gamelink.html', Pagestr);                // debug
+      trova_cover := '<link rel=' + apice + 'image_src' + apice + ' href="';
+      LineNr := FindLine(trova_cover, Page_cover, 0);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page_cover.GetString(LineNr);
+        strTmp := TextBetween(strTmp, 'href="', '"');
+        GetPicture (strTmp);
+        Pict_dim	 := GetPictureSize;
+        if Pict_dim > 22000  then
+          cover_ok := 'yes_Gamelink';        end;
+        end
+
+// PopPorn
+  if  cover_ok = 'no' then
+    begin
+    LineNr := FindLine('>PopPorn<', Page, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      //'<p class="item"><a target="_new" href="/shopclick.asp?sku=16095046">PopPorn</a> -  $39.99'
+      trova_cover := 'href="';
+      strTmp := BaseURL + TextBetween(strTmp, trova_cover, '"');
+      Page_cover.Text := GetPage(strTmp);
+      Pagestr := Page_cover.Text;
+      if debug_film then
+        DumpPage(folder+'IAFD_PopPorn.html', Pagestr);                // debug
+      trova_cover := '<link rel=' + apice + 'image_src' + apice;
+      LineNr := FindLine(trova_cover, Page_cover, 0);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page_cover.GetString(LineNr);
+        strTmp := TextBetween(strTmp, 'href="', '"');
+        GetPicture (strTmp);
+        Pict_dim	 := GetPictureSize;
+        if Pict_dim > 22000  then
+          cover_ok := 'yes_PopPorn';
+        end;
+      end;
+    end;
+    
+// HotMovies
+  if  cover_ok = 'no' then
+    begin
+    LineNr := FindLine('>HotMovies<', Page, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      trova_cover := 'href="';
+      strTmp := BaseURL + TextBetween(strTmp, trova_cover, '"');
+      Page_cover.Text := GetPage(strTmp);
+      if debug_film then
+        DumpPage(folder+'IAFD_HotMovies.html', Pagestr);                // debug
+      trova_cover := '<meta property="og:image"';
+      LineNr := FindLine(trova_cover, Page_cover, 0);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page_cover.GetString(LineNr);
+        strTmp := TextBetween(strTmp, 'content="', '"');
+        GetPicture (strTmp);
+        Pict_dim	 := GetPictureSize;
+        if Pict_dim > 22000  then
+          cover_ok := 'yes_HotMovies';        end;
+        end;
+        end;
+      end;
+      
+// CD Universe    NON FUNZIONA CAUSA ACCESSO NEGATO AI ROBOTS!
+  if  cover_ok = 'no' then
+    begin
+    LineNr := FindLine('>CD Universe<', Page, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      trova_cover := 'href="';
+      strTmp := BaseURL + TextBetween(strTmp, trova_cover, '"');
+// https://www.cduniverse.com/productinfo.asp?PID=1594953&style=ice&frm=lk_iafdcomg
+//      strTmp := stringReplace(strTmp, '
+      Page_cover.Text := GetPage(strTmp);
+      Pagestr := Page_cover.text;
+      if debug_film then
+        DumpPage(folder+'IAFD_CD_universe.html', Pagestr);                // debug
+      trova_cover := '<img id="PIMainImg"';
+      LineNr := FindLine(trova_cover, Page_cover, 0);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page_cover.GetString(LineNr);
+        strTmp := TextBetween(strTmp, 'src="', '"');
+        GetPicture (strTmp);
+        Pict_dim	 := GetPictureSize;
+        if Pict_dim > 22000  then
+          cover_ok := 'yes_HotMovies';        end;
+        end;
+      end;
+
+// AdultDVDMarketplace    NON FUNZIONA CAUSA ACCESSO NEGATO AI ROBOTS!
+  if  cover_ok = 'no' then
+    begin
+    LineNr := FindLine('>AdultDVDMarketplace<', Page, 0);
+    if LineNr <> -1 then
+      begin
+      strTmp := Page.GetString(LineNr);
+      trova_cover := ' href="/';
+      strTmp := BaseURL + TextBetween(strTmp, trova_cover, '"');
+      Page_cover.Text := GetPage(strTmp);
+      Pagestr := Page_cover.Text;
+      if debug_film then
+        DumpPage(folder+'IAFD_AdultDVDMarketplace.html', Pagestr);                // debug
+      trova_cover := 'fancybox-button';
+      LineNr := FindLine(trova_cover, Page_cover, 0);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page_cover.GetString(LineNr);
+        strTmp := TextBetween(strTmp, 'href="', '"');
+        GetPicture (strTmp);
+        Pict_dim	 := GetPictureSize;
+        if Pict_dim > 220000  then
+          cover_ok := 'yes_HotMovies';        end;
+        end;
+      end;
+
+  cover_ok := Cover_ok;                                  //per debug
+end;
+//------------------------------------------------------------------------------
+
+begin
+  SetField(fieldChecked, '');
+  if (GetOption('GetOnlyCover') = 1) then
+    begin
+    MovieURL := GetField(fieldURL);
+      if MovieURL <> '' then
+        begin
+          if Pos(BaseURL,MovieURL) > 0 then
+            begin
+            PageURL := TStringList.Create;
+            PageURL.Text := GetPage(MovieURL);
+            Pagestr := Page.Text;
+            if debug_film then
+               DumpPage(folder+'IAFD_cover1.html', Pagestr);                // debug
+            FindCover(PageURL);
+            SetField(fieldChecked, 'x');
+            PageURL.Free
+            end;
+        end;
+    exit;
+    end;
+
+  MovieName := GetField(fieldTranslatedTitle);
+  if MovieName = '' then
+     MovieName := GetField(fieldOriginalTitle);
+  if Input('I.A.F.D. Import', 'Digita il titolo del film:', MovieName) then          //FS2020-enter filename
+    begin                                                                            //FS2020-enter filename
+  if (GetOption('AutoSelect') = 0) or (MovieName = '') then
+     if Input('IAFD Import', 'Input title:', MovieName) = False then
+        exit;
+        http_pos := pos('https', MovieName);
+        if http_pos = 1 then
+           pagina := MovieName
+        else
+          begin
+          MovieName := Trim(StringReplace(MovieName, 'Penthouse' , ''));
+
+
+          if Pos(MovieName, 'The ') = 1 then
+             MovieName := Trim(StringReplace (MovieName), 'The ' , '')));
+
+          MovieName := StringReplace (MovieName, '_' , ' ');
+          MovieName := LowerCase(StringReplace (MovieName, '.' , ' '));
+          MovieName := StringReplace(MovieName, ' ', '+');
+          pagina := BaseURL + 'results.asp?searchtype=comprehensive&searchstring=' + UrlEncode(MovieName);
+          end;
+
+        
+        AnalyzeSearchPage(pagina);
+
+  end;                                                                                //FS2020-enter filename
+end.

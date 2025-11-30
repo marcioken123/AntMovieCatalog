@@ -1,0 +1,343 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antti Hakola <avhakola@gmail.com>
+Title=Discshop FI
+Description=Import data & picture from www.discshop.fi in finnish
+Site=www.discshop.fi
+Language=FI
+Version=0.9
+Requires=3.5.0
+Comments=Based on Discshop-script by Andreas Fridvall (which is based on the IMDB-script (v.2.04) made by Antoine Potten, KaraGarga)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not display any window, takes the first movie found
+MultipleValuesActors=3|3|0=Only take first value for Actors|1=Take full list, separated by commas|2=Take full list, separated by slashes|3=Take full list, separated by linebreaks
+MultipleValuesCountry=1|1|0=Only take first value for Country|1=Take full list, separated by commas|2=Take full list, separated by slashes
+MultipleValuesCategory=1|1|0=Only take first value for Category|1=Take full list, separated by commas|2=Take full list, separated by slashes
+MultipleValuesLanguages=1|1|0=Only take first value for Languages|1=Take full list, separated by commas|2=Take full list, separated by slashes
+
+***************************************************)
+
+program Discshop;
+
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  MovieURL: string;
+  MovieNumber: string;
+
+// ***** analyzes the results page that asks to select a movie from a list *****
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  PageText: string;
+  Value: string;
+begin
+  PageText := GetPage(Address);
+  if (Pos('<TITLE>Discshop.fi</TITLE>', PageText) = 0) then
+  begin
+    AnalyzeMoviePage(PageText)
+  end else
+  begin
+    if Pos('Näytä kaikki 0 tuotteet...', PageText) > 0 then
+    begin
+      if GetOption('BatchMode') = 0 then
+        ShowMessage('No movie found for this search');
+      Exit;
+    end;
+    if GetOption('BatchMode') = 0 then
+    begin
+      PickTreeClear;
+      Value := TextBetween(PageText, '<td colspan="6" style="padding:10px;">', '</b>');
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      Value := StringReplace(Value, #13#10, '');
+      Value := StringReplace(Value, #09,'');
+      if Value <> '' then
+      begin
+        PickTreeAdd(Value, '');
+      end;
+
+      Value := TextBetween(PageText, '<td><b>Järjestä:&nbsp;</b></td>', '<!-- END: Innehåll... //-->');
+      AddMovieTitles(Value);
+      if PickTreeExec(Address) then
+        AnalyzeResultsPage(Address);
+    end
+    else
+    begin
+      // batch mode, pick the first available movie
+      Value := TextBetween(PageText, '<td><b>Järjestä:&nbsp;</b></td>', '<!-- END: Innehåll... //-->');
+      if Value <> '' then
+        AnalyzeResultsPage('http://www.discshop.fi/shop/ds_produkt.php?subsite=movies&id=' + TextBetween(Value, '<a CLASS="PRODUCTLINK" href="ds.php?red=ds_produkt.php&&arg=id@@@', ',,,'))
+      else
+      begin
+        ShowMessage('No movie found for this search');
+        Exit;
+      end;
+    end;
+  end;
+end;
+
+// ***** adds the titles contained in the table *****
+
+function AddMovieTitles(List: string): Boolean;
+var
+  Value: string;
+  Address: string;
+begin
+  Result := False;
+  Value := TextBetween(List, '<tr height="70" valign="top">', '<tr bgcolor="#DDDDDD" height="1">');
+  List := RemainingText;
+  while Value <> '' do
+  begin
+    Address := TextBetween(Value, '<a CLASS="PRODUCTLINK" href="ds.php?red=ds_produkt.php&&arg=id@@@', ',,,');
+    Value := TextBetween(Value, '@@@movies,,," TITLE=""><b>', '</b>');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    PickTreeAdd(Value, 'http://www.discshop.fi/shop/ds_produkt.php?subsite=movies&id=' + Address);
+    Result := True;
+    Value := TextBetween(List, '<tr height="70" valign="top">', '<tr bgcolor="#DDDDDD" height="1">');
+    List := RemainingText;
+  end;
+end;
+
+// ***** analyzes the page containing movie information *****
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value, Value2, Value3: string;
+  p: Integer;
+  rating : Real;
+begin
+  MovieNumber := TextBetween(PageText, 'ds.php?red=ds_produkt.php&&arg=id@@@', ',,,');
+  MovieURL := 'http://www.discshop.fi/shop/ds_produkt.php?subsite=movies&id=' + MovieNumber;
+  // URL
+  if CanSetField(fieldURL) then
+    SetField(fieldURL, MovieURL);
+  // Translated Title
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    Value := TextBetween(PageText, '<TITLE>', '</TITLE>');
+    Value := TextAfter(Value, ' - ');
+    HTMLDecode(Value);
+    SetField(fieldTranslatedTitle, Value);
+  end;
+
+  // Original Title
+  if CanSetField(fieldOriginalTitle) then
+  begin
+    Value := TextBetween(PageText, 'Alkuperäinen nimi:', '</TR>');
+    Value := TextBetween(Value, '<TD>', '</TD>');
+    HTMLDecode(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Year
+  if CanSetField(fieldYear) then
+  begin
+    Value := TextBetween(PageText, 'Ensiesitys vuosi:', '</TR>');
+    Value := TextBetween(Value, '<TD>', '</TD>');
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    Value := TextBetween(PageText, 'Kesto:', '</TR>');
+    Value := TextBetween(Value, '<TD>', ' min</TD>');
+    HTMLDecode(Value);
+    SetField(fieldLength, Value);
+  end;
+
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(PageText, 'Ohjaus:', '</TR>');
+    Value := TextBetween(Value, '<TD>', '</TD>');
+    Value := StringReplace(Value, '<BR>', ', ');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldDirector, Value);
+  end;
+
+  // Writer (Producer Field)
+  if CanSetField(fieldProducer) then
+  begin
+    Value := TextBetween(PageText, 'Käsikirjoitus:', '</TR>');
+    Value := TextBetween(Value, '<TD>', '</TD>');
+    Value := StringReplace(Value, '<BR>', ', ');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldProducer, Value);
+  end;
+
+  // Picture
+  if CanSetPicture then
+  begin
+    Value := TextBetween(PageText, '<IMG SRC="http://www.discshop.fi/shop/img/omslag/front_normal/','"');
+    if Value <> '' then
+      Value := 'http://www.discshop.fi/shop/img/omslag/front_normal/' + Value;
+      GetPicture(Value);
+  end;
+
+  // Country
+  if CanSetField(fieldCountry) then
+    SetField(fieldCountry, ImportList(PageText, GetOption('MultipleValuesCountry'), 'Tuotantomaa:'));
+
+  // Category
+  if CanSetField(fieldCategory) then
+    SetField(fieldCategory, ImportList(PageText, GetOption('MultipleValuesCategory'), 'Genre:'));
+
+  // Language
+  if CanSetField(fieldLanguages) then
+  begin
+    Value := TextBetween(PageText, 'Ääni:', '</TR>');
+    Value := TextBetween(Value, '<DIV ID="specifikationer_sprak_alla" STYLE="display:none;">', '</DIV>');
+    Value := Copy(Value,1,LastPos('<BR>',Value)-1);
+
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '&nbsp;','');
+    case GetOption('MultipleValuesLanguages') of
+      0: if Pos('<BR>',Value)>0 then Value := TextBefore(Value, '<BR>', '');
+      1: Value := StringReplace(Value, '<BR>', ', ');
+      2: Value := StringReplace(Value, '<BR>', ' / ');
+      3: Value := StringReplace(Value, '<BR>', #13#10);
+    end;
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldLanguages, Value);
+  end;
+
+  // Subtitles
+  if CanSetField(fieldSubtitles) then
+  begin
+    Value := TextBetween(PageText, '<DIV ID="specifikationer_text" STYLE="display:none;">', '</DIV>');
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '&nbsp;', '');
+
+    Value2 := TextBetween(Value, '<TD>','</TD>');
+    // discshop uses two diffrent layouts for subtitle listnings
+    if Value2='' then
+    begin
+      Value3 := Copy(Value,1,LastPos('<br>',Value)-1);  // remove the last <br>
+      Value3 := StringReplace(Value3, '<br>', ', ');
+    end
+    else
+    begin
+      Value := RemainingText;
+      Value3 := '';
+      while Value2 <> '' do
+      begin
+        if Value3='' then
+          Value3 := Value2
+        else
+          Value3 := Value3 + ', ' + Value2;
+        Value2 := TextBetween(Value, '<TD>','</TD>');
+        Value := RemainingText;
+      end;
+    end;
+    HTMLRemoveTags(Value3);
+    HTMLDecode(Value3);
+    SetField(fieldSubtitles, Value3);
+  end;
+
+  // Actors
+  if CanSetField(fieldActors) then
+    SetField(fieldActors, ImportList(PageText, GetOption('MultipleValuesActors'), 'Näyttelijät:'));
+
+  // Description
+  if CanSetField(fieldDescription) then
+  begin
+    Value := TextBetween(PageText, 'Elokuvan juoni:', '<BR>');
+    if Value = '' then Value := TextBetween(PageText, 'Kuvaus:', '<BR>');
+    Value := TextAfter(Value, '<br>');
+    Value := StringReplace(Value, '<FONT COLOR="white">i</FONT>', ' ');
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '<br>', #13#10);
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+end;
+
+// ***** Imports lists like Genre, Country, etc. depending of the selected option *****
+
+function ImportList(PageText: string; MultipleValues: Integer; StartTag: string): string;
+var
+  Value: string;
+begin
+  Value := TextBetween(PageText, StartTag, '</TR>');
+  Value := TextBetween(Value, '<TD>', '</TD>');
+  Value := StringReplace(Value, #13#10,'');
+  Value := StringReplace(Value, #09,'');
+  Value := StringReplace(Value, ' <FONT COLOR="#6C6C6C">/</FONT> ','<BR>');   // separator for categories
+  Value := StringReplace(Value, ' / ','<BR>');   // separator for some countries
+
+  case MultipleValues of
+  0: if Pos('<BR>',Value)>0 then Value := TextBefore(Value, '<BR>', '');
+  1: Value := StringReplace(Value, '<BR>', ', ');
+  2: Value := StringReplace(Value, '<BR>', ' / ');
+  3: Value := StringReplace(Value, '<BR>', #13#10);
+  end;
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  Result := Value;
+end;
+
+// ***** beginning of the program *****
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := '';
+
+    if GetOption('BatchMode') = 2 then
+    begin
+      MovieName := GetField(fieldURL);
+      if Pos('discshop.fi', MovieName) = 0 then
+        MovieName := '';
+    end;
+
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+    if GetOption('BatchMode') = 0 then
+    begin
+      if not Input('Discshop.fi import', 'Enter the title of the movie:', MovieName) then
+        Exit;
+    end
+    else
+      Sleep(500);
+    if MovieName <> '' then
+    begin
+      if Pos('discshop.fi', MovieName) > 0 then
+        AnalyzeResultsPage(MovieName)
+      else
+      begin
+        MovieName := StringReplace(MovieName, '&', 'and');
+        AnalyzeResultsPage('http://www.discshop.fi/shop/search_result.php?ref=&subsite=start&lang=fi&x=0&y=0&sok_typ=titel&cont=start&soktext=' + UrlEncode(MovieName))
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

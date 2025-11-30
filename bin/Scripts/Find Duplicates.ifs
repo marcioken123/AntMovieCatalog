@@ -1,0 +1,61 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten
+Title=Find Duplicates
+Description=Finds duplicate titles in the movie list
+Site=
+Language=?
+Version=1.0
+Requires=3.5
+Comments=
+License=GPL
+GetInfo=0
+
+[Options]
+TitleToUse=3|1|1=Use original title|2=Use translated title|3=Check both titles
+IgnoreCase=1|1|0=Case sensitive: Keep the uppercase/lowercase characters as different|1=Case insensitive: Consider "TITLE" as identical to "Title" or "title"
+
+***************************************************)
+
+program FindDup;
+uses
+  StringUtils1;
+var
+  MovList: TStringList;
+  DupList: TStringList;
+  CurTitle: string;
+  ResultPath: string;
+begin
+  if StringUtils1_Version < 3 then
+  begin
+    ShowMessage('File "stringutils1.pas" is too old, please download a new version of it');
+    Error;
+  end;
+  if ResultPath = '' then
+  begin
+    ResultPath := 'c:\duplicates.txt';
+    Input('Find Duplicates', 'Store results to:', ResultPath);
+  end;
+  if MovList = nil then
+    MovList := TStringList.Create;
+  if DupList = nil then
+    DupList := TStringList.Create;
+  case GetOption('TitleToUse') of
+    1:  CurTitle := GetField(fieldOriginalTitle);
+    2:  CurTitle := GetField(fieldTranslatedTitle);
+    3:  CurTitle := GetField(fieldOriginalTitle) + ' | ' + GetField(fieldTranslatedTitle);
+  else
+    Error; // wrong option
+  end;
+  if GetOption('IgnoreCase') = 1 then
+    CurTitle := AnsiLowerCase(CurTitle);
+  if FindFullLine(CurTitle, MovList, 0) <> -1 then
+    DupList.Add(CurTitle)
+  else
+    MovList.Add(CurTitle);
+  DupList.SaveToFile(ResultPath);
+end.

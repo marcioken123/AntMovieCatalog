@@ -1,0 +1,422 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=HappyTalk
+Title=Auto.TV.Com
+Description=Automated TV series import from tv.com
+Site=http://www.tv.com
+Language=EN
+Version=1.07.01.16
+Requires=3.5.0
+Comments=inspired by the tvtome script by Alex Iribarren & original tv.com script by nalf75014. ||I added full automation using intelligent soundex name searching and caching|as much info as possible. It will happily grab 1,000's of entries unmonitored |if suitably named eg:|series.xxx.episode  Where xxx is anything|You may change . seperator to other using options||1) Unchecks items it modifies, so run first pass using a full automation mode|then again for checked items , not found in an interactive mode.||2) Puts title grabbed from tv.com in 'TranslatedTitle' field for fast |human cross checking that correct eps were auto-grabbed.||When running script remember when it hits Results Dialog (if turned on) |to press 'save all' so it will run automated and not re-prompt you.||Code has other commented out lines I used sometimes that may be of use, |uncomment at will to aid automation. Heavily road tested.||Cheers
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+SortEpisodePicker=0|1|1=Yes|0=No
+AutoMode=1|0|0=  Prompt with menu|1=  Prompt for series and episode match on every search|2=  Prompt for series only when changes|3=  Never Prompt for series|4=  Never prompt for series or episode matches
+Seperator=0|0|0=.   (dot)|1=-   (hyphen/minus)|2=   (space)|3=_   (underscore)|4=(  (open bracket)
+NamingStyle=1|0|0=series.episode / series.xxx.episode|1=series.episode.xxx / series.xxx.episode.xxx
+MatchMethod=0|0|0=Alpha+SoundEx|1=Alpha Only|2=SoundEx Only|3=AlphaNum Only|4=AlphaNum+SoundEx
+
+***************************************************)
+
+program Auto_TV_Com;
+uses
+  AutoUtils;
+var
+  EpName, EpNumber, SeName: string;
+  MovieName: string;
+  arraySeName, CalcSeName, Prev_CalcSEname, Prev_SeAddress, Sep : String;
+  temp1 : String;
+  AutoMode, NamingStyle, MatchMethod: Integer;
+  arrayEpName, arrayEpAddr, arrayEpAlpha, arrayEpSoundEX : array of string;
+  arrayEpCnt, arrayEpSize: Integer;
+
+
+
+function AutoMenu() : Integer;
+var
+  Sel: string;
+begin
+  PickTreeClear;
+  PickTreeAdd('1. Prompt for series and episode match on every search', '1');
+  PickTreeAdd('2. Prompt for series only when changes', '2');
+  PickTreeAdd('3. Never Prompt for series', '3');
+  PickTreeAdd('4. Never prompt for series or episode matches', '4');
+
+  PickTreeExec(Sel);
+  result := StrToInt(Sel, 0);
+end;
+
+//The letters A,E,I,O,U,Y,H,W and other characters are not coded.
+function GetSepOption() : String;
+begin
+  result := '.'; //default
+  Case GetOption('Seperator') of
+    0 : result := '.';
+    1 : result := '-';
+    2 : result := ' ';
+    3 : result := '_';
+    4 : result := '(';
+  end;
+end;
+
+procedure AnalyzeEpListing(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndLine, MatchCnt, i, EpIX: Integer;
+  Line, EpTitle, EpNr, Conv_EpName: string;
+begin
+  if (SeName <> arraySeName) then // populate array with episodes,address
+  begin
+    Page := TStringList.Create;
+    Address := Address + 'episode_listings.html';
+    Page.Text := PostPage(Address, URLEncode('season=0'));
+    ArrayEpCnt := 0;
+   
+    LineNr := FindLine('Click here to continue to TV.com', Page, 0);
+    if LineNr > -1 then
+    begin
+        Line := Page.GetString(LineNr);
+        Page.Free;
+        AnalyzeResults(SeName);
+        Exit;
+    end
+   
+    // fill array with all episodes
+    LineNr := FindLine('<td class="', Page, LineNr);
+    LineNr := FindLine('<td class="', Page, LineNr+1);
+    EndLine := FindLine('</table>', Page, LineNr);
+    repeat
+      LineNr := FindLine('<a href="', Page, LineNr);
+      Line := Page.GetString(LineNr);
+      if (LineNr > -1) and (pos ('class="f-930"', Line) = 0) and (pos ('img src', Line) = 0)  then
+      begin
+        EpTitle := LineTextBetween('">', 0, '</a', 0, Line, True);
+//        HTMLDecode(EpTitle);
+        if EpTitle <> '' then
+        begin
+          arrayEpName[ArrayEpCnt] := EpTitle;
+          arrayEpAddr[ArrayEpCnt] := LineTextBetween('"', 0, '">', 0, Line, False);
+          if AutoMode > 1 then
+          begin
+            if (MatchMethod > 2) then
+            begin
+              arrayEpAlpha[ArrayEpCnt] :=  ConvertAlphaNum(EpTitle); //Only Match Alpha & Num chars (To use must uncomment other occurence further on as well!)
+            end else
+              arrayEpAlpha[ArrayEpCnt] :=  ConvertAlpha(EpTitle); //Only match alpha chars (ignore punctuation, numbers etc)
+             
+            if (MatchMethod <> 1) and (MatchMethod <> 3) then arrayEpSoundEX[ArrayEpCnt] :=  ConvertSoundEx(EpTitle);
+          end;
+          ArrayEpCnt := ArrayEpCnt + 1;
+        end;
+      end
+      LineNr := LineNr + 1;
+    until (LineNr > EndLine) or (ArrayEpCnt >= arrayEpSize);
+   
+    Page.Free;
+    arraySeName := SeName; // series currently stored
+  end;
+
+  if ArrayEpCnt = 0 then exit; //no matches
+  EpIX := 0;
+
+  // pass 1: store only matches in picker
+  if (AutoMode > 1) then //1 => don't do computer search, user will select
+  begin
+    PickTreeClear;
+    PickTreeAdd('Episode matches for "' + EpName + '" (' + GetField(fieldSource) + ')', '');
+    MatchCnt := 0;
+
+    if (MatchMethod > 2) then
+    begin
+      Conv_EpName := ConvertAlphaNum(EpName) //Only Match Alpha & Num chars
+    end else
+      Conv_EpName := ConvertAlpha(EpName); //Only match alpha chars (ignore punctuation, numbers etc)
+
+    if (MatchMethod <> 2) then
+    begin
+      for i := 0 to ArrayEpCnt - 1 do
+      begin
+  //      if pos(Conv_EpName, arrayEpAlpha[i]) <> 0 then //look for ep name within tv.com one (as tv.com may have (aka other name) )
+        if (Conv_EpName = arrayEpAlpha[i]) then //exact match tv.com name
+        begin
+          PickTreeAdd(arrayEpName[i] + ' (' + IntToStr(i+1) + ')', IntToStr(i));
+          MatchCnt := MatchCnt + 1;
+          EpIX := i; //store match, if only 1 match we will use this value
+        end;
+      end;
+    end;
+   
+   
+    if (MatchMethod <> 1) and (MatchMethod <> 3) then
+    begin
+      Conv_EpName := ConvertSoundEx(EpName); //no exact matches try soundex compare
+      if (MatchCnt = 0) then //no exact matches try more liberal soundex compare
+        for i := 0 to ArrayEpCnt - 1 do
+        begin
+          if pos(Conv_EpName, arrayEpSoundEx[i]) <> 0 then
+          begin
+            PickTreeAdd(arrayEpName[i] + ' (' + IntToStr(i+1) + ')', IntToStr(i));
+            MatchCnt := MatchCnt + 1;
+            EpIX := i;
+          end;
+        end;
+
+      if (MatchCnt = 0) then //no exact matches try more liberal soundex compare
+        for i := 0 to ArrayEpCnt - 1 do
+        begin
+          if SoundExIn(Conv_EpName, arrayEpSoundEx[i]) then //find words in any order
+          begin
+            PickTreeAdd(arrayEpName[i] + ' (' + IntToStr(i+1) + ')', IntToStr(i));
+            MatchCnt := MatchCnt + 1;
+            EpIX := i;
+          end;
+        end;
+    end;
+  end;
+ 
+  if (AutoMode < 4) then // 4 => dont prompt user
+  begin
+    if (MatchCnt > 1) then
+      if PickTreeExec(EpNr) then //select from matches or if cancel select from all
+      begin
+        EpIX := StrToInt(EpNr, 0);
+        MatchCnt := 1;
+      end else
+        MatchCnt := 0;
+
+    //pass 2: store all in picker for user choice if no matches or cancel in pass1
+    if  (MatchCnt = 0) then
+    begin
+      PickTreeClear;
+      PickTreeAdd('All episodes for "' + EpName + '" (' + GetField(fieldSource) + ')', '');
+
+      for i := 0 to ArrayEpCnt - 1 do //add (count) after Ep Name so after sort still have epnum
+        PickTreeAdd(arrayEpName[i] + ' (' + IntToStr(i+1) + ')', IntToStr(i));
+
+      If GetOption('SortEpisodePicker') = 1 then PickTreeSort; //sort will random order if have same name eg 'episodis weird
+      if PickTreeExec(EpNr) then //user select from all episodes
+      begin
+        EpIX := StrToInt(EpNr, 0);
+        MatchCnt := 1;
+      end;
+    end;
+  end;
+
+  if (MatchCnt = 1) then
+  begin
+    EpName := arrayEpName[EpIX];
+    AnalyzeEpisodePage(arrayEpAddr[EpIX]);
+  end;
+end;
+
+procedure AnalyzeEpisodePage(Address: string);
+var
+  Line, TempStr, GuestStars, EpNr, Season, EpTitle: string;
+  BeginPos, Tmp, StartPos: Integer;
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // URL - OK
+  SetField(fieldURL, Address);
+
+  // Set Trans title = Episode Name got from tv.com
+  if EpName <> '' then
+    SetField(fieldTranslatedTitle, EpName);
+
+  // First Aired + Production Code - OK
+  LineNr := FindLine('First Aired:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    CutAfter(Line,'<span class="f-bold f-666">');
+    SetField(fieldYear, copy(Line, pos(', ',Line)+2, 4));
+    SetField(fieldComments,'Production Code: ' + copy(Line, pos('Code: ', Line) + 6, 4))
+  end;
+ 
+  // Rating  - OK
+  LineNr := FindLine('<span class="f-28 f-bold mt-10 mb-10 f-FF9 db lh-18">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    TempStr := copy(Line, pos('">', Line) + 2, 3);
+    SetField(fieldRating, TempStr);
+  end;
+ 
+  // Writer - OK
+  LineNr := FindLine('Writer:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 3);
+    CutAfter(Line,'>');
+    TempStr := copy(Line, 1, pos('</a>',Line)-1);
+    HTMLRemoveTags(TempStr);
+    if TempStr <> '' then SetField(fieldProducer, 'Writer: ' + TempStr);
+  end;
+ 
+  // Director - OK
+  LineNr := FindLine('Director:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 3);
+    CutAfter(Line,'>');
+    TempStr := copy(Line, 1, pos('</a>',Line)-1);
+    HTMLRemoveTags(TempStr);
+    SetField(fieldDirector, TempStr);
+  end;
+ 
+  // Description - OK
+  Line := PageTextBetween('class="f-11 f-bold">Watch Video</a>', 2, '<div class="ta-r mt-10 f-bold">', -1, Page, 0, true);
+  if (Line = '') then
+    Line := PageTextBetween('<div id="main-col">',3,'<div class="ta-r mt-10 f-bold">', -1, Page, 0, true);
+  if (Line <> '') then
+    SetField(fieldDescription, Line);
+
+  // Cast
+  // Guest Stars
+
+  LineNr := FindLine('Guest Star:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 3);
+    TempStr := Trim(Line);
+    HTMLRemoveTags(TempStr);
+    repeat
+      Tmp := Length(TempStr);
+      TempStr := StringReplace(TempStr, '  ', ' ');
+    until Length(TempStr) = Tmp;
+    TempStr := StringReplace(TempStr, ' ,', ',');
+    TempStr := StringReplace(TempStr, '&nbsp;', '');
+    GuestStars := TempStr;
+  end;
+ 
+  LineNr := FindLine('Star:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 3);
+    TempStr := Trim(Line);
+    HTMLRemoveTags(TempStr);
+    repeat
+      Tmp := Length(TempStr);
+      TempStr := StringReplace(TempStr, '  ', ' ');
+    until Length(TempStr) = Tmp;
+    TempStr := StringReplace(TempStr, ' ,', ',');
+    TempStr := StringReplace(TempStr, '&nbsp;', '');
+    SetField(fieldActors, TempStr + #13#10 + 'Guest stars: ' + GuestStars);
+  end;
+
+  SetField(fieldChecked, ''); // uncheck any items we set
+
+  Page.Free;
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+procedure AnalyzeResults(var Search: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndLine, SeCnt: Integer;
+  Line, Tmp, Address, SeDesc: string;
+begin
+  if (SeName = arraySeName) then // and (Prev_SeAddress <> '')
+  begin
+    AnalyzeEpListing(''); //Address
+  end else
+  begin
+    Page := TStringList.Create;
+    Page.Text := GetPage('http://www.tv.com/search.php?qs=' + URLEncode(Search) + '&type=11&stype=all&tag=search%3Bbutton');
+    LineNr := FindLine('<table id="search-results"', Page, 0);
+    if LineNr <> -1 then // if no results found quit out
+    begin
+      EndLine := FindLine('</table>', Page, LineNr);
+      PickTreeClear;
+      PickTreeAdd('Series Matches for "' + Search + '" (' + GetField(fieldOriginalTitle) + ')', '');
+      repeat
+        LineNr := FindLine('<span class="f-18">Show:', Page, LineNr); //LineNr := FindLine('<a href="', Page, LineNr);
+        if LineNr > -1 then
+        begin
+          Line := PageTextBetween('',0 ,'<p class="m-0">', 0, Page, LineNr, False);
+          SeDesc := StripSpace(Line, 2, true);
+          if (SeDesc <> '') then // or (GetOption('OnlySeriesWithDescription') = 0)
+          begin
+            Address := LineTextBetween('"http', -4, 'summary.html?', 0, Line, False); //new
+            if Address <> '' then
+            begin
+              PickTreeAdd(SeDesc, Address);
+              SeCnt := SeCnt + 1;
+            end;
+          end;
+          LineNr := LineNr + 1;
+        end;
+      until (LineNr < 0) or (LineNr > EndLine) or ((AutoMode >= 3) and (SeCnt > 0));
+    end;
+
+    if (SeCnt > 0) then // matches found
+    begin
+      if (AutoMode <= 2) then //and (SeCnt > 1) if 1 entry or AF > 2 => use 1st entry
+        if not PickTreeExec(Address) then exit; // press cancel => quit proc
+      AnalyzeEpListing(Address);
+    end else
+      SeName := ''; //clear series name as is no good
+  end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if AutoMode = 0 then
+    begin
+      AutoMode := (GetOption('AutoMode'));
+      NamingStyle := (GetOption('NamingStyle'));
+      MatchMethod := (GetOption('MatchMethod'));
+     
+      if AutoMode = 0 then AutoMode := AutoMenu();
+      if AutoMode = 0 then exit;
+      arrayEpSize := 1000;  // max number of episodes to store at once, increase if required
+      SetArrayLength(arrayEpName, arrayEpSize);
+      SetArrayLength(arrayEpAddr, arrayEpSize);
+      SetArrayLength(arrayEpSoundEX, arrayEpSize);
+      SetArrayLength(arrayEpAlpha, arrayEpSize);
+      Sep := GetSepOption;
+    end;
+   
+    CalcSeName := GetField(fieldOriginalTitle);
+    CalcSeName := nposLeft(Sep, CalcSeName, 1, false);
+    if CalcSeName = '' then CalcSeName := Prev_CalcSeName; // if no series name found keep last name
+    if (CalcSeName = '') or (CalcSeName <> Prev_CalcSeName) or (AutoMode = 1) then // or (Prev_SeName = '')
+    begin //only prompt new series name if changed or AF=1
+      SeName := CalcSeName; //computer guess at series
+      if (AutoMode <= 2) then // use calc name if AutoMode >= 3
+        if not (Input('TV.com Import', 'Series Name for ' + GetField(fieldOriginalTitle), SeName)) then exit; //SeName := '';
+    end;
+   
+    if SeName <> '' then
+    begin
+      EpName := GetField(fieldOriginalTitle);
+      if (NamingStyle = 0) then EpName := nposRight(Sep, EpName, 1, true); // get string after last dot eg (Lost.1x01.Pilot = Pilot)
+      if (NamingStyle = 1) then EpName := nposLeft(Sep, nposRight(Sep, EpName, 2, true), 1, false); // get string after second last dot & before last eg (Lost.1x01.Pilot.01 = Pilot)
+      AnalyzeResults(SeName);
+    end;
+    Prev_CalcSeName := CalcSeName;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+    exit;
+end.

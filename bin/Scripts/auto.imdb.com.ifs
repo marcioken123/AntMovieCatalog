@@ -1,0 +1,782 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=HappyTalk (Modified version of original script by Antoine Potten & KaraGarga)
+Title=Auto.IMDB.com
+Description=Import data & picture from IMDB (optional large image from Amazon.com)
+Site=us.imdb.com
+Language=EN
+Version=2.05
+Requires=3.5.0
+Comments=Based on the script made for version 3.x by Antoine Potten, Danny Falkov, Kai Blankenhorn, lboregard, Ork, Trekkie, Youri Heijnen||Modified by HappyTalk to fix large amazon pic import, and a few other things
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ImageKind=0|1|0=No image|1=Import from Amazon.com. Prompt with movie selector|2=Import from Amazon.com. No prompts, use first movie cover
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not display any window, takes the first movie found|2=Same as 1, but it uses the URL field if available to update movie information|3=Only updates using current URL field
+PopularSearches=1|1|0=Do not use the popular searches page, directly show full search results|1=Show popular searches first, I'll click on "Find more" if needed (much faster)
+ActorsLayout=0|2|0=Only actor names, separated by commas|1=Only actor names, separated by linebreaks|2=Actors names with character names between parenthesis separated by commas|3=Actors names with character names between parenthesis separated by linebreaks|4=Actor names like on IMDB page, with "...." and separated by linebreaks
+MultipleValuesCountry=0|0|0=Only take first value for Country|1=Take full list, separated by commas|2=Take full list, separated by slashes
+MultipleValuesCategory=1|0|0=Only take first value for Category|1=Take full list, separated by commas|2=Take full list, separated by slashes
+MultipleValuesLanguages=0|0|0=Only take first value for Languages|1=Take full list, separated by commas|2=Take full list, separated by slashes
+DescriptionSelection=2|1|0=Take the short summary, from main page (faster)|1=Show a list of available summaries|2=Take the longest summary|3=Take the shortest summary
+GetTagline=0|0|0=Do not get tagline|1=Put it in Description field, before the summary|2=Put it in the Comment field, before the comments
+Trivia=0|0|0=Do not import trivia|1=Import trivia to Description field, after the summary|2=Import trivia to Comments field, after the comments
+AmazonReview=0|0|0=Do not get Amazon Review|1=Get Amazon Review
+CommentType=2|0|0=Standard Type (Only one comment from main page)|1=Detailed Type (10 most useful comments from comments page)|2=No user comment
+Awards=0|0|0=Do not import awards|1=Import awards to Description field, after the summary|2=Import awards to Comments field, after comments
+
+***************************************************)
+
+program Auto_IMDB_com;
+
+uses
+  StringUtils1, AutoUtils;
+
+  const
+//  IMDB_URL = 'http://us.imdb.com';
+  IMDB_URL = 'http://former.imdb.com';
+
+var
+  MovieName: string;
+  MovieURL: string;
+  MovieNumber: string;
+
+// ***** analyzes the results page that asks to select a movie from a list *****
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  PageText: string;
+  Value: string;
+begin
+  PageText := GetPage(Address);
+  if pos('<title>IMDb', PageText) = 0 then
+  begin
+    AnalyzeMoviePage(PageText)
+  end else
+  begin
+    if Pos('<b>No Matches.</b>', PageText) > 0 then
+    begin
+      if GetOption('BatchMode') = 0 then
+        ShowMessage('No movie found for this search');
+      Exit;
+    end;
+    if GetOption('BatchMode') = 0 then
+    begin
+      PickTreeClear;
+      repeat
+        Value := TextBefore(PageText, '<ol>', '<b>');
+        if Value <> '' then
+        begin
+          HTMLRemoveTags(Value);
+          HTMLDecode(Value);
+          PickTreeAdd(Value, '');
+        end;
+        Value := TextBetween(PageText, '<ol>', '</ol>');
+        PageText := RemainingText;
+      until not AddMovieTitles(Value);
+      Value := TextBefore(PageText, '"><b>more titles</b></a>', '<a href="');
+      if Value <> '' then
+        PickTreeMoreLink(IMDB_URL + Value);
+      if PickTreeExec(Address) then
+        AnalyzeResultsPage(Address);
+    end
+    else
+    begin
+      Value := TextBetween(TextBetween(PageText, '<ol>', '</ol>'), '<li>', '</li>');
+      if Value <> '' then
+        AnalyzeResultsPage(TextBetween(Value, '<a href="', '">'));
+    end;
+  end;
+end;
+
+// ***** adds the titles contained in <ol>'s items *****
+
+function AddMovieTitles(List: string): Boolean;
+var
+  Value: string;
+  Address: string;
+begin
+  Result := False;
+  Value := TextBetween(List, '<li>', '</li>');
+  List := RemainingText;
+  while Value <> '' do
+  begin
+    Address := TextBetween(Value, '<a href="', '">');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    PickTreeAdd(Value, IMDB_URL + Address);
+    Result := True;
+    Value := TextBetween(List, '<li>', '</li>');
+    List := RemainingText;
+  end;
+end;
+
+// ***** analyzes the page containing movie information *****
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value, Value2, Value3, FullValue, sMovieTitle: string;
+  p: Integer;
+begin
+  MovieNumber := TextBetween(PageText, '<input type="hidden" name="auto" value="legacy/title/tt', '/"><input');
+  MovieURL := 'http://imdb.com/title/tt' + MovieNumber;
+  // URL
+
+  if CanSetField(fieldURL) then
+  begin
+    //if (GetField(fieldSource) = '') and (CanSetField(fieldSource)) then SetField(fieldSource, GetField(fieldURL)); /// now done in other routine after import
+    SetField(fieldURL, MovieURL);
+  // XXX Original Title & Year
+  end;
+
+// fieldOriginalTitle
+  Value := TextBetween(PageText, '<title>', '</title>');
+  Value2 := TextBefore(Value, ' (', '');
+  Value := RemainingText;
+  HTMLDecode(Value2);
+  sMovieTitle := value2;
+  if CanSetField(fieldOriginalTitle) then SetField(fieldOriginalTitle, sMovieTitle);
+
+// fieldYear
+  if Pos('/', Value) > 0 then
+    Value2 := TextBefore(Value, '/', '')
+  else
+    Value2 := TextBefore(Value, ')', '');
+  if CanSetField(fieldYear) then SetField(fieldYear, Value2);
+ 
+  // Rating
+  if CanSetField(fieldRating) then
+  begin
+    Value := TextBetween(PageText, '/rating-stars/', '/rating-vote/');
+    SetField(fieldRating, TextBetween(Value, '<b>', '/'));
+  end;
+  // Picture
+  if CanSetPicture then
+  begin
+    case GetOption('ImageKind') of
+      1:  ImportAmazonPicture(sMovieTitle, true);
+      2:  ImportAmazonPicture(sMovieTitle, false);
+    end;
+  end;
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(PageText, '<b class="blackcatheader">Directed by</b><br>', '<br>' + #13);
+    Value := StringReplace(TextAfter(Value, '">'), '<br>', ', ');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldDirector, Value);
+  end;
+  // Actors
+  if CanSetField(fieldActors) then
+  begin
+    Value := TextBetween(PageText, 'ast overview', '</div>');
+    if Value = '' then
+      Value := TextBetween(PageText, 'redited cast', '</div>');
+    if Value = '' then
+      Value := TextBetween(PageText, 'Cast:', '</table>');
+    if Value = '' then
+      Value := TextBetween(PageText, 'ast Summary:', '</table>');
+    if Value <> '' then
+    begin
+      Value := Trim(TextAfter(Value, '</tr>'));
+      FullValue := '';
+      case GetOption('ActorsLayout') of
+        0, 1:
+          while Pos('<tr>', Value) > 0 do
+          begin
+            Value2 := TextBetween(Value, '<tr', '</tr>');
+            Value := RemainingText;
+            if Pos('rest of cast', Value2) > 0 then
+              Continue;
+            if Pos('<a href="fullcredits">(more)</a>', Value2) > 0 then
+              Break;
+            if FullValue <> '' then
+              FullValue := FullValue + #13#10;
+            TextBefore(Value2, '</td>', '');
+            Value2 := TextBetween(RemainingText, '/">', '</a>');
+            if Value2 <> '' then
+              FullValue := FullValue + Value2;
+          end;
+(*
+        0, 1:
+          while Pos('<tr>', Value) > 0 do
+          begin
+            Value2 := TextBetween(Value, '<tr>', '</tr>');
+            Value := RemainingText;
+            if Pos('rest of cast', Value2) > 0 then
+              Continue;
+            if Pos('<a href="fullcredits">(more)</a>', Value2) > 0 then
+              Break;
+            if FullValue <> '' then
+              FullValue := FullValue + #13#10;
+            FullValue := FullValue + TextBefore(Value2, '</td>', '');
+          end;
+*)
+        2, 3:
+          while Pos('<tr>', Value) > 0 do
+          begin
+            Value2 := TextBetween(Value, '<tr', '</tr>');
+            Value := RemainingText;
+            if Pos('rest of cast', Value2) > 0 then
+              Continue;
+            if Pos('<a href="fullcredits">(more)</a>', Value2) > 0 then
+              Break;
+            if FullValue <> '' then
+              FullValue := FullValue + #13#10;
+            TextBefore(Value2, '</td>', '');
+            Value2 := TextBetween(RemainingText, '/">', '</a>');
+            if Value2 <> '' then
+            begin
+              FullValue := FullValue + Value2;
+               Value2 := TextBetween(RemainingText, 'e">', '</td>');
+               if Value2 <> '' then
+                FullValue := FullValue + ' (as ' + Value2 + ')';
+            end;
+          end;
+(*
+        2, 3:
+          while Pos('<tr>', Value) > 0 do
+          begin
+            Value2 := TextBetween(Value, '<tr>', '</tr>');
+            Value := RemainingText;
+            if Pos('rest of cast', Value2) > 0 then
+              Continue;
+            if Pos('<a href="fullcredits">(more)</a>', Value2) > 0 then
+              Break;
+            if FullValue <> '' then
+              FullValue := FullValue + #13#10;
+            FullValue := FullValue + TextBefore(Value2, '</td>', '');
+            Value2 := TextBetween(RemainingText, '<td valign="top">', '</td>');
+            if Value2 <> '' then
+              FullValue := FullValue + ' (as ' + Value2 + ')';
+          end;
+*)
+        4:
+          begin
+            FullValue := TextBefore(Value, '</tr><tr><td colspan="2">', '');
+            if FullValue = '' then
+              FullValue := Value;
+            FullValue := StringReplace(FullValue, ' <tr><td align="center" colspan="3"><small>rest of cast listed alphabetically:</small></td></tr> ', '');
+            FullValue := StringReplace(FullValue, '</tr>', #13#10);
+          end;
+      end;
+      HTMLRemoveTags(FullValue);
+      HTMLDecode(FullValue);
+      case GetOption('ActorsLayout') of
+        0, 2:
+          FullValue := StringReplace(FullValue, #13#10, ', ');
+      end;
+//      SetField(fieldActors, FullValue);
+      SetField(fieldActors, FixActors(FullValue)); //xxx Run through FixActors to leave just comma sep'd actors
+    end;
+  end;
+  //Country
+  if CanSetField(fieldCountry) then
+  begin
+    SetField(fieldCountry, ImportList(PageText, GetOption('MultipleValuesCountry'), '/Countries/'));
+  end;
+  //Category only set for _M.ovies
+  if CanSetField(fieldCategory) then
+  begin
+    //value := GetField(fieldCategory); //xxx If blank or _M.ovie ensure _Movie is appended, else leave alone
+    //if (value = '') or (pos('_M.ovie',value) > 0)  then
+      SetField(fieldCategory, ImportList(PageText, GetOption('MultipleValuesCategory'), '/Genres/')); // + ',_M.ovie');
+  end;
+  // Language
+  if CanSetField(fieldLanguages) then
+  begin
+    SetField(fieldLanguages, ImportList(PageText, GetOption('MultipleValuesLanguages'), '/Languages/'));
+  end;
+  // Description
+  if CanSetField(fieldDescription) then
+  begin
+    Value := TextBetween(PageText, '<b class="ch">Plot Outline:</b>', '<br><br>');
+    if Value = '' then
+      Value := TextBetween(PageText, '<b class="ch">Plot Summary:</b>', '<br><br>');
+    if Value <> '' then
+      SetField(fieldDescription, ImportSummary(Value));
+    // Amazon.com Description
+    if (GetOption('AmazonReview') > 0) then
+    begin
+      Value := TextAfter(PageText, '<a href="amazon">');
+      if Value <> '' then
+      begin
+        Value := GetField(fieldURL);
+        PageText := GetPage(Value+'/amazon');
+        Value := TextBetween(PageText, 'Amazon.com video review:', '<div align="center"> <!--');
+        Value2 := TextBetween(PageText, '<title>', '</title>');
+        Value := StringReplace(Value, #13#10, '');
+        Value := StringReplace(Value, '  ', '');
+        Value := StringReplace(Value, '<p>', #13#10+'');
+        HTMLRemoveTags(Value);
+        HTMLRemoveTags(Value2);
+        Value2 := AnsiUpperCase(Value2);
+        SetField(fieldDescription, GetField(fieldDescription) + #13#10 + #13#10 + Value2 + ': ' + Value);
+      end;
+    end;
+  end;
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    Value := TextBetween(PageText, '<b class="ch">Runtime:</b>' + #13#10, ' ');
+    if Value <> '' then
+    begin
+      if Pos(':', Value) > 0 then
+        SetField(fieldLength, TextAfter(Value, ':'))
+      else
+        SetField(fieldLength, Value);
+    end;
+  end;
+  // Writer (Producer Field)
+  if CanSetField(fieldProducer) then
+  begin
+    Value := TextBetween(PageText, '<b class="blackcatheader">Writing credits</b>', '<br>' + #13#10 + '<br>');
+    if Value <> '' then
+    begin
+      Value := StringReplace(Value, '(<a href="/wga">WGA</a>)', '');
+      Value := StringReplace(TextAfter(Value, '">'), '<br>', ', ');
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      Value := Trim(StringReplace(Value, '...,  (more)', ''));
+      Value := Trim(StringReplace(Value, ',  (more)', ''));
+      SetField(fieldProducer, Value)
+   end;
+  end;
+  // AKA Name
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    Value := TextBetween(PageText, '<b class="ch">Also Known As:</b><br>', '<br>' + #13#10 + '<b');
+    if Value <> '' then
+    begin
+      Value := StringReplace(Value, ' <br>', ', ');
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldTranslatedTitle, Value)
+   end;
+  end;
+  // Comments
+  if CanSetField(fieldComments) then
+  begin
+    if (GetOption('CommentType') = 1) then
+    begin
+      Value := TextAfter(PageText,'<a href="usercomments">');
+      if Value <> '' then
+      begin
+        Value := GetField(fieldURL);
+        FullValue := GetPage(Value+'/usercomments');
+        Value := TextBetween(FullValue, '<hr size="1" noshade="1">', '<hr size="1" noshade="1">');
+        Value2 := TextBetween(FullValue, '<title>', '</title>');
+        Value := StringReplace(Value, #13#10, ' ');
+        Value := StringReplace(Value, '</b>, <small>', #13#10+'Date: ');
+        Value := StringReplace(Value, '</small><br>', #13#10);
+        Value := StringReplace(Value, '</b>', #13#10);
+        Value := StringReplace(Value, '<br><br>', #13#10);
+        Value := StringReplace(Value, '<br>', #13#10);
+        Value := StringReplace(Value, '<p>', #13#10);
+        Value := StringReplace(Value, 'Add another comment', '');
+        Value := StringReplace(Value, '  ', '');
+        Value := StringReplace(Value, 'Was the above comment useful to you?', #13#10+'___________'+#13#10);
+        HTMLRemoveTags(Value);
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value2);
+        HTMLDecode(Value2);
+        Value2 := AnsiUpperCase(Value2);
+        Value := StringReplace(Value, ' Author:', 'Author:');
+        SetField(fieldComments, Value2 + ':' + #13#10 + Value);
+      end;
+    end
+    else
+    if (GetOption('CommentType') = 0) then
+    begin
+      Value := TextAfter(PageText, '/comments">');
+      if Value <> '' then
+      begin
+        Value := TextBetween(Value, '<p>', '</p>');
+        Value := StringReplace(Value, #13#10, ' ');
+        Value := StringReplace(Value, '<br>', #13#10);
+        HTMLRemoveTags(Value);
+        HTMLDecode(Value);
+        Value := Trim(Value);
+        while Pos('  ', Value) > 0 do
+          Value := StringReplace(Value, '  ', ' ');
+        while Pos(#13#10, Value) = 1 do
+          Delete(Value, 1, 2);
+        SetField(fieldComments, Value);
+      end;
+    end;
+  end;
+  // TagLine
+  if GetOption('GetTagline') > 0 then
+  begin
+    Value := TextBetween(PageText, 'Tagline:</b>', #13);
+    if Pos('<a', Value) > 0 then
+      Value := TextBefore(Value, '<a', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := Trim(Value);
+    if Value <> '' then
+    begin
+      if Copy(Value, 1, 1) <> '"' then
+        Value := '"' + Value + '"';
+      case GetOption('GetTagline') of
+        1:
+          begin
+            if GetField(fieldDescription) <> '' then
+              Value := Value + #13#10 + #13#10 + GetField(fieldDescription);
+            SetField(fieldDescription, Value);
+          end;
+        2:
+          begin
+            if GetField(fieldComments) <> '' then
+              Value := Value + #13#10 + #13#10 + GetField(fieldComments);
+            SetField(fieldComments, Value);
+          end;
+      end;
+    end;
+  end;
+  // Trivia
+  if GetOption('Trivia') > 0 then
+  begin
+    Value := TextAfter(PageText, '<a href="trivia">');
+    if Value <> '' then
+    begin
+      sleep(50);
+      Value := GetField(fieldURL);
+      FullValue := GetPage(Value+'/trivia');
+      Value := TextBetween(FullValue, '<ul class="trivia">', '<div align="center"> <!--');
+      Value2 := TextBetween(FullValue, '<title>', '</title>');
+      Value := StringReplace(Value, #13#10, '');
+      Value := StringReplace(Value, '  ', '');
+      Value := StringReplace(Value, '<li>', #13#10 + '- ');
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value2);
+      HTMLDecode(Value2);
+      Value2 := AnsiUpperCase(Value2);
+      case GetOption('Trivia') of
+        1:
+          begin
+            if GetField(fieldDescription) <> '' then
+              Value := GetField(fieldDescription) + #13#10 + #13#10 + 'IMDB ' + Value2 + ': ' + Value
+            else
+              Value :=  'IMDB ' + Value2 + ': ' + Value;
+            SetField(fieldDescription, Value);
+          end;
+        2:
+          begin
+            if GetField(fieldComments) <> '' then
+              Value := GetField(fieldComments) + #13#10 + #13#10 + 'IMDB ' + Value2 + ': ' + Value
+            else
+              Value :=  'IMDB ' + Value2 + ': ' + Value;
+            SetField(fieldComments, Value);
+          end;
+      end;
+    end;
+  end;
+  // Awards
+  if (GetOption('Awards') > 0) then
+  begin
+    Value := TextAfter(PageText, '<a href="awards">');
+    if Value <> '' then
+    begin
+      Value := GetField(fieldURL);
+      PageText := GetPage(Value+'/awards');
+      Value2 := TextBetween(PageText, ' <h1>', '</h1>');
+      Value := TextBetween(PageText, '<table cellspacing="2" cellpadding="2" border="1" width="95%">', '<!--');
+      Value := StringReplace(Value, '<big>', '- ');
+      Value := StringReplace(Value, '<tr><th>Year</th><th>Result</th><th>Award</th><th>Category/Recipient(s)</th></tr>', '');
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value2);
+      HTMLRemoveTags(Value2);
+      Value2 := StringReplace(AnsiUpperCase(Value2), #13#10, '');
+      Value := StringReplace(Value, ' '+#13#10, #13#10);
+      while Pos(#13#10+#13#10, Value) > 0 do
+        Value := StringReplace(Value, #13#10+#13#10, #13#10);
+      FullValue:= Value2+': '+Value;
+      case GetOption('Awards') of
+        1:
+          begin
+            if GetField(fieldDescription) <> '' then
+              Value := GetField(fieldDescription) + #13#10 + #13#10 + Value2 + ': ' + Value
+            else
+              Value := Value2 + ': ' + Value;
+            SetField(fieldDescription, Value);
+          end;
+        2:
+          begin
+            if GetField(fieldComments) <> '' then
+              Value := GetField(fieldComments) + #13#10 + #13#10 + Value2 + ': ' + Value
+            else
+              Value := Value2 + ': ' + Value;
+            SetField(fieldComments, Value);
+          end;
+      end;
+    end;
+  end;
+
+  if CanSetField(fieldChecked) then
+    SetField(fieldChecked, ''); //xxx uncheck any items we set
+end;
+
+// ***** Imports lists like Genre, Country, etc. depending of the selected option *****
+
+function ImportList(PageText: string; MultipleValues: Integer; StartTag: string): string;
+var
+  Value, Value2: string;
+begin
+  if MultipleValues = 0 then
+  begin
+    Value := TextBetween(PageText, StartTag, '</a>');
+    Value2 := TextAfter(Value, '">');
+  end
+  else
+  begin
+    Value := TextBetween(PageText, StartTag, #13#10);
+    Value2 := TextBefore(Value, ' <a href="/rg', '');
+    if Value2 <> '' then
+      Value := Value2;
+    Value2 := TextAfter(Value, '">');
+    HTMLRemoveTags(Value2);
+    if MultipleValues = 1 then
+      Value2 := StringReplace(Value2, ' / ', ', ');
+  end;
+  HTMLDecode(Value2);
+  Result := Value2;
+end;
+
+// ***** functions to import the different pictures kinds, depending of the option selected by user *****
+
+function ImportSmallPicture(PageText: string): Boolean;
+var
+  Value: string;
+begin
+  Result := False;
+  Value := TextBetween(PageText, '<a name="poster"', '</a>');
+  if Value <> '' then
+  begin
+    Value := TextBetween(Value, 'src="', '"');
+    if Value <> '' then
+    begin
+      GetPicture(Value);
+      Result := True;
+    end;
+  end;
+end;
+
+function ImportLargePicture(Address: string): Boolean;
+var
+  Value, Value2: string;
+begin
+  Result := True;
+  Value := GetPage(Address);
+  if SearchForLargePicture(Value, 'Onesheet_text', False) then
+    Exit;
+  if SearchForLargePicture(Value, 'keyart01', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'keyart02', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'oster', True) then // poster, usposter, Poster
+    Exit;
+  if SearchForLargePicture(Value, 'pos01', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'KeyArt', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'heet', True) then // Sheet & Onesheet
+    Exit;
+  if SearchForLargePicture(Value, 'OneSheetv2', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'artwork', True) then
+    Exit;
+  if SearchForLargePicture(Value, 'text', True) then
+    Exit;
+  Address := TextBetween(Value, 'There are ' + #13#10 + '<a href="', '">');
+  if Address <> '' then
+    Result := ImportLargePicture(IMDB_URL + Address)
+  else
+    Result := False;
+end;
+
+function SearchForLargePicture(PageText: string; Name: string; PartialName: Boolean): Boolean;
+var
+  Value: string;
+begin
+  Result := False;
+  if PartialName then
+  begin
+    Value := TextBefore(PageText, Name + '.jpg', '/');
+    if Value = '' then
+      Exit
+    else
+      Name := Value + Name;
+  end;
+  Value := TextBefore(PageText, 'th-' + Name + '.jpg', 'src="');
+  if Value <> '' then
+  begin
+    GetPicture(Value + Name + '.jpg');
+    Result := True;
+  end;
+end;
+
+function ImportAmazonPicture(Title: String; ShowPicker: boolean): Boolean;
+var
+  PicUrl: string;
+begin
+  result := false;
+  PicUrl := GetAmazonPicUrl(Title, ShowPicker);
+  if PicUrl <> '' then
+  begin
+    GetPicture(PicUrl); // use last value as will be same (for 2 part movies that use same image)
+    result := true;
+  end;
+end;
+
+//Image from DVD Details Page
+function ImportDvdDetailsPicture(PageText: string): Boolean;
+var
+  Value: string;
+begin
+  Result := False;
+  Value := TextAfter(PageText, '<a href="dvd">DVD details</a>');
+  if Value <> '' then
+  begin
+    Value := GetField(fieldURL);
+    PageText := GetPage(Value+'/dvd');
+    Value := TextBetween(TextBetween(PageText, 'internetmoviedat">', '></a>'), 'src="', '"');
+    if Pos('amazon_logo', Value) = 0 then
+    begin
+      Value := StringReplace(Value, 'MZZZZZZZ', 'LZZZZZZZ');
+      Value := StringReplace(Value, 'TZZZZZZZ', 'LZZZZZZZ');
+      Value := StringReplace(Value, '.gif', '.jpg');
+      GetPicture(Value);
+      Result := True;
+    end;
+  end;
+end;
+
+//Image from Merchandising Links (/sales) Page
+function ImportMerchandisingPicture(PageText: string): Boolean;
+var
+  Value: string;
+begin
+  Result := False;
+  Value := TextAfter(PageText, '<a href="sales">');
+  if Value <> '' then
+  begin
+    Value := GetField(fieldURL);
+    PageText := GetPage(Value+'/sales');
+    Value := TextBetween(PageText, '<img src="http://images.', '"');
+    if Value <> '' then
+    begin
+      Value := StringReplace(Value, 'MZZZZZZZ', 'LZZZZZZZ');
+      Value := StringReplace(Value, 'TZZZZZZZ', 'LZZZZZZZ');
+      Value := StringReplace(Value, '.gif', '.jpg');
+      GetPicture('http://images.'+Value);
+      Result := True;
+    end;
+  end;
+end;
+
+// ***** Gets summaries for the movie, based on the plot outline given in parameter (that contains the URL to more summaries) *****
+
+function ImportSummary(PlotText: string): string;
+var
+  Address, Value, Value2, PageText, Longest, Shortest: string;
+begin
+  Address := TextBetween(PlotText, '<a href="/rg/title-tease/plotsummary', '">(more)</a>');
+  if (Address = '') or (GetOption('DescriptionSelection') = 0) then
+  begin
+    Result := Trim(TextBefore(PlotText, '<a href="/rg', ''));
+    if Result = '' then
+      Result := Trim(PlotText);
+    HTMLRemoveTags(Result);
+    HTMLDecode(Result);
+  end
+  else
+  begin
+    PageText := GetPage(IMDB_URL + '/rg/title-tease/plotsummary' + Address);
+    PickListClear;
+    Longest := '';
+    Shortest := '';
+    Value := TextBetween(PageText, '<p class="plotpar">', '</p>');
+    PageText := RemainingText;
+    while Value <> '' do
+    begin
+      Value := StringReplace(Value, #13#10, ' ');
+      Value := StringReplace(Value, '<br>', #13#10);
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      while Pos('  ', Value) > 0 do
+        Value := StringReplace(Value, '  ', ' ');
+      if Length(Value) > Length(Longest) then
+        Longest := Value;
+      if (Length(Value) < Length(Shortest)) or (Length(Shortest)=0) then
+        Shortest := Value;
+      PickListAdd(Trim(Value));
+      Value := TextBetween(PageText, '<p class="plotpar">', '</p>');
+      PageText := RemainingText;
+    end;
+   
+    if (GetOption('BatchMode') > 0) then
+      Result := Shortest
+    else if (GetOption('DescriptionSelection') = 2) then
+      Result := Longest
+    else if (GetOption('DescriptionSelection') = 3) then
+      Result := Shortest
+    else
+    begin
+      if not PickListExec('Select a description for "' + GetField(fieldOriginalTitle) + '"', Result) then
+        Result := '';
+    end;
+  end;
+end;
+
+// ***** beginning of the program *****
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := '';
+    if GetOption('BatchMode') >= 2 then
+    begin
+      MovieName := GetField(fieldURL);
+      if Pos('imdb.com', MovieName) = 0 then
+      begin
+        MovieName := '';
+        if GetOption('BatchMode') = 3 then exit;
+      end;
+    end;
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if GetOption('BatchMode') = 0 then
+    begin
+      if not Input('IMDB Import', 'Enter the title or the IMDB URL of the movie:', MovieName) then
+        Exit;
+    end
+    else
+      Sleep(500);
+    if MovieName <> '' then
+    begin
+      if Pos('imdb.com', MovieName) > 0 then
+        AnalyzeResultsPage(MovieName)
+      else
+      begin
+        MovieName := StringReplace(MovieName, '&', 'and');
+        if (GetOption('BatchMode') > 0) or (GetOption('PopularSearches') = 1) then
+          AnalyzeResultsPage(IMDB_URL + '/find?tt=1;q=' + UrlEncode(MovieName))
+        else
+          AnalyzeResultsPage(IMDB_URL + '/find?more=tt;q=' + UrlEncode(MovieName));
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

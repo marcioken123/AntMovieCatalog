@@ -1,0 +1,121 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=O Guardião - <link>www.o-guardiao.com</link>
+Title=Clubedevideo
+Description=Movie importation script for Clubedevideo
+Site=www.clubedevideo.com
+Language=PT
+Version=1.2 (23 Fevereiro 2007)
+Requires=3.5.0
+Comments=Script feito por O Guardião para o site "www.clubedevideo.com"|Caso detectem erros coloquem-nos no meu site: <link>www.o-guardiao.com/forum/viewtopic.php?t=250</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Clubedevideo;
+uses StringUtils1;
+var MovieName:string;
+
+function TrimRight(S: string): string;  //Function modified by O Guardião
+var
+  I: Integer;
+begin
+  I := Length(S);
+  while (I > 0) and (Copy(S,I,1) <= ' ') do
+    i:=i-1;
+  Result := Copy(S, 1, I);
+end;
+
+function HTMLRemove(Value: String): String;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+
+procedure AnalyzeFilmPage(Address: String);
+var Page : TStringList;
+    BeginPos:Integer;
+    nome_orig, traduzido, categoria, duracao, actores, distribuidor, descricao, url_capa, realizacao:string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  SetField(fieldURL, Address);
+  nome_orig:=TextBetween(Page.Text,'''mod_titulos_filme2''>','</font>');
+  SetField(fieldOriginalTitle,  nome_orig);
+
+  traduzido:=TrimRight(TextBetween(Page.Text,'Catalogo de Filmes</a> > Ficha de Filme&nbsp&nbsp','</td>'));
+  traduzido:=Copy(traduzido,2,length(traduzido)-2); //tira aspas
+  SetField(fieldTranslatedTitle,traduzido);
+
+  categoria:=TextBetween(Page.Text,'Categoria:</font>&nbsp;','<br>');
+  SetField(fieldCategory, categoria);
+  
+  duracao:=TextBetween(Page.Text,'Duração:</font>&nbsp;','<br>');
+  duracao:=StringReplace(duracao,' min.','');
+  SetField(fieldLength, duracao);
+  
+  actores:=HTMLRemove(TextBetween(Page.Text,'Protagonistas:</font>&nbsp;','<br>'));
+  SetField(fieldActors, actores);
+  
+  distribuidor:=TextBetween(Page.Text,'Distribuidora:</font>&nbsp;','<br>');
+  SetField(fieldProducer, distribuidor);
+  
+  descricao:=TrimRight(HTMLRemove(TextBetween(Page.Text,'Sinópse:</font>','</font>')));
+  SetField(fieldDescription, descricao);
+  
+  realizacao:=HTMLRemove(TextBetween(Page.Text,'Realização:</font>&nbsp','<br>'));
+  SetField(fieldDirector, realizacao);
+  
+  url_capa:='http://www.clubedevideo.com/capas/'+TextBetween(Page.Text,'<img src=''../capas/',''' ');
+  GetPicture(url_capa);
+  Page.free;
+end;
+procedure AnalyzePage(Address,param: string);
+var
+  Page: TStringList;
+  url_lista:TStringList;
+  nome, url, Line:string;
+  BeginPos, LineNr:integer;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := PostPage(Address,param);
+  If Pos('Não foram encontrados resultados para o seu critério de pesquisa.',Page.Text)=0 then
+  begin
+  url_lista:=TStringList.Create;
+  repeat
+   LineNr := FindLine('ficha_filme_if.cdv', Page, LineNr+1);
+   Line:= Page.GetString(LineNr);
+    nome:=TextBetween(Line,'<a href=''ficha_filme_if.cdv','</a>');
+    BeginPos:=Pos('>',nome);
+    url:='http://www.clubedevideo.com/mods/ficha_filme_if.cdv'+Copy(nome,1,BeginPos-2);
+    nome:=Copy(nome,BeginPos+1,length(nome));
+    BeginPos:=FindLine(url,url_lista,0);
+    if BeginPos=-1 then
+    begin
+      url_lista.add(url);
+      PickTreeAdd(nome, url);
+    end;
+  until (nome='');
+   if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  end
+  else
+   showmessage('O filme não foi encontrado')
+  Page.free;
+end;
+begin
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do Clubedevideo', 'Escreva o nome do filme:', MovieName) then
+  AnalyzePage('http://www.clubedevideo.com/mods/mod_pesquisa_if.cdv',UrlEncode('valor_pesquisa='+MovieName));
+end.

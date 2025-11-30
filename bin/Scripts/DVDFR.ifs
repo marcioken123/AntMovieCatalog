@@ -1,0 +1,695 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten, Dedej
+Title=DVDFR.com
+Description=Importation des données et image de DVDFR.com (pour utilisation personnelle uniquement !)
+Site=www.dvdfr.com
+Language=FR
+Version=1.67 du 18/05/2023
+Requires=4.2.2
+Comments=Merci à l'équipe de DVDFR de fournir un accès simplifié à leurs données.|Pour rappel, ces données sont accessibles uniquement pour une utilisation personnelle ; en aucun cas elles ne peuvent être utilisées commerciallement ou publiquement !|L'ancienne version du script avait été développée par Antoine Potten et Fabrice Fert.
+License=Ce script permet de récupérer les données du site de DVDFR pour une utilisation personnelle uniquement.|Ces données ne peuvent pas être récupérées ni exploitées dans un but commercial ou même pour une utilisation publique.|En utilisant ce script vous déclarez accepter ces conditions et endosser toute responsabilité dans la manière dont vous utilisez ces données.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mise à jour du Script=0|0|0=Pas de mise à jour|1=Mise à jour du script
+Typederecherche=0|0|0=Recherche sur le titre|1=Recherche sur lien Web
+ListePays=1|1|0=Ne prend que le premier pays de la liste|1=Prend la liste de tous les pays, séparés par des virgules
+ListeCategories=1|1|0=Ne prend que la première catégorie de la liste|1=Prend la liste de toutes les catégories, séparées par des virgules
+Bonus=1|1|0=N'importe pas la liste des bonus|1=Importe la liste des bonus dans le champ Commentaires
+FormatVideo=1|1|0=Spécifie "MPEG2" d'office|1=Description longue du format d'image mis dans le champ "Format Vidéo"
+Reference=1|0|0=N'importe pas la référence|1=Importe la référence dans le champ "Label du média"
+GarderCommentaires=0|0|0=Ne pas garder les commentaires|1=Garder les commentaires précédents
+TypeMedia=2|2|0=DVD|1=BRD|2=Tous
+Avis CSA=0|0|0=Sans Avis CSA|1=Avec Avis CSA
+Bande Annonce=2|0|0=Avec Bande Annonce dans les commentaires|1=Avec Bande Annonce dans un champ personnalisé|2=Pas de Bande Annonce
+TailleImage=1|0|0=Petite (100x140), taille par défaut|1=Moyenne (200x280)
+
+[Parameters]
+
+***************************************************)
+
+program DVDFR;
+uses
+  StringUtils7552, ScorEpioNCommonScript;
+
+const
+  VersionScript = '1.61 du 30/01/2014';
+  ScriptName = 'DVDFR.ifs';
+  SiteUrl = 'http://joel.desseaux.free.fr/DVD.FR/';
+
+var
+  MovieName: string;
+  Maj, PMaj, Nb: Integer;
+
+// *** téléchargement et analyse des pages, contruction de la liste de choix de titres
+
+procedure AnalyzePage(Address: string);
+var
+  xml: TJvSimpleXml;
+  CurItem: TJvSimpleXmlElem;
+  i: Integer;
+  s1, s2: string;
+begin
+  if (GetOption('Typederecherche') = 0) or (Pos('dvdfr.com/api/dvd', Address) = 0) then
+  begin
+    Address := StringReplace(Address, 'dvdfr.com/dvd/', 'dvdfr.com/api/');
+    xml := TJvSimpleXml.Create(nil);
+    s1 := GetPage(Address);
+    s2 := UTF8Decode(s1);
+    if s2 = '' then
+    begin
+      ShowError('Erreur d''encodage dans le fichier reçu, les caractères ne seront pas décodés');
+      xml.LoadFromString(s1)
+    end
+    else
+      xml.LoadFromString(s2);
+    //xml.LoadFromFile('T:\dvd.xml');
+    if xml.Root.Name = 'dvds' then
+    begin
+      if xml.Root.Items.Count = 0 then
+      begin
+        ShowInformation('Aucun film trouvé pour "' + MovieName + '"');
+        xml.Free;
+        Exit;
+      end;
+      PickTreeClear;
+      PickTreeAdd('Résultats de la recherche de "' + MovieName + '"', '');
+      for i := 0 to xml.Root.Items.Count-1 do
+      begin
+        CurItem := xml.Root.Items.GetItem(i);
+        s1 := CurItem.Items.GetItemNamed('titres').Items.GetItemNamed('fr').Value;
+        s2 := CurItem.Items.GetItemNamed('titres').Items.GetItemNamed('vo').Value;
+        if s2 <> '' then
+          s1 := s1 + ' (' + s2 + ')';
+        if CurItem.Items.GetItemNamed('stars').Items.Count > 0 then
+        begin
+          s2 := CurItem.Items.GetItemNamed('stars').Items.GetItem(0).Value;
+          if s2 <> '' then
+            s1 := s1 + ' / ' + s2;
+        end;
+        s2 := CurItem.Items.GetItemNamed('edition').Value;
+        if s2 <> '' then
+          s1 := s1 + ' / ' + s2;
+        s2 := CurItem.Items.GetItemNamed('editeur').Value;
+        if s2 <> '' then
+          s1 := s1 + ' / ' + s2;
+        s2 := CurItem.Items.GetItemNamed('media').Value;
+        if (GetOption('TypeMedia') = 2) and (s2 <> '') then
+          s1 := s1 + ' / ' + s2;
+        HtmlDecode(s1);
+        if ((GetOption('TypeMedia') = 2) or ((GetOption('TypeMedia') = 0) and (pos('DVD', s2)=1)) or ((GetOption('TypeMedia') = 1) and (pos('BRD', s2)=1))) then
+           PickTreeAdd(s1, 'https://www.dvdfr.com/dvd/dvd.php?id=' + CurItem.Items.GetItemNamed('id').Value);
+       end;
+      if PickTreeExec(Address) then
+        AnalyzePage(Address);
+    end
+    else if xml.Root.Name = 'dvd' then
+    begin
+      AnalyzeMoviePage(xml);
+    end;
+    if xml.Root.Name = 'errors' then
+    begin
+      ShowError(xml.Root.Items.GetItemNamed('error').Items.GetItemNamed('message').Value);
+    end;
+  end
+  else
+  begin
+    xml := TJvSimpleXml.Create(nil);
+    if pos('dvd/f',Address)= 0 then
+      xml.LoadFromString(GetPage(UrlEncode('https://www.dvdfr.com/api/dvd.php?id=' + copy(Address,pos('?id=',Address)+4,Length(Address)- (pos('?id=',Address)+3)))))
+    else if pos('-',Address)= 0 then
+      xml.LoadFromString(GetPage(UrlEncode('https://www.dvdfr.com/api/dvd.php?id=' + copy(Address,pos('dvd/f',Address)+5,Length(Address)- (pos('dvd/f',Address)+5)))))
+    else
+      xml.LoadFromString(GetPage(UrlEncode('https://www.dvdfr.com/api/dvd.php?id=' + copy(Address,pos('dvd/f',Address)+5,pos('-',Address)- (pos('dvd/f',Address)+5)))));
+    AnalyzeMoviePage(xml);
+  end;
+  xml.Free;
+end;
+
+// *** analyse d'une fiche de film
+
+procedure AnalyzeMoviePage(xml: TJvSimpleXml);
+var
+  Items: TJvSimpleXmlElems;
+  CurItem, SubItem: TJvSimpleXmlElem;
+  Prop: TJvSimpleXmlProp;
+  s1, s2, Nom, CSA, BA: string;
+  i: Integer;
+begin
+  Items := xml.Root.Items;
+  SetField(fieldURL, Items.GetItemNamed('url').Value);
+  s1 := '';
+  s2 := '';
+  CurItem := Items.GetItemNamed('titres');
+  if CurItem <> nil then
+  begin
+    SubItem := CurItem.Items.GetItemNamed('fr');
+    if SubItem <> nil then
+      s1 := SubItem.Value;
+    SubItem := CurItem.Items.GetItemNamed('vo');
+    if SubItem <> nil then
+      s2 := SubItem.Value;
+  end
+  else
+  begin
+    CurItem := Items.GetItemNamed('titres_fr');
+    if CurItem <> nil then
+      s1 := CurItem.Value;
+    CurItem := Items.GetItemNamed('titres_vo');
+    if CurItem <> nil then
+      s2 := CurItem.Value;
+  end;
+  if s2 = '' then
+    SetField(fieldOriginalTitle, s1)
+  else
+  begin
+    SetField(fieldOriginalTitle, s2);
+    SetField(fieldTranslatedTitle, s1);
+  end;
+  if CanSetField(fieldCountry) then
+  begin
+    s1 := '';
+    CurItem := Items.GetItemNamed('listePays');
+    for i := 0 to CurItem.Items.Count-1 do
+    begin
+      if s1 <> '' then
+      begin
+        if GetOption('ListePays') = 0 then
+          Break
+        else
+          s1 := s1 + ', ';
+      end;
+      s1 := s1 + CurItem.Items.GetItem(i).Value;
+    end;
+    SetField(fieldCountry, s1);
+//  end;
+  end;
+  SetField(fieldYear, Items.GetItemNamed('annee').Value);
+  s1 := StringReplace(StringReplace(Items.GetItemNamed('synopsis').Value, #10, ' '), #13, '');
+  s1 := StringReplace(s1, '&', '...');
+  HtmlDecode(s1);
+  SetField(fieldDescription, s1);
+  SetField(fieldLength, Items.GetItemNamed('duree').Value);
+  CurItem := Items.GetItemNamed('disques');
+  if CurItem <> nil then
+  begin
+    SetField(fieldDisks, CurItem.Properties.GetItemNamed('nbdiscs').Value);
+    if ((CurItem.Items.Count > 0) and ((GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'BD') or (GetField(fieldMediaType) = 'HD DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30'))) then
+      SetField(fieldMediaType, CurItem.Items.GetItem(0).Value);
+  end;
+  if CanSetField(fieldVideoBitrate) then
+  begin
+    CurItem := Items.GetItemNamed('bitrate');
+    if CurItem <> nil then
+    begin
+      s1 := CurItem.Value;
+      if CurItem.Properties.GetItemNamed('unite').Value = 'mbits/s' then
+        s1 := FloatToStr(StrToFloat(StringReplace(s1, ',', '.')) * 1000.0);
+      if s1 > '0' then
+        SetField(fieldVideoBitrate, s1);
+    end;
+  end;
+  CurItem := Items.GetItemNamed('image');
+  if CurItem.Items.Count > 0 then
+  begin
+  if CurItem.Items.GetItemNamed('aspect_ratio').Value <> '0.00' then
+   SetField(fieldResolution, CurItem.Items.GetItemNamed('aspect_ratio').Value);
+   if ((GetField(fieldMediaType) = '') or (GetField(fieldMediaType) = 'VHS') or (GetField(fieldMediaType) = 'VHS LP') or (GetField(fieldMediaType) = 'SVHS') or (GetField(fieldMediaType) = 'SVHS LP') or (GetField(fieldMediaType) = 'VIDEO CD') or (GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'BD') or (GetField(fieldMediaType) = 'HD DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+    begin
+      SubItem := CurItem.Items.GetItemNamed('Format');
+      if (GetOption('FormatVideo') = 0) and (SubItem <> nil) and ((GetField(fieldMediaType) = 'VHS') or (GetField(fieldMediaType) = 'VHS LP') or (GetField(fieldMediaType) = 'SVHS') or (GetField(fieldMediaType) = 'SVHS LP') or (GetField(fieldMediaType) = 'VIDEO CD') or (GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'BD') or (GetField(fieldMediaType) = 'HD DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+        SetField(fieldVideoFormat, 'MPEG2, ' + SubItem.Value)
+      else
+        begin
+        if GetField(fieldVideoFormat)<> '' then
+         SetField(fieldVideoFormat, GetField(fieldVideoFormat) + ' ' + SubItem.Value)
+        else
+         SetField(fieldVideoFormat, SubItem.Value);
+        end;
+      if CanSetField(fieldComments) then
+      begin
+      s1 := '';
+      SubItem := CurItem.Items.GetItemNamed('standard');
+      if SubItem <> nil then
+        s1 := SubItem.Value;
+      SubItem := CurItem.Items.GetItemNamed('mode');
+      if SubItem <> nil then
+        s1 := s1 + ', ' + SubItem.Value;
+      if (GetOption('GarderCommentaires') = 1) then
+      begin
+        if s1 <> '' then
+          SetField(fieldComments, s1 + #13#10 + #13#10 + GetField(fieldComments));
+      end
+      else
+      begin
+        SetField(fieldComments, s1);
+      end;
+      end;
+    end
+    else
+    if ((GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+      SetField(fieldVideoFormat, 'MPEG2');
+  end;
+  s1 := Items.GetItemNamed('rating').Value;         //  Avis C.S.A.
+  if (CheckVersion(4,2,0)) and (GetOption('Avis CSA') = 1) and (s1 <> '') then      //////////////////////////////////////////////////////////////////////////// test s'il y a un champs Certification
+   SetField(fieldCertification, s1)
+  else
+   begin
+   if (CheckVersion(4,0,0)) and (GetOption('Avis CSA') = 1) and (s1 <> '') then      //////////////////////////////////////////////////////////////////////////// test s'il y a des champs modifiables
+    begin
+    Nom := 'Avis C.S.A.';
+    if Nb = 0 then                               // Non répétition du choix lors d'une multisélection
+     CSA := CustomField(Nom);
+    if CSA <> 'Champs d''origine' then            // choix en dehors des champs modifiables
+    SetCustomField(CSA, Items.GetItemNamed('rating').Value)
+    else
+     begin
+     if GetField(fieldComments) <> '' then
+      s1 := Items.GetItemNamed('rating').Value + #13#10#13#10 + GetField(fieldComments);
+     if s1 <> '' then
+      SetField(fieldComments, s1);
+     end;
+   end else
+    begin
+    if GetField(fieldComments) <> '' then
+     s1 := Items.GetItemNamed('rating').Value + #13#10#13#10 + GetField(fieldComments);
+    if s1 <> '' then
+     SetField(fieldComments, s1);
+    end;
+   end;
+   if (GetOption('Bande Annonce') < 2) and (s1 <> '') then
+   begin
+     CurItem := Items.GetItemNamed('bandesAnnonces');         //  Bande annonce
+     if CurItem.Items.GetItem(0) <> nil then
+     begin
+      Prop := CurItem.Items.GetItem(0).Properties.GetItemNamed('url');
+      s1 := (Prop.Value);
+     end else
+      s1 := '';
+     if (CheckVersion(4,0,0)) and (GetOption('Bande Annonce') = 1) then    ////////////////////////////////////////////////////// test s'il y a des champs modifiables
+     begin
+       Nom := 'Bande annonce';
+       if Nb = 0 then                               // Non répétition du choix lors d'une multisélection
+        BA := CustomField(Nom);
+       if BA <> 'Champs d''origine' then            // choix en dehors des champs modifiables
+        SetCustomField(BA, s1)
+       else
+       begin
+       if GetField(fieldComments) <> '' then
+        s1 := s1 + #13#10#13#10 + GetField(fieldComments);
+       if s1 <> '' then
+        SetField(fieldComments, s1);
+       end;
+     end else
+     begin
+      if (GetField(fieldComments) <> '') and (s1 <> '') then
+       s1 := s1 + #13#10#13#10 + GetField(fieldComments);
+      if s1 <> '' then
+       SetField(fieldComments, s1);
+     end;
+   end;
+  if ((GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+   begin
+   s1 := Items.GetItemNamed('media').Value;
+   s1 := StringReplace(s1, 'BRD', 'Blu-ray');
+   CurItem := Items.GetItemNamed('zones');
+   if CurItem.Items.Count > 0 then
+    begin
+    if CurItem <> nil then
+     begin
+      s2 := '';
+      for i := 0 to CurItem.Items.Count-1 do
+      begin
+        if i > 0 then
+          s2 := s2 + ' - ' + CurItem.Items.GetItem(i).Value
+        else
+          s2 := CurItem.Items.GetItem(i).Value;
+        end;
+      end;
+   end;
+   if s2 <> '' then
+     s1 := s1 + ' zone ' + s2;
+   if GetField(fieldComments) <> '' then
+     s1 := s1 + ', ' + GetField(fieldComments);
+   SetField(fieldComments, s1);
+   end;
+   CurItem := Items.GetItemNamed('critiques');
+   if CurItem.Items.Count > 0 then
+     if (CurItem.Items.GetItemNamed('public').Value > '0.0')  then
+       SetField(fieldrating, CurItem.Items.GetItemNamed('public').Value)
+     else if (CurItem.Items.GetItemNamed('dvdfr').Value > '0.0')  then
+       SetField(fieldrating, CurItem.Items.GetItemNamed('dvdfr').Value);
+   if CanSetField(fieldActors) or CanSetField(fieldDirector) then
+   begin
+    GetStars(Items.GetItemNamed('stars').Items);
+    if GetField(fieldDirector) = '' then
+    begin
+      CurItem := Items.GetItemNamed('realisateurs');
+      if CurItem <> nil then
+      begin
+        s1 := '';
+        for i := 0 to CurItem.Items.Count-1 do
+        begin
+          if i > 0 then
+            s1 := s1 + ', ';
+          s1 := s1 + CurItem.Items.GetItem(i).Value;
+        end;
+        SetField(fieldDirector, s1);
+      end;
+     end;
+   end;
+  if CanSetField(fieldCategory) then
+  begin
+    s1 := '';
+    CurItem := Items.GetItemNamed('categories');
+    for i := 0 to CurItem.Items.Count-1 do
+    begin
+      if s1 <> '' then
+      begin
+        if GetOption('ListeCategories') = 0 then
+          Break
+        else
+          s1 := s1 + ', ';
+      end;
+      s1 := s1 + CurItem.Items.GetItem(i).Value;
+    end;
+    SetField(fieldCategory, s1);
+  end;
+  if CanSetField(fieldLanguages) or CanSetField(fieldAudioFormat) then
+    GetAudioTracks(Items.GetItemNamed('audiotracks').Items);
+  if CanSetField(fieldSubtitles) then
+  begin
+    CurItem := Items.GetItemNamed('soustitrage');
+    s1 := '';
+    for i := 0 to CurItem.Items.Count-1 do
+    begin
+      Prop := CurItem.Items.GetItem(i).Properties.GetItemNamed('type');
+      if Prop = nil then
+        s2 := ''
+      else
+        s2 := Prop.Value;
+      if (s2 = '') or (s2 = 'normal') then
+      begin
+        if s1 <> '' then
+          s1 := s1 + ', ';
+        s1 := s1 + CurItem.Items.GetItem(i).Value;
+      end;
+      if s2 = 'malentendants' then
+      begin
+        if s1 <> '' then
+          if pos('Malentendants', s1) = 0 then
+          s1 := s1 + ', Malentendants: '
+          else
+          s1 := s1 + ', ';
+        s1 := s1 + CurItem.Items.GetItem(i).Value;
+      end;
+    end;
+    SetField(fieldSubtitles, s1);
+  end;
+
+  if ((GetField(fieldMediaType) = '') or (GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+  begin
+    if CanSetField(fieldComments) then
+    begin
+      CurItem := Items.GetItemNamed('listeBonus');
+      s1 := '';
+      for i := 0 to CurItem.Items.Count-1 do
+      begin
+        s2 := StringReplace(CurItem.Items.GetItem(i).Value, #10, #13#10);
+        s2 := Trim(StringReplace(s2, #13#13, #13));
+        s2 := StringReplace(s2, '&#8217;', '`');
+        s2 := StringReplace(s2, '<strong>', '');
+        s2 := StringReplace(s2, '</strong>', '');
+        s2 := StringReplace(s2, '<b>', '');
+        s2 := StringReplace(s2, '</b>', '');
+        HTMLDecode(s2);
+        if (s1 <> '') and (s2 <> '') then
+          s1 := s1 + #13#10 + s2
+          else
+          s1 := s1 + s2;
+      end;
+      if (GetField(fieldComments) <> '') and (s1 <> '') then
+        s1 := GetField(fieldComments) + #13#10#13#10 + s1
+      else
+        s1 := GetField(fieldComments);
+      s1 := StringReplace(s1, #13#10#13#10#13#10, #13#10#13#10);
+      SetField(fieldComments, s1);
+    end;
+  end;
+  if ((GetField(fieldMediaType) = '') or (GetField(fieldMediaType) = 'DVD') or (GetField(fieldMediaType) = 'DVD-5') or (GetField(fieldMediaType) = 'DVD-9') or (GetField(fieldMediaType) = 'DVD-18') or (GetField(fieldMediaType) = 'BD-25') or (GetField(fieldMediaType) = 'BD-50') or (GetField(fieldMediaType) = 'HD DVD-30')) then
+  begin
+    if CanSetField(fieldComments) then
+    begin
+      CurItem := Items.GetItemNamed('contenu');
+      s1 := '';
+      for i := 0 to CurItem.Items.Count-1 do
+      begin
+        s2 := StringReplace(CurItem.Items.GetItem(i).Value, #10, #13#10);
+        s2 := Trim(StringReplace(s2, #13#13, #13));
+        s2 := StringReplace(s2, '&#8217;', '`');
+        s2 := StringReplace(s2, '<strong>', '');
+        s2 := StringReplace(s2, '</strong>', '');
+        s2 := StringReplace(s2, '<b>', '');
+        s2 := StringReplace(s2, '</b>', '');
+        HTMLDecode(s2);
+        if (s1 <> '') and (s2 <> '') then
+          s1 := s1 + #13#10 + s2
+        else
+          s1 := s1 + s2;
+      end;
+      if (GetField(fieldComments) <> '') and (s1 <> '') then
+        s1 := s1 + #13#10#13#10 + GetField(fieldComments)
+      else
+        s1 := GetField(fieldComments);
+      s1 := StringReplace(s1, #13#10#13#10#13#10, #13#10#13#10);
+      SetField(fieldComments, s1);
+    end;
+  end;
+  if CanSetField(fieldProducer) then
+  begin
+    s1 := Items.GetItemNamed('studio').Value;
+    s1 := StringReplace(s1, #13#10, ' ');
+    SetField(fieldProducer, s1);
+  end;
+  if CanSetField(fieldMedia) and (GetOption('Reference') <> 0) then
+  begin
+    s1 := Items.GetItemNamed('reference').Value;
+    SetField(fieldMedia, s1);
+  end;
+  CurItem := Items.GetItemNamed('cover');
+  if CurItem <> nil then
+  begin
+    s1 := CurItem.Value;
+    if Pos('nocover', s1) = 0 then
+    begin
+      if GetOption('TailleImage') = 1 then
+      begin
+        s1 := StringReplace(s1, '100x140', '200x280');
+      end;
+      GetPicture(s1);
+    end;
+  end;
+end;
+
+// *** récupère les acteurs et réalisateurs dans la liste des stars
+
+procedure GetStars(Items: TJvSimpleXmlElems);
+var
+  sActors, sDirectors, sWriters, sComposers, sComments, val: string;
+  i: Integer;
+  CurItem: TJvSimpleXmlElem;
+  Prop: TJvSimpleXmlProp;
+begin
+  sActors := '';
+  sDirectors := '';
+  sWriters := '';
+  sComposers := '';
+  sComments := '';
+  for i := 0 to Items.Count-1 do
+  begin
+    CurItem := Items.GetItem(i);
+    Prop := CurItem.Properties.GetItemNamed('type');
+    if Prop = nil then
+      val := ''
+    else
+      val := Prop.Value;
+    if (val = '') or (val = 'Acteur') then
+    begin
+      if sActors <> '' then
+        sActors := sActors + ', ';
+      sActors := sActors + CurItem.Value;
+    end
+    else
+    if val = 'Réalisateur' then
+    begin
+      if sDirectors <> '' then
+        sDirectors := sDirectors + ', ';
+      sDirectors := sDirectors + CurItem.Value;
+    end
+   //////////////////////////////////////////
+   ///     Récupération scénarites        ///
+
+    if val = 'Scénariste' then
+    begin
+      if sWriters <> '' then
+        sWriters := sWriters + ', ';
+      sWriters := sWriters + CurItem.Value;
+    end
+    ///////////////////////////////////////////
+    ///    Récupération compositeurs        ///
+
+    if val = 'Compositeur' then
+    begin
+      if sComposers <> '' then
+        sComposers := sComposers + ', ';
+      sComposers := sComposers + CurItem.Value;
+    end
+   ///////////////////////////////////////////
+   ///         Récupération Auteurs        ///
+
+  if val = 'Auteur (histoire)' then
+    begin
+      if sComments <> '' then
+        sComments := sComments + ', ';
+      sComments := sComments + CurItem.Value;
+    end
+  end;
+  SetField(fieldActors, sActors);
+  SetField(fieldDirector, sDirectors);
+  if (CheckVersion(4,2,0)) then      //////////////////////////////////////////////////////////////////////////// test Version pour présence champs
+     SetField(fieldWriter, sWriters);
+  if (CheckVersion(4,2,0)) then      //////////////////////////////////////////////////////////////////////////// test Version pour présence champs
+     SetField(fieldComposer, sComposers);
+  if CanSetField(fieldComments) then
+   begin
+   if (GetField(fieldComments) <> '') and (sComments <> '') then
+    sComments := 'Histoire originale de : ' + sComments + #13#10#13#10 + GetField(fieldComments)
+   else
+    sComments := GetField(fieldComments);
+   sComments := StringReplace(sComments, #13#10#13#10#13#10, #13#10#13#10);
+   SetField(fieldComments, sComments);
+   end
+end;
+
+// *** récupère les langues et formats des pistes audio
+
+procedure GetAudioTracks(Items: TJvSimpleXmlElems);
+var
+  i: Integer;
+  sFormats, sLanguages: string;
+  CurItem: TJvSimpleXmlElem;
+begin
+  sFormats := '';
+  sLanguages := '';
+  for i := 0 to Items.Count-1 do
+  begin
+    CurItem := Items.GetItem(i);
+    if sFormats <> '' then
+      sFormats := sFormats + ', ';
+    if sLanguages <> '' then
+      sLanguages := sLanguages + ', ';
+    sFormats := sFormats + Trim(CurItem.Items.GetItemNamed('standard').Value + ' ' + CurItem.Items.GetItemNamed('encodage').Value);
+    sLanguages := sLanguages + CurItem.Items.GetItemNamed('langue').Value
+  end;
+  SetField(fieldAudioFormat, sFormats);
+  SetField(fieldLanguages, sLanguages);
+end;
+
+//------------------------------------------------------------------------------
+// Vérifie s'il existe une nouvelle version du script
+// et propose de la télécharger
+//------------------------------------------------------------------------------
+procedure CheckScriptVersion();
+var
+  Page, Script: TStringList;
+  Line, ScriptsDirectory, FileName, ScriptText, Fich: string;
+  LineNr, BeginPos, EndPos: Integer;
+  CurrentVersion, NewVersion: real;
+
+begin
+  Page := TStringList.Create;
+  FileName := UrlEncode(ScriptName);
+	FileName := StringReplace(FileName, '%2E', '.');
+	FileName := StringReplace(FileName, '+', '%20');
+  Page.Text := GetPage(SiteUrl + FileName);
+  ScriptsDirectory := GetStatic('path');
+  //SetStatic('path', ScriptsDirectory);
+  LineNr := FindLine('Version=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Version=', Line) + 8;
+    EndPos := pos(' du', Line);
+    CurrentVersion := StrToFloat(copy(VersionScript, 1, pos('du', VersionScript) - 2));
+    NewVersion := StrToFloat(copy(Line, BeginPos, EndPos - BeginPos));
+    if (NewVersion > CurrentVersion) then
+    begin
+      if ShowConfirmation('Une nouvelle version du script est disponible : ' + copy(Line, BeginPos, EndPos - BeginPos)+ #13#10#13#10 + '- Cliquez sur ''''Oui'''' pour effectuer la mise à jour.' + #13#10#13#10 + '- Cliquez sur ''''Non'''' dans le cas contraire.') = True then
+        begin
+          FileName := ScriptName;
+          Sleep(500);
+          ScriptText := Page.Text;
+          Script := TStringList.Create;
+          Script.Add(ScriptText);
+          FileName := StringReplace(FileName, '%20', ' ');
+          if (CheckVersion(4,1,2)) then
+           Script.SaveToFile(dirScripts + FileName)
+          else
+           Script.SaveToFile(ScriptsDirectory + FileName);
+          Maj := 1;
+          ShowInformation('Vous avez mis à jour le script, quitter la fenêtre de scripts et relancez la.');
+          Script.Free;
+        end;
+    end else
+  end;
+end;
+
+// *** début du programme ***
+
+begin
+  PMaj := PMaj+ 1;
+  if CheckVersion(4,2,2) then
+  begin
+    Maj := 0;
+    if AcceptLicense(1) then // modifier ou retirer cette ligne revient à accepter la licence :p
+    begin
+      if (GetOption('Mise à jour du Script') = 1) and (PMaj = 1) then
+      begin
+        CheckScriptVersion();
+        if Maj = 1 then exit;
+      end;
+      if (GetOption('Typederecherche') = 1) and ((copy(GetField(fieldURL),1,16)='https://www.dvdfr') or (copy(GetField(fieldURL),1,17)='https://www.dvdfr')) then
+      begin
+        RegExprModifiers('-g');
+        MovieName := RegExprSetReplace('^.*([0-9]+)[^0-9].*$', GetField(fieldURL), '$1', True);
+        AnalyzePage('https://www.dvdfr.com/api/dvd.php?id=' + MovieName);
+      end else
+      begin
+        MovieName := GetField(fieldTranslatedTitle);
+        if MovieName = '' then
+          MovieName := GetField(fieldOriginalTitle);
+        if Input('Importation DVDFR', 'Entrez le titre du film :', MovieName) then
+        begin
+          if (Copy(MovieName,1,16)='http://www.dvdfr') or (Copy(MovieName,1,17)='https://www.dvdfr') then
+          begin
+            RegExprModifiers('-g');
+            MovieName := RegExprSetReplace('^.*([0-9]+)[^0-9].*$', MovieName, '$1', True);
+            AnalyzePage('https://www.dvdfr.com/api/dvd.php?id=' + MovieName);
+          end
+          else
+            AnalyzePage('https://www.dvdfr.com/api/search.php?title=' + UrlEncode(RemoveArticles(MovieName)));
+        end;
+      end;
+    end;
+  end else if ShowWarning('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 4.2.2) - voulez-vous ouvrir le lien pour la télécharger ?)') = true then
+  begin
+    Launch('https://antp.be/software/moviecatalog/download/fr', '');
+  end;
+ Nb := 1;                                                         ///////////////////////////////////////////////////////////////////////////////
+end.

@@ -1,0 +1,374 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Decine21
+Description=
+Site=www.decine21.com
+Language=ES
+Version=1.1
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Decine21;
+ Uses StringUtils7552;
+
+const
+  BaseURL1 = 'http://www.decine21.com/EstructurasBd/Peliculas\';
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+//-----------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     // quitamos las comillas
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------------------------
+
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      // quitamos los tabuladores
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, strPages, MovieAddr, MovieTitle, MovieDate, MovieID: string;
+  BeginPos, EndPos, BeginPo, EndPo: Integer;
+  Line: string;
+  LineNr: Integer;
+  Page: TStringList;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos(' en el dominio <b>www.decine21.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      //PickTreeAdd('Resultados para: ' + MovieName, '');
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.decine21.com/FrmPeliculas.asp?id=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+        //Delete(strPage =elimina beginpos superior y deja el resto direccion
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          //MovieId direccion completa de carga datos
+          MovieId := Copy(strPage, +50, EndPos-50);
+          MovieAddr := 'http://www.decine21.com/FrmPeliculas.asp?id=' + MovieId;
+          BeginPos := Pos('clk(this',strPage);
+          EndPos := Pos('</a>', strPage);
+          MovieTitle := Copy(strPage,BeginPos+20, EndPos-8);
+          MovieTitle  := TextBetween (MovieTitle , 'l>', '-');
+          MovieTitle  := UpFirstLetterWord(MovieTitle );
+          MovieTitle  := StringReplace(MovieTitle , '„ë', 'Ò');
+          MovieTitle  := StringReplace(MovieTitle , '¬∑', '');
+          MovieTitle  := StringReplace(MovieTitle , '„Å', '·');
+          MovieTitle  := StringReplace(MovieTitle , '„©', 'È');
+          MovieTitle  := StringReplace(MovieTitle , '„ç', 'Ì');
+          MovieTitle  := StringReplace(MovieTitle , '„ì', 'Û');
+          MovieTitle  := StringReplace(MovieTitle , '„≥', 'Û');
+          MovieTitle  := StringReplace(MovieTitle , '„ö', '˙');
+          MovieTitle  := StringReplace(MovieTitle , '„∫', '˙');
+          MovieTitle  := StringReplace(MovieTitle , '„°', '·');
+          MovieTitle  := StringReplace(MovieTitle , '„≠', 'Ì');
+          MovieTitle  := StringReplace(MovieTitle , '„±', '˙');
+           MovieTitle  := StringReplace(MovieTitle , '√°', '·');
+           MovieTitle := StringReplace(MovieTitle , '√©', 'È');
+           MovieTitle  := StringReplace(MovieTitle , '√≠', 'Ì');
+           MovieTitle  := StringReplace(MovieTitle , '√≥', 'Û');
+           MovieTitle  := StringReplace(MovieTitle , '√∫', '˙');
+           MovieTitle  := StringReplace(MovieTitle , '„±', 'Ò');
+           MovieTitle  := StringReplace(MovieTitle , '√±', 'Ò');
+           MovieTitle  := StringReplace(MovieTitle , '¬', '');
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle,  MovieAddr);
+          BeginPos := Pos('href="http://www.decine21.com/FrmPeliculas.asp?id=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+           PickTreeSort;
+        end;
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+    SetField(fieldURL, Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  BaseURL2: string;
+  Beginpos: string;
+  titre_film: string;
+  EndPos: string;
+  Item1: string;
+  Item2: string;
+   Movie: string;
+begin
+  Description := '';
+
+ // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+   //Titulo Original
+ LineNr := FindLine('columnadatos', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('columnadatos',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'titulooriginal', '</font><br><br><div');
+     Item:= BorraComillas(Item);
+     Item  := StringReplace(Item , '>', ' ');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+      end;
+     
+  //Titulo Traducido
+ LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<title>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<title>', '-');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+     Item:= BorraComillas(Item);
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldTranslatedTitle, trim (Item));
+      end;
+
+  // Director
+  LineNr := FindLine('Direcci', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('DirecciÛn:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'DirecciÛn:', '</a>');
+    Item:= BorraComillas(Item);
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldDirector, trim (Item));
+      end;
+
+   // AÒo
+  LineNr := FindLine('AÒo de producci', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('AÒo de producci',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '>', '<');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldYear, trim (Item));
+      end;
+
+   // Actores
+  LineNr := FindLine('<br>IntÈrpretes:&nbsp;', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<br>IntÈrpretes:&nbsp;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<br>IntÈrpretes:&nbsp;', '</font><br>GuiÛn');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldActors, trim (Item));
+      end;
+     
+  //Categoria
+  LineNr := FindLine('GÈnero:&nbsp;', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('GÈnero:&nbsp;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '>', '</font><br>');
+  Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags(Item);
+  HTMLDecode(Item);
+  SetField(fieldCategory, Trim (Item));
+  end;
+
+  //Duracion
+  LineNr := FindLine('DuraciÛn:&nbsp;', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('DuraciÛn:&nbsp;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '>', 'min');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+  SetField(fieldLength, Trim (Item));
+  end;
+
+   //sinopsis
+  LineNr := FindLine('columnacomentario', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('columnacomentario',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'columnacomentario', '</div></td></tr><tr><td class=');
+  Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item:= BorraComillas(Item);
+    Item  := StringReplace(Item , 'height= 10 >', '');
+    DeleteTags(Item);
+  HTMLDecode(Item);
+    SetField(fieldDescription, trim (Item));
+    end;
+
+
+
+     // Comentarios
+  LineNr := FindLine('</font><br>GuiÛn:&nbsp;', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('</font><br>GuiÛn:&nbsp;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font><br>GuiÛn:&nbsp;', '<br>Distribuye');
+    Item  := StringReplace(Item , '&nbsp;', #13#10);
+    Item  := StringReplace(Item , '</a></font>', #13#10);
+    Item  := StringReplace(Item , '</a></font><br>', '/');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldComments, trim ('GuiÛn: '+Item));
+  end;
+ 
+   // Productor
+  LineNr := FindLine('Produce:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Produce:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'Produce:', '</span>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldProducer, trim (Item));
+  end;
+ 
+  // Picture
+  LineNr := FindLine('Imagenes\Peliculas\Criticas', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Imagenes\Peliculas\Criticas',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'http://www.decine21.com/EstructurasBd/Peliculas\', 'style=');
+     Item:= BorraComillas(Item);
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+   GetPicture ('http://www.decine21.com/EstructurasBd/Peliculas\'+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+            Input('Decine21', 'Buscar', MovieName);
+
+     if(GetOption('') = 0) then  Input('Decine21', 'Buscar', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=' + UrlEncode(MovieName)+'+site%3Awww.decine21.com&btnG=B%C3%BAsqueda&meta=');
+end.

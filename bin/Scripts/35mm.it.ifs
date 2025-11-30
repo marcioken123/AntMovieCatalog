@@ -1,0 +1,315 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=fulvio53s03
+Title=35mm.it
+Description=Get movie info from 35mm.it
+Site=http://www.35mm.it
+Language=IT
+Version=13.10.2009
+Requires=3.5.0
+Comments=|
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program New35mm;
+
+uses
+  Stringutils1;
+  
+const
+  UrlBase = 'http://www.35mm.it';     //
+  QueryBase = UrlBase + '/search/?string=';
+  QueryFinale = UrlBase + '/film/scheda/popup/finale.jsp?idFilm=';
+
+var
+  MovieUrl, FilmUrl: string;
+  MovieName, OriginalStr, TranslatedStr, PageStr:  string;
+  UsePage, OldField, NewField: string;
+  EndChar, StartChar: string;
+  LgthUsePage, LengthRaw, StartPos, EndPos: integer;
+
+
+function MyTrim(Value: string):string;
+var
+  ExitLoop: Boolean;
+  NewField, OldField: String;
+  OldLgthValue, NewLgthValue: integer;
+begin
+    NewField := ' ';
+    OldField := #9;
+    value := StringReplace(Value, OldField, NewField);
+    OldField := #10;
+    value := StringReplace(Value, OldField, NewField);
+    OldField := #13;
+    value := StringReplace(Value, OldField, NewField);
+    OldField := '  ';
+    ExitLoop := False;
+    OldLgthValue := length(Value);
+    repeat
+      value := StringReplace(Value, OldField, NewField);
+      NewLgthValue := length(Value);
+    if  OldLgthValue = NewLgthValue then
+        ExitLoop := True
+    else
+        OldLgthValue := NewLgthValue;
+    until ExitLoop;
+
+  Result := '';
+  HTMLRemoveTags(Value);
+  Result := Value;
+end;
+
+// -----------------------
+// ANALYZE MOVIE DATA PAGE
+// IN:  none
+// OUT: set Ant fields
+// -----------------------
+procedure AnalyzeMoviePage;
+var
+  i, h, m: integer;
+  Duration, Description, Cast, TempStr, TempImg, hh, mm: string;
+  TempField, Prova: string;
+  LgthImgName: integer;
+begin
+  // Get packed title main page
+  PageStr := Getpage(FilmUrl);
+  PageStr := UTF8Decode(PageStr);
+  // Get film image
+  tempImg := textBetween(PageStr, '<div id="cover">', '</div>');
+  tempImg := textBetween(tempImg, '<a href="', '" rel=');                     // <img src="
+  LgthImgName := Length(FullTrim(tempImg));
+  if LgthImgName > 0 then
+     begin
+       tempImg := Urlbase + FullTrim(tempImg);
+       getPicture(TempImg);
+     end
+     else begin
+        tempImg := textBetween(PageStr, '<div class="cover_white">', '</div>');
+        tempImg := textBetween(tempImg, '<img src="', '" alt="cover"');                     // <img src="
+        LgthImgName := Length(FullTrim(tempImg));
+        tempImg := Urlbase + FullTrim(tempImg);
+        getPicture(TempImg);
+      end
+  // Translated Title field
+  Tempfield := textBetween(PageStr, '<li><span>Titolo:</span>', '</li>');
+  TempField := FullTrim(TempField);
+  SetField(fieldTranslatedTitle, TempField);
+  // Original Title field
+  TempField := textBetween(PageStr, '<li><span>Titolo originale:</span>', '</li>');
+  TempField := FullTrim(TempField);
+  SetField(fieldOriginalTitle, TempField);
+
+  // Country field
+  TempField := textBetween(PageStr, '<span>Nazione:</span>', '</li>');
+  TempField := MyTrim(TempField);
+  TempField := FullTrim(TempField);
+  SetField(fieldCountry, TempField);
+
+  // Category Field
+  TempField := textBetween(PageStr, '<span>Genere:</span>', '</li>');
+  TempField := TextBetween(tempField, '">', '<');
+  TempField := FullTrim(TempField);
+  SetField(fieldCategory, TempField);
+
+  // Duration field
+  TempField := textBetween(PageStr, '<span>Durata:</span>','min</li>');
+  TempField := FullTrim(TempField);
+  SetField(fieldLength, tempField);
+
+  // Director Field   <span>Regia:</span>
+  TempField := textBetween(PageStr, '<span>Regia:</span>','</li>');
+  TempField := TextBetween(tempField, '">', '<');
+  TempField := FullTrim(TempField);
+  SetField(fieldDirector, TempField);
+
+  // YearField
+  TempField := textBetween(PageStr, '<span>Anno di produzione:</span>','</li>');
+  TempField := FullTrim(TempField);
+  SetField(fieldYear, TempField);
+
+  // Producer Field
+  TempField := textBetween(PageStr, '<span>Distribuzione:</span>','</li>');
+  TempField := TextBetween(tempField, '">', '<');
+  SetField(fieldProducer, TempField);
+
+  // Movie URL field
+  SetField(fieldURL, MovieUrl);
+
+  // Description Field
+  TempField := textBetween(PageStr, '<div class="description">','</div>');
+  TempField := MyTrim(TempField);
+  TempField := FullTrim(TempField);
+  SetField(fieldDescription, TempField);
+
+   // Comments Field
+  TempField := textBetween(PageStr, '<span>Distribuzione:</span>','</div>');
+  TempField := textBetween(TempField, 'title="','">');
+  TempField := FullTrim(TempField);
+  if Length(TempField) > 0 then
+  TempField := 'Distribuzione: ' + TempField;
+  SetField(fieldComments, TempField);
+
+  // Actors Field
+  StartChar := '<div id="mod_castcrew_tabs" style="position:relative;">';
+  EndChar  := '<div class="mod_castcrew_tab" id="mod_castcrew_tab_crew"';
+  Usepage := Textbetween(Pagestr, StartChar, EndChar);                 // estraggo tutta la stringa degli attori
+  lengthRaw := length(Usepage);
+  StartChar :=  '<div class="box_rightcol_list_user_right">';
+  StartPos := Pos(StartChar, Usepage);
+  Delete(UsePage, 1, StartPos - 1);
+  EndChar :=  'height="50px" />';
+  UsePage := Usepage + EndChar;                        // evito forzatamente LengthRaw < 100 per l'ultimo interprete
+  TempField := StartChar + TextBetween(UsePage, StartChar, EndChar) + EndChar;
+  LengthRaw := length(TempField);
+  StartChar :=  'title="';
+  EndChar :=  '</h4>';
+  TempField := StartChar + TextBetween(UsePage, StartChar, EndChar) + EndChar;
+  Cast := '';
+//      UsePage  := PageStr;
+  StartPos := pos(StartChar, UsePage);
+  repeat
+     StartChar := '>';
+     EndChar := '</a>';
+     TempField := TextBetween(TempField, StartChar, EndChar);
+     Cast := Cast + TempField + '; ';
+
+     Delete(UsePage, 1, LengthRaw);
+     LgthUsePage := length(UsePage);
+     StartChar :=  '<div class="box_rightcol_list_user_right">';
+     EndChar :=  'height="50px" />';
+     TempField := StartChar + TextBetween(UsePage, StartChar, EndChar) + EndChar;
+     LengthRaw := Length(Tempfield);
+     StartChar :=  'title="';
+     EndChar :=  '</h4>';
+     TempField := StartChar + TextBetween(UsePage, StartChar, EndChar) + EndChar;
+  until(LengthRaw < 100);
+  Cast := copy(Cast, 1, length(Cast) - 2);      // tolgo ultimo ;
+  SetField(fieldActors, Cast);
+
+end;
+
+// ------------------------------------------------------------------
+// FILL PICKTREE CONTROL WITH LINKS & TITLES or RETURN ONE PAGE LINK
+// if OneFilm flag true return Film Id else populate PickTree
+// IN:  OneFilm flag (bool)
+// OUT: one page ID  (string)
+// ------------------------------------------------------------------
+function PopulatePickTree(OneFilm: boolean): string;
+var
+  TempIdFilm, TempTitle: string;
+  LengthFilm: integer;
+begin
+  if OneFilm then
+    begin                                                                       // questa routine est OK
+      StartPos := pos('<a class="title" href="', PageStr);
+      UsePage  := copy(PageStr, StartPos + 23, length(PageStr) - Startpos);
+      EndPos := pos('" title="', UsePage);
+      if StartPos > 0 then
+        begin
+          startPos := 0;
+          TempIdFilm := copy(UsePage, StartPos, EndPos - Startpos - 1);
+          result := TempIdFilm;
+        end
+    end
+  else
+    begin
+      PickTreeClear;
+        StartChar :=  '<a class="title" href="';
+        EndChar :=  '<div class="pagination"></div>';
+        UsePage := StartChar + TextBetween(PageStr, StartChar, EndChar) + EndChar;
+
+//      UsePage  := PageStr;
+        StartPos := pos(StartChar, UsePage);
+      repeat
+//        UsePage  := copy(UsePage, StartPos + 23, length(UsePage) - Startpos);
+        StartChar :=  '<a class="title" href="';
+        EndChar := '" title="';
+        StartPos := pos(StartChar, UsePage);
+        if StartPos > 0 then
+          begin
+            TempIdFilm := TextBetween(UsePage, Startchar, EndChar);
+            LengthFilm := length(StartChar) + length(TempIdFilm) + length(EndChar);
+            Delete(UsePage, 1, LengthFilm);
+            LengthRaw := length(UsePage);
+
+            StartChar := '">';
+            EndChar := '</a>';
+            TempTitle := TextBetween(UsePage, Startchar, EndChar);
+            PickTreeAdd(TempTitle, TempIdFilm);
+            LengthFilm := length(StartChar) + length(TempTitle) + length(EndChar);
+            Delete(UsePage, 1, lengthFilm);
+            LengthRaw := length(UsePage);
+
+            StartChar :=  '<a class="title" href="';
+            StartPos := pos(StartChar, UsePage);
+            Delete(UsePage, 1, StartPos - 1);
+            LengthRaw := length(UsePage);
+          end;
+      until(StartPos = 0);
+      result := '';
+    end
+ end;
+
+// ---------------------------------
+// ANALYZE FIRST SEARCH RESULT PAGE:
+// IN:  page Url (string)
+// OUT: none
+// ---------------------------------
+procedure AnalyzeSearchPage(Url: string);
+var
+   FilmId: string;
+begin
+  PageStr := getpage(Url);
+
+//  PageStr := RemoveExtraChars(Url);
+  if pos('Nessun film trovato.', PageStr) > 0 then
+    ShowMessage('Title not found / Nessun film trovato.')
+  else if pos('Si è verificato un errore',PageStr) > 0 then
+    ShowMessage('Server not available, try later / Server non disponibile, prova più tardi')
+  else
+    begin
+      if pos('Risultato della ricerca per:', PageStr) = 0 then
+        MovieUrl := PopulatePickTree(true)   // One title found
+      else
+        begin
+          PopulatePickTree(false);           // More titles found..
+          if not PickTreeExec(MovieUrl) then // ..select one
+            exit;
+        end
+      FilmId := MovieUrl;                    // get film id from movie url
+      FilmUrl := MovieUrl;
+      AnalyzeMoviePage;
+    end;
+ end;
+
+// ----------
+// MAIN:
+// IN:  none
+// OUT: none
+// ----------
+begin
+  if (CheckVersion(3,5,0)) and (StringUtils1_Version > 5) then
+    begin
+      TranslatedStr := GetField(fieldTranslatedTitle);
+      OriginalStr := GetField(fieldOriginalTitle);
+      if (TranslatedStr <> '') then
+        MovieName := TranslatedStr
+      else
+        MovieName := OriginalStr;
+      if (Input('35mm.it - ' + Moviename, 'Enter the title of the movie / Inserire titolo del film:', MovieName)) then
+        begin
+          MovieUrl := QueryBase + UrlEncode(MovieName) + '&where=1';
+          AnalyzeSearchPage(MovieUrl);
+        end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0) and StringUtils1 version 6');
+end.

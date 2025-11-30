@@ -1,0 +1,38 @@
+<html><head>
+<META http-equiv="content-type" content="text/html; charset=iso-8859-2">
+<style TYPE="text/css">
+  text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+  HR { color: black; }
+  A { COLOR: #039; background: white; border-bottom:1px dotted #469; text-decoration: none; }
+  A:visited { COLOR: #039; background: white; }
+  A:hover { COLOR: #C00; background: white; border-color:#b55; border-bottom-style:solid; }
+  A:active { COLOR: #C00; background: white; }
+  td.blk { color: white; background: black; border: solid; border-color: black; }
+  table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+  table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  p.title { font-size: 18pt; font-weight: bold; }
+</style></head><body>
+<p>Katalog stworzony $$DATE za pomocą <a href="http://www.antp.be/software/moviecatalog/" target="_blank">Ant Movie Catalog</a> //<strong>MarburgMod.</strong></p>
+<table class="blk" border="1" cellspacing="0" cellpadding="5"><tr>
+<td class="blk" nowrap>Numer</td>
+<td class="blk" nowrap>Oryginalny Tytuł</td>
+<td class="blk" nowrap>Gatunek</td>
+<td class="blk" nowrap>Czas</td>
+<td class="blk" nowrap>Rok</td>
+<td class="blk" nowrap>Reżyseria</td>
+<td class="blk" nowrap>#CD</td>
+<td class="blk" nowrap>Przetłumaczony Tytuł</td>
+<td class="blk" nowrap>Ocena IMDb</td>
+</tr>$$ITEM_BEGIN<tr>
+<td rowspan="2" class="lgt"><strong>$$ITEM_NUMBER&nbsp;$$ITEM_APPRECIATION<br><img src="$$ITEM_PICTUREFILENAME" width="110" height="160"></strong></td>
+<td class="lgt"><strong><a href="$$ITEM_URL">$$ITEM_ORIGINALTITLE&nbsp;</A></strong></td>
+<td class="lgt">$$ITEM_CATEGORY&nbsp;</td>
+<td class="lgt">$$ITEM_LENGTH&prime;&nbsp;</td>
+<td class="lgt">$$ITEM_YEAR&nbsp;</td>
+<td class="lgt">$$ITEM_DIRECTOR&nbsp;</td>
+<td class="lgt">$$ITEM_DISKS&nbsp;</td>
+<td class="lgt">$$ITEM_TRANSLATEDTITLE&nbsp;</td>
+<td class="lgt"><strong>$$ITEM_RATING&nbsp;</strong></td>
+</tr><tr><td colspan="4" class="lgt">$$ITEM_DESCRIPTION&nbsp;</TD><TD class="lgt" colspan="4"><small>$$ITEM_ACTORS</small></td></tr><tr><td colspan="8" class="blk"></td>
+</tr>$$ITEM_END</table><p><strong>Total: $$TOTALMOVIES movies</strong></p></body></html>

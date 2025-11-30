@@ -1,0 +1,631 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=baffab
+Title=Animenewsnetwork
+Description=Script permettant de récupérer les infos sur des animes
+Site=http://www.animenewsnetwork.com/
+Language=EN
+Version=5 - 13/11/2017
+Requires=4.2
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+StaffList=0|1|0=Oui (Yes)|1=Non (No)
+LocalCountry=1|1|0=English|1=French|2=German|3=Italian|4=Portuguese|5=Spanish
+LocalCast=0|0|0=Oui (Yes)|1=Non (No)
+Translate=0|1|0=Oui (Yes)|1=Non (No)
+GetImage=1|1|0=petite (small)|1=grande (big)|2=non (none)
+TypeMedia=0|0|0=anime|1=manga
+Clear=0|0|0=Remplacer (Replace)|1=Ajouter (Add)
+
+[Parameters]
+
+***************************************************)
+
+program animenewsnetwork;
+
+const
+  SearchUrl = 'https://www.animenewsnetwork.com/encyclopedia/search.php?searchbox=';
+  UrlAnime = 'https://cdn.animenewsnetwork.com/encyclopedia/api.xml?anime=';
+  UrlManga = 'https://cdn.animenewsnetwork.com/encyclopedia/api.xml?manga=';
+  RC = #13#10;
+
+var
+  TypeSource: string;
+  UrlApi: string;
+  AnimeName: string;
+  adresseunique: string;
+  listTitle : array of string;
+
+
+
+//------------------------------------------------------------------------------
+// Lancer la recherche depuis une adresse de recherche
+//------------------------------------------------------------------------------
+
+procedure SearchPage(Address: string);
+var
+  Res: Integer;
+begin
+  // Init liste
+  PickTreeClear;
+  Res := Add_entry_on_list(Address,1);
+  if ( Res >0) then
+    begin
+     if (Res = 1) then
+     begin
+       AnalyzePage(adresseunique);
+       exit;
+     end;
+    // Affiche la fenêtre de sélection
+    if PickTreeExec(Address) then
+      begin
+      if (pos('id', Address) >0) then
+        begin
+        // On a selectionné un anime
+        AnalyzePage(Address);
+      end else
+        // On a selectionné la page suivante.
+        AnalyzePage(Address);
+    end
+  end;
+end;
+
+
+//------------------------------------------------------------------------------
+// Filtrer les réponses de la recherche pour les ajouter à la liste des résultats
+//------------------------------------------------------------------------------
+
+function Add_entry_on_list(Address: string;Compteur: Integer): Integer;
+var
+  Page: TStringList;
+  LineNr: Integer;
+  AnimeTitle,Value,Url,Tmp: string;
+  Line: string;
+  BeginPos, EndPos: Integer;
+begin
+  Line := GetPage(Address);
+  if Pos('results', Line) > 0 then
+  begin
+     // Recherche le premier album trouvé 
+     BeginPos := pos('results', Line);
+     Delete(Line, 1, BeginPos-1);
+     BeginPos := pos('<a href="', Line);
+     Delete(Line, 1, BeginPos-1);
+     //Liste chaque album trouvé 
+     BeginPos := pos('<a href="/e', Line);
+     EndPos := pos('</a>', Line);
+     while (BeginPos > 0) and (pos('<br',Line)>BeginPos) do
+       begin
+         Value := copy(Line, 0, EndPos);
+         EndPos := pos('</a>', Line);
+         if (pos(TypeSource+'.',Value)>0) then
+         begin
+           BeginPos := pos('>', Line)+1;
+           Value := copy(Line, BeginPos, EndPos - BeginPos);
+           // Parse pour avoir le titre
+           AnimeTitle := UTF8Decode(Value);
+           HTMLRemoveTags(AnimeTitle);
+           HTMLDecode(AnimeTitle);
+           // Parse pour avoir l'url
+           Url := copy(Line,1,pos('>',Line));
+           Delete(Url, 1, pos('<a href="/e', Url) + 8);
+           Url := copy(Url,  1, pos('"', Url) -1);
+           // Ajout de la ligne dans l'interface
+           adresseunique := 'http://www.animenewsnetwork.com' + Url;
+           PickTreeAdd(AnimeTitle, adresseunique);
+           result := result + 1;
+         end
+         // Enlever les mangas
+         Delete(Line, 1, EndPos-1);
+         BeginPos := pos('<a href="/e', Line);
+         Delete(Line, 1, BeginPos-1);
+       end;
+  end else
+    result := 0;
+end;
+
+
+//------------------------------------------------------------------------------
+// Analyser la page et récupérer les champs disponibles
+//------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address:string);
+var
+  Line, Value, ValueTemp, ValueCredit, ValueLocal, ValueStaff, ValueTaff, PageContents, PageContentsTemp, Exception, ListStaff: string;
+  LineNr, BeginPos, EndPos, CastIndex: Integer;
+  Page: TStringList;
+  listTitle : array of string;
+  Stop: Boolean;
+begin
+
+  Value := UrlApi+GetValueField(Address,'id=','',0);
+  
+  PageContents := UTF8Decode(GetPage(Value));
+
+  SetArrayLength(listTitle,7);
+  listTitle[0] := 'EN';
+  listTitle[1] := 'FR';
+  listTitle[2] := 'DE';
+  listTitle[3] := 'IT';
+  listTitle[4] := 'PT';
+  listTitle[5] := 'ES';
+
+  // url
+  SetField(fieldURL, Address);
+
+  if (GetOption('Clear')=0) then
+  begin
+    SetField(fieldComments, '');
+    SetField(fieldActors, '');
+  end;
+
+  //Country
+  if (GetOption('LocalCountry')=1) then
+    SetField(fieldCountry, 'Japon')
+  else
+    SetField(fieldCountry, 'Japan');
+  
+  // Images
+  Value := '';
+  if (GetOption('GetImage')<>2) then
+  begin
+    if (GetOption('GetImage')<>0) then
+    begin
+  	  Value := GetValueField(PageContents,'<img src="','" ',0);
+    	Value := StringReplace(Value,'http:','https:');
+  	  if  (Value<>'') then
+  	  begin
+    		PageContentsTemp := PageContents;
+    		BeginPos := Pos('<img src="', PageContentsTemp);
+    		delete(PageContentsTemp,1,BeginPos + 1);
+    		ValueTemp := GetValueField(PageContentsTemp,'<img src="','" ',0);
+    		ValueTemp := StringReplace(ValueTemp,'http:','https:');
+    		if  (ValueTemp<>'') then
+    		  GetPicture(ValueTemp)
+    		else
+    		  GetPicture(Value);
+      end;
+    end;
+    if (Value='') and (ValueTemp='') then
+    begin
+    	Value := GetValueField(PageContents,'type="Picture" src="','" ',0);
+    	if  (Value<>'') then
+    	  GetPicture(Value);
+    end;
+  end;
+
+  // Main title
+  Value := GetValueField(PageContents,'type="Main title" lang="EN">', '<',0);
+  if  (Value<>'') then
+  begin
+    SetField(fieldTranslatedTitle, Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Japanese title
+  Value := GetValueField(PageContents,'type="Alternative title" lang="JA">', '<',0);
+  if (Pos('?',Value)=1) then
+  begin
+    PageContentsTemp := PageContents;
+    BeginPos := Pos('type="Alternative title" lang="JA">', PageContentsTemp);
+    delete(PageContentsTemp,1,BeginPos + 1);
+    Value := GetValueField(PageContents,'type="Alternative title" lang="JA">', '<',0);
+  end;
+  if ((Value<>'') and (Pos('?',Value)<>1)) then
+  begin
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Translated title
+  if (GetOption('LocalCountry')>0) then
+  begin
+    Value := GetValueField(PageContents,'type="Alternative title" lang="' + listTitle[GetOption('LocalCountry')] + '">', '<',0);
+    if  (Value<>'') then
+    begin
+      SetField(fieldTranslatedTitle, Value);
+    end;
+  end;
+
+  // Comments (Themes + Age rating + User Ratings)
+  Value := GetValueFieldANN(PageContents,'Themes');
+  if (Value<>'') then AddToComments('Themes: ' + Value);
+  
+  Value := GetValueFieldANN(PageContents,'Age rating');
+  if (Value<>'') then AddToComments('Age rating: ' + Value);
+
+  Value := GetValueField(PageContents,'weighted_score="', '"',0);
+  if (Value<>'') then
+  begin
+    AddToComments('User Ratings: ' + Value);
+    SetField(fieldRating, Value);
+  end;
+
+  // Genre
+  Value := GetValueFieldANN(PageContents,'Genres');
+  if (Value<>'') then SetField(fieldCategory, Value);
+
+  // Plot Summary
+  Value := GetValueFieldANN(PageContents,'Plot Summary');
+  if (Value<>'') then SetField(fieldDescription, Value);
+
+  // Running time
+  Value := GetValueFieldANN(PageContents,'Running time');
+  ValueTemp := GetValueFieldANN(PageContents,'Number of episodes');
+  if ValueTemp<>'' then
+    begin
+      AddToComments('Number of episodes: ' + ValueTemp);
+      Value := IntToStr(StrToInt(trim(Value),0) * StrToInt(trim(ValueTemp),0));
+    end;
+  SetField(fieldLength, Value);
+
+  // Number of tankoubon
+  Value := GetValueFieldANN(PageContents,'Number of tankoubon');
+  if (Value<>'') then SetField(fieldLength, Value);
+
+  // Certification
+  Value := GetValueFieldANN(PageContents,'Objectionable content');
+  if (Value<>'') then SetField(fieldCertification, Value);
+
+  // Year
+  Value := GetValueFieldANN(PageContents,'Vintage');
+  if (Value<>'') then
+  begin
+    AddToComments('Vintage: ' + GetValueField(Value, '',',',0));
+    if pos('-',Value)=5 then
+      Value := copy(Value,1,4);
+    SetField(fieldYear, Value);
+  end;
+  
+
+  // Opening
+  Value := GetValueFieldANN(PageContents,'Opening Theme');
+  if (Value<>'') then AddToComments('Opening Theme: ' + Value);
+
+  // Ending
+  Value := GetValueFieldANN(PageContents,'Ending Theme');
+  if (Value<>'') then AddToComments('Ending Theme: ' + Value);
+
+  // Comment
+  Value := GetValueFieldANN(PageContents,'Comments');
+  if (Value<>'') then AddToComments('Comments: ' + Value);
+
+  // Episode titles
+  Value := GetValueFieldANNEpisode(PageContents);
+  if (Value<>'') then AddToComments(RC + 'Episode titles:' + RC + Value);
+
+
+  // Réalisateur
+  Value := GetValueField(PageContents,'<task>Director</task>', '</staff>',0);
+  if (Value<>'') then SetField(fieldDirector, Value);
+
+  // Producteur
+  Value := GetValueField(PageContents,'<task>Producer</task>', '</staff>',0);
+  if (Value<>'') then SetField(fieldProducer, Value);
+
+  // Scenariste
+  Value := GetValueField(PageContents,'<task>Script</task>', '</staff>',0);
+  if (Value<>'') then SetField(fieldWriter, Value);
+
+  // Compositeur  ('Music', 'Original Music')
+  Value := GetValueField(PageContents,'Music</task>', '</staff>',0);
+  if (Value<>'') then SetField(fieldComposer, Value);
+
+
+  //Staff
+  if (GetOption('StaffList')=0) then
+  begin
+	  Value := GetValueFieldANNStaff(PageContents);
+	  if (Value<>'') then AddToCast(Value);
+  end;
+  
+  
+  //Cast
+  //Original cast
+  Value := GetValueFieldANNCast(PageContents,'JA');
+  if (Value<>'') then AddToCast(Value);
+  if (GetOption('LocalCast')=0) then
+  begin
+    //Local cast
+    Value := GetValueFieldANNCast(PageContents, listTitle[GetOption('LocalCountry')]);
+    if (Value<>'') then AddToCast(Value);
+  end;
+  
+end;
+
+
+//------------------------------------------------------------------------------
+// Ajouter au champ commentaires (fieldComments)
+//------------------------------------------------------------------------------
+
+procedure AddToComments(Value: string);
+var
+  ValueTemp: string;
+begin
+
+  ValueTemp := GetField(fieldComments);
+  if ValueTemp<>'' then
+    SetField(fieldComments, ValueTemp + RC + Value)
+  else
+    SetField(fieldComments, Value);
+
+end;
+
+
+//------------------------------------------------------------------------------
+// Ajouter au champ Acteur (fieldActors)
+//------------------------------------------------------------------------------
+
+procedure AddToCast(Value: string);
+var
+  ValueTemp: string;
+begin
+
+  ValueTemp := GetField(fieldActors);
+  if ValueTemp<>'' then
+    SetField(fieldActors, ValueTemp + ', ' + Value)
+  else
+    SetField(fieldActors, Value);
+
+end;
+
+
+//------------------------------------------------------------------------------
+// Récupérer la liste des personnes de l'équipe avec leur rôle (Staff)
+//------------------------------------------------------------------------------
+
+function GetValueFieldANNStaff(pLine: string): string;
+var
+  Value, ValueTemp, PageContentsTemp: string;
+  BeginPos, EndPos : integer;
+begin
+  Value := '';
+  ValueTemp := '';
+  PageContentsTemp := pLine;
+  BeginPos := Pos('"><task>', PageContentsTemp);
+  while (BeginPos > 1) do
+  begin
+    delete(PageContentsTemp,1,BeginPos - 1);
+    if (ValueTemp<>'') then Value := Value + ', ';
+    ValueTemp := GetValueField(PageContentsTemp, +'"><task>', '</task>', 0) ;
+    delete(PageContentsTemp,1,5);
+    if ((Pos('</person>', PageContentsTemp)>0) and (Pos('</person>', PageContentsTemp)<Pos('</company>', PageContentsTemp))) then
+      ValueTemp := GetValueField(PageContentsTemp, '">', '</person>', 0) + ' (' + ValueTemp + ')'
+    else
+      ValueTemp := GetValueField(PageContentsTemp, '">', '</company>', 0) + ' (' + ValueTemp + ')';
+    Value := Value + ValueTemp;
+    delete(PageContentsTemp,1,1);
+    BeginPos := Pos('"><task>', PageContentsTemp);
+  end;
+
+  if (getOption('Translate')=0) then Value := translate(Value);
+  result := StringReplace(Value, ', Ltd.', ' Ltd.');
+end;
+
+
+//------------------------------------------------------------------------------
+// Récupérer la liste des personnes de doublage avec leur rôle (Cast)
+//------------------------------------------------------------------------------
+
+function GetValueFieldANNCast(pLine: string; pLang: string): string;
+var
+  Value, ValueTemp, PageContentsTemp, Lang: string;
+  BeginPos, EndPos : integer;
+begin
+  Value := '';
+  ValueTemp := '';
+  PageContentsTemp := pLine;
+  BeginPos := Pos(pLang +'"><role>', PageContentsTemp);
+  Lang := pLang + ' - ';
+  if (GetOption('LocalCast')=1) then Lang :='';
+  while (BeginPos > 1) do
+  begin
+    delete(PageContentsTemp,1,BeginPos - 1);
+    if (ValueTemp<>'') then Value := Value + ', ';
+    ValueTemp := GetValueField(PageContentsTemp, pLang +'"><role>', '</role>', 0) ;
+    delete(PageContentsTemp,1,5);
+    ValueTemp := GetValueField(PageContentsTemp, '">', '</person>', 0) + ' (' + Lang + ValueTemp + ')';
+    Value := Value + ValueTemp;
+    delete(PageContentsTemp,1,1);
+    BeginPos := Pos(pLang +'"><role>', PageContentsTemp);
+  end;
+  result := Value;
+end;
+
+//------------------------------------------------------------------------------
+// Récupérer la liste des épisodes
+//------------------------------------------------------------------------------
+
+function GetValueFieldANNEpisode(pLine: string): string;
+var
+  Value, ValueTemp, PageContentsTemp: string;
+  BeginPos, EndPos : integer;
+begin
+  Value := '';
+  ValueTemp := '';
+  PageContentsTemp := pLine;
+  BeginPos := Pos('<episode', PageContentsTemp);
+  while (BeginPos > 1) do
+  begin
+    delete(PageContentsTemp,1,BeginPos - 1);
+    if (ValueTemp<>'') then Value := Value + RC;
+    ValueTemp := GetValueField(PageContentsTemp, 'episode num="', '"', 0);
+    if (ValueTemp<>'') then Value := Value + ValueTemp;
+    ValueTemp := GetValueField(PageContentsTemp, '', '</title>', 1);
+    if (ValueTemp<>'') then Value := Value + ' - ' + ValueTemp;
+    delete(PageContentsTemp,1,1);
+    BeginPos := Pos('<episode', PageContentsTemp);
+  end;
+  result := Value;
+end;
+
+
+//------------------------------------------------------------------------------
+// Récupérer la liste des valeurs d'un champ spécifique
+//------------------------------------------------------------------------------
+
+function GetValueFieldANN(pLine: string; pField: string): string;
+var
+  Value, ValueTemp, PageContentsTemp: string;
+  BeginPos, EndPos : integer;
+begin
+  Value := '';
+  ValueTemp := '';
+  PageContentsTemp := pLine;
+  BeginPos := Pos('type="' + pField + '">', PageContentsTemp);
+  while (BeginPos > 1) do
+  begin
+    delete(PageContentsTemp,1,BeginPos - 1);
+    if (ValueTemp<>'') then Value := Value + ', ';
+    ValueTemp := GetValueField(PageContentsTemp, '>', '<', 0);
+    Value := Value + ValueTemp;
+    delete(PageContentsTemp,1,1);
+    BeginPos := Pos('type="' + pField + '">', PageContentsTemp);
+  end;
+  result := Value;
+end;
+
+
+//------------------------------------------------------------------------------
+// Récupérer la valeur comprise entre deux chaines
+//
+// Paramètres :
+//     - Texte à analyser
+//     - Balise de début
+//     - Balise de fin
+//     - Type de nettoyage
+//            - <0 : aucun
+//            - >=0 : supprimer les balises html
+//            - =1 : supprimer les balises html, supprimer les caractères spéciaux (#09, #10, #13)
+//            - =2 : supprimer les balises html avec remplacement des '<br />' par ', '
+//            - =3 : supprimer les balises html avec remplacement des '<br />' par '$$'
+//------------------------------------------------------------------------------
+
+function GetValueField(pLine: string; pBegin: string; pEnd: string; pClean: Integer): string;
+var
+  lValue: string;
+  BeginPos, EndPos : integer;
+begin
+  lValue := pLine;
+
+  if (pBegin='') then
+    BeginPos := 0
+  else
+    BeginPos := Pos(AnsiLowerCase(pBegin), AnsiLowerCase(lValue)) + length(pBegin);
+
+  if (BeginPos=0) or (BeginPos>length(pBegin)) then
+  begin
+    delete(lValue, 1, BeginPos - 1);
+
+    EndPos := Pos(AnsiLowerCase(pEnd), AnsiLowerCase(lValue));
+    delete(lValue, EndPos, length(lValue));
+
+    if (pClean = 2) Then lValue := StringReplace(lValue, '<br />', ', ');
+    //if (pClean = 3) Then lValue := StringReplace(StringReplace(lValue, ',', ''), '<br />', ', ');
+    if (pClean = 3) Then lValue := StringReplace(lValue, '<br />', '$$');
+    if (pClean >= 0) then
+    begin
+      HTMLRemoveTags(lValue);
+      HTMLDecode(lValue);
+    end;
+    if (pClean = 1) Then lValue := DelCRC(lValue);
+    result := Trim(lValue);
+  end
+  else
+    result := '';
+
+end;
+
+
+//------------------------------------------------------------------------------
+// Supprimer les caractères spéciaux dans une chaine
+//------------------------------------------------------------------------------
+
+function DelCRC(line: string): string;
+begin
+  while (pos(#13, line) > 0 ) do
+      line := StringReplace(line,#13, '');
+  while (pos(#10, line) > 0 ) do
+      line := StringReplace(line,#10, '');
+  result := line;
+end;
+
+
+//------------------------------------------------------------------------------
+// Supprimer les caractères spéciaux dans une chaine
+//------------------------------------------------------------------------------
+
+function CleanTitle(Value: string): string;
+begin
+  result := Value;
+  result := StringReplace(result,'ô','o');
+  result := StringReplace(result,'î','i');
+end;
+
+
+//------------------------------------------------------------------------------
+// Traduire une chaîne (les professions)
+//------------------------------------------------------------------------------
+
+function translate(line: string):string;
+begin
+  line := StringReplace(Line, '(Director)', '(Réalisateur)');
+  line := StringReplace(Line, '(Chief Director)', '(Réalisateur en chef)');
+  line := StringReplace(Line, '(Series Director)', '(Réalisateur de la série)');
+  line := StringReplace(Line, '(Episode Director)', '(Réalisateur d''épisode)');
+  line := StringReplace(Line, '(Series Composition)', '(Composition de la série)');
+  line := StringReplace(Line, '(Technical Director)', '(Directeur technique)');
+  line := StringReplace(Line, '(Script)', '(Scénario)');
+  line := StringReplace(Line, '(Original Concept)', '(Concept)');
+  line := StringReplace(Line, '(Original creator)', '(Auteur/Créateur)');
+  line := StringReplace(Line, '(Original author)', '(Auteur/Créateur)');
+  line := StringReplace(Line, '(Original Manga)', '(Auteur du manga)');
+  line := StringReplace(Line, '(Original story)', '(Histoire originale)');
+  line := StringReplace(Line, '(Series Concept)', '(Concept)');
+  line := StringReplace(Line, '(Screenplay)', '(Scénariste)');
+  line := StringReplace(Line, '(Music)', '(Musique)');
+  line := StringReplace(Line, '(Producer)', '(Producteur)');
+  line := StringReplace(Line, '(Executive producer)', '(Producteur exécutif)');
+  line := StringReplace(Line, '(Art director)', '(Directeur artistique)');
+  line := StringReplace(Line, '(Art Director)', '(Directeur artistique)');
+  line := StringReplace(Line, '(Animation director)', '(Directeur de l''animation)');
+  line := StringReplace(Line, '(Animation Director)', '(Directeur de l''animation)');
+  line := StringReplace(Line, '(Chief Animation Director)', '(Directeur en chef de l''animation)');
+  line := StringReplace(Line, '(Director Of Photography)', '(Directeur de la photo)');
+  line := StringReplace(Line, '(Director of Photography)', '(Directeur de la photo)');
+  result := line;
+end;
+
+
+////////////////////////////////////////
+//            Main
+////////////////////////////////////////
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    TypeSource:='anime';
+    UrlApi := UrlAnime;
+    if (GetOption('TypeMedia')=1) then
+    begin
+      TypeSource:='manga';
+      UrlApi := UrlManga;
+    end;
+    AnimeName := GetField(fieldOriginalTitle);
+    //AnimeName := cleanTitle(DelFirstBlank(AnimeName));
+    if AnimeName = '' then
+      AnimeName := GetField(fieldTranslatedTitle);
+    AnimeName := CleanTitle(AnimeName);
+    if Input('Animenewsnetwork Import', 'Entrez le titre :', AnimeName) then
+    begin
+     SearchPage(SearchUrl + UrlEncode(AnimeName));
+    end;
+  end else
+    ShowMessage('Ce script requiert la version 3.5.0 ou supérieure de Ant Movie Catalog.');
+end. 

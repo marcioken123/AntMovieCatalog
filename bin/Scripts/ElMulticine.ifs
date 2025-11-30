@@ -1,0 +1,356 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=ElMulticine
+Description=
+Site=www.elMulticine.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ 
+
+ program ElMulticine;
+
+
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.elmulticine.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.elmulticine.com/peliculas_listado2', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+51, EndPos-51);
+          MovieAddr := 'http://www.elmulticine.com/peliculas_listado2' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos(')', strPage);
+          MovieTitle := Copy(strPage,BeginPoss+2, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle , '>', '(');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã¡', 'á');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã©', 'é');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã­', 'í');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã³', 'ó');
+          MovieTitle  := StringReplace(MovieTitle , 'Ãº', 'ú');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã‰', 'É');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã“', 'Ó');
+          MovieTitle  := StringReplace(MovieTitle , 'Â', '');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã±', 'ñ');
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          PickTreeSort;
+          BeginPos := Pos('href="http://www.elmulticine.com/peliculas_listado2', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+  Comments := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<TITLE>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<TITLE>', '(');
+  Item  := AnsiLowerCase(Item);
+  Item  := AnsiUpFirstLetter(Item );
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('T&iacute;tulo Original: </b>"', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'T&iacute;tulo Original: </b>"', '".<br');
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+  // Categoria
+  LineNr := FindLine('>G&eacute;nero: ', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>G&eacute;nero: ',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+  // director
+  LineNr := FindLine('>Direcci&oacute;n:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Direcci&oacute;n:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // Reparto
+  LineNr := FindLine('>Reparto:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Reparto:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+   // productor
+  LineNr := FindLine('>Producci&oacute;n:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Producci&oacute;n:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+  // Duracion
+  LineNr := FindLine('>Duraci&oacute;n:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Duraci&oacute;n:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', 'minutos');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+   // pais
+  LineNr := FindLine('>Pa&iacute;s y A&ntilde;o:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Pa&iacute;s y A&ntilde;o:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '-');
+    Item  := StringReplace(Item , 'Estados Unidos', 'USA');
+    Item  := StringReplace(Item , 'EE.UU.', 'USA');
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+
+
+  // año
+  LineNr := FindLine('>Pa&iacute;s y A&ntilde;o:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '-','.<br');
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+  // sinopsis
+ LineNr := FindLine('>Sinopsis de &quot;', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('>Sinopsis de &quot;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"textopeli">', '</span></td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+   // Guión
+   LineNr := FindLine('>Gui&oacute;n:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('>Gui&oacute;n:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Guión: ' + Item +#13#10;
+  end;
+  // Fotografía
+   LineNr := FindLine('> Fotograf&iacute;a:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('> Fotograf&iacute;a:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Fotografía: ' + Item +#13#10;
+  end;
+  // Música
+   LineNr := FindLine('>M&uacute;sica:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('>M&uacute;sica:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</b>', '.<br');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Música: ' + Item +#13#10;
+  end;
+  // Caratula
+  LineNr := FindLine('src="imagenes/carteles/', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('src="imagenes/carteles/',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'src="imagenes/carteles/', '.jpg');
+    HTMLDecode(Item);
+    GetPicture ('http://www.elmulticine.com/imagenes/carteles/'+Item+'.jpg');
+   GetPicture ('http://www.elmulticine.com/imagenes/carteles/'+Item+'_b.jpg');
+  end;
+  SetField(fieldComments, Comments);
+     end;
+//end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('ElMulticine', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('ElMulticine', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q='
+
++UrlEncode(MovieName)+'+site%3Awww.elmulticine.com&btnG=B%C3%BAsqueda&meta=');
+end.

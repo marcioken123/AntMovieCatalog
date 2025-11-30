@@ -1,0 +1,244 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com</link>
+Title=7a Arte
+Description=Movie importation script for 7a Arte
+Site=www.7arte.net
+Language=PT
+Version=2.6 (09 Junho 2008)
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.7arte.net"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=79</link>
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+Mostrar links repetidos=0|0|0=Não|1=Sim
+
+***************************************************)
+
+program arte;
+uses StringUtils1;
+const
+  BaseAddress = 'www.7arte.net/';
+var
+  MovieName, proxy: string;
+
+function UpFirstLetterWord(texto:string):string; //Function Made By O Guardião
+var espaco:integer;
+    sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+    texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then//se a 1º pos é espaço
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+
+function HTMLRemove(Value: String): String;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+
+procedure AnalyzeFilmPage(Address: String);
+var
+  Page : TStringList;
+  Value, Line : string;
+  LineNr, BeginPos, EndPos: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(proxy+Address);
+  SetField(fieldURL, Address);
+
+
+  //para continuar deve ser diferente destas mensagens
+  if (FindLine('Due to extremely high usage, Proxify is temporarily allowing access only to paid subscribers. We apologize for the inconvenience.', Page, 0)<>-1) and (FindLine('POR FAVOR TENTE MAIS TARDE.', Page, 0)>-1) then
+    showmessage('Servidor encontra-se indisponivel.')
+  else
+  begin
+  //modo alternativo para obter o nome traduzido
+  LineNr := FindLine('Critique o Filme', Page, 0);
+  if LineNr>-1 then
+  begin
+    Value := Page.GetString(LineNr);
+    value:=HTMLRemove(value);
+    value:=Copy(value,17,length(value));
+    SetField(fieldTranslatedTitle, Value);
+  end
+  else
+  begin
+    //nome traduzido do filme
+    LineNr := FindLine('<FONT FACE="Arial,Helvetica"><FONT SIZE=+1>', Page, 0);
+    Value := Page.GetString(LineNr);
+    value:=HTMLRemove(value);
+    Value:=UpFirstLetterWord(Value);
+    SetField(fieldTranslatedTitle, Value);
+  end;
+
+  //nome original do filme
+  LineNr := FindLine('<FONT FACE="Arial,Helvetica"><FONT SIZE=+1>', Page, 0);
+  value:= Page.GetString(LineNr+1);
+  Value := HTMLRemove(Value);
+  SetField(fieldOriginalTitle, Value);
+
+  //pontuação
+  LineNr := FindLine('<FONT SIZE=-1 FACE="Arial,Helvetica"><B>', Page, 0);
+  Value := Page.GetString(LineNr);
+  value:=HTMLRemove(value);
+  if (pos('.',value)>-1) then
+   BeginPos:=StrToInt(copy(value,3,1),0);
+   if BeginPos>4 then
+     value:=IntToStr(1+StrToInt(Copy(value,1,1),0))
+  else
+  value:=Copy(value,1,1);
+  SetField(fieldRating, Value);
+
+  //realizador
+  LineNr := FindLine('>Realizador:</', Page, 0);
+  Value := HTMLRemove(Page.GetString(LineNr));
+  value:=Copy(value,13,length(value));
+  SetField(fieldDirector, Value);
+
+  //actores
+  Line:='';
+  LineNr := FindLine('<B>Actores:</B><BR><FONT Size=-1>', Page, 0);
+  lineNr:=lineNr+1;
+  repeat
+    value:=Page.GetString(LineNr);
+    if line<>'' then Line:=Line+', ';  // virgula entre cada nome
+    Line:=line+Copy(HTMLRemove(value),3,length(value));
+    lineNr:=lineNr+1;
+    value:=Page.GetString(LineNr);
+  until pos('</FONT></TD>',value)> 0;
+  SetField(fieldActors, Line);
+
+  //ano
+  LineNr := FindLine('><B>Ano:</B>', Page, 0);
+  value:=Copy(HTMLRemove(Page.GetString(LineNr)),6,length(value));
+  SetField(fieldYear, value);
+
+  //duração
+  LineNr := FindLine('<B>Duração:</B> <FONT SIze=-1>', Page, 0);
+  value:=HTMLRemove(Page.GetString(LineNr));
+  Value := StringReplace(Value, 'Duração: ', '');
+  Value := StringReplace(Value, ' minutos', '');
+  SetField(fieldLength, value);
+
+  //genero
+  LineNr := FindLine('<B>Género:</B> <FONT SIze=-1>', Page, 0);
+  value:=HTMLRemove(Page.GetString(LineNr));
+  Value := StringReplace(Value, 'Género: ', '');
+  SetField(fieldCategory, value);
+
+  //país
+  LineNr := FindLine('<B>País de Origem:</B> <FONT SIze=-1>', Page, 0);
+  value:=HTMLRemove(Page.GetString(LineNr));
+  Value := StringReplace(Value, 'País de Origem: ', '');
+  SetField(fieldCountry, value);
+  
+  //descrição
+  LineNr := FindLine('<B>Sinopse:</B><BR>', Page, 0);
+  if LineNr>-1 then
+  begin
+    value:='';
+    repeat
+      LineNr:=LineNr+1;
+      value:=value+Page.GetString(LineNr);
+    until Pos('</TD>', Page.GetString(LineNr)) > 0; //ate encontrar o </Td>
+    value:=StringReplace(value,'<br>',#13#10);
+    value:=HTMLRemove(value);
+    Value := StringReplace(Value, ' [ www.7arte.net ]', '');
+    SetField(fieldDescription, value);
+  end;
+
+  // Get Picture
+  LineNr := FindLine('/imagens/filmes/', Page, 0);
+  if LineNr > -1 then
+  begin
+    value := Page.GetString(LineNr);
+    BeginPos := pos('src="', value)+5;
+    EndPos := pos('.jpg', value);
+  if endpos=0 then
+    EndPos := pos('.gif', value);
+    Value :=copy(value, BeginPos,4+EndPos-BeginPos);
+    GetPicture(Value);
+  end;
+end;
+  Page.free;
+end;
+
+procedure AnalyzePage(Address,Address2: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndPos: Integer;
+  Line: string;
+  x,y:integer;
+  MovieAddress, findMovieName,linedown : string;
+  lista_urls: TStringList;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  lista_urls := TStringList.Create;
+for x:=1 to 2 do
+begin
+  if (pos('Resultados Encontrados', Page.Text)>0) then
+  begin
+    LineNr :=0;
+    repeat
+      LineNr := FindLine('/cgi-bin/filme.pl?codigo=', Page, LineNr);
+      If LineNr >0 Then Begin
+        Line := Page.GetString(LineNr);
+        StartPos := pos('cgi-bin/filme.pl?codigo=', Line);
+        EndPos := pos(')">',Line)-1;
+        MovieAddress :=  copy(Line, StartPos, EndPos - StartPos);
+        StartPos := EndPos + 15;
+        StartPos :=  EndPos+4;
+        endpos:=pos('</A><BR>',Line);
+        Line:=Copy(Line,startpos,endpos);
+        findmoviename:=HTMLRemove(Line);
+        HTMLRemoveTags(FindMovieName);
+        HTMLDecode(FindMovieName);
+        
+        
+        if (FindLine(BaseAddress + MovieAddress,lista_urls,0)=-1) or (GetOption('Mostrar links repetidos') = 1) then
+        begin
+             lista_urls.add( BaseAddress + MovieAddress)
+              PickTreeAdd(FindMovieName, BaseAddress + MovieAddress);
+        end;
+        LineNr := LineNr + 1;
+      End;
+    until (LineNr=-1);
+    end;
+        Page.Text := GetPage(Address2);
+end;
+if lista_urls.count=0 then
+      showmessage('O filme não foi encontrado')
+else
+if PickTreeExec(Address) then
+  AnalyzeFilmPage(Address)
+  Page.Free
+  lista_urls.Free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do www.7arte.net', 'Escreve o nome do filme:', MovieName) then begin
+  //espaço não são permitidos
+  MovieName := StringReplace(MovieName, ' ', '+');
+  proxy:='http://anonymouse.org/cgi-bin/anon-www.cgi/http://';
+  AnalyzePage(proxy+'www.7arte.net/cgi-bin/arq_search_orig.pl?letra=&proc='+MovieName,proxy+'www.7arte.net/cgi-bin/arq_search.pl?proc='+MovieName);
+  end;
+end.

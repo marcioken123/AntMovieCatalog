@@ -1,0 +1,319 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fulvio53s03
+Title=Libreria Universitaria Film             -
+Description=Estrae info film da libreriauniversitaria.it
+Site=www.libreriauniversitaria.it
+Language=IT
+Version=1.0.0   - 15. 8.2010
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Film;
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  TheMovieAddress: string;
+  UrlSearch, InitSearch, EndSearch, Pagestr: string;
+  comm: String;
+const
+  crlf = #13#10;                        // carriage return/line feed
+  virgolette = #187;
+  
+procedure AnalyzePage(Address: string);
+var
+  Line: string;
+  LineNr: integer;
+  BeginPos: integer;
+begin
+  Pagestr := GetPage(Address);
+//  SavePage := Pagestr;
+  SetField(fieldURL, Address);
+
+  Line := TextBetween(Pagestr, 'Risultati da', 'della ricerca');
+  LineNr := Length(Line);
+  if LineNr = 0 then
+     begin
+       SetField(fieldURL, Address);
+       AnalyzeMoviePage;
+     end
+  else
+  begin
+    PickTreeClear;
+
+    PickTreeAdd('Risultati ricerca per "' + StringReplace(MovieName, '+', ' ') + '":', '');
+    AddMoviesTitles;
+    if TheMovieAddress='' then
+    begin
+      if PickTreeExec(Address) then
+         AnalyzePage(Address);
+    end
+    else
+    begin
+      SetField(fieldURL, MovieAddress);
+      Page.Text := GetPage(Address); //Page.Text := GetPage(TheMovieAddress);
+      AnalyzeMoviePage;
+    end;
+  end;
+end;
+
+procedure AnalyzeMoviePage;    //estrae campi dalla pagina del libro scelto
+var
+  SavePage, SaveLine, Line, Value, PreviousLine, NomeHtml, sTemp: string;
+  LineNr, LengthLine: Integer;
+  BeginPos, EndPos, Field: Integer;
+  BeginDiv, EndDiv: Integer;
+  LengthDiv: Integer;
+  InCatalogo: string;
+  BeginChar, EndChar: string;
+  SaveCommento, Commento: string;
+  BeginLineNr, endLineNr: Integer;
+
+begin
+  Pagestr := TextBetween(Pagestr, '<table class="scheda-prodotto-detail" cellspacing="0">', '<h3 class="product_section_title">Recensioni degli utenti</h3>');
+  SavePage := Pagestr;
+  if length(Pagestr) > 0 then
+   begin
+     SetField(fieldDate, DateToStr(Date));
+// Titolo Tradotto
+     Line := TextBetween(Pagestr, '<h1 class="product_heading_title">', '</h1>'); // Titolo tradotto
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     setfield(FieldTranslatedTitle, Line);
+
+     Line := TextBetween(Pagestr, '<div class="product_description">', '</div>');    //trama
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     setfield(FieldDescription, Line);
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Attori: </span>', '</span>'); //Cast
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     if Length(Line) > 0 then
+         setfield(FieldActors, Line);
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Anno produzione: </span>', '</span>');     // anno di produzione
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     if Length(Line) > 0 then
+         setfield(FieldYear, Line);
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Produttore: </span>', '</span>');        // produtore
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     if Length(Line) > 0 then
+         setfield(FieldProducer, Line);
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Genere: </span>', '</span>');       // genere
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     if Length(Line) > 0 then
+         setfield(FieldCategory, Line);
+         
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Nazione: </span>', '</span>');        // Nazione
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     if Length(Line) > 0 then
+         setfield(FieldCountry, Line);
+
+     Line := TextBetween(Pagestr, '<span class="product_label">Durata: </span>', '</span>');       // Durata
+     HTMLRemoveTags(Line);
+     HTMLDecode(Line);
+     Line := Fulltrim(Line);
+     delete(Line, length(Line), 1);
+     if Length(Line) > 0 then
+         setfield(FieldLength, Line);
+   end;
+
+//****** inizio estrazione commenti - eliminato. per ripristinare prendere versione script per i libri ****************
+//fulvio estrazione-commenti;
+//**************************************** fine estrazione commenti ******************************
+
+// Picture import            <table width="100%" cellpadding="8" border="0">     // per non trovato??????
+    Line := TextBetween(Pagestr, '<td class="img">', '/td>');
+    Line := TextBetween(Line, 'src="', '" height="240"');   // Extract the picture URL from "Page"
+    HTMLRemoveTags(Line);
+    HTMLDecode(Line);
+//    setfield(FieldURL, Line);
+    GetPicture(Line);
+end;
+
+procedure AddMoviesTitles;
+var
+  LghtMovieTitle, LgthLine, LineNr, LineBegin, LineEnd: Integer;
+  Line, InitString, EndString: string;
+  MovieTitle, MovieAddress, Editor, year, MovieAuthor, Newmovietitle: string;
+  BeginChar: string;
+  BeginPos, EndPos: Integer;
+begin
+  TheMovieAddress := '*';
+  LineNr := 0;
+  InitString := '<table class="search-results-listing" cellspacing="0" border="0">';
+  EndString := '</table>';
+  Pagestr := TextBetween(Pagestr, InitString, EndString);
+  Line := TextBetween(Pagestr, '<tr>', '</tr>');
+
+while length(Line) > 0 do
+  begin
+    LgthLine := length(Line);
+    BeginChar := '<a href="';
+    MovieAddress := Textbetween(Line, BeginChar, '"');                   // link del film
+    EndPos := pos(BeginChar, Line) + length(MovieAddress) + 1;
+    HTMLRemoveTags(MovieAddress);
+    HTMLDecode(MovieAddress);
+    MovieAddress := FullTrim(MovieAddress);
+    TheMovieAddress := MovieAddress;
+
+    BeginChar := 'title="';
+    MovieTitle := Textbetween(Line, BeginChar, '"');                     // titolo del film
+    HTMLRemoveTags(MovieTitle);
+    HTMLDecode(MovieTitle);
+    MovieTitle := FullTrim(MovieTitle);
+    LghtMovieTitle := Length(MovieTitle);
+
+    BeginChar := '<a class="authors_and_publisher_url_html"';
+    MovieAuthor := Textbetween(Line, BeginChar, '</a>');                     // regista
+    MovieAuthor := TextBetween(MovieAuthor, 'title="', '"');
+    HTMLRemoveTags(MovieAuthor);
+    HTMLDecode(MovieAuthor);
+    MovieAuthor := FullTrim(MovieAuthor);
+
+    MovieTitle := MovieTitle + ' (' + MovieAuthor + ')';
+    if LghtMovieTitle > 6 then
+       PickTreeAdd(Movietitle, MovieAddress);
+//fulvio    TheMovieAddress := '*';
+    Delete(Pagestr, 1, (lgthLine - 1));
+    Line := TextBetween(Pagestr, '<tr>', '</tr>');
+
+  end;
+  if TheMovieAddress='*' then TheMovieAddress := '';
+end;
+
+procedure estrazionecommenti;
+begin
+     BeginLineNr := FindLine('<br /><table border=0 cellspacing="12">', Page, 0);              // inizio estrazione commenti
+     EndLineNr   := FindLine('</table>', Page, BeginLinenr);    // fine estrazione commenti
+     Line := '';
+     While BeginLineNr <= EndLineNr do
+        begin
+        Line := Line + Page.GetString(BeginLineNr);    // inizio estrazione commenti
+        beginLineNr := BeginLineNr + 1;
+        end;
+     LengthLine := length(Line);
+     SaveCommento := '';
+     BeginDiv := Pos('<div class', Line);
+     Delete(Line, 1, BeginDiv - 1);    // ora Line comincia con <div class
+     SaveLine := Line;
+     BeginChar := 'border="0" > <b>';                     // 1
+     EndChar   := '<br />';
+     Commento := TextBetween(Line, BeginChar, EndChar); // estrae commento succinto
+//     setfield(FieldComments, Line);
+     While Commento <> '' do
+        begin
+        EndDiv := Pos('</div>', Line) + Length('</div>');    // lunghezza della divisione <div> </div>
+
+        EndPos := Pos(EndChar, Line);
+        delete(Line, 1, Endpos - 1);
+        LengthLine := length(Line);
+        HTMLRemoveTags(Commento);
+        HTMLDecode(Commento);
+//        Commento := Fulltrim(Commento);
+        SaveCommento := SaveCommento + Commento + ' ';
+
+        BeginChar := '<br />';
+        EndChar   := '<b>';
+        Commento := TextBetween(Line, BeginChar, EndChar); // 2
+        EndPos := Pos(EndChar, Line);
+        delete(Line, 1, Endpos - 1);
+        LengthLine := length(Line);
+        HTMLRemoveTags(Commento);
+        HTMLDecode(Commento);
+//        Commento := Fulltrim(Commento);      // appena ripristinato
+        SaveCommento := SaveCommento + Commento;
+
+        BeginChar := '<b>';
+        EndChar   := '</b>';
+        Commento := TextBetween(Line, BeginChar, EndChar); // 3
+        EndPos := Pos(EndChar, Line);
+        delete(Line, 1, Endpos - 1);
+        LengthLine := length(Line);
+        HTMLRemoveTags(Commento);
+        HTMLDecode(Commento);
+        Commento := Fulltrim(Commento);
+        SaveCommento := SaveCommento + Commento + ' - ';
+
+        BeginChar := '>leggi tutte le sue recensioni</a><br /><br /><font color="#67b00e">';                   // estrae commento esteso
+        EndChar   := '<font color=';
+        Commento := TextBetween(Line, BeginChar, EndChar); // estrae commento succinto
+        EndPos := Pos(EndChar, Line);
+        delete(Line, 1, Endpos - 1);
+        LengthLine := length(Line);
+        HTMLRemoveTags(Commento);
+        HTMLDecode(Commento);
+        Commento := Fulltrim(Commento);
+        SaveCommento := SaveCommento + Commento + ' ' + virgolette + crlf;     // qui aggiunge virgolette
+
+        EndChar   := 'rel="nofollow"';
+        EndPos := Pos(EndChar, Line) + length(EndChar);
+        delete(Line, 1, Endpos -1);
+        EndChar   := 'rel="nofollow"';
+        EndPos := Pos(EndChar, Line) + length(EndChar);
+        delete(Line, 1, Endpos - 1);
+
+        BeginDiv := Pos('<div class', Line);
+        Delete(Line, 1, BeginDiv - 1);    // ora Line comincia con <div class
+
+        BeginChar := 'border="0" > <b>';
+        EndChar   := '<br />';
+        Commento := TextBetween(Line, BeginChar, EndChar); // estrae commento succinto
+     end;
+//    end;
+    setfield(FieldComments, SaveCommento);
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(3,5,0) then
+   begin
+//    MovieName := StringReplace(GetField(fieldTranslatedTitle), ' ', '+');
+    MovieName := GetField(fieldTranslatedTitle);
+//    if MovieName = '' then
+//      MovieName := StringReplace(GetField(fieldOriginalTitle), ' ', '+');
+    if Input('LibreriaUniversitaria Import', 'Digita il titolo del libro:', MovieName) then
+    begin
+//                   http://www.libreriauniversitaria.it/c_power_search.php?shelf=MIT&q=cani+gatti&submit=    film - Movie
+//                   http://www.libreriauniversitaria.it/c_power_search.php?shelf=BIT&q=cani+gatti&submit=    libri - Books
+//      AnalyzePage('http://www.libreriauniversitaria.it/c_search.php?noinput=1&shelf=BIT&title_query='+UrlEncode(MovieName)+'&author_query=&publisher_query=&series_query=&subject_query=&isbn_query=&dewey_query=AAA&search=Cerca');
+    MovieName := StringReplace(MovieName, ' ', '+');
+    InitSearch := 'http://www.libreriauniversitaria.it/c_power_search.php?shelf=MIT&q=' + MovieName;
+    EndSearch  := '&submit=';
+    UrlSearch  := InitSearch + EndSearch;
+    SetField(fieldURL, UrlSearch);            //URL della ricerca
+    AnalyzePage(UrlSearch);
+    end;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 3.5.0)');
+end.

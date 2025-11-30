@@ -1,0 +1,363 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=J
+Title=SensaCine.com
+Description=Script for Sensacine.com with options
+Site=www.sensacine.com
+Language=ES
+Version=1.0.1 - 26/11/2012
+Requires=3.5.0
+Comments=V 1.0.0|Just for fun release! It´s very similar to my filmstarts.de - Don´t expect regular updates||V 1.0.1|Small fixes
+License=
+GetInfo=1
+
+[Options]
+Title=3|3|0=No import|1=Spanish --> original|2=Spanish --> translated|3=Spanish --> original & Original --> translated|4=Spanish --> translated & Original --> original
+Review=4|4|0=No review or comments import|1=Review --> description|2=Review --> comments|3=Review --> description & guest comment --> comments|4=Summary --> description & Reviev --> comments
+Actors=2|2|0=No import|1=Only actor names, separated by commas|2=Actors names with character names between parenthesis separated by commas
+Rating=1|1|0=No import|1=SensaCine rating|2=press average
+Picture=2|2|0=No import|1=Small poster|2=Big poster
+Category=1|1|0=No import|1=Oh yes, import me pls!
+
+***************************************************)
+
+// SENSACINE.com - Script Version 1.0 (20120414/J)
+//
+// v1.0.1 - 26/11/2012 - Small fixes
+// I don´t speak Spanish, so don´t blame me for using english messages but you can help with translation.
+
+program SensaCine;
+
+uses
+  StringUtils1;
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  PageText, RealAddress, TextBody, Value, Value1: string;
+  Counter: Integer;
+  
+begin
+  Value := '';
+  Value1 := '';
+  TextBody := '';
+  Counter := 0;
+
+// ***** Find movie(s)
+  begin
+    PageText := GetPage(Address);
+    PageText := UTF8Decode(PageText);
+    PickTreeClear;
+// Looking for search result(s)
+	If Pos('Películas</h2>', PageText) = 0 then
+// No movie found
+	  begin
+		ShowMessage('Sorry. No movie with this title found.');
+		Exit;
+      end;
+// Get movie list
+    begin
+        TextBody := TextBetween(PageText, 'totalwidth">', '/table');
+        Value := FullTrim(TextBetween(TextBody, '/' + #39 + '>', '</a>'));
+        Value := StringReplace(value, '<b>', '');
+        Value := StringReplace(value, '</b>', '');
+        Value := Value + ' (' + FullTrim(TextBetween(TextBody, 'fs11">', '<br')) + ')';
+        RealAddress := 'http://www.sensacine.com/peliculas/' + TextBetween(TextBody, 'peliculas/', #39 +'>');
+        PickTreeAdd(Value, RealAddress);
+        Counter := Counter + 1;
+// More than one result?
+        while Pos('totalwidth', TextBody) <> 0 do
+        begin
+// Name & real movie URL
+          Delete (TextBody, 1 , Pos('totalwidth', TextBody));
+          Value := FullTrim(TextBetween(TextBody, '/' + #39 + '>', '</a>'));
+          Value := StringReplace(value, '<b>', '');
+          Value := StringReplace(value, '</b>', '');
+          Value := Value + ' (' + FullTrim(TextBetween(TextBody, 'fs11">', '<br')) + ')';
+          RealAddress := 'http://www.sensacine.com/peliculas/' + TextBetween(TextBody, 'peliculas/', #39 +'>');
+          PickTreeAdd(Value, RealAddress);
+          Counter := Counter + 1;
+        end;
+// Choose movie from list if more than one
+        If counter > 1 then PickTreeExec(RealAddress);
+// Load movie-page
+        PageText := GetPage(RealAddress);
+        PageText := UTF8Decode(PageText);
+    end
+  end;
+
+// ***** Title
+  begin
+// Spanish title
+      TextBody := TextBetween(PageText, 'data-entities=', '/span');
+	  Value := FullTrim(TextBetween(TextBody, '>', '<'));
+// Original title <> Spanish title?
+      if Pos('Título original', PageText) > 0 then
+        begin
+          Value1 := TextBetween(PageText, 'Título original</div></th><td>', '</td>');
+        end
+      else
+        Value1 := Value;
+        case GetOption('Title') of
+          1:
+          setField (fieldOriginalTitle, Value);
+          2:
+          setField (fieldTranslatedTitle, Value);
+          3:
+          begin
+			setField (fieldOriginalTitle, Value);
+			setField (fieldTranslatedTitle, Value1);
+          end;
+          4:
+          begin
+			setField (fieldTranslatedTitle, Value);
+			setField (fieldOriginalTitle, Value1);
+          end;
+        end;
+  end;
+
+// ***** Picture
+  begin
+      Value := TextBetween(PageText, 'r_160_214/medias/nmedia/', #34);
+      if Value <> '' then
+        begin
+          case GetOption('Picture') of
+            1:
+            GetPicture('http://imagenes.sensacine.com/r_160_214/medias/nmedia/' + Value);
+            2:
+            begin
+			  GetPicture('http://imagenes.sensacine.com/r_640_800/b_1_d6d6d6/medias/nmedia/' + Value);
+            end;
+          end;
+        end;
+  end;
+
+// ***** Rating
+  case GetOption('Rating') of
+    1:
+      begin
+        Value := TextBetween(PageText, 'stars n', #34);
+        if Value = 'ull' then Value := '0' else Value := FloatToStr(StrToFloat(Value)/10);
+		setField (fieldRating, Value);
+      end;
+    2:
+      begin
+        Textbody := TextBetween(PageText, 'Prensa', '</div>');
+        if Pos('"note"', TextBody) > 0 then
+		  begin
+			Value := TextBetween(TextBody, '"note">', '<');
+            Value := StringReplace(Value, ',', '.');
+            Value := FloatToStr(StrToFloat(Value)*2);
+ 			Value := StringReplace(Value, '.', ',');
+		  end
+		else Value := '0';
+		setField (fieldRating, Value);
+      end;
+  end;
+
+// ***** Countries
+  begin
+      Textbody := TextBetween(PageText, 'País<', '</div>');
+      Value := TextBetween(Textbody, 'line">', '<');
+      Delete (Textbody, 1, Pos('</', Textbody));
+      while Pos('">', Textbody) > 0 do
+      begin
+        Value := Value + ', ' + TextBetween(Textbody, '">', '<');
+        Delete (Textbody, 1, Pos('</', Textbody));
+      end;
+	  Value := RemoveSpaces(Value, true);
+      setField(fieldCountry, Value);
+  end;
+
+// ***** Categories
+  if GetOption('Category') = 1 Then
+    begin
+      Textbody := TextBetween(PageText, 'Género', '</div>');
+      Value := TextBetween(Textbody, 'genre">', '<');
+      Delete (Textbody, 1, Pos('></s', Textbody));
+      while Pos('genre">', Textbody) > 0 do
+      begin
+        Value := Value + ', ' + TextBetween(Textbody, 'genre">', '<');
+        Delete (TextBody, 1, Pos('></s', Textbody));
+      end;
+      setField(fieldCategory, Value);
+    end;
+
+// ***** Lenght
+  if Pos('duration', PageText) > 0 then
+	begin
+		TextBody := TextBetween(PageText, 'duration', 'M">');
+		Value := TextBetween(TextBody, '"PT', 'H');
+		Value1 := TextAfter(Textbody, 'H');
+		Value := FloatToStr(StrToFloat(Value)*60 + StrToFloat(Value1));
+	end
+  else Value := '0';
+  setField(fieldLength, Value);
+  
+// ***** Year
+  Textbody := TextBetween(PageText, 'Año de producción', '/span');
+  Value := TextBetween(Textbody, '">', '<');
+  setField(fieldYear, Value);
+
+// ***** URL *****
+  setField(fieldURL, RealAddress);
+
+// ***** Description / Summary & Comments
+  begin
+    Value1 := FullTrim(TextBetween(PageText, 'description">', '</p>'));
+	Value1 := StringReplace(Value1, '<br/>', #13#10);
+	HTMLRemoveTags(Value1);
+    if Pos('/sensacine/', PageText) <> 0 then
+      begin
+        Address := RealAddress + 'sensacine/';
+// Load description-page
+        PageText := GetPage(Address);
+        TextBody := TextBetween(PageText, 'class="lighten"', '</div>');
+		Value := TextBetween(TextBody, '<p>', '</p>');
+		Value := StringReplace(Value, #13#10, '');
+        Value := StringReplace(Value, '<br/>', #13#10);
+		Value := StringReplace(Value, '<br>', #13#10);
+		HTMLRemoveTags(Value);
+        Value := UTF8Decode(Value);
+// Deletes old formatting CR
+        Value := FullTrim(Value);
+		case GetOption('Review') of
+          1:
+            setField (fieldDescription, Value);
+          2:
+            setField (fieldComments, Value);
+          3:
+            begin
+              setField (fieldDescription, Value);
+              If Pos('class="inactive">Críticas de Espectadores', PageText) = 0 then
+              begin
+                Address := RealAddress + 'criticas-espectadores/mas-recientes/';
+// Load user-comments-page
+                PageText := GetPage(Address);
+                TextBody := UTF8Decode(TextBetween(PageText, '</h2>', '</h2>'));
+                while Pos('"margin_10b"', TextBody) <> 0 do
+                  begin
+                    Value := FullTrim(TextBetween(TextBody, 'class="margin_10b">', '</p>'));
+// Add comment to selection list
+                    PickListAdd(Value);
+                    TextBody := TextAfter (TextBody, '/box_06');
+                  end;
+// Choose comment from list
+                PickListExec('Choose a commentary for "' + GetField(fieldOriginalTitle) + '"', Value1)
+                while Pos(#13#10 + #13#10 + #13#10, Value1) > 0 do
+                Value1 := StringReplace(Value1, #13#10+#13#10+#13#10, #13#10);
+                SetField (fieldComments, Value1);
+              end;
+            end;
+          4:
+            begin
+              setField (fieldComments, Value);
+              setField (fieldDescription, Value1);
+            end;
+        end;
+      end
+    else if GetOption('Review') > 0 then setField (fieldDescription, Value1);
+  end;
+
+// ***** Director(s)
+  begin
+    Address := RealAddress + 'reparto/';
+// Load actors-page
+    PageText := GetPage(Address);
+    PageText := UTF8Decode(PageText);
+    TextBody := TextBetween(PageText, '</h2>', '<h2 c');
+    Value := TextBetween(TextBody, '"name">', '</span>');
+	TextBody := TextAfter (TextBody, '"name">');
+    while Pos('"name">', Textbody) > 0 do
+      begin
+        Value := Value + ', ' + TextBetween(TextBody, '"name">', '</span>');
+        TextBody := TextAfter (TextBody, '"name">');
+      end;
+	Value := StringReplace(Value, #13#10, '');
+	setfield (fieldDirector, Value);
+  end;
+
+// ***** Actors & voices
+  Value := '';
+  if Pos('id='+#39+'actors'+#39+'>', PageText) > 0 then
+	begin
+		TextBody := TextBetween(PageText, 'id='+#39+'actors'+#39+'>', '<table c');
+		case GetOption('Actors') of	
+		  1:
+			begin
+	 	    	// list 8 main actors
+				while Pos('title=', TextBody) > 0 do
+					begin
+						Value1 := TextBetween(TextBody, '<p>', '</span>');
+						HTMLRemoveTags(Value1);
+						Value1 := StringReplace(Value1, #13#10, '');
+						Value := Value + Value1 + ', ';
+						TextBody := TextAfter (TextBody, '</p>' + #13#10 + '</li>');
+					end;
+				TextBody := TextBetween(PageText, 'class="table_02"', '</table>');	
+				// list remaining actors
+				while Pos('"inner"', TextBody) > 0 do
+					begin
+						Value1 := TextBetween(TextBody, '<span ', '/span>');
+						Value1 := TextBetween(Value1, '">', '<');
+						Value1 := StringReplace(Value1, #13#10, '');
+						Value := Value + Value1 + ', ';
+						TextBody := TextAfter (TextBody, 'class="inner"');
+					end;
+				// Delete last comma
+				Delete (Value, length(Value) - 1, 1);
+				setField (fieldActors , Value);
+			end;
+		  2:
+			// list only 8 main actors with role
+			begin
+				while Pos('title=', TextBody) > 0 do
+					begin
+						Value1 := TextBetween(TextBody, '<p>', '</p>');
+						HTMLRemoveTags(Value1);
+						Value1 := StringReplace(Value1, #13#10, '');
+						if Pos('Papel:', Value1) > 0 then Value1 := StringReplace(Value1, 'Papel: ', ' (') else Value1 := Value1 + ' (';
+						Value := Value + Value1 + '), ';
+						TextBody := TextAfter (TextBody, '</p>' + #13#10 + '</li>');
+					end;
+				// Delete last comma
+				Delete (Value, length(Value) - 1, 1);
+				setField (fieldActors , Value);
+			end;
+		end;
+	end
+  else setField(fieldActors, 'No actors listed');	
+
+end; // End of procedure AnalyzePage
+
+// ***** Start of program
+begin
+  if AcceptLicense(1) = False then
+    Exit;
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+      if Input('Sensacine.com Import', 'Enter the title of the movie:', MovieName) then
+      begin
+// SENSACINE handles apostrophes with different & changing characters in search function and title-URL,
+// but works mostly with auto-cutting apostrophe and rest of word. (e.g. I´ve --> I).
+// -- If that wouldn´t work, type in title without apo-word (e.g. "not there" instead of "i´m not there")
+        MovieName := StringReplace (MovieName, #39, '´');
+        if Pos('´', MovieName) > 0 then
+        Delete (MovieName, Pos('´', MovieName), Length(TextBetween(Moviename, '´', ' ')) + 1);
+// Needed for internat. special characters
+        MovieName := UTF8Encode(MovieName);
+// Use SENSACINE internal search function to get working title-URL
+        AnalyzePage('http://www.sensacine.com/busqueda/1/?q='+UrlEncode(MovieName));
+      end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

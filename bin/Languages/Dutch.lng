@@ -1,0 +1,1891 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAjCwAAIwsAABAAAAAQAAAAAAAAADUTEwBXExMAZxMTAMoAAAAAAKoAAAD9AGVl/wCqqqoAzMzMAO7u7gD///8AAAAAAAAAAAAAAAAAAAAAALu7u7u7u7u7AAAAAAAAAAABERERERERIAEzMzMzMzNAATMzMzMzM0ABMzMzMzMzQAiZmZmZmZmgCJmZmZmZmaAImZmZmZmZoAiZmZmZmZmgBWZmZmZmZnAFZmZmZmZmcAVmZmZmZmZwBnd3d3d3d3AAAAAAAAAAALu7u7u7u7u7
+Name=Dutch
+LocalName=Nederlands
+Encoding=windows-1252
+Version=4.1.2
+VersionFormat=4.2.2
+Comments=Laatste update:10-12-12
+Authors=J-T Fernhout||Harm Caspers|dezwakke2@ontelnet.nl|Marcel Buyle||Gino R.||
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;*******************************
+;* Hoofd venster * Main window *
+;*******************************
+[MainWindow]
+ActionFileNew.Caption=&Nieuw
+ActionFileNew.Hint=Nieuw|Maak een nieuw bestand
+ActionFileOpen.Caption=&Openen...
+ActionFileOpen.Hint=Openen...|Open een bestand
+ActionFileOpenNoRecent.Caption=Geen recent bestand
+ActionFileSave.Caption=Op&slaan
+ActionFileSave.Hint=Opslaan|Opslaan huidig bestand
+ActionFileSaveAs.Caption=Ops&laan als...
+ActionFileSaveAs.Hint=Opslaan als...|Sla het huidige bestand op onder een andere naam
+ActionFilePrint.Caption=Af&drukken...
+ActionFilePrint.Hint=Adrukken...|Drukt een lijst af met de inhoud van de huidige film gegevens
+ActionFileImport.Caption=&Importeren...
+ActionFileImport.Hint=Importeer...|Importeer gegevens uit een bestand van een ander formaat
+ActionFileExport.Caption=E&xporteren...
+ActionFileExport.Hint=Exporteer...|Exporteer de inhoud naar een bestand van een ander formaat
+ActionFileProperties.Caption=&Eigenschappen...
+ActionFileProperties.Hint=Eigenschappen...|Toont de eigenschappen en catalogus informatie
+
+ActionExit.Caption=&Afsluiten
+ActionExit.Hint=Afsluiten|Beëindigt het programma
+ActionOptions.Caption=&Voorkeuren...
+ActionOptions.Hint=Voorkeuren...|Aanpassen van programma optie's
+ActionLanguage.Caption=&Taal...
+ActionLanguage.Hint=Taal...|Aanpassen van de taal
+ActionLoan.Caption=&Uitgeleend aan...
+ActionLoan.Hint=Uitgeleend aan...|Toont een lijst aan wie is uitgeleend
+ActionToolsScripting.Caption=S&cenario...
+ActionToolsScripting.Hint=Scenario|Een scenario toepassen op de geselecteerde films
+ActionToolsGrid.Caption=Toon als &Lijst
+ActionToolsGrid.Hint=Toon als lijst|Geeft de filmlijst weer in een grote lijst met alle informatie
+ActionStretchList.Caption=Alleen &lijst
+ActionStretchList.Hint=Alleen lijst|Laat alleen een lijst zien
+ActionDisplayHTML.Caption=&In HTML bekijken
+ActionDisplayHTML.Hint=In HTML bekijken|Laat film informatie zien in HTML formaat
+ActionSelectHTML.Caption=&Selecteer HTML
+ActionSelectHTML.Hint=Selecteer HTML|Selecteer een HTML template
+ActionDisplayThumbnails.Caption=Afbeel&dingen
+ActionDisplayThumbnails.Hint=Afbeeldingen|Filmlijst als afbeeldingen
+ActionSortAscend.Caption=Oplopend sorteren
+ActionSortAscend.Hint=|Sorteren in oplopende volgorde
+ActionSortDescend.Caption=Aflopend sorteren
+ActionSortDescend.Hint=|Sorteren in aflopende volgorde
+ActionSortAdvanced.Caption=Geavanceerd...
+ActionSortAdvanced.Hint=|Geavanceerd sorteren
+ActionGroupNone.Caption=< geen >
+ActionGroupNone.Hint=|Films niet groeperen
+ActionManageFields.Caption=Velden &Beheren...
+ActionManageFields.Hint=Velden beheren...|Toegevoegde velden beheren
+ActionManagePictures.Caption=Afbeeld&ingen beheren...
+ActionManagePictures.Hint=Afbeeld&ingen beheren...|Afbeeldingen van huidige catalogus beheren
+ActionHTMLEditor.Caption=&HTML bewerker...
+ActionHTMLEditor.Hint=HTML bewerker...|Bewerk HTML sjabloon
+
+ActionHelpIndex.Caption=&Help index
+ActionHelpIndex.Hint=Help index|Start help programma
+ActionHelpAbout.Caption=&Over...
+ActionHelpAbout.Hint=Over...|Over dit programma
+ActionHelpVersion.Caption=&Versie's...
+ActionHelpVersion.Hint=Versie's...|Informatie over programma
+
+ActionMovieAdd.Caption=&Toevoegen...
+ActionMovieAdd.Hint=Toevoegen...|Voeg een nieuwe film toe
+ActionMovieUndo.Caption=Wijzigingen &ongedaan maken
+ActionMovieUndo.Hint=Ongedaan maken wijzigingen|Maak wijzigingen van huidige film ongedaan
+ActionMovieDelete.Caption=&Verwijderen
+ActionMovieDelete.Hint=Verwijderen|Verwijder huidige film
+ActionMovieCopy.Caption=&Kopiëren
+ActionMovieCopy.Hint=Kopiëren|Kopieer gegevens van de film naar het prikbord
+ActionMoviePaste.Caption=&Plakken
+ActionMoviePaste.Hint=Plakken|Plak gegevens vanaf het prikbord
+ActionMovieRenumber.Caption=&Hernummeren...
+ActionMovieRenumber.Hint=Hernummeren films...|Hernummer films, te beginnen bij 1
+ActionMovieFind.Caption=&Zoeken...
+ActionMovieFind.Hint=Zoeken...|Zoek een film op basis van het opgegeven veld
+ActionFindFindNext.Caption=Zoek &volgend
+ActionFindFindNext.Hint=|Zoek volgende film die aan de criteria voldoet
+ActionFindWholeField.Caption=&Alleen volledig veld
+ActionFindWholeField.Hint=|Vindt slechts de films volledig voldoen aan de opgegeven waarde
+ActionFindReverse.Caption=&Omgekeerde resultaten
+ActionFindReverse.Hint=|Keer zoek resultaten om
+ActionFindDisplay.Caption=&Toon resultaten
+ActionFindDisplay.Hint=|Toon alle films die beantwoorden aan de zoekcriteria(gefilterde weergave)
+LField.Caption=&Zoek in veld:
+LValue.Caption=Zoek naar &waarde:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Wijzig &nummer
+ActionMovieNumber.Hint=Wijzig nummer|Wijzig film nummer
+ActionMovieStats.Caption=&Statistieken...
+ActionMovieStats.Hint=Statistieken...|Toon statistieken van de catalogus en de films
+ActionMovieImportFiles.Caption=Van &bestanden...
+ActionMovieImportFiles.Hint=Een uittreksel maken met inlichtingen over de bestanden...|Een uittreksel maken met inlichtingen over een film uit de bestanden
+ActionMovieImportScript.Caption=Van het internet mbv &scenario...
+ActionMovieImportScript.Hint=Van het internet en gebruik scenario...|Haal film informatie op van het internet en gebruik een scenario
+ActionMovieSearch.Caption=&Zoek op internet
+ActionMovieSearch.Hint=Zoek informatie op het internet|Het opzoeken van informatie op het internet van deze film
+ActionMovieRandom.Caption=Willekeu&rig
+ActionMovieRandom.Hint=|Willekeurig selectie
+ActionMoviePictureShow.Caption=Toon &afbeelding
+ActionMoviePictureShow.Hint=Toon of Verberg afbeelding|Toon of verberg de afbeelding van de film
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Selecteer...
+ActionPicSelect.Hint=Selecteer een afbeelding...|Selecteer een afbeelding voor huidige film
+ActionPicDelete.Caption=&Verwijderen
+ActionPicDelete.Hint=Verwijderen|Verwijder huidige afbeelding
+ActionPicUndock.Caption=Zweven/&Niet zweven
+ActionPicUndock.Hint=Zweven/Niet zweven|Afbeeldingvenster: "Zweven" (los venster) of "Niet zweven" (ingesloten in het hoofdvenster)
+ActionPicSaveAs.Caption=Opslaan &als...
+ActionPicSaveAs.Hint=Sla afbeelding op als...|Opslaan van een kopie van afbeelding in een nieuw bestand
+ActionPicCopy.Caption=&Kopiëren
+ActionPicCopy.Hint=Kopiëren naar prikbord|Kopieer afbeeldig naar het prikbord
+ActionPicPaste.Caption=&Plakken
+ActionPicPaste.Hint=Plakken uit prikbord|Plak afbeeldig van het prikbord
+ActionMovieUrl.Caption=Link
+ActionMovieUrl.Hint=Weblink|Link naar film info
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=&Bestand
+ActionMenuMovie.Caption=&Film
+ActionMenuDisplay.Caption=Beeld
+ActionMenuTools.Caption=&Gereedschappen
+ActionMenuHelp.Caption=&Help
+ActionMenuPicture.Caption=Afbeeld&ing
+ActionMenuPicture.Hint=Film afbeelding|Film afbeelding bewerken
+ActionMenuGet.Caption=Ophalen van &informatie
+ActionMenuGet.Hint=Ophalen van informatie|Film informatie ophalen
+ActionMenuGridFields.Caption=Raster velden
+ActionMenuGridFields.Hint=Raster velden|Raster velden laten zien of verbergen
+ActionMenuSort.Caption=&Sorteer op
+ActionMenuSort.Hint=Sorteer films|Sorteer op geselecteerde veld in de lijst
+ActionMenuGroup.Caption=&Groeperen op
+ActionMenuGroup.Hint=Groepeer films|Groepeer films volgens de waarde van een gespecifieerd veld
+ActionRefresh.Caption=Ve&rversen
+ActionRefresh.Hint=Verversen|Ververs de lijst met films
+ActionMenuGroupsFormat.Caption=Groeps eigenschappen
+ActionMenuGroupsFormat.Hint=Groepsnamen rangschikken|Groepsnamen rangschikken afhankelijk van gekozen opties
+ActionGroupsFormatNone.Caption=< geen& >
+ActionGroupsFormatNone.Hint=|Groepsnamen niet rangschikken
+MnuGpf1L.Caption=Rangschik op eerste letter
+MnuGpf2L.Caption=Rangschik op eerste twee letters
+MnuGpf3L.Caption=Rangschik op eerste drie letters
+MnuGpf4L.Caption=Rangschik op eerste vier letters
+MnuGpf5L.Caption=Rangschik op eerste vijf letters
+MnuGpfDateY.Caption=Rangschik op jaar
+MnuGpfDateYM.Caption=Rangschik op jaar en maand
+MnuGpfRound0001.Caption=Afronden op duizendste
+MnuGpfRound001.Caption=Afronden op honderdste
+MnuGpfRound01.Caption=Afronden op tienden
+MnuGpfRound1.Caption=Afronden naar hele getallen
+MnuGpfRound10.Caption=Afronden naar tientallen
+MnuGpfRound100.Caption=Afronden naar honderdtallen
+MnuGpfRound1000.Caption=Afronden naar duizendtallen
+MnuGpfRoundType.Caption=&Willekeurig afronden
+MnuGpfRoundDown.Caption=Naar bened&en afronden
+MnuGpfRoundNearest.Caption=Afronden &naar dichtbijzijnde
+MnuGpfRoundUp.Caption=Naar Boven afronden
+
+MnuSelect.Caption=Selecteer
+ActionMovieSelGroup.Caption=Selecteer hele groep
+ActionMovieSelGroup.Hint=Selecteer groep|Selecteer alle films van deze groep
+ActionMovieSelCheck.Caption=Selcteer gemarkeerde
+ActionMovieSelCheck.Hint=Selcteer gemarkeerde|Selecteer alleen de films welke zijn gemarkeerd
+ActionMovieSelUncheck.Caption=Selecteer ongemarkeerde
+ActionMovieSelUncheck.Hint=Selecteer ongemarkeerde|Selecteer alleen de films welke niet zijn gemarkeerd
+
+MnuSelected.Caption=Geselecteerde Films
+ActionMovieCheck.Caption=Markeer geselecteerde
+ActionMovieCheck.Hint=Markeer geselecteerde|Markeer geselecteerde films
+ActionMovieUncheck.Caption=Demarkeer geselecteerde
+ActionMovieUncheck.Hint=Demarkeer geselecteerde|Markering geselecteerde films ongedaan maken
+
+ActionDisplayPictureToolbar.Caption=Afbeeld&ing Werkbalk
+ActionDisplayPictureToolbar.Hint=Tonen van de afbeeldings werkbalk|Tonen of verbergen van werkbald afbeelding
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=Alge&mene Werkbalk
+ActionDisplayMainToolbar.Hint=Toon algemene werkbalk|Toon of verberg de algemene werkbalk
+ActionDisplayStatusBar.Caption=&Statusbalk
+ActionDisplayStatusBar.Hint=Weergave statusbalk|Toon of verberg de statusbalk
+
+ActionURLOpen.Caption=Open URL
+ActionURLOpen.Hint=|Open de opgegeven URL
+ActionURLExplore.Caption=Open Map
+ActionURLExplore.Hint=|Open gespecificeerde map
+ActionURLCopy.Caption=Kopieer Url
+ActionURLCopy.Hint=|Kopieer URL of bestand in deze veld
+ActionURLBrowse.Caption=Bladeren...
+ActionURLBrowse.Hint=|Selecteer bestand
+
+MnuHtmlCopy.Caption=Kopieer
+MnuHtmlCopy.Hint=|Kopieer geselecteerde tekst
+MnuHtmlEdit.Caption=Bewerken...
+MnuHtmlEdit.Hint=|Bewerk HTML sjabloon
+MnuTlsBrowseHTML.Caption=Bladeren...
+
+ToolbarMenu.Caption=Menubalk
+ToolbarMain.Caption=Algemene Werkbalk
+ToolbarPicture.Caption=Afbeelding Werkbalk
+ToolbarPictureWindow.Caption=Afbeelding
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Zoeken
+
+Listview1.HeaderSections.Item[0].Text=Nr
+Listview1.HeaderSections.Item[1].Text=Titel
+
+MoviePicture.Hint=|Klik op afbeelding voor ware grote
+
+ThumbsSizer.Hint=|Afmetingen van afbeeldingen wijzigen
+ThumbsDisplayTitle.Caption=Title
+ThumbsDisplayTitle.Hint=|Laat filmtitel zien
+
+Messages.Strings.String[0]=Weet u zeker dat u deze film wilt verwijderen %s: %s ?
+Messages.Strings.String[1]=Weet u zeker dat u de gegevens van de vorige film ook voor de huidige film wilt gebruiken ?
+Messages.Strings.String[2]=%d films
+Messages.Strings.String[3]=(%d geselecteerd, %d gemarkerkeerd, %d zichtbaar)
+Messages.Strings.String[4]=Huidige catalogus is gewijzigd. Wilt u het opslaan?
+Messages.Strings.String[5]=Geen bevestiging meer vragen
+Messages.Strings.String[6]=Gewijzigd
+Messages.Strings.String[7]=Afbeelding
+Messages.Strings.String[8]=Sla een kopie van afbeelding op met een andere bestandsnaam
+Messages.Strings.String[9]=Importeren van %s...
+Messages.Strings.String[10]=Opslaan van %s...
+Messages.Strings.String[11]=Openen van %s...
+Messages.Strings.String[12]=Selecteer een afbeelding
+Messages.Strings.String[13]=Afbeelding verwijderen. Bent u zeker ?
+Messages.Strings.String[14]=Kan deze afbeelding niet gebruiken: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Selecteer bestanden waar informatie van opgehaald wordt
+Messages.Strings.String[17]=Zoek informatie van %0:s|Zoek informatie op %0:s over deze film
+Messages.Strings.String[18]=Geen recent bestand
+Messages.Strings.String[19]=In deze catalogus zijn afbeeldingen opgenomen. Om deze catalogus als XML op te slaan moeten de afbeeldingen als individuele bestanden worden opgeslagen, klik op OK om de afbeeldingen om te zetten of op Negeren wanneer u de afbeeldingen niet wilt bewaren (‘verbonden’ afbeeldingen blijven bewaard).|De bestandsnaam van de afbeelding zal worden gebaseerd op de opgegeven naam in ‘Afbeeldingnaam voorkeur’ van de ‘Afbeelding invoer’ in het Voorkeuren venster.
+Messages.Strings.String[20]=|Groeperen per %s
+Messages.Strings.String[21]=< geen >
+Messages.Strings.String[22]=Samen met het verwijderen van de verbinding naar de afbeelding, wenst u ook de afbeelding te verwijderen van de schijf? (%s)
+Messages.Strings.String[23]=Deze film heeft een ‘verbonden’ afbeelding, als deze ‘verbinding’ wordt vervangen door een andere afbeelding, wilt u de oude afbeelding verwijderen van de schijf? (%s)
+Messages.Strings.String[24]=De afbeelding kan niet worden gekopieerd in de catalogus-map, voordat de catalogus een naam heeft; sla de catalogus eerst op en probeer opnieuw
+Messages.Strings.String[25]=Opgeslagen in catalogus als %s
+Messages.Strings.String[26]=Extern bestand: %s
+Messages.Strings.String[27]=%.0n bytes
+Messages.Strings.String[28]=Openen afdruk voorbeeld
+Messages.Strings.String[29]=Zoeken naar printers
+Messages.Strings.String[30]=Selecteer een bestand voor verwijzing in het URL veld
+Messages.Strings.String[31]=< anders >
+Messages.Strings.String[32]=Alles
+Messages.Strings.String[33]=|Sorteren op %s
+Messages.Strings.String[34]=Standaard velden
+Messages.Strings.String[35]=Toegevoegde velden
+Messages.Strings.String[36]=Bestand "%s" bestaat niet
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+Messages.Strings.String[38]=Neem informatie van bestanden...
+Messages.Strings.String[39]=Selecteer dezelfde kleur|Selecteer alleen film met dezelfde kleur label
+Messages.Strings.String[40]=Markeer dezelfde kleur|Markeer alleen film met dezelfde kleur label
+Messages.Strings.String[41]=Alle Velden
+Messages.Strings.String[42]=Er is besloten om bestaande catalogus te overschrijven. Ook afbeeldingen verwijderen van deze catalogus?
+Messages.Strings.String[43]=Kopier/Plak in film "%s"
+Messages.Strings.String[44]=Verwijder eerder gekopieerde afbeeldingen...
+Messages.Strings.String[45]=Afbeeldingen kopieren naar submap
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Nummer
+Fields.Strings.String[1]=Gemarkeerd
+Fields.Strings.String[2]=Kleur label
+Fields.Strings.String[3]=Media label
+Fields.Strings.String[4]=Drager type
+Fields.Strings.String[5]=Bron
+Fields.Strings.String[6]=Datum toegevoegd
+Fields.Strings.String[7]=Uitgeleend aan
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Waardering
+Fields.Strings.String[11]=Originele titel
+Fields.Strings.String[12]=Vertaalde titel
+Fields.Strings.String[13]=Geformatteerde titel
+Fields.Strings.String[14]=Regisseur
+Fields.Strings.String[15]=Producer
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[19]=Land
+Fields.Strings.String[18]=Acteurs
+Fields.Strings.String[20]=Jaar
+Fields.Strings.String[21]=Duur
+Fields.Strings.String[22]=Categorie
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Beschrijving
+Fields.Strings.String[26]=Extra's
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Video Formaat
+Fields.Strings.String[29]=Video Bitrate
+Fields.Strings.String[30]=Audio Formaat
+Fields.Strings.String[31]=Audio Bitrate
+Fields.Strings.String[32]=Resolutie
+Fields.Strings.String[33]=Beeld snelheid
+Fields.Strings.String[34]=Talen
+Fields.Strings.String[35]=Ondertitels
+Fields.Strings.String[36]=Bestandsgrootte
+Fields.Strings.String[37]=Aantal schijven
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+Media.Strings.String[0]=Volume Label
+Media.Strings.String[1]=Map verwijzing
+Media.Strings.String[2]=Map verwijzing + Bestandsnaam
+Media.Strings.String[3]=Map verwijzing + Bestandsnaam + Extinctie
+Media.Strings.String[4]=Bestandsnaam
+Media.Strings.String[5]=Bestandsnaam (gefilterd)
+Media.Strings.String[6]=Bestandsnaam + Extinctie
+Media.Strings.String[7]=Mapnaam
+Media.Strings.String[8]=Mapnaam (Gefilterd)
+Media.Strings.String[9]=Bestands Extinctie
+Media.Strings.String[10]Bestands Extinctie (zonder punt)
+Media.Strings.String[11]Grootte (String - "650+530")
+Media.Strings.String[12]=Grootte (Totaal - "1180")
+Media.Strings.String[13]=Schijven
+Media.Strings.String[14]=Afbeelding
+Media.Strings.String[15]=Duur
+Media.Strings.String[16]=Resolutie ("Breedte x Hoogte")
+Media.Strings.String[17]=Resolutie (Breedte)
+Media.Strings.String[18]=Resolutie (Hoogte)
+Media.Strings.String[19]=Beeld snelheid
+Media.Strings.String[20]=Video Codec
+Media.Strings.String[21]=Video Bitrate
+Media.Strings.String[22]=Audio Codec
+Media.Strings.String[23]=Audio Kanalen
+Media.Strings.String[24]=Audio Codec + Audio Kanalen
+Media.Strings.String[25]=Audio Bitrate
+Media.Strings.String[26]=Taal
+Media.Strings.String[27]=Ondertitels
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;***************************************
+;* Mededeling Formulier * Message Form *
+;***************************************
+[MessageWin]
+Captions.Strings.String[0]=Waarschuwing
+Captions.Strings.String[1]=Fout
+Captions.Strings.String[2]=Informatie
+Captions.Strings.String[3]=Bevestiging
+Captions.Strings.String[4]=&Ja
+Captions.Strings.String[5]=&Neen
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=Ann&uleren
+Captions.Strings.String[8]=Af&breken
+Captions.Strings.String[9]=Nog&maals
+Captions.Strings.String[10]=&Negeren
+Captions.Strings.String[11]=&Alles
+Captions.Strings.String[12]=Neen op alles
+Captions.Strings.String[13]=Ja op alles
+Captions.Strings.String[14]=&Help
+
+;*********************************
+;* Opgave Formulier * Input Form *
+;*********************************
+[InputWin]
+btn2.Caption=&OK
+btn1.Caption=Ann&uleren
+
+;****************
+;* Over * About *
+;****************
+[AboutWin]
+Caption=Over dit programma
+Btn3.Caption=Sluiten
+Btn2.Caption=&Versie's...
+Btn1.Caption=&Dank aan...
+Messages.Strings.String[0]=%s: versie %s (gemaakt op %s)
+Messages.Strings.String[1]=(druk op Ctrl+C als je deze informatie naar het prikbord wilt kopiëren)
+
+;*****************************************
+;* Een cijfer inbrengen * Enter a number *
+;*****************************************
+[NumberWin]
+Caption=Film &nummer selectie
+btn2.Caption=&OK
+btn1.Caption=Ann&uleren
+LEnterNumber.Caption=Een nummer voor de film invoeren:
+btnFindNum.Hint=Zoek een beschikbaar nummer|
+grpNotUnique.Caption=Er is al een film met dit nummer...
+grpNotUnique.Items.String[0]=&Accepteer duplicaat
+grpNotUnique.Items.String[1]=&Geef een ander nummer aan bestaande film
+grpNotUnique.Items.String[2]=&Schuif filmnummer op totdat er geen duplicaat meer is
+CBDoNotAsk.Caption=Niet meer vragen; gebruik automatische nummering
+
+;******************************
+;* Eigenschappen * Properties *
+;******************************
+[PropertiesWin]
+btn2.Caption=&OK
+btn1.Caption=Ann&uleren
+Caption=Catalogus eigenschappen
+LHOwnerInfo.Caption=Informatie eigenaar
+LFileName.Caption=Naam:
+LFileSize.Caption=Omvang:
+LFileVersion.Caption=Formaat:
+LHXMLHeader.Caption=XML Header
+LEncoding.Caption=Codering:
+LOwnerName.Caption=Naam:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=Website:
+LDescription.Caption=Beschrijving:
+EOwnerMail.ButtonHint=Stuur een email
+EOwnerSite.ButtonHint=Ga naar de URL
+
+;**********************
+;* Uitgeleend * Loans *
+;**********************
+[LoanWin]
+Caption=Uitgeleend
+Btn2.Caption=Sluiten
+Btn1.Caption=&Help
+
+ActionBorrowerAdd.Caption=Toevoegen...
+ActionBorrowerAdd.Hint=Lener toevoegen|Voeg een lener toe aan de lijst
+ActionBorrowerDel.Caption=Verwijderen
+ActionBorrowerDel.Hint=Verwijder lener|Verwijder geselecteerde lener van de lijst
+ActionCheckOut.Caption=Uitgeleend
+ActionCheckOut.Hint=Uitgeleend|Voeg geselecteerde film toe aan lijst van lener
+ActionCheckIn.Caption=Onvangen
+ActionCheckIn.Hint=Onvangen|Verwijder geselecteerde film van lijst van lener
+ActionMovieGetBorrower.Caption=Vindt lener
+ActionMovieGetBorrower.Hint=Vindt lener|Zoek, in lenerlijst, lener van geselecteerde film
+ActionMovieFindNext.Caption=Zoek volgende
+ActionMovieFindNext.Hint=Zoek volgende|Zoek volgende film met een titel met opgegeven tekst
+ActionOptions.Caption=&Voorkeuren...
+ActionOptions.Hint=Voorkeuren...|Aanpassen van programma optie's
+ActionOptionsIncNum.Caption=Betrek films met dezelfde &nummer
+ActionOptionsIncNum.Hint=Betrek films met dezelfde nummer|Betrek bij ontvangen en uitgeleend de overige films welke hetzelfde nummer hebben als geselecteerde
+ActionOptionsIncLab.Caption=Betrek films met hetzelfde &label
+ActionOptionsIncLab.Hint=Betrek films met hetzelfde label|Betrek bij ontvangen en uitgeleend de overige films welke hetzelfde label hebben als geselecteerde
+
+LvMovies.HeaderSections.Item[0].Text=Nr
+LvMovies.HeaderSections.Item[1].Text=Label
+LvMovies.HeaderSections.Item[2].Text=Titel
+LvMovies.HeaderSections.Item[3].Text=Lener
+LvNames.HeaderSections.Item[0].Text=Lener
+LvNames.HeaderSections.Item[1].Text=Kwantiteit
+LvLent.HeaderSections.Item[0].Text=Nr
+LvLent.HeaderSections.Item[1].Text=Label
+LvLent.HeaderSections.Item[2].Text=Titel
+
+Messages.Strings.String[0]=Dit verwijderd alle “%s” van de leners lijst, en zal alle geleende films van de lener als terugbezorgd markeren.
+Messages.Strings.String[1]=Openen lijst...
+Messages.Strings.String[2]=Deze film is reeds uitgeleend aan iemand anders
+Messages.Strings.String[3]=Naam invoeren aub
+Messages.Strings.String[4]=De volgende films zijn uitgeleend aan:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Naam invoeren
+Messages.Strings.String[7]=Nieuwe lener
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;***********************
+;* Exporteren * Export *
+;***********************
+[ExportWin]
+Caption=Exporteer naar een andere bestandsformaat
+lvFormat.Columns.Item[0].Caption=Ondersteunende bestandsformaten
+Btn3.Caption=&Exporteer...
+Btn2.Caption=Sluiten
+Btn1.Caption=&Help
+grpImages.Caption=Afbeeldingen
+CBCopyPictures.Caption=Gekopieerd met de geëxporteerde bestand
+CBCopyPictures.Hint=Kopieer afbeeldingen naar dezelfde map als bestand
+CBCopyPicturesInPicDir.Caption=in een submap
+CBCopyPicturesInPicDir.Hint=Kopieer afbeeldingen in een submap
+CBCopyPicturesNew.Caption=Alleen als het nog niet bestaat
+CBCopyPicturesNew.Hint=Alleen kopiëren als het nog niet bestaat (schrijft bestand niet over)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Selecteer een formaat...
+
+LCSVDelimiter.Caption=Scheidingsteken:
+ECSVDelimiter.Hint=|Karakters veld waarde begrenzing
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Regel begrenzing
+ECSVBloc.Hint=|Tekens om textvelden (laat leeg bij niet in gebruik)
+LCSVLinebreaks.Caption=Vervang regeleinden door:
+ECSVLinebreaks.Hint=|Tekens te gebruiken als tussenkomst of regeleinden in beschrijving en opmerkingen
+CBCSVColumnTitles.Caption=Kolom naam toevoegen
+LSQLTableName.Caption=Tabel naam:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption=Bijwerken ipv "Invoegen"
+LSQLCommands.Caption=Mee te nemen SQL commando's:
+LSQLLinebreaks.Caption=Vervang regeleinden door:
+LOrigonsLink.Caption=Met dit formaat kunt u uw filmlijst online zetten bij Origins website<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Te exporteren velden:
+FieldsSQL.LSelected.Caption=Te exporteren velden:
+LAMCNote.Caption=Je kunt ook bestand als AMC exporteren door in het hoofdmenu: Bestand --> opslaan als AMC bestand. Deze bestand kan later geopend en gebruikt worden door Ant Movie Catalog.
+LXMLNote.Caption=Je kunt ook XML bestand exporteren door in het hoofdmenu: Bestand --> opslaan als XML bestand. Deze bestand kan later geopend en gebruikt worden door Ant Movie Catalog.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Lijst sorteren...
+Messages.Strings.String[1]=Exporteren naar %s...
+Messages.Strings.String[2]=Kopiëren bestanden...
+Messages.Strings.String[3]=Exporteer naar HTML
+Messages.Strings.String[4]=Exporteer naar CSV
+Messages.Strings.String[5]=Exporteer naar SQL
+Messages.Strings.String[6]=Exporteer afbeeldingen
+Messages.Strings.String[7]=Exporteer naar een bestand voor Origons.com
+Messages.Strings.String[8]=Exporteer naar AMC
+Messages.Strings.String[9]=Exporteer naar XML
+Messages.Strings.String[10]=Het is niet mogelijk om een catalogus te exporteren naar huidige lokatie
+
+;************************
+;* Importeren *  Import *
+;************************
+[ImportWin2]
+Caption=Importeer van een ander bestandsformaat
+Btn3.Caption=&Importeer...
+Btn2.Caption=Sluiten
+Btn1.Caption=&Help
+lvFormat.Columns.Item[0].Caption=Ondersteunende bestandsformaten
+lvFormat.Items.Item[5].Caption=Media bestanden
+Messages.Strings.String[0]=Zoeken naar media bestanden
+Messages.Strings.String[1]=Media bestanden gevonden:
+Messages.Strings.String[2]=Media info importeren...
+Messages.Strings.String[3]=Importeren van %s...
+Messages.Strings.String[4]=Sommige bestanden of mappen kunnen niet gescand worden vanwege "onbekende" karakters:
+
+[TImportFrame]
+lblLink.Caption=Permissie toegestaan om films te importeren van %s
+grpSettings.Caption=Instellingen
+chkAllowDup.Caption=Hetzelfde nummers toegestaan
+chkAllowClear.Caption=Toestaan om velden te legen wanneer er geen nieuwe waarde is
+chkAutoAssign.Caption=Proberen velden automatisch toe te wijzen
+lblPictures.Caption=Afbeeldingen import methode
+cmbPictures.Items.String[0]=1 - Opslaan in catalogus
+cmbPictures.Items.String[1]=2 - Kopieer naar catalogusmap en maak een verwijzing
+cmbPictures.Items.String[2]=3 - Kopieer naar catalogusmap indien afbeelding niet eerder is opgeslagen
+cmbPictures.Items.String[3]=4 - Kopieer naar afbeeldingenmap en maak een verwijzing
+cmbPictures.Items.String[4]=5 - Kopieer naar afbeeldingenmap indien afbeelding niet eerder is opgeslagen
+cmbPictures.Items.String[5]=6 - Absolute verwijzingen maken naar huidige afbeeldingen
+cmbPictures.Items.String[6]=7 - Relatieve verwijzingen maken naar huidige afbeeldingen
+grpSourceFile.Caption=Bron Bestand
+btnBrowse.Hint=Bladeren...|Selecteer het bronbestand
+btnReload.Caption=He&rlaad bestand
+grpPreview.Caption=Voorbeeld
+lblPreview.Caption=Druk op kolomnaam om velden toe te kennen
+btnFieldsLoad.Hint=Laad velden|Laad desbetreffende kolom dat eerder was opgeslagen
+btnFieldsSave.Hint=Velden opslaan|Sla huidige veld-kolom verwijzing
+btnFieldsAutoLoad.Hint=Herlaad velden automatisch|Herlaad eerder opgeslagen veld-kolom "verwijzingen" automatisch
+btnColumnsAutoResize.Hint=Kolommen automatisch aanpassen
+ActionListCheck.Caption=&Markeer geselecteerde
+ActionListCheck.Hint=Markeer selectie|Markeer geselecteerde regel
+ActionListUncheck.Caption=&Demarkeer geselecteerde
+ActionListUncheck.Hint=Demarkeer selectie|Demarkeer geselecteerde regel
+ActionListAll.Caption=&Alles selecteren
+ActionListAll.Hint=Markeer alles|Selecteer alle regels
+ActionListNone.Caption=&Niets selecteren
+ActionListNone.Hint=Demarkeer alles|Demarkeer alle regels
+ActionListCheckExists.Caption=Markeer bestaande films
+ActionListCheckExists.Hint=Markeer bestaande films|Markeer bestaande films in de database
+ActionListUncheckExists.Caption=Demarkeer bestaande films
+ActionListUncheckExists.Hint=Demarkeer bestaande films|Demarkeer bestaande films in de database
+ActionSortAscend.Caption=Oplopend sorteren
+ActionSortAscend.Hint=Oplopend Sorteren|Sorteer waarden in de kolommen opvolgend
+ActionSortDescend.Caption=Aflopend sorteren
+ActionSortDescend.Hint=Aflopend sorteren|Sorteer waarden in de kolommen aflopend
+ActionDefineKeyField.Caption=Als sleutelveld defineren
+ActionDefineKeyField.Hint=|Deze sleutel gebruiken om films te vergelijken
+ActionHeaderNoImport.Caption=Deze veld niet importeren
+MnuMov.Caption=&Film
+MnuMovCF.Caption=Aangepaste veld
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=Geen film om te importeren
+Messages.Strings.String[1]=Je hebt geen veld toegewezen naar een kolom. Druk op een kolomnaam
+Messages.Strings.String[2]=Voor afbeelding import moet de catalogus een naam hebben; sla catalogus op en probeer nog een keer
+Messages.Strings.String[3]=Selecteer een map:
+Messages.Strings.String[4]=%s film(s) gevonden!
+Messages.Strings.String[5]=%s film(s) toegevoegd!
+Messages.Strings.String[6]=%s film(s) bijgewerkt!
+Messages.Strings.String[7]=De waarden van het sleutelveld is niet unique.|Een film in de lijst kan verwijzen naar verschillende films in de database.
+Messages.Strings.String[8]=Voor deze actie eerst een sleutelveld selecteren (Klik op kolomtitel).
+Messages.Strings.String[9]=Films importeren in huidige catalogus...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Eerste regel bevat kolomnaam
+lblDelim.Caption=Veldbegrenzer:
+edtDelim.Hint=|Veldbegrenzer tekens
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Regel begrenzing
+edtQuote.Hint=|Tekens om textvelden (laat leeg bij niet in gebruik)
+lblLinebreaks.Caption=Regeleinden
+edtLinebreaks.Hint=|Tekens te gebruiken als tussenkomst of regeleinden in beschrijving en opmerkingen
+
+[TImportFrameQuery]
+grpQuery.Caption=Uitvoercommando
+btnQueryExec.Hint=Uitvoeren|Commando uitvoeren
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Bron map
+Messages.Strings.String[11]=Bladeren...|Blader naar een map om in te lezen
+Messages.Strings.String[12]=Lees map in
+lblExtractProcess.Caption=Bezig met het verwerken van gegevens:
+cmbExtractProcess.Items.String[0]=1 - Extraheer media info tijdens scannen
+cmbExtractProcess.Items.String[1]=2 - Alleen media info extraheren bij importeren
+cmbExtractProcess.Items.String[2]=3 - Media info niet extraheren
+chkInternalAVI.Caption=Gebruik interne applicatie voor AVI import (sneller)
+chkMultiDisks.Caption=Voeg informatie samen van meerdere gegevens/discs
+lblDiskTag.Caption=Disc etiket
+edtDiskTag.Hint=|vb. kies etiket 'cd' voor namen zoals 'fimnaam.cd1','filmnaam.cd2', ...
+lblBrowseDepth.Caption=Verken sub mappen met diepte van:
+edtBrowseDepth.Hint=0 = geen, * = verken alle
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Filter bestandsnaam
+lblExtVideo.Caption=Extincties:
+btnDefaultExtVideo.Caption=Standaard
+
+;*************************************
+;* Importeer methode * Import method *
+;*************************************
+
+[ImportMethodWin]
+Caption=Import methode
+btn2.Caption=OK
+btn1.Caption=Afbreken
+LMsg1.Caption=Er is een parameter gekozen om gemarkeerde films te vergelijken met films in huidide catalogus.
+LMsg2.Caption=Alle gemarkeerde films worden geïmporteerd. Om doublures tegen te gaan, kan er vergeleken worden door de kolomtitel te selecteren.
+grpImportMethod.Caption=Wat wil je doen?
+grpImportMethod.Items.String[0]=Importeer alle films
+grpImportMethod.Items.String[1]=Importeer alleen nieuwe films
+grpImportMethod.Items.String[2]=Informatie van flims bijwerken
+grpImportMethod.Items.String[3]=Importeer nieuwe films en bestaande flims bijwerken
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;****************************
+;* Voorkeuren * Preferences *
+;****************************
+[OptionsWin]
+Caption=Voorkeuren
+Btn3.Caption=Op&slaan
+Btn2.Caption=Ann&uleren
+Btn1.Caption=&Help
+
+LvCat.Items.Item[0].Text=Algemeen beeld
+LHToolbar.Caption=Werkbalken en Menu's
+LIconSet.Caption=Knoppen set:
+LColorType.Caption=Kleur aanduiding:
+cbxColorType.Items.String[0]=Automatisch
+cbxColorType.Items.String[1]=Grijs indien niet actief
+cbxColorType.Items.String[2]=Helder indien niet actief
+cbxColorType.Items.String[3]=Donker indien niet actief
+cbxColorType.Items.String[4]=Altijd in kleur
+CBOfficeXP.Caption=Office XP stijl
+CBMenuImages.Caption=Beelden in de menu's
+LHMainWindow.Caption=Algemeen beeld
+CBSoftBorders.Caption=Lichte rand voor Film Lijst, Film Informatie Paneel en Afbeelding Box
+CBNatCmp.Caption=Gebruik van natuurlijke voorwaarden (automatische nummer detectie) om te sorteren
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+CBAutoFocus.Hint=|Focus op veld wanneer muis overheen gaat
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Opstarten
+CBLogo.Caption=Toon logo
+
+LvCat.Items.Item[1].Text=Aanpassen werkbalk
+LHCustomizeToolbar.Caption=Selecteer knoppen welke op hoofd werkbalk moet verschijnen
+
+LvCat.Items.Item[2].Text=Bestanden
+LHSaving.Caption=Catalogus
+CBBackup.Caption=Altijd een reserve kopie maken
+CBAutoLoad.Caption=Tijdens opstarten, onderstaand bestand openen ipv een nieuwe aan te maken:
+EAutoLoad.ButtonHint=Bladeren...|Selecteer bestand
+CBAutoLoadLast.Caption=Heropen laatst gebruikt bestand
+CBAutoLoadCF.Caption=Importeer zelf gemaakte velden automatisch van volgende bestand in de nieuwe catalogus
+EAutoLoadCF.ButtonHint=Verkennen...|Selecteer bestand
+LRecentFiles.Caption=Aantal bestanden weergeven in menu:
+LRepairAssociations.Caption=Om .amc bestanden te verbinden met Ant Movie Catalog, klik op onderstaande knop:
+BtnRepairAssoc.Caption=Repareer bestand associatie
+LHHistory.Caption=Uitleen historie
+CBHistory.Caption=Sla de uitleen gegevens op in onderstaand bestand (gebruik tab-delimited formaat):
+EHistoryFile.ButtonHint=Bladeren...|Selecteer bestand
+LHHTMLTemplate.Caption=HTML Sjabloon
+EHTMLTemplate.ButtonHint=Verkennen...|Selecteer bestand
+
+LvCat.Items.Item[3].Text=Film lijst
+LHDisplay.Caption=Tonen
+CBCheckboxes.Caption=Toon markeringshokjes
+CBCheckboxesInThumbs.Caption=Markeringshokjes bij mini-afbeeldingen
+CBCheckboxesColor.Caption=Markeerboxen met achtergrond kleur geassocieerd met flimkleur label
+CBLinesColor.Caption=Lijnen met achtergrond kleur geassocieerd met flimkleur label
+CBHotTrack.Caption=Selecteren bij aanwijzen ("Hot track")
+CBEnhScrollbars.Caption=Verbeterde schuifbalken
+CBMovieNumColumn.Caption=Film nummer kolom
+LGridTextSize.Caption=Aantal karakters per kolom in tabel mode (0)
+LGridTextSize.Hint=|De kolommen Geformatteerde Titel, Originele Titel en Vertaalde Titel worden niet aangepast
+CBAutoStretchListGrid.Caption=Automatisch aanpassen lijst in tabel mode
+CBAutoStretchListThumbs.Caption=Automatisch aanpassen lijst in afbeelding mode
+LHOperations.Caption=Opdrachten
+CBDelete.Caption=Bevestig Verwijderen
+CBUndo.Caption=Bevestig Annuleren
+LHShortcut.Caption=Sneltoetsen
+LShortcutPrev.Caption=Vorige film
+LShortcutNext.Caption=Volgende film
+
+LvCat.Items.Item[4].Text=Formaat van de titels
+LHFormatting.Caption=Formaat
+LTitleColumn.Caption=Te tonen titel:
+cbxTitle.Items.String[0]=Originele titel
+cbxTitle.Items.String[1]=Vertaalde titel
+cbxTitle.Items.String[2]=Originele titel (Vertaalde titel)
+cbxTitle.Items.String[3]=Vertaalde titel (Originele titel)
+cbxTitle.Items.String[4]=Media label
+cbxTitle.Items.String[5]=Aangepaste titelCustom title
+LTitleTemplate.Caption=Sjabloon van titel:
+BtnInsertFieldTag.Hint=|Voer een speciale waarde in dat vervangen wordt door filmwaarde
+CBPrefixes.Caption=Plaats de volgende voorvoegsels aan het einde van de titel:
+LPrefixes1.Caption=Alleen woorden gevolgd door een spatie of een afbreekteken in de titel worden herkend.
+LPrefixes2.Caption=Voeg ze toe in de lijst, elk op een afzonderlijke regel, zonder spatie of afbreekteken.
+
+LvCat.Items.Item[5].Text=Groepering
+LHGrouping.Caption=Groepen
+CBGroupCount.Caption=Weergeven aantal groepen
+CBGroupExpand.Caption=Standaard volledig uitklappen
+CBGroupMulti.Caption=Maak groepen met waarden in multi velden, gescheiden door:
+CBGroupMulti.Hint=|Voor meerdere velden zoals Genre's, Acteurs, Talen, Ondertitels...
+EGroupMultiSep.Hint=|Scheidingsteken om waardes in multi velden te scheiden
+CBGroupMultiRmAllP.Caption=Verwijder waardes van tussenzinnen voor multi velden
+CBGroupMultiRmAllP.Hint=|Acteurveld als standaard + andere multi velden
+CBGroupMultiAddPatch.Caption=Pad toevoegen om tussenzinnen te negeren bv (I, (II, (II, (IV... (XXX waardes
+CBSortGroupsByCount.Caption=Sorteer groepen op groepgrootte
+LHCommonGroups.Caption=Algemene groepen
+lblGroupLocation.Caption=Locatie:
+RBGroupsAbove.Caption=Groeperen boven algemene groepen
+RBGroupsBelow.Caption=Groeperen onder algemene groepen
+CBGroupUnique.Caption=Maak een aparte algemene groep voor enkelvoudige groepen
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Een nieuwe film toevoegen
+CBAskNumber.Caption=Filmnummer vragen
+CBFirstAvailable.Caption=Gebruik eerst beschikbare nummer in plaats van het hoogste nummer + 1
+CBAddOpenScript.Caption=Open het venster "Ophalen van Informatie van het internet mbv scenario"
+CBAddOpenFiles.Caption=Open het venster "Ophalen van Informatie van bestanden"
+LDefaultValues.Caption=Om de standaard gegevens van een nieuwe film te wijzigen, klik op onderstaande knop:
+BtnDefaultValues.Caption=Wijzig standaard filmgegevens...
+CBSetCurrentDate.Caption=Vul veld "Datum Toegevoegd" met huidige datum ipv specifieke datum
+CBChecked.Caption=Gemarkeerd
+LColorTag.Caption=Kleur Label:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Waardering
+CBRatingTrunc.Caption=Geen decimale weergeven in venster, export en afdrukken
+LHPictureWindow.Caption=Afbeelding
+LPictureBackground.Caption=Achtergrond kleur:
+CBFitPicture.Caption=Best passend in afbeeldingsvenster.
+CBShowPicInfo.Caption=Weergeven van afbeeldinggrote, formaat en volledig pad in afbeeldingvenster
+LHMovieFrame.Caption=Filmveld kaderen
+LMovieFrameBackground.Caption=Achtergrond kleur:
+
+LvCat.Items.Item[8].Text=Drop-down menu's
+LHComboBoxItems.Caption=Items
+CBComboSameForAll.Caption=Zelfde opties voor alle lijsten (heeft geen invloed op lijst inhoud)
+LListOptions.Caption=Opties voor de lijst:
+CBComboSort.Caption=Automatisch sorteren
+CBComboAutoComplete.Caption=Automatisch aanvullen tijdens invoer
+CBComboCatalogValues.Caption=Gebruik gegevens huidig bestand, ipv de basisinstellingen van de lijsten.
+CBComboAutoAdd.Caption=Automatisch aanvullen van ontbrekende gegevens welke niet in de lijst staan
+LListEdit.Caption=Wijzigen items:
+
+LvCat.Items.Item[9].Text=Media bestanden invoer
+LHVideoDragDrop.Caption=Slepen && Plaatsen / Neem informatie van bestanden
+CBDNDMediaLabel.Caption=Importeer media label
+CBDNDFileName.Caption=Importeer bestandsnaam als titel
+btnFilterFileName.Caption=Filtreer bestandsnaam
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Importeer bestandsnaam in URL veld
+CBDNDSize.Caption=Importeer grote:
+RBDNDString.Caption=Een reeks maken, bijv. "650+530"
+RBDNDSum.Caption=Het totaal berekenen, bijv. "1180"
+LDNDSizeUnit.Caption=Eenheid:
+cbxDNDSizeUnit.Items.String[0]=Bytes
+cbxDNDSizeUnit.Items.String[1]=Kilobytes (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabytes (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabytes (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Importeer filmlengte
+CBDNDAllowClear.Caption=Toestaan om velden te legen wanneer nieuwe waarde leeg is
+CBDNDInternalAVI.Caption=Gebruik interne engine ipv MediaInfo DLL om AVI te importeren (sneller)
+LExtVideo.Caption=Extensie:
+btnDefaultExtVideo.Caption=Standaard
+LHGetInfoVideo.Caption=Informatie te nemen van video streams 
+CBDNDResolution.Caption=Importeer resolutie
+CBDNDFramerate.Caption=Importeer Beeldsnelheid
+CBDNDVideoCodec.Caption=Importeer video codex
+CBDNDVideoBitrate.Caption=Importeer video bitrate
+LHGetInfoAudio.Caption=Informatie te nemen van audio streams 
+CBDNDAudioCodec.Caption=Importeer audio codex
+CBDNDAudioChannels.Caption=Importeer audio kanalen
+CBDNDAudioBitrate.Caption=Importeer audio bitrate
+CBDNDLanguages.Caption=Importeer talen
+CBDNDSubtitles.Caption=Importeer ondertitels
+
+LvCat.Items.Item[10].Text=Afbeelding invoer
+LHImportPic.Caption=Importeer afbeelding van externe bron
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=Voor Slepen && Plaatsen / Neem informatie van bestanden
+CBPicImportGetInfoNoAsk.Caption=Niet vragen naar afbeelding importeer methode; gebruik bovenstaande optie
+PicImportScripting.grp.Caption=Voor internet scenario
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Opmerking: wanneer de afbeeldingnaam al in gebruik is door een andere film, zal er een willekeurige naam worden aangemaakt. Als er geen originele naam is (bijv. na omzetten van amc naar xml formaat), zal de film titel worden gebruikt.
+
+LvCat.Items.Item[11].Text=Zoeken op internet
+LHSearch.Caption=Zoeken op internet
+LSearchEdit.Caption=Wijzig geselecteerde regel:
+btnSearchAdd.Hint=Toevoegen|Voeg een nieuwe regel toe boven de geselecteerde regel
+btnSearchDel.Hint=Verwijder|Verwijder geselecteerde regel
+btnSearchUp.Hint=Naar boven|Verplaats geselecteerde regel naar boven
+btnSearchDown.Hint=Naar beneden|Verplaats geselecteerd regel naar beneden
+LSearchNotes.Caption=Opmerking:
+LSearchNote1.Caption=Naam moet uniek zijn
+LSearchNote2.Caption=- Plaats in het adres %s waar het programma de titel van de film moet invoegen
+LSearchNote3.Caption=- Scheidingslijn invoegen? Gebruik een "unieke" naam beginnend met streepje "-"
+
+LvCat.Items.Item[12].Text=Scenario
+LHScript.Caption=Scenario instellingen
+CBAutorunScript.Caption=Auto-run laatst gebruikt scenario met "Ophalen van Informatia mbv scenario"
+LScriptPicImport.Caption=Voorkeuren om afbeeldingen te importeren, ga naar <LINK>Afbeelding invoer</LINK> pagina
+LHConnection.Caption=Internet verbinding
+CBProxy.Caption=Proxy gebruiken voor toegang tot het internet:
+LProxyServer.Caption=Server:
+LProxyPort.Caption=Poort:
+LProxyUsername.Caption=Gebruiker:
+LProxyPassword.Caption=Wachtwoord:
+CBKeepConnection.Caption=Verbinding niet verbreken
+CBHTTP10.Caption=Beperkt tot HTTP 1.0 (Nodig voor sommige proxy servers)
+
+LvCat.Items.Item[13].Text=Exporteren
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Automatisch herladen van het laatst gebruikte sjabloon
+LLineBreaks.Caption=Regeleinde zal zal worden vervangen worden door de tag:
+ELineBreaks.Hint=|Laat dit veld leeg indien u de regeleinde niet wenst te vervangen
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Niets invullen wanneer u de breedte (breedte) niet wilt aanpassen
+EForcePicSizeH.Hint=|Niets invullen wanneer u de hoogte (hoogte) niet wilt aanpassen
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Datum opmaak (speciale tekens tussen aanhalingstekens):
+ESQLDate.Hint=|Laat leeg voor Windows standaard
+LHExportFileNames.Caption=Bestandsnamen
+CBLastFileName.Caption=De naam van het laatst uitgevoerde bestand onthouden
+CBOpenExportedFile.Caption=Open het aangemaakte bestand indien de uitvoer beeindigd is
+ExpFileNamingFrame.grp.Caption=Individuele bladzijden en afbeelding bestandsnaam stijl
+LExpFileExt.Caption=Toe te voegen extensie:
+EExpFileExt.Hint=|Niets invullen om zelfde extentie als export bestandsnaam te gebruiken
+LHPictures.Caption=Afbeeldingen
+CBCopyPictures.Caption=Kopieer met geëxporteerde bestand
+CBCopyPicturesInPicDir.Caption=Kopieer afbeeldingen naar een submap afbeeldingen
+CBCopyPicturesNew.Caption=Alleen als het nog niet bestaat
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Mappen
+LHFoldersDialogs.Caption=Dialoog box
+LFolderToUse.Caption=Te gebruiken map voor
+cbxWindow.Items.String[0]=Openen/Opslaan catalogus
+cbxWindow.Items.String[1]=Openen film afbeelding
+cbxWindow.Items.String[2]=Exporteren
+cbxWindow.Items.String[3]=Openen/Opslaan sjabloon
+cbxWindow.Items.String[4]=Importeren
+cbxWindow.Items.String[5]=Infomatie halen van bestanden
+cbxWindow.Items.String[6]=Opslaan Grafiek
+cbxWindow.Items.String[7]=Openen/Bewaren scripts
+cbxWindow.Items.String[8]=Laad/Opslaan aangepaste velden
+cbxWindow.Items.String[9]=Laad/Opslaan filters
+RBFolderDefault.Caption=Windows standaard gebruiken (hangt af van de Windows versie)
+RBFolderRemember.Caption=Onthoud laatst gebruikte map
+RBFolderSpecified.Caption=Gebruik deze map:
+EFolderSpecified.ButtonHint=Bladeren...|Selecteer map
+CBSameForAll.Caption=Zelfde opties voor alle vensters
+
+;*****************************************************************
+;* Standaard film gegevens venster * Default movie values window *
+;*****************************************************************
+[DefaultValuesWin]
+Caption=Wijzig standaard gegevens
+Btn3.Caption=Standaard
+Btn3.Hint=|Herstellen standaard gegevens
+Btn2.Caption=&OK
+Btn1.Caption=Ann&uleren
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Standaard
+Btn3.Hint=|Herstellen standaard gegevens
+Btn2.Caption=&OK
+Btn1.Caption=Ann&uleren
+
+;*****************************************************
+;* Taal selectie venster * Language selection window *
+;*****************************************************
+[LanguageWin]
+Caption=Selecteer een taal
+Btn2.Caption=&OK
+Btn1.Caption=Ann&uleren
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Naam
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Plaatselijke naam
+LanguageFrame.lblVersion.Caption=Versie:
+LanguageFrame.lblMadeBy.Caption=Vertaald door:
+LanguageFrame.lblComments.Caption=Commentaren:
+
+;*******************************************************
+;* Geavanceerd sorteren venster * Advanced sort window *
+;*******************************************************
+[SortWin]
+Caption=Geavanceerde sorteer opties
+Fields.LSelected.Caption=Voer sorteer velden in:
+BtnSortOrder.Hint=Omgekeerde zoek opdracht|Keer zoekopdracht om van geselecteerde veld
+
+;********************************************
+;* Statistieken venster * Statistics window *
+;********************************************
+[StatsWin]
+Caption=Statistieken
+btn1.Caption=Ann&uleren
+ActionSaveAs.Caption=Opslaan als...
+ActionSaveAs.Hint=Opslaan als...|Sla afbeelding op naar een bestand
+ActionCopy.Caption=Kopiëren
+ActionCopy.Hint=Kopiëren|Kopieert afbeelding naar prikbord
+ActionCopyWMF.Caption=Als Metafile
+ActionCopyWMF.Hint=Kopieër als Metafile|Kopieert afbeelding naar prikbord als Metafile (herdimensieerbaar)
+ActionCopyBMP.Caption=Als Bitmap
+ActionCopyBMP.Hint=Kopieër als Bitmap|Kopieert afbeelding naar prikbord als Bitmap
+ActionOptions.Caption=&Voorkeuren...
+ActionOptions.Hint=Voorkeuren...|Aanpassen van programma optie's
+ActionOptionsLegend.Caption=Legenda
+ActionOptionsLegend.Hint=Toon legenda|Toon legenda rechts van de grafiek
+ActionOptionsLabels.Caption=Labels
+ActionOptionsLabels.Hint=Toon de labels|Toon de labels op de grafiek
+ActionOptionsEmpty.Caption=Lege maanden
+ActionOptionsEmpty.Hint=Toon lege maanden|Toon maanden waarvoor geldt aantal films in grafiek is nul
+ActionOptionsGroup.Caption=Groepeer waarden
+ActionOptionsGroup.Hint=Groepeer waarden|Grafiek: Groepeer waarden welke intervals gebruiken; Taart: Groepeer kleine waarden samen
+Messages.Strings.String[0]=%.1f minuten
+Messages.Strings.String[1]=<geen>
+Messages.Strings.String[2]=Sla grafiek op
+Messages.Strings.String[3]=%d dagen %d uren %d minuten
+Messages.Strings.String[4]=<anders>
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+;ADDED Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Totaal aantal films
+lstGeneral.Items.Item[1].Caption=Gemiddelde duur van films
+lstGeneral.Items.Item[2].Caption=Totale film lengte
+lstGeneral.Items.Item[3].Caption=Totale grote van film bestanden
+lstGeneral.Items.Item[4].Caption=Totaal aantal discs
+lstCategories.Items.String[0]=Algemene informatie
+
+;************************************
+;* Scenario venster * Script window *
+;************************************
+[GetScriptWin]
+Caption=Uitvoeren
+btn2.Caption=Sluiten
+btn1.Caption=&Help
+ActionFileNew.Caption=&Nieuw
+ActionFileNew.Hint=Nieuw|Maak een nieuw bestand
+ActionFileOpen.Caption=&Openen...
+ActionFileOpen.Hint=Openen...|Open een bestand
+ActionFileNoRecent.Caption=Geen recent bestand
+ActionFileSave.Caption=Op&slaan
+ActionFileSave.Hint=Opslaan|Opslaan huidig bestand
+ActionFileSaveAs.Caption=Ops&laan als...
+ActionFileSaveAs.Hint=Opslaan als...|Sla het huidige bestand op onder een andere naam
+ActionFileProperties.Caption=&Eigenschappen...
+ActionFileProperties.Hint=Eigenschappen...|Toont de eigenschappen en catalogus informatie
+ActionDebugRun.Caption=Uitvoeren
+ActionDebugRun.Hint=Uitvoeren scenario|Voert scenario uit
+ActionDebugStop.Caption=Stop
+ActionDebugStop.Hint=Stop uitvoeren scenario|Stop uitvoeren van scenario
+ActionDebugBreakpoint.Caption=Breakpoint
+ActionDebugBreakpoint.Hint=Wissel breakpoint|Enable of disable breakpoint in huidige regel
+ActionDebugBreakpointClear.Caption=Verwijder breakpoints
+ActionDebugBreakpointClear.Hint=Verwijder breakpoints|Verwijder alle breakpoints
+ActionDebugStep.Caption=Sla over
+ActionDebugStep.Hint=Sla over|Voer volgende regel van source code uit
+ActionDebugRunToCursor.Caption=Uitvoeren tot cursor
+ActionDebugRunToCursor.Hint=Uitveren tot cursor|Voer het programma uit tot huidige cursor positie bereikt
+ActionDebugEval.Caption=Evalueer...
+ActionDebugEval.Hint=Evalueer variablen...|Toon de inhoud van de geselecteerde variabelen
+ActionDebugWatchAdd.Caption=Toevoegen
+ActionDebugWatchAdd.Hint=Variabelen-bewaking toevoegen|Voeg geselcteerde variabelen van bewakingslijst toe
+ActionDebugWatchRemove.Caption=Verwijderen
+ActionDebugWatchRemove.Hint=Verwijder variabelen-bewaking|Verwijder geselecteerde variabelen van bewakingslijst
+ActionDebugWatchClear.Caption=Verwijder lijst
+ActionDebugWatchClear.Hint=Variabelen bewakingslijst verwijderen|Verwijder alle variabelen van bewakingslijst
+ActionListCheck.Caption=&Markeer geselecteerde
+ActionListCheck.Hint=Markeer selectie|Markeer geselecteerde regel
+ActionListUncheck.Caption=&Demarkeer geselecteerde
+ActionListUncheck.Hint=Demarkeer selectie|Demarkeer geselecteerde regel
+ActionListAll.Caption=&Alles selecteren
+ActionListAll.Hint=Markeer alles|Selecteer alle regels
+ActionListNone.Caption=&Niets selecteren
+ActionListNone.Hint=Demarkeer alles|Demarkeer alle regels
+ActionDisplayScripts.Caption=Scenario
+ActionDisplayScripts.Hint=Keuze van het scenario|Geeft de beschikbare scenarios weer
+ActionDisplayEditor.Caption=Editor
+ActionDisplayEditor.Hint=Scenario editor|Geef de scenario editor weer
+ActionViewFilter.Caption=&Taal filter
+ActionViewFilter.Hint=Taal filter|Verberg filters van talen welke je niet wilt zien
+ActionViewList.Caption=Lijst
+ActionViewList.Hint=Lijst weergave|Lijstweergave van scenario's
+ActionViewDetailed.Caption=Detail
+ActionViewDetailed.Hint=Getaileerde weergave|Geef de scenario's in weer in twee kolommen (met beschrijving)
+ActionOptionsEdit.Caption=Wijzig...
+ActionOptionsEdit.Hint=Wijzig waarde...|Wijzig de waarde van het geselcteerde optie
+ActionOptionsDefault.Caption=Standaard waarde
+ActionOptionsDefault.Hint=Standaard waarde|Standaard waarde van de optie's
+lstScripts.Hint=|Selecteer een scenario en klik vervolgens "Uitvoeren", of dubbel-klik op scenario naam, of druk op F9 of Enter.
+lstScripts.Columns.Item[0].Caption=Titel
+lstScripts.Columns.Item[1].Caption=Beschrijving
+ActionEditUndo.Caption=&Verwijderen
+ActionEditCut.Caption=Kn&ippen
+ActionEditCopy.Caption=&Kopiëren
+ActionEditPaste.Caption=&Plakken
+ActionEditDelete.Caption=&Verwijderen
+ActionEditSelectAll.Caption=Selecteer &alles
+ActionEditFind.Caption=Zoeken...
+ActionEditFind.Hint=Zoeken...|Zoek naar een tekenreeks in de tekst
+ActionEditFindNext.Caption=Zoek volgende
+ActionEditFindNext.Hint=Zoek volgende|Zoek de volgende overeenkomstige tekenreeks in de tekst
+DockpanelExec.Caption=Uitvoer opties
+CBShowResults.Caption=Toon &resultaten venster
+CBShowResults.Hint=Toont oude en nieuwe veld waarden van elke film welke handmatig is geselecteerd waarvan het veld moet worden behouden
+CBCloseThis.Caption=Sluit dit venster aan &einde
+CBCloseThis.Hint=Sluit dit venster wanneer het scenario succesvol is uitgevoerd 
+CBAllowClear.Caption=&Toestaan om velden te legen
+CBAllowClear.Hint=Sta scenario toe om velden te legen wanneer het scenario dit voorschrijft
+DockpanelOptions.Caption=Scenario opties
+DockpanelOptions.Hint=|Dubbelklik op een optie om te wijzigen. Opmerking: opties worden alleen opgeslagen als het scenario wordt uitgevoerd.
+DockpanelParameters.Caption=Script parameters
+DockpanelParameters.Hint=|Dubbelklik op parameters om te wijzigen. Opm: Parameters worden alleen opgeslagen na het uitvoeren van script.
+DockpanelLimitations.Caption=Scenario beperkingen
+grpLimitFields.Caption=Aan te passen velden
+lstLimitFields.Hint=|Opmerking: veld selectie wordt alleen opgeslagen wanneer het scenario wordt uitgevoerd.
+grpScriptInfo.Caption=Informatie
+tabScriptInfo.Tabs.String[0]=Algemeen
+tabScriptInfo.Tabs.String[1]=Commentaar
+tabScriptInfo.Tabs.String[2]=Licensie
+DockpanelWatch.Caption=Bewakingslijst
+
+Messages.Strings.String[0]=Fout in scenario "%s": %s in regel %d
+Messages.Strings.String[1]=Scenario is gewijzigd. Wilt u het opslaan?
+Messages.Strings.String[2]=onbekend
+Messages.Strings.String[3]=Ik ga akkoord
+Messages.Strings.String[4]=Geen film gevonden met huidig scenario beperkte instellening(%s: %s)
+Messages.Strings.String[5]=Wenst u de behandeling van de lijst der films te onderbreken?
+Messages.Strings.String[6]=Gewijzigd
+Messages.Strings.String[7]=Waarde voor optie "%s"
+Messages.Strings.String[8]=Waarde voor parameter "%s"
+Messages.Strings.String[9]=Zoeken
+Messages.Strings.String[10]=Geef de zoektekst op:
+Messages.Strings.String[11]=Niet meer overeenkomsten voor "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************************************
+;* Film selectie venster * Movie selection window *
+;**************************************************
+[PickTreeWin]
+Caption=Film selectie
+btnView.Caption=&Toon pagina
+btnView.Hint=Start web browser|
+btn3.Caption=OK
+btn2.Caption=Zoek meer
+btn1.Caption=Annuleren
+
+;*****************************************************************
+;* Beschrijvings selectie venster * Description selection window *
+;*****************************************************************
+[PickListWin]
+Caption=Beschrijvings selectie
+btn2.Caption=&OK
+btn1.Caption=Ann&uleren
+
+;*************************************************************
+;* Scenario eigenschappen venster * Script properties window *
+;*************************************************************
+[ScriptPropertiesWin]
+Caption=Script eigenschappen, opties en parameters
+btn3.Caption=Op&slaan
+btn2.Caption=&Annuleren
+btn1.Caption=&Help
+lstProperties.TitleCaptions.String[0]=Eigenschap
+lstProperties.TitleCaptions.String[1]=Waarde
+grpOptions.Caption=Opties
+btnOptionAdd.Hint=Toevoegen|Voeg een nieuwe optie toe
+btnOptionDel.Hint=Verwijderen|Verwijder geselecteerde optie
+btnOptionUp.Hint=Omhoog verplaatsen|Geselecteerd optie omhoog verplaatsen
+btnOptionDown.Hint=Omlaag verplaatsen|Geselecteerd optie omlaag verplaatsen
+grpValues.Caption=Beschikbare waarden voor geselecteerde optie
+lblValueDefault.Caption=Standaard:
+btnValueAdd.Hint=Toevoegen|Voeg een nieuwe waarde toe
+btnValueDel.Hint=Verwijderen|Verwijder geselecteerde waarde
+btnValueUp.Hint=Omhoog verplaatsen|Verplaats geselecteerde waarde omhoog
+btnValueDown.Hint=Omlaag verplaatsen|Verplaats geselecteerde waarde omlaag
+grpParameters.Caption=Parameters
+btnParameterAdd.Hint=Toevoegen|Een nieuwe parameter toevoegen
+btnParameterDel.Hint=Verwijderen|geselecteerde parameter verwijderen
+btnParameterUp.Hint=Omhoog verplaatsen|geselecteerde parameter omhoog verplaatsen
+btnParameterDown.Hint=Omlaag verplaatsen|geselecteerde parameter omlaag verplaatsen
+
+Messages.Strings.String[0]=Naam schrijver:
+Messages.Strings.String[1]=Scenario naam:
+Messages.Strings.String[2]=Beschrijving:
+Messages.Strings.String[3]=URL adres:
+Messages.Strings.String[4]=URL taal:
+Messages.Strings.String[5]=Scenario versie:
+Messages.Strings.String[6]=Benodigd minimaal:
+Messages.Strings.String[7]=Commentaar:
+Messages.Strings.String[8]=Scenario licensie:
+Messages.Strings.String[9]=Haal info van web:
+Messages.Strings.String[10]=Selecteer een film:
+Messages.Strings.String[11]=Waarde
+Messages.Strings.String[12]=Beschrijving
+Messages.Strings.String[13]=Dit verwijderd optie "%s"
+Messages.Strings.String[14]=Optie naam:
+Messages.Strings.String[15]=hernoem optie "%s"
+Messages.Strings.String[16]=Optie bestaat "%s" al!
+Messages.Strings.String[17]=Naam
+Messages.Strings.String[18]=Standaard waarde
+Messages.Strings.String[19]=Omschrijving
+
+;*******************************************************
+;* Scenario resultaten venster * Script results window *
+;*******************************************************
+[ScriptResultsWin]
+Caption=Resultaten van uitgevoerde scripts
+btn4.Caption=Op&slaan
+btn4.Hint=|Sla informatie op van deze film
+btn3.Caption=&Alles opslaan
+btn3.Hint=|Sla deze film en alle volgende op
+btn2.Caption=Overslaan
+btn2.Hint=|Alleen deze film overslaan
+btn1.Caption=Ann&uleren
+btn1.Hint=|Annuleer scenario proces
+listValues.HeaderSections.Item[0].Text=Veld
+listValues.HeaderSections.Item[1].Text=Vorige waarde
+listValues.HeaderSections.Item[2].Text=Nieuwe waarde
+ActionListCheck.Caption=&Markeer geselecteerde
+ActionListCheck.Hint=Markeer selectie|Markeer geselecteerde regel
+ActionListUncheck.Caption=&Demarkeer geselecteerde
+ActionListUncheck.Hint=Demarkeer selectie|Demarkeer geselecteerde regel
+ActionListAll.Caption=&Alles selecteren
+ActionListAll.Hint=Markeer alles|Selecteer alle regels
+ActionListNone.Caption=&Niets selecteren
+ActionListNone.Hint=Demarkeer alles|Demarkeer alle regels
+
+Messages.Strings.String[0]=Resultaten van scenario "%s" voor de film %d
+Messages.Strings.String[1]=Grote: %.0n KB, klik hier om te bekijken
+Messages.Strings.String[2]=Wilt u onthouden welke velden moeten worden bewaard voor de volgende film tijdends deze scenario uitvoering? (als u met Nee antwoordt, worden alle toegevoegde velden door het scenario zullen gebruikt)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;***************************************
+;* Hernummer venster * Renumber window *
+;***************************************
+[RenumberWin]
+Caption=Hernummer films
+SortBy.grp.Caption=Voor hernummeren, sorteren...
+btn2.Caption=OK
+btn1.Caption=Annuleren
+
+Messages.Strings.String[0]=Hernummeren films...
+
+;************************************
+;* Afdruk venster * Printing Window *
+;************************************
+[PrintWin]
+btn3.Caption=&Print...
+btn2.Caption=Sluiten
+btn1.Caption=&Help
+ActionFileLoad.Caption=Openen sjabloon...
+ActionFileLoad.Hint=Open template|Open een ander sjabloon
+ActionFileDesigner.Caption=&Ontwerper...
+ActionFileDesigner.Hint=Open ontwerper|Open rapport ontwerper
+ActionPrint.Caption=Afdrukken...
+ActionPrint.Hint=Afdrukken|Druk huidige rapport af
+ActionPreviewRefresh.Caption=&Ververs
+ActionPreviewRefresh.Hint=Ververs voorbeeld|Ververs voorbeeld
+ActionPreviewPageFirst.Caption=Eerste pagina
+ActionPreviewPageFirst.Hint=Eerste pagina|Ga naar de eerste pagina
+ActionPreviewPagePrevious.Caption=Vorige pagina
+ActionPreviewPagePrevious.Hint=Vorige pagina|Ga naar de vorige pagina
+ActionPreviewPageNext.Caption=Volgende pagina
+ActionPreviewPageNext.Hint=Volgende pagina|Ga naar de volgende pagina
+ActionPreviewPageLast.Caption=Laaste pagina
+ActionPreviewPageLast.Hint=Laaste pagina|Ga naar de laatste pagina
+ActionPreviewPageFull.Caption=Volledige pagina
+ActionPreviewPageFull.Hint=Volledige pagina|Zoom naar volledige pagina
+ActionPreviewPageTwo.Caption=Twee pagina's
+ActionPreviewPageTwo.Hint=Twee pagina's|Zoom naar twee pagina's
+ActionPreviewPageWidth.Caption=Pagina breedte
+ActionPreviewPageWidth.Hint=Pagina breedte|Zoom naar pagina breedte
+ActionPreviewZoomOut.Caption=Uitzoomen
+ActionPreviewZoomOut.Hint=Uitzoomen|Verlaag zoom factor
+ActionPreviewZoomIn.Caption=Inzoomen
+ActionPreviewZoomIn.Hint=Inzoomen|Verhoog zoom factor
+LvScripts.Columns.Item[0].Caption=Beschikbare sjablonen
+Messages.Strings.String[0]=Print - %s
+Messages.Strings.String[1]=<geen bestand geselecteerd
+Messages.Strings.String[2]=Laden van sjabloon om te bekijken niet mogelijk: %s
+Messages.Strings.String[3]=Kan geen Rapport Designer vinden. %s moet in dezelfde folder als AMC
+
+;******************************************************************************
+;* Importeer een afbeelding dmv drag & drop * Import a picture by drag & drop *
+;******************************************************************************
+[PictureDragDropWin]
+Caption=Importeer een afbeelding
+Btn3.Caption=OK
+Btn2.Caption=Annuleer
+Btn1.Caption=&Help
+CBDoNotAsk.Caption=Niet meer vragen, onthoud mijn keuze voor toekomstige afbeelding invoer
+
+;********************************************************
+;* Aangepaste veldbeheer * Custom fields manager window *
+;********************************************************
+[CustomFieldsManagerWin]
+Caption=Aangepaste Veldbeheer
+btn2.Caption=&OK
+btn1.Caption=Ann&uleren
+btnDel.Hint=Verwijder veld|Verwijder aangemaakte veld
+btnClearAll.Hint=Leeg alle velden|Leeg alle zelfgemaakte velden
+btnImport.Hint=Importeer velden|Importeer zelfgemaakte velden
+btnExport.Hint=Exporteer velden|Exporteer zelfgemaakte velden
+LField.Caption=Veld:
+LTag.Caption=Label:
+LName.Caption=Naam:
+LExt.Caption=Extensie:
+LType.Caption=Type:
+LDefaultValue.Caption=Standaard waarde:
+LTemplate.Caption=Sjabloon:
+btnInsertFieldTag.Hint=|Voeg waarde in dat vervangen wordt door film waarde
+LMediaInfo.Caption=Importeer media info:
+LMultiValues.Caption=Meervoudige waardes:
+EMultiValues.Hint=|Maak groepen met meervoudige waardes
+LMultiValuesSep.Caption=Scheidingsteken:
+LMultiValuesRmp.Caption=Verwijder tussenzinnen 
+EMultiValuesRmp.Hint=|Verwijder waardes die tussen de haakjes staan
+LMultiValuesPatch.Caption=Patch:
+EMultiValuesPatch.Hint=|Wijs padnaam om waardes te negeren
+LListValues.Caption=Lijst waardes:
+EListSort.Caption=Auto-sorteer items
+EListAutoComplete.Caption=Automatische aanvulling tijdens typen
+EListCatalogValues.Caption=Gebruik van huidige waardes van de catalogus i.p.v. vooropgestelde lijst
+EListAutoAdd.Caption=Automatisch waarden aan de lijst toevoegen indien niet aanwezig
+Messages.Strings.String[0]=Importeer zelfgemaakte velden
+Messages.Strings.String[1]=Exporteer zelfgemaakte velden
+Messages.Strings.String[2]=Nieuw veld|Voeg zelfgemaakte veld toe
+Messages.Strings.String[3]=Wijzig etiket|Wijzig naam van het zelfgemaakte veld
+Messages.Strings.String[4]=---Nieuw Veld---
+Messages.Strings.String[5]=String
+Messages.Strings.String[6]=Getal
+Messages.Strings.String[7]=Getal (1 decimaal)
+Messages.Strings.String[8]=Getal (2 decimalen)
+Messages.Strings.String[9]=Getal (3 decimalen)
+Messages.Strings.String[10]=Boolean
+Messages.Strings.String[11]=Lijst
+Messages.Strings.String[12]=Datum
+Messages.Strings.String[13]=Tekst
+Messages.Strings.String[14]=URL
+Messages.Strings.String[15]=Virtueel
+
+;**********************************************************
+;* Expressie filterbeheer * String filter manager window  *
+;**********************************************************
+[StringFilterWin]
+Caption=Filter
+LNote1.Caption=Opm.: Deze filter vervangt elke expressie string door geassocieerde string in de lijst
+LNote2.Caption=Je kunt een reguliere expressie gebruiken als je expressiestring begint met '::>'.
+LNote3.Caption=Voor een voorbeeld met een reguliere expressie, druk op 'Default'
+LNote4.Caption=Voor verdere details v.w.b. expressie syntax, zie help op regexpstudio.com
+LExprString.Caption=Expressie commando
+LReplaceString.Caption=Vervang commando
+btn1.Caption=Annuleren
+btn2.Caption=OK
+btn3.Caption=Standaard
+btn3.Hint=|Herstellen standaard gegevens
+btnClearAll.Hint=Alles leegmaken|Alle velden legen
+btnImport.Hint=Importeer|Importeer filter
+btnExport.Hint=Exporteer|Exporteer filter
+btnAdd.Hint=Toevoegen|Gekozen veld toevoegen
+btnDel.Hint=Verwijderen|Gekozen veld verwijderen
+btnUp.Hint=Naar boven verplaatsen|Verplaats geselecteerde naar boven
+btnDown.Hint=Naar beneden verplaatsen|Verplaats geselecteerde naar beneden
+
+;*************************************************
+;* Afbeeldingen beheer * Pictures manager window *
+;*************************************************
+[PicturesManagerWin]
+Caption=Afbeeldingen beheer
+btn2.Caption=OK
+btn1.Caption=Annuleren
+
+Messages.Strings.String[0]=Wijzigingen uitvoeren...
+Messages.Strings.String[1]=Het is niet mogelijk om afbeeldingen van film "%s" te wijzigen : %s
+Messages.Strings.String[2]=Na wijzigen, moet de catalogus opgeslagen worden. Catalogus automatisch opslaan na wijzigen?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;*******************************
+;* HTML Bewerken * HTML Editor *
+;*******************************
+[HTMLEditorWin]
+Caption=HTML Sjabloon bewerker
+Btn2.Caption=&Sluiten
+Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********************
+;* Veldnamen * Frames *
+;**********************
+[TMovieFrame]
+LMedia.Caption=Media Label:
+LMediaType.Caption=Drager:
+LSource.Caption=Bron:
+LDate.Caption=Datum:
+LBorrower.Caption=Uitgeleend aan:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Beoordeling:
+LOriginalTitle.Caption=&Originele titel:
+LTranslatedTitle.Caption=Ve&rtaalde titel:
+LDirector.Caption=Regisseur:
+LProducer.Caption=Producer:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Land:
+LCategory.Caption=Categorie:
+  LCertification.Caption=Certification:
+LYear.Caption=Jaar:
+LLength.Caption=Lengte:
+LLengthMin.Caption=min.
+LActors.Caption=Acteurs:
+LURL.Caption=URL:
+LDescription.Caption=Beschrijving:
+LComments.Caption=Extra's:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Video Formaat:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Audio Formaat:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Resolutie:
+LFramerate.Caption=Beeldsnelheid:
+LFramerateFPS.Caption=fps
+LSize.Caption=Bestandsgrootte:
+LDisks.Caption=Schijven:
+LLanguages.Caption=Talen:
+LSubtitles.Caption=Ondertitels:
+
+EMedia.Hint=|Media label, nummer of streepjescode
+EMediaType.Hint=|Media/ondersteunings type
+ESource.Hint=|Bron (waar/hoe heeft u deze film verkregen)
+EDate.Hint=|Datum wanneer film is toegevoegd
+EBorrower.Hint=|Naam van degene aan wie de film is uitgeleend
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Beoordeling, van 0 tot 10
+EOriginalTitle.Hint=|Originele titel
+ETranslatedTitle.Hint=|Vertaalde titel
+EDirector.Hint=|Regisseur
+EProducer.Hint=|Producer
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Land
+ECategory.Hint=|Categorie
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Jaar
+ELength.Hint=|Duur (minuten)
+EActors.Hint=|Lijst van acteurs
+EURL.Hint=|Web-site
+EDescription.Hint=|Beschrijving
+EComments.Hint=|Aanwezige extra's op DVD
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Video formaat of gebruikte codec
+EVideoBitrate.Hint=|Video bitrate
+EAudioFormat.Hint=|Audio formaat of gebruikte codec
+EAudioBitrate.Hint=|Audio bitrate
+EResolution.Hint=|Resolutie van de video
+EFramerate.Hint=|Video framerate
+ESize.Hint=|Grote van de bestanden
+EDisks.Hint=|Aantal schijven of cassettes
+ELanguages.Hint=|Talen
+ESubtitles.Hint=|Ondertitels
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Een veld toevoegen
+ActionAddCustomField.Hint=|Een veld toevoegen
+ActionModifyCustomField.Caption=Een veld aanpassen
+ActionModifyCustomField.Hint=|Een toegevoegde veld aanpassen
+ActionDeleteCustomField.Caption=Een veld verwijderen
+ActionDeleteCustomField.Hint=|Een toegevoegde veld verwijderen
+ActionMoveResizeCustomFields.Caption=Verplaats toegevoegde velden
+ActionMoveResizeCustomFields.Hint=|Verplaats en pas toegevoegde veld aan
+ActionDefaultPositioning.Caption=Standaard positie
+ActionDefaultPositioning.Hint=|Herstel standaard positie
+ActionAutoStretchWidth.Caption=Automatisch veldbreedte aanpassen
+ActionAutoStretchWidth.Hint=Automatisch veldbreedte aanpassen
+ActionAutoStretchHeight.Caption=Automatisch veldhoogte aanpassen
+ActionAutoStretchHeight.Hint=Automatisch veldhoogte aanpassen
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Beschikbare velden:
+LSelected.Caption=Geselecteerde velden:
+BtnAdd.Hint=Toevoegen|Gekozen veld toevoegen
+BtnRem.Hint=Verwijderen|Gekozen veld verwijderen
+BtnAddAll.Hint=Alles toevoegen|Alle velden toevoegen
+BtnRemAll.Hint=Alles verwijderen|Alle velden verwijderen
+BtnUp.Hint=Naar boven verplaatsen|Verplaats geselecteerde naar boven
+BtnDown.Hint=Naar beneden verplaatsen|Verplaats geselecteerde naar beneden
+
+[TSortByFrame]
+grp.Caption=Sorteren op
+BtnAdvSort.Caption=Geavanceerd...
+EOrderBy.Items.String[4]=Geavanceerde sorteer opties...
+BtnSortDescend.Hint=|Sorteer in aflopende waarde
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=Welke films
+rbtAll.Caption=Alles
+rbtSelected.Caption=Geselecteerd
+rbtChecked.Caption=Gemarkeerd
+rbtVisible.Caption=Beeld
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Afbeelding importeer methode
+rbtStorePic.Caption=&Sla afbeelding op in catalogus
+rbtCopyPicInCatDir.Caption=Kopieer afbeelding naar &catalogus map en verwijs naar catalogus
+rbtCopyPicInPicDir.Caption=Kopieer naar afbeeldingenmap van de &catalogus en verwijs naar catalogus
+rbtLinkPic.Caption=A&lleen afbeelding 'verbinden'
+chkLinkRelative.Caption=Maak &relatief pad wanneer mogelijk
+
+[TPictureOperationFrame]
+grp.Caption=Afbeeldingen bewerken
+rbtStore.Caption=Afbeelding opslaan in catalogus
+rbtStoreIfCopied.Caption=Afbeelding opslaan in catalogus alleen als een afbeelding aanwezig is in catalogus/afbeelingmap
+rbtCopyInCatDir.Caption=Kopieer afbeelding naar catalogusmap en verwijs
+rbtCopyInCatDirIfStored.Caption=Kopieer afbeelding naar catalogusmap alleen als een afbeelding aanwezig is in catalogus
+rbtCopyInCatDirIfCopied.Caption=Kopieer afbeelding naar catalogusmap alleen als een afbeelding aanwezig is in afbeeldingenmap
+rbtCopyInPicDir.Caption=Kopieer afbeelding naar catalogusmap en verwijs naar catalogus
+rbtCopyInPicDirIfStored.Caption=Kopieer afbeelding naar afbeeldingenmap alleen als een afbeelding aanwezig is in catalogus
+rbtCopyInPicDirIfCopied.Caption=Kopieer afbeelding naar afbeeldingenmap alleen als een afbeelding aanwezig is in catalogusmap
+rbtRenameIfCopied.Caption=Hernoem afbeelding bij het kopieren naar catalogus of afbeeldingenmap
+rbtAbsToRelLink.Caption=Wijzig absolute verwijzing van de afbeelding naar relatieve verwijzing indien mogelijk
+rbtRelToAbsLink.Caption=Wijzig relatieve verwijzing naar absolute verwijzing van de afbeelding
+rbtDelete.Caption=Verwijder afbeeldingen (en afbeeldingbestand in catalogus map of afbeeldingenmap)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+grp.Caption=Afbeelding exporteer methode
+rbtNoChangeAMC.Caption=Als huidige catalogus
+rbtNoChangeXML.Caption=Als huidige catalogus (opgeslagen afbeeldingen gaat verloren)
+rbtStore.Caption=Afbeeldingen opslaan in catalogus
+rbtStoreIfCopied.Caption=Afbeeldingen opslaan in catalogus alleen als er een afbeelding aanwezig is in catalogus of afbeeldingenmap
+rbtCopyInCatDir.Caption=Kopieer afbeeldingen naar catalogusmap en verwijs naar catalogus
+rbtCopyInCatDirIfStored.Caption=Kopieer afbeeldingen naar catalogusmap indien er een afbeelding in de catalogus aanwezig is
+rbtCopyInPicDir.Caption=Kopieer afbeeldingen naar afbeeldingenmap en verwijs naar catalogus
+rbtCopyInPicDirIfStored.Caption=Kopieer afbeeldingen naar afbeeldingenmap indien er een afbeelding in de catalogus aanwezig is
+rbtDelete.Caption=Verwijder afbeelding
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Nieuw
+ActionHTMLNew.Hint=Nieuw sjabloon|Maken van een nieuw sjabloon
+ActionHTMLOpen.Caption=Openen...
+ActionHTMLOpen.Hint=Openen...|Openen van een bestaand sjabloon
+ActionHTMLNoRecent.Caption=Geen recent bestand
+ActionHTMLSave.Caption=Opslaan
+ActionHTMLSave.Hint=Opslaan|Sla huidig sjabloon op
+ActionHTMLSaveAs.Caption=Opslaan als...
+ActionHTMLSaveAs.Hint=Opslaan als...|Sla huidig sjabloon op met een nieuwe naam
+ActionInsertTag.Caption=Spec&iale tag invoegen
+ActionInsertTag.Hint=|Een speciale waarde invoeren die zal worden vervangen door informatie die komt van catalogus of film
+ActionEditUndo.Caption=&Ongedaan maken
+ActionEditCut.Caption=Kn&ippen
+ActionEditCopy.Caption=&Kopiëren
+ActionEditPaste.Caption=&Plakken
+ActionEditDelete.Caption=&Verwijderen
+ActionEditSelectAll.Caption=Selecteer &alles
+ActionExportBoth.Caption=Beiden exporteren
+ActionExportBoth.Hint=|Exporteer beide sjablonen "compleet" en "individueel"
+ActionExportSelected.Caption=Exporteer gemarkeerde
+ActionExportSelected.Hint=|Exporteer alleen gemarkeerd sjabloon
+ActionDisplayFull.Caption=Volledig
+ActionDisplayFull.Hint=Geef volledige sjabloon lijst weer|Geef HTML-sjabloon weer dat gebruikt wordt voor volledige film lijst
+ActionDisplayIndividual.Caption=Individueel
+ActionDisplayIndividual.Hint=Geef individele sjabloon lijst weer|Geef HTML-sjabloon weer dat gebruikt wordt voor individuele film pagina
+
+MnuGen.Caption=&Algemeen
+MnuGenDte.Caption=Huidige datum
+MnuGenTme.Caption=Huidige tijd
+MnuCat.Caption=&Catalogus
+MnuCatNme.Caption=Bestandsnaam
+MnuCatPth.Caption=Bestanssnaam met volledig pad
+MnuCatNbr.Caption=Aantal films
+MnuCatDsk.Caption=Aantal disks
+MnuOwnNam.Caption=Naam eigenaar
+MnuOwnEml.Caption=E-mail eigenaar
+MnuOwnWeb.Caption=Website eigenaar
+MnuCatDsc.Caption=Beschrijving
+MnuMovBeg.Caption=Begin van lijst
+MnuMovEnd.Caption=Einde van lijst
+MnuMovRec.Caption=Opslag nummer
+MnuMovInd.Caption=Bestandsnaam van individuele website van de film
+
+MnuMov.Caption=&Film velden
+MnuMovCF.Caption=&Toegevoegde velden
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Afbeelding
+MnuMovPfn.Caption=Bestandsnaam afbeelding
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+MnuMovR04.Caption=Waardering (0 tot 4 hele cijfers)
+MnuMovR10.Caption=Waardering (0 tot 10 hele cijfers)
+MnuMovApp.Caption=Waardering (0 tot 4 hele cijfers)
+MnuMovA10.Caption=Waardering (0 tot 10 hele cijfers)
+MnuMovFT1.Caption=Geformatteerde Titel: Origineel (Vertaald)
+MnuMovFT2.Caption=Geformatteerde Titel: Vertaald (Origineel)
+MnuMovHtm.Caption=Kleur Label (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+MnuLab.Caption=&Label film velden
+MnuLabCF.Caption=&Label toegevoegde velden
+  MnuLabExtras.Caption=&Labels extra fields
+MnuLabPic.Caption=Afbeelding
+MnuLabUAF.Caption=Audio Bitrate Eenheid
+MnuLabUVF.Caption=Video Bitrate Eenheid
+MnuLabUFS.Caption=Bestandsgrootte Eenheid
+MnuLabUFP.Caption=Eenheid beeldsnelheid
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Kan bestand "%s": %s niet opslaan
+Messages.Strings.String[1]=Kan bestand "%s": %s niet openen
+Messages.Strings.String[2]=HTML sjabloon is gewijzigd. Opslaan?
+Messages.Strings.String[3]=HTML sjabloon voor Volledige lijsten is gewijzigd. Wilt u het op te slaan?
+Messages.Strings.String[4]=HTML sjabloon voor Individuele lijsten is gewijzigd. Wilt u het op te slaan?

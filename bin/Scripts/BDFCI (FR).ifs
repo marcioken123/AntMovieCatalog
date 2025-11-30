@@ -1,0 +1,221 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten
+Title=BDFCI
+Description=Importation des données et image de la Base de Données Française du Cinéma Sur Internet
+Site=www.bdfci.info
+Language=FR
+Version=1.01
+Requires=3.5.1
+Comments=Merci au webmaster de la BDFCI de fournir un accès simplifié aux données du site.|Si vous constatez que des données manquent sur le site, n'hésitez pas à rejoindre la communauté pour compléter les fiches
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ListePays=1|1|0=Ne prend que le premier pays de la liste|1=Prend la liste de tous les pays, séparés par des virgules
+ListeCategories=1|1|0=Ne prend que la première catégorie de la liste|1=Prend la liste de toutes les catégories, séparées par des virgules
+
+***************************************************)
+
+program BDFCI;
+
+var
+  MovieName: string;
+
+// *** téléchargement et analyse des pages, contruction de la liste de choix de titres
+
+procedure AnalyzePage(Address: string);
+var
+  xml: TJvSimpleXml;
+  CurItem: TJvSimpleXmlElem;
+  i: Integer;
+  s1, s2: string;
+begin
+  Address := StringReplace(Address, 'http://www.bdfci.info/film/', 'http://www.bdfci.info/apis/ext/antp/dvd.php5?id=');
+  xml := TJvSimpleXml.Create(nil);
+  xml.LoadFromString(GetPage(Address));
+  //xml.LoadFromFile('T:\dvd.xml');
+  if xml.Root.Name = 'dvds' then
+  begin
+    if xml.Root.Items.Count = 0 then
+    begin
+      ShowInformation('Aucun film trouvé pour "' + MovieName + '"');
+      xml.Free;
+      Exit;
+    end;
+    PickTreeClear;
+    PickTreeAdd('Résultats de la recherche de "' + MovieName + '"', '');
+    for i := 0 to xml.Root.Items.Count-1 do
+    begin
+      CurItem := xml.Root.Items.GetItem(i);
+      s1 := CurItem.Items.GetItemNamed('titres').Items.GetItemNamed('fr').Value;
+      s2 := CurItem.Items.GetItemNamed('titres').Items.GetItemNamed('vo').Value;
+      if s2 <> '' then
+        s1 := s1 + ' (' + s2 + ')';
+      if CurItem.Items.GetItemNamed('stars').Items.Count > 0 then
+      begin
+        s2 := CurItem.Items.GetItemNamed('stars').Items.GetItem(0).Value;
+        if s2 <> '' then
+          s1 := s1 + ' / ' + s2;
+      end;
+      s2 := CurItem.Items.GetItemNamed('edition').Value;
+      if s2 <> '' then
+        s1 := s1 + ' / ' + s2;
+      s2 := CurItem.Items.GetItemNamed('editeur').Value;
+      if s2 <> '' then
+        s1 := s1 + ' / ' + s2;
+      HtmlDecode(s1);
+      PickTreeAdd(s1, 'http://www.bdfci.info/film/' + CurItem.Items.GetItemNamed('id').Value);
+    end;
+    if PickTreeExec(Address) then
+    begin
+      AnalyzePage(Address);
+    end;
+  end
+  else
+  if xml.Root.Name = 'dvd' then
+  begin
+    Sleep(4000);
+    AnalyzeMoviePage(xml);
+  end;
+  xml.Free;
+end;
+
+// *** analyse d'une fiche de film
+
+procedure AnalyzeMoviePage(xml: TJvSimpleXml);
+var
+  Items: TJvSimpleXmlElems;
+  CurItem, SubItem: TJvSimpleXmlElem;
+  Prop: TJvSimpleXmlProp;
+  s1, s2: string;
+  i: Integer;
+begin
+  Items := xml.Root.Items;
+  SetField(fieldURL, Items.GetItemNamed('url').Value);
+  s1 := '';
+  s2 := '';
+  CurItem := Items.GetItemNamed('titres');
+  if CurItem <> nil then
+  begin
+    SubItem := CurItem.Items.GetItemNamed('fr');
+    if SubItem <> nil then
+      s1 := SubItem.Value;
+    SubItem := CurItem.Items.GetItemNamed('vo');
+    if SubItem <> nil then
+      s2 := SubItem.Value;
+  end;
+  if s2 = '' then
+    SetField(fieldOriginalTitle, s1)
+  else
+  begin
+    SetField(fieldOriginalTitle, s2);
+    SetField(fieldTranslatedTitle, s1);
+  end;
+  if CanSetField(fieldCountry) then
+  begin
+    s1 := '';
+    CurItem := Items.GetItemNamed('listePays');
+    for i := 0 to CurItem.Items.Count-1 do
+    begin
+      if s1 <> '' then
+      begin
+        if GetOption('ListePays') = 0 then
+          Break
+        else
+          s1 := s1 + ', ';
+      end;
+      s1 := s1 + CurItem.Items.GetItem(i).Value;
+    end;
+    SetField(fieldCountry, s1);
+  end;
+  SetField(fieldYear, Items.GetItemNamed('annee').Value);
+  s1 := StringReplace(StringReplace(Items.GetItemNamed('synopsis').Value, #10, ' '), #13, '');
+  HtmlDecode(s1);
+  SetField(fieldDescription, s1);
+//  SetField(fieldLength, Items.GetItemNamed('duree').Value);
+  if CanSetField(fieldActors) or CanSetField(fieldDirector) then
+  begin
+    GetStars(Items.GetItemNamed('stars').Items);
+  end;
+  if CanSetField(fieldCategory) then
+  begin
+    s1 := '';
+    CurItem := Items.GetItemNamed('categories');
+    for i := 0 to CurItem.Items.Count-1 do
+    begin
+      if s1 <> '' then
+      begin
+        if GetOption('ListeCategories') = 0 then
+          Break
+        else
+          s1 := s1 + ', ';
+      end;
+      s1 := s1 + CurItem.Items.GetItem(i).Value;
+    end;
+    SetField(fieldCategory, s1);
+  end;
+  CurItem := Items.GetItemNamed('cover');
+  if CurItem <> nil then
+  begin
+    s1 := CurItem.Value;
+    if s1 <> '' then
+      GetPicture(s1);
+  end;
+end;
+
+// *** récupère les acteurs et réalisateurs dans la liste des stars
+
+procedure GetStars(Items: TJvSimpleXmlElems);
+var
+  sActors, sDirectors, val: string;
+  i: Integer;
+  CurItem: TJvSimpleXmlElem;
+  Prop: TJvSimpleXmlProp;
+begin
+  sActors := '';
+  sDirectors := '';
+  for i := 0 to Items.Count-1 do
+  begin
+    CurItem := Items.GetItem(i);
+    Prop := CurItem.Properties.GetItemNamed('type');
+    if Prop = nil then
+      val := ''
+    else
+      val := Prop.Value;
+    if (val = '') or (val = 'Acteur') then
+    begin
+      if sActors <> '' then
+        sActors := sActors + ', ';
+      sActors := sActors + CurItem.Value;
+    end
+    else
+    if val = 'Réalisateur' then
+    begin
+      if sDirectors <> '' then
+        sDirectors := sDirectors + ', ';
+      sDirectors := sDirectors + CurItem.Value;
+    end
+  end;
+  SetField(fieldActors, sActors);
+  SetField(fieldDirector, sDirectors);
+end;
+
+// *** début du programme ***
+
+begin
+  if CheckVersion(3,5,1) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('Importation BDFCI', 'Entrez le titre du film :', MovieName) then
+      AnalyzePage('http://www.bdfci.info/apis/ext/antp/search.php?title=' + UrlEncode(MovieName));
+  end
+  else
+    ShowError('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.1)');
+end.

@@ -1,0 +1,336 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=micmic, bad4u, bhilam
+Title=IMP Awards
+Description=Movie importation script for IMP Awards
+Site=http://www.impawards.com/
+Language=EN
+Version=2.5
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program impawards;
+uses
+  StringUtils1;
+var
+  MovieName: string;
+  tmpMovieName: string; // used to replace spaces with period
+const
+  BaseURL = 'http://impawards.com/search.php?search_data=';
+
+procedure AnalyzeFirstPage(IMPAwardsURL: string);
+var
+  AFPPageText: string;
+  AFPPriliminarySearchValue: string;
+  AFPSecondarySearchValue: string;
+  AFPSecondaryURLValue: string;
+  Address: string;
+begin
+  AFPPageText := GetPage(IMPAwardsURL);
+  Address := 'http://www.impawards.com/';
+//ShowMessage('1st Page Text:' + AFPPageText);
+  if Pos('sorry, but the search you performed did not return any results.', AFPPageText) > 0 then
+    begin
+      ShowMessage('No movie found for this search');
+      Exit;
+    end;
+  PickTreeClear;
+  PickTreeAdd('Search results for "' + MovieName + '" on IMP Awards :', '');
+  // loop through the page for the first time if the movie is found and pick each one of them for display
+  AFPPriliminarySearchValue := TextBetween(AFPPageText, '<div class = row align = center><div class = col-sm-12>','<div class ="col-sm-4">');
+//ShowMessage('AFP Priliminary Search Value:' + AFPPriliminarySearchValue);
+  repeat
+
+    AFPSecondarySearchValue := TextBetween(AFPPriliminarySearchValue, '<h3>','</h3>');
+//ShowMessage('AFP Secondary Search Value:' + AFPSecondarySearchValue);
+    AFPPriliminarySearchValue:= RemainingText;
+
+    AFPSecondaryURLValue := TextBetween(AFPPriliminarySearchValue, '<a href = ','><img src = ');
+//ShowMessage('AFP Secondary URL Value:' + AFPSecondaryURLValue);
+
+    AFPPriliminarySearchValue:= RemainingText;
+    HTMLRemoveTags(AFPSecondarySearchValue);
+    HTMLDecode(AFPSecondarySearchValue);
+//ShowMessage('AFP Secondary Search Value Cleaned Up:' + AFPSecondarySearchValue);
+
+    if Length(AFPSecondarySearchValue) > 0 then
+      PickTreeAdd(AFPSecondarySearchValue, Address + AFPSecondaryURLValue);
+//ShowMessage('New Address: ' + Address + AFPSecondaryURLValue);
+  until (AFPSecondarySearchValue = '');
+  if PickTreeExec(IMPAwardsURL) then
+    AnalyzeSecondPage(IMPAwardsURL);
+end;
+    // once user selects the movie for which poster needs to be grabbed, display list of all size posters for selection
+procedure AnalyzeSecondPage(IMPAwardsURL: string);
+var
+  ASPPageText: string;
+  ASPGetYear: string;
+  ASPPriliminarySearchValue: string;
+  ASPSecondarySearchValue: string;
+  ASPSecondaryURLValue: string;
+  Address: string;
+  PosterCount: integer;
+  result: integer;
+
+  ASPFirstLink: string;
+
+begin
+  PosterCount := 0; //assume no posters are found
+  ASPPageText := GetPage(IMPAwardsURL);
+  //ShowMessage('2nd Page Text:' + ASPPageText);
+  if Pos('sorry, but the search you performed did not return any results.', ASPPageText) > 0 then
+    begin
+      ShowMessage('No movie found for this search');
+      Exit;
+    end;
+  PickTreeClear;
+
+  ASPGetYear := TextBetween(ASPPageText, '(<a href="alpha1.html">', '</a>)</h4></p>');
+//ShowMessage('ASP Get Year: ' + ASPGetYear);
+  Address := TextBetween(ASPPageText, '<div class="fb-comments" data-href="', ASPGetYear) + ASPGetYear + '/';
+
+//ShowMessage('Address: ' + Address);
+
+  PickTreeAdd('Posters for "' + TextBetween(ASPPageText, '<p><h4 align = center>', '(<a href="alpha1.html">') + ' (' + ASPGetYear + ') " on IMP Awards :', '');
+
+  // Note: Added '/' at the end of the string as a trick to getting around searching for the text until i understand better how to program in delphi
+  ASPPriliminarySearchValue := TextBetween(ASPPageText, '<div class="fb-comments" data-href="', '" data-width="600" data-num-posts=') + '/';
+//ShowMessage('ASP Priliminary Search Value: ' + ASPPriliminarySearchValue);
+
+  ASPFirstLink := TextBetween(ASPPriliminarySearchValue, 'http://www.impawards.com/' + ASPGetYear + '/', '/');
+//ShowMessage('First link: ' + ASPFirstLink);
+
+  if Length(ASPFirstLink) < 1 then
+    begin
+      ASPFirstLink := TextBetween(ASPPageText, '<p><h4 align = center>', '(<a href="alpha1.html">');
+//ShowMessage('Zero First link: ' + ASPFirstLink);
+      PickTreeAdd(ASPFirstLink , ASPPriliminarySearchValue);
+    end
+  else
+    begin
+//ShowMessage('Non-Zero First link: ' + ASPFirstLink);
+      PickTreeAdd(TextBetween(ASPPriliminarySearchValue, 'http://www.impawards.com/' + ASPGetYear + '/', '/') , Address + ASPFirstLink);
+    end;
+
+  //ShowMessage('3rd Page Text:' + ASPPageText);
+  ASPSecondarySearchValue := TextBetween(ASPPageText, '<div id="altdesigns">', '></a></div>');
+  //ShowMessage('ASP Secondary Search Value: ' + ASPSecondarySearchValue);
+
+  if Length(ASPSecondarySearchValue) > 0 then
+    begin
+      repeat
+        //ShowMessage('ASP Secondary Search Value: ' + ASPSecondarySearchValue);
+        ASPSecondaryURLValue:= TextBetween(ASPSecondarySearchValue, '<a href = ', '><img ');
+        //ShowMessage('ASP Secondary URL Value:' + ASPSecondaryURLValue);
+        ASPSecondarySearchValue:= RemainingText;
+
+        if Length(ASPSecondaryURLValue) > 0 then
+          PickTreeAdd(ASPSecondaryURLValue, Address + ASPSecondaryURLValue);
+
+      until ASPSecondaryURLValue = '';
+//    end
+//  else
+//    begin
+//      ShowMessage('No alternate posters found');
+    end;
+  if PickTreeExec(IMPAwardsURL) then
+    AnalyzeThirdPage(IMPAwardsURL);
+end;
+
+
+procedure AnalyzeThirdPage(IMPAwardsURL: string);
+var
+  ATPPageText: string;
+  ATPGetYear: string;
+  ATPPrePriliminarySearchValue: string;
+  ATPPriliminarySearchValue: string;
+  ATPSecondarySearchValue: string;
+  ATPSecondaryURLValue: string;
+  Address: string;
+  PosterCount: integer;
+  result: integer;
+  ATPFirstLink: string;
+begin
+  PosterCount := 0; //assume no posters are found
+  ATPPageText := GetPage(IMPAwardsURL);
+  //ShowMessage('4th Page Text:' + ATPPageText);
+  if Pos('sorry, but the search you performed did not return any results.', ATPPageText) > 0 then
+    begin
+      ShowMessage('No movie found for this search');
+      Exit;
+    end;
+  PickTreeClear;
+
+  ATPGetYear := TextBetween(ATPPageText, '(<a href="alpha1.html">', '</a>)</h4></p>');
+  //ShowMessage('ASP Get Year: ' + ATPGetYear);
+  Address := TextBetween(ATPPageText, '<div class="fb-comments" data-href="', ATPGetYear) + ATPGetYear + '/';
+  //ShowMessage('Address: ' + Address);
+
+  PickTreeAdd('List of all size posters for "' + TextBetween(ATPPageText, '<p><h4 align = center>', '(<a href="alpha1.html">') + ' (' + ATPGetYear + ') " on IMP Awards :', '');
+
+//ShowMessage('5th Page Text:' + ATPPageText);
+  ATPPrePriliminarySearchValue := TextBetween(ATPPageText, '<p class="small" align = center>',' border="0" />');
+//ShowMessage('ATP Pre-Priliminary Search Value: ' + ATPPrePriliminarySearchValue);
+  ATPPriliminarySearchValue := TextBetween(ATPPageText, '<img src="','" class="img-responsive" alt = ');
+//ShowMessage('ATP Priliminary Search Value: ' + ATPPriliminarySearchValue);
+
+  if pos('other sizes', ATPPrePriliminarySearchValue) > 0 then
+    begin
+      //ShowMessage('Multiple size poster found.');
+
+      // handle the current page poster which is smaller size as everyone may not want to grab the biggest size poster
+//ShowMessage('ATP Pre-Priliminary Search Value: ' + ATPPrePriliminarySearchValue);
+      ATPFirstLink := StringReplace(TextBetween(ATPPrePriliminarySearchValue, '<img src="posters/', '" class="img-responsive" alt ='), 'jpg', 'html');
+//ShowMessage('First page link: ' + ATPFirstLink);
+//ShowMessage('created link: ' + Address + ATPFirstLink);
+//ShowMessage('ATPPrePriliminarySearchValue: ' + ATPPrePriliminarySearchValue);
+      PickTreeAdd(TextBetween(ATPPrePriliminarySearchValue, '<img src="posters/','.jpg" class') + '.html', Address + ATPFirstLink);
+
+      repeat
+//ShowMessage('ATP Pre-Priliminary Search Value: ' + ATPPrePriliminarySearchValue);
+        ATPSecondarySearchValue := TextBetween(ATPPrePriliminarySearchValue, '<a href = ','</a>');
+//ShowMessage('ATP Secondary Search Value:' + ATPSecondarySearchValue);
+        ATPSecondarySearchValue:= StringReplace(ATPSecondarySearchValue, '>', ': ');
+//ShowMessage('ATP Secondary Search Value:' + ATPSecondarySearchValue);
+        ATPSecondaryURLValue := TextBetween(ATPPrePriliminarySearchValue, '<a href = ','>');
+//ShowMessage('ATP Secondary URL Value:' + ATPSecondaryURLValue);
+        ATPPrePriliminarySearchValue:= RemainingText;
+        HTMLRemoveTags(ATPSecondarySearchValue);
+        HTMLDecode(ATPSecondarySearchValue);
+
+        if Length(ATPSecondarySearchValue) > 0 then
+          PickTreeAdd(ATPSecondarySearchValue, Address + ATPSecondaryURLValue);
+
+//ShowMessage('ATP Secondary Search Value Cleaned Up:' + ATPSecondarySearchValue);
+      until ATPSecondarySearchValue = '';
+    end
+  else
+    begin
+//ShowMessage('Only one size poster found');
+//ShowMessage('ATP Pre-Priliminary Search Value:' + ATPPrePriliminarySearchValue);
+      ATPSecondarySearchValue := TextBetween(ATPPrePriliminarySearchValue, 'alt = "','"');
+//ShowMessage('ATP Secondary Search Value:' + ATPSecondarySearchValue);
+      ATPSecondaryURLValue := TextBetween(ATPPrePriliminarySearchValue, '<img src="posters/','.jpg" class') + '.html';
+//ShowMessage('ATP Secondary URL Value:' + ATPSecondaryURLValue);
+      HTMLRemoveTags(ATPSecondarySearchValue);
+      HTMLDecode(ATPSecondarySearchValue);
+
+//ShowMessage('Address: ' + Address + ATPSecondaryURLValue);
+      PickTreeAdd(ATPSecondarySearchValue, Address + ATPSecondaryURLValue);
+
+//ShowMessage('ATP Secondary Search Value Cleaned Up:' + ATPSecondarySearchValue);
+    end;
+
+    // now grab the address and call the procedure to extract poster from there
+  if PickTreeExec(IMPAwardsURL) then
+    AnalyzeMoviePage(IMPAwardsURL);
+end;
+
+
+
+function CountSubstring(const aString, aSubstring: string): Integer;
+var
+  lPosition: Integer;
+begin
+  Result := 0;
+  lPosition := PosEx(aSubstring, aString);
+  while lPosition <> 0 do
+  begin
+    Inc(Result);
+    lPosition := PosEx(aSubstring, aString, lPosition + Length(aSubstring));
+  end;
+end;
+
+
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  PosIni, PosFin: Integer;
+  dirBase: string;
+  txtTemp: string;
+  ImgTMP: string;
+begin
+  Page := TStringList.Create;
+//ShowMessage('Text:' +StringReplace(GetPage(Address), '<br>', #13#10));
+  Page.Text := StringReplace(GetPage(Address), '<br>', #13#10);
+
+  //obtenemos directorio base
+  PosFin := 0;
+  dirBase := Address;
+  PosIni := pos('/', dirBase);
+  while PosIni > 0 do
+  begin
+    PosFin := PosFin + PosIni;
+    dirBase := Copy(dirBase, PosIni + 1, Length(DirBase));
+    PosIni := pos('/', dirBase);
+  end;
+  dirBase := Copy(Address, 1, PosFin);
+
+//ShowMessage('dirBase: ' + dirBase);
+//ShowMessage('Page Text: ' + Page.Text);
+
+  //buscamos la imagen
+  txtTemp := '<img src="posters/';
+  PosIni := pos(txtTemp, Page.Text);
+//  ShowMessage('Position: ' + IntToStr(PosIni));
+  if PosIni > 0 then
+    begin
+      txtTemp := Copy(Page.Text, PosIni + Length(txtTemp), 100);
+      PosFin := pos('"', txtTemp);
+      ImgTMP := Copy(txtTemp, 1, PosFin - 1);
+      GetPicture(dirBase + 'posters/' + ImgTMP);
+    end
+  else
+    begin
+      txtTemp := '<img SRC="posters/';
+//ShowMessage('Page Text: ' + Page.Text);
+      PosIni := pos(txtTemp, Page.Text);
+//ShowMessage('Position: ' + IntToStr(PosIni));
+      if PosIni > 0 then
+        begin
+          txtTemp := Copy(Page.Text, PosIni + Length(txtTemp), 100);
+          PosFin := pos('"', txtTemp);
+          ImgTMP := Copy(txtTemp, 1, PosFin - 1);
+          //ShowMessage('Getting: ' + dirBase + 'posters/' + ImgTMP);
+          GetPicture(dirBase + 'posters/' + ImgTMP);
+        end
+  end;
+
+  Page.Free;
+  //DisplayResults;
+end;
+
+// bmicmic: Bucle Principal
+begin
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+      Input('Import of IMP Awards', 'Enter the title of the movie:', MovieName);
+
+      //replace spaces with period to accomodate IMPAwards search string changes
+      tmpMovieName := StringReplace(MovieName, ' ', '.');
+      MovieName :=  tmpMovieName;
+
+//ShowMessage('URL: ' + BaseURL + UrlEncode(MovieName));
+      AnalyzeFirstPage(BaseURL + UrlEncode(MovieName));
+
+    end
+  else
+    ShowMessage('This scripts requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

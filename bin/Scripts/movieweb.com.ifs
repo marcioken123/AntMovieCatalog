@@ -1,0 +1,346 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=MovieWeb
+Description=
+Site=www.movieweb.com
+Language=EN
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+program MovieWeb;
+uses
+   StringUtils1;
+var
+  MovieName: string;
+  MovieURL: string;
+//-----------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//-----------------------------------------
+ function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, Page, MovieID: string;
+  BeginPos, EndPos: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('Your search returned the following results for:', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('/movies/film/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('.php', strPage);
+          MovieId := Copy(strPage, +13, EndPos -13);
+          MovieId := StringReplace ( MovieId, 'reviews', 'summary');
+          MovieAddr := 'http://www.movieweb.com/movies/film/' + MovieId+'.php';
+          BeginPos := Pos('nodec', strPage);
+          EndPos := Pos('</h5>', strPage);
+          MovieTitle := Copy(strPage, BeginPos, EndPos - BeginPos);
+          MovieTitle := TextBetween ( MovieTitle, '>', '</a>');
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('/movies/film/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+          BeginPos := -1;
+          PickTreeSort;
+        end;
+    end;
+    PickTreeSort;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------
+ procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  URL: string;
+  Mivar: string;
+begin
+  Description := '';
+  Comments:= '';
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<title>', '(');
+    HTMLDecode(Item);
+    SetField(fieldTranslatedTitle, Trim (Item));
+  end;
+ 
+    // Titulo original
+  LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<title>', '(');
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+ 
+  // Año
+  LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '(', ')');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+ 
+  // director
+  LineNr := FindLine('/stats/director.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('/stats/director.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'top', '</td>');
+    Item := StringReplace(Item ,'&#243','ó');
+    Item := StringReplace(Item ,'>','');
+    BorraComillas(Item);
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+ 
+  // Actores
+  LineNr := FindLine('stats/starring.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/starring.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'top', '</td></tr>');
+    BorraComillas(Item);
+    Item := StringReplace(Item ,'&#243','ó');
+    Item := StringReplace(Item ,'>','');
+    DeleteTags (Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+ 
+  // Productor
+  LineNr := FindLine('stats/studio.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/studio.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '#f0f0f0', '</td></tr>');
+    BorraComillas(Item);
+    Item := StringReplace(Item ,'&#243','ó');
+    Item := StringReplace(Item ,'>','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+ 
+  // Género
+  LineNr := FindLine('stats/genre.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/genre.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'blacklink', '</a></td>');
+    BorraComillas(Item);
+    Item := StringReplace(Item ,'&#243','ó');
+    Item := StringReplace(Item ,'>','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+  // Duración
+  LineNr := FindLine('stats/runtime.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/runtime.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '#f0f0f0', 'minutes');
+    BorraComillas(Item);
+    Item := StringReplace(Item ,'>','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+ 
+   // Argumento
+  LineNr := FindLine('http://movieweb.com/media/use/curve_box_grey/left.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('http://movieweb.com/media/use/curve_box_grey/left.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '><tr><td>', 'table');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+ 
+  // Writers
+  LineNr := FindLine('stats/writer.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/writer.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '#f0f0f0', '</td></tr>');
+    Item := StringReplace(Item ,'&#243','ó');
+    BorraComillas(Item);
+    Item := StringReplace(Item ,'>','');
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Writers: '+Item+#13#10;
+  end;
+ 
+  // Official site
+  LineNr := FindLine('stats/officialsite.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/officialsite.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'href=', 'target=');
+    BorraComillas(Item);
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Official Site: '+Item+#13#10;
+  end;
+ 
+  // Rating
+  LineNr := FindLine('stats/rating.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/rating.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '><b>', '</td></tr>');
+    BorraComillas(Item);
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Rating: '+Item+#13#10;
+  end;
+ 
+  // Box Office
+  LineNr := FindLine('stats/box_office.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/box_office.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'film', '</td></tr>');
+    BorraComillas(Item);
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item , '>', '');
+    Comments := Comments + 'Box Office: '+#13#10;
+  end;
+ 
+  // Prod Notes
+  LineNr := FindLine('stats/notes.gif', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('stats/notes.gif',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'href=', 'class=');
+    BorraComillas(Item);
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Prod Notes: '+Item+#13#10;
+  end;
+ 
+  SetField(fieldComments, Comments);
+
+  // Caratula
+  LineNr := FindLine('http://media.movieweb.com/galleries/', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('http://media.movieweb.com/galleries/',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'http://media.movieweb.com/galleries/', '.jpg');
+    Item  := StringReplace(Item , '_full', '');
+    GetPicture ('http://media.movieweb.com/galleries/'+Item+'.jpg');
+  end;
+end;
+//------------------------------------------------------------------------------------
+begin
+if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+   MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+         MovieName := GetField(fieldTranslatedTitle);
+         Input('MovieWeb', 'Films:', MovieName);
+   AnalyzePage('http://www.movieweb.com/search/?q=film&search=' + UrlEncode(MovieName));
+end.

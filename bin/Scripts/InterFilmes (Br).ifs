@@ -1,0 +1,145 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ronniewo2/ronniewoliveira2 (Ronnie Oliveira) / Previous version: Guardião and mikepax
+Title=InterFilmes
+Description=Movie importation script for InterFilmes.com
+Site=http://www.interfilmes.com
+Language=BR
+Version=2.35
+Requires=4.2.1
+Comments=Released 10/11/2022
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program InterFilmes;
+var MovieName:string;
+uses StringUtils1;
+
+procedure AnalyzeFilmPage(Address:string);
+var Page:TStringList;
+    valor, valor2:String;
+    i:integer;
+begin
+  Page := TStringList.Create;
+  valor:='https://www.interfilmes.com/'+Address;
+  valor := StringReplace(valor, 'filme_', 'filme_v1_');
+  if pos('-(', valor)>0 then
+     valor := TextBefore(valor, '-(', '');
+  Page.Text:=GetPage(valor+'.html#Elenco');
+  SetField(fieldURL,valor);
+
+  valor:=TextBetween(Page.Text,'<span itemprop="description">','</span>');//'</span><span itemprop="description">','</span>');
+  //showmessage(valor);
+  HTMLRemoveTags(valor);
+  valor:=Utf8Decode(valor);
+  SetField(fieldDescription, valor);
+ 
+  //SetField(fieldMediaType, 'BLU-RAY');
+ 
+  valor:=TextBetween(Page.Text,'tulo no Brasil</td>' , '</tr>');
+  valor:=TextBetween(valor,'"td2">' , '</td>');
+  valor:=Utf8Decode(valor);
+  valor2:=TextBetween(Page.Text,'tulo Original</td>' , '</tr>');
+  valor2:=TextBetween(valor2,'"alternateName">' , '</td>');
+  valor2:=Utf8Decode(valor2);
+  SetField(fieldOriginalTitle, valor2);
+  SetField(fieldTranslatedTitle, valor);
+
+  valor:=TextBetween(Page.Text,'nero</td>' , '</tr>');
+  valor:=TextBetween(valor,'"genre">' , '</td>');
+  HTMLRemoveTags(valor);
+  valor:=Utf8Decode(valor);
+  SetField(fieldCategory,valor);
+
+  valor:=TextBetween(Page.Text,'itemprop="datePublished"' , '</a></td>');
+  valor := copy(valor,length(valor)-3,4);
+  SetField(fieldYear,valor);
+ 
+  valor:=TextBetween(Page.Text,'class="td1">Dura' , '</tr>');
+  valor:=TextBetween(valor,'content="' , '</span>');
+  valor := TextAfter(valor, '>');
+  HTMLRemoveTags(valor);
+  SetField(fieldLength,valor);
+
+  valor:=TextBetween(Page.Text,'<span itemprop="director"' , '</tr>');
+  valor:=TextBetween(valor,'="name">' , '</td>');
+  valor:=Utf8Decode(valor);
+  HTMLRemoveTags(valor);
+  SetField(fieldDirector,trim(valor));
+
+  valor:=TextBetween(Page.Text,'s de Origem</td>' , '</tr>');
+  valor:=TextBetween(valor,'"td2">' , '</td>');
+  HTMLRemoveTags(valor);
+  valor:=Utf8Decode(valor);
+  SetField(fieldCountry,valor);
+
+  valor:=TextBetween(Page.Text,'<a name="Elenco">' , '</table>');
+  valor:=TextAfter(valor,'itemprop="name">');
+  HTMLRemoveTags(valor);
+  valor:=Utf8Decode(valor);
+  valor:=StringReplace(valor,'  ','');
+  valor:=StringReplace(valor,#13#10,'  ');
+  valor:=StringReplace(valor,'      ',#13#10);
+  valor:=StringReplace(valor,'  ','');
+  valor:=StringReplace(valor,#9,'');
+  if copy(valor,1,1)=' ' then
+     Delete(valor,1,1);
+  SetField(fieldActors,valor);
+
+  valor:=TextBetween(Page.Text,'<div class="poster"' , '/><div class');
+  valor:=TextBetween(valor,'<img src="' , '" width');
+  valor:='https://www.interfilmes.com/'+valor;
+  GetPicture(valor);
+
+  valor:=TextBetween(Page.Text,'<span itemprop="ratingValue">' , '</span>');
+  valor:=FloatToStr(StrToFloat(valor)*2);
+  SetField(fieldRating,valor);
+  Page.free;
+end;
+
+procedure AnalyzePage(Address: String);
+var Page:TStringList;
+    i:integer;
+    nome, url:string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := PostPage(Address,'search='+MovieName);
+  i:=0;
+  repeat
+    i:=FindLine('<div class="nomedofilme">',Page,i+1);
+    nome:=Page.GetString(i);
+    if (length(nome)>0) then
+    begin
+      url:=nome;
+      url:=TextBetween(url,'<a href="','" title=');
+      HTMLRemoveTags(nome);
+      nome:=Utf8Decode(nome);
+      PickTreeAdd(nome,url);
+    end;
+  until i=-1;
+ if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  Page.free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do InterFilmes.com', 'Escreva o nome do filme:', MovieName) then
+  begin
+    MovieName := StringReplace(MovieName, ' ', '+');
+    AnalyzePage('https://www.interfilmes.com/busca.html');
+  end;
+end.

@@ -1,0 +1,217 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SAI
+Title=otakuland.cz
+Description=Import dat ze serveru otakuland.cz
+Site=
+Language=CZ
+Version=1.0
+Requires=3.5.0
+Comments=-28.09.2007 Prva verzia|
+License=This file is part of Ant Movie Catalog (AMC).||   AMC is free software; you can redistribute it and/or modify|    it under the terms of the GNU General Public License as published by|    the Free Software Foundation; either version 3 of the License, or|    (at your option) any later version.||    AMC is distributed in the hope that it will be useful,|    but WITHOUT ANY WARRANTY; without even the implied warranty of|    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the|    GNU General Public License for more details.||    You should have received a copy of the GNU General Public License|    along with this program.  If not, see http://www.gnu.org/licenses/
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program otakuland_cz;
+uses
+	BatchCommon7552;
+const
+  BaseAddress = 'http://www.otakuland.cz';
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: String);
+var
+  Page: TStringList;
+  LineNr,i,temp : Integer;
+  Line, Value : String;
+  FilmName, FilmAddr, FileUrl : String;
+begin
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  i := 0;
+
+      LineNr := FindLine('onMouseover="ddrivetip(''<b>', Page, LineNr);
+      if (LineNr = -1) then
+        ShowMessage('No movie found for this search.'+chr(13)+chr(13)+'Neboli najdene ziadne zaznamy.')
+      else
+        begin
+              PickTreeClear;
+              PickTreeAdd('Najdene filmy: ' + MovieName, '');
+              repeat
+                  FilmAddr := Page.GetString(LineNr-1);
+                  Delete(FilmAddr,1,18);
+                  temp := Length(FilmAddr) ;
+                  Delete(FilmAddr,temp-1,1)   ;
+
+                  LineNr := FindLine('onMouseout="hideddrivetip()" >', Page, LineNr);
+                  FilmName :=  Page.GetString(LineNr+1);
+
+                  FileUrl := BaseAddress + FilmAddr;
+                  FileUrl := Trim(FileUrl);
+
+                  PickTreeAdd(FilmName, FileUrl);
+                  
+                 LineNr := FindLine('onMouseover="ddrivetip(''<b>', Page, LineNr);
+              until (LineNr = -1);
+              
+              if PickTreeExec(Address) then
+                AnalyzeMoviePage(Address);
+        end;
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr,i,intLenght,intDelete : Integer;
+  Line, Value, Value2, PomVal : String;
+  LinePos, BeginPos, EndPos : Integer;
+begin
+  Page := TStringList.Create;
+
+  SetField(fieldURL, Address);
+  Page.Text := GetPage(Address);
+  FormatUTF8 := 1;
+
+  LineNr := 0;
+  LineNr := FindLine(UTF8Encode('<dt>Název anime - japonsky</dt>'), Page, LineNr);
+  if (LineNr <> -1)then
+  begin
+    Value := Page.GetString(LineNr+1) ;
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    PomVal := Trim(FormatText(Value));
+    SetField(fieldOriginalTitle, PomVal);
+  end;
+
+  LineNr := FindLine(UTF8Encode('<dt>Název anime - anglicky</dt>'), Page, LineNr);
+  if (LineNr <> -1)then
+  begin
+    Value := Page.GetString(LineNr+1) ;
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    PomVal := Trim(FormatText(Value));
+    SetField(fieldTranslatedTitle, FormatText(PomVal));
+  end;
+
+  LineNr := FindLine(UTF8Encode('<dt>Režisér</dt><dd>'), Page, LineNr);
+  if (LineNr <> -1)then
+    begin
+      Value := Page.GetString(LineNr+1) ;
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      PomVal := Trim(FormatText(Value));
+      SetField(fieldDirector, PomVal);
+    end;
+    
+  LineNr := FindLine(UTF8Encode('<dt>Rok vydání</dt>'), Page, LineNr);
+  if (LineNr <> -1)then
+    begin
+      Value := Page.GetString(LineNr+1)  ;
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      PomVal := Trim(FormatText(Value));
+      SetField(fieldYear, PomVal);
+    end;
+
+  LineNr := FindLine(UTF8Encode('<dt>Žánr</dt>'), Page, LineNr);
+  if (LineNr <> -1)then
+    begin
+      PomVal := Page.GetString(LineNr+1) ;
+      HTMLDecode(PomVal);
+      HTMLRemoveTags(PomVal);
+      Value2 := Trim(FormatText(PomVal));
+      for i := 2 to 6 do
+      begin
+          PomVal := Page.GetString(LineNr+i);
+          HTMLDecode(PomVal);
+          HTMLRemoveTags(PomVal);
+          Value := Trim(FormatText(PomVal));
+          if (Value <> '') then
+            begin
+              Value2:=Value2+' / '+Value;
+            end;
+       end;
+
+      SetField(fieldCategory, Value2);
+    end;
+    //fieldLength
+   //fieldCountry
+   //fieldActors
+   //fieldComments
+   //fieldProducer
+   
+  LineNr := FindLine(UTF8Encode('<p id=''rateinfo''  class="voted" >'), Page, LineNr);
+  if (LineNr <> -1)then
+    begin
+      Value := Page.GetString(LineNr+1);
+      Value := FormatText(Value);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      Value2 := copy(Value, 1, Pos('/',Value)-1);
+      SetField(fieldRating,Value2);
+    end;
+
+  Line:= GetPage(Address);
+ // LineNr := FindLine(UTF8Encode('<h3>Shrnutí</h3>'), Line);
+ BeginPos := pos(UTF8Encode('<h3>Shrnutí</h3>'), Line);
+
+  if (LineNr <> -1)then
+   begin
+   EndPos:=  pos(UTF8Encode('<h3>Související stránky'), Line);
+   // Value := Page.GetString(LineNr+2);
+    Value := Copy(Line,BeginPos+17,EndPos-BeginPos-16);
+
+    Value:=UTF8Decode(Value);
+    Value := StringReplace(Value, '&scaron;', 'š');
+    //Value := FormatText(Value);
+    Value:=UTF8Encode(Value);
+
+    Value := FormatText(Value);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+
+    SetField(fieldDescription,Value);
+   end;
+
+  LineNr := 0;
+  LineNr := FindLine(UTF8Encode('alt=''obrázek'' class=''animepic'' />'), Page, LineNr);
+  if (LineNr <> -1)then
+    begin
+      Value := Page.GetString(LineNr)  ;
+      HTMLDecode(Value);
+
+      BeginPos := pos('<img src=''',Value) ;
+      EndPos := pos(UTF8Encode(''' alt=''obrázek'),Value) ;
+      Value:=copy(Value,BeginPos+10,EndPos - BeginPos-10);
+      PomVal := BaseAddress+Value ;
+      GetPicture(PomVal);
+    end;
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+
+      if (MovieName = '') then
+        MovieName := GetField(fieldTranslatedTitle);
+//      MovieName := 'Mai-HiME';
+
+      if Input('Import movie from www.otakuland.cz', 'Enter the title of the movie:', MovieName) then
+        begin
+          AnalyzePage(BaseAddress + '/anime-prehled/?q=' + UrlEncode(MovieName));
+        end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

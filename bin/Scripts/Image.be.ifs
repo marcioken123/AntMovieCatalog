@@ -1,0 +1,226 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten
+Title=image.be
+Description=Importation pour "image Mediastores" (image.be)
+Site=http://www.image.be
+Language=FR
+Version=1.1
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+TypeImage=1|1|0=Petite image|1=Grande image
+
+***************************************************)
+
+program ImageBe;
+
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  Page, Line: string;
+  BeginPos, EndPos, MovCount: Integer;
+begin
+  Page := GetPage(Address);
+  BeginPos := Pos('Aucun résultat trouvé', Page);
+  if BeginPos > 0 then
+  begin
+    ShowMessage('No movie found');
+    Exit;
+  end;
+  BeginPos := Pos('<u>Objet de votre recherche</u>', Page);
+  EndPos := Pos('<table width="92%"', Page);
+  if (BeginPos > 0) and (EndPos > 0) then
+  begin
+    PickTreeClear;
+    Page := Copy(Page, BeginPos, EndPos - BeginPos);
+    EndPos := Pos('<table', Page);
+    Line := Copy(Page, 1, EndPos-1);
+    HTMLRemoveTags(Line);
+    HTMLDecode(Line);
+    PickTreeAdd(Line, '');
+    MovCount := 0;
+    repeat
+      BeginPos := Pos('<a href=''FicheFilmSY.asp', Page);
+      if BeginPos > 0 then
+      begin
+        Delete(Page, 1, BeginPos-1);
+        EndPos := Pos(''' class', Page);
+        Address := 'http://www.image.be/' + Copy(Page, 10, EndPos - 10);
+        Delete(Page, 1, EndPos+14);
+        EndPos := Pos('<br>', Page);
+        Line := Copy(Page, 1, EndPos-1);
+        HTMLRemoveTags(Line);
+        PickTreeAdd(Line, Address);
+        MovCount := MovCount+1;
+      end;
+    until BeginPos = 0;
+    if (MovCount = 1) then
+      AnalyzeMoviePage(Address)
+    else
+     if PickTreeExec(Address) then
+       AnalyzeMoviePage(Address);
+  end;
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Line, Value: string;
+  BeginPos, EndPos, LineNr, IntValue: Integer;
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  Line := GetPage(Address);
+  BeginPos := Pos('<table cellspacing="6" cellpadding="0" border="0">', Line);
+  EndPos := Pos('<table border="0" cellspacing="0" cellpadding="0" width="90%">', Line);
+  if (BeginPos > 0) and (EndPos > 0) then
+  begin
+    Page.Text := Copy(Line, BeginPos, EndPos - BeginPos);
+    Line := Trim(Page.GetString(1));
+    BeginPos := Pos('4>', Line)+2;
+    EndPos := Pos('</font>', Line);
+    Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    if Pos('class=yellowlight2', Line) > 0 then
+    begin
+      SetField(fieldTranslatedTitle, Value);
+      Delete(Line, 1, EndPos);
+      BeginPos := Pos('<i> (', Line) + 5;
+      EndPos := Pos(')</i>', Line);
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+      SetField(fieldOriginalTitle, Value);
+      Delete(Line, 1, EndPos);
+    end
+    else
+    begin
+      SetField(fieldOriginalTitle, Value);
+      Delete(Line, 1, EndPos);
+    end;
+    BeginPos := Pos('<i>(', Line) + 4;
+    Delete(Line, 1, BeginPos-1);
+    EndPos := Pos(')</i>', Line);
+    Value := Copy(Line, 1, EndPos-1);
+    SetField(fieldYear, Value);
+    if CanSetPicture then
+    begin
+      LineNr := FindLine('<img src="Movies/', Page, 0);
+      if LineNr > -1 then
+      begin
+        Line := Page.GetString(LineNr);
+        BeginPos := Pos('<img src=', Line)+10;
+        EndPos := Pos('" border=', Line);
+        Value := 'http://www.image.be/' + Copy(Line, BeginPos, EndPos - BeginPos);
+        if GetOption('TypeImage') > 0 then
+          Value := StringReplace(Value, '/jm.', '/jh.');
+        GetPicture(Value);
+      end;
+    end;
+    LineNr := FindLine('<b>Genres:', Page, LineNr);
+    if LineNr = -1 then
+      LineNr := FindLine('<b>Genre:', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('</b>', Line);
+      EndPos := Pos('<font class=white2>', Line);
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLRemoveTags(Value);
+      SetField(fieldCategory, Value);
+    end;
+    LineNr := FindLine('<b>Dur&eacute;e:', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Trim(Page.GetString(LineNr+2));
+      EndPos := Pos(' ', Line);
+      Value := Copy(Line, 1, EndPos-1);
+      SetField(fieldLength, Value);
+    end;
+    LineNr := FindLine('<b>Studio:', Page, LineNr);
+    if LineNr = 0 then
+      LineNr := FindLine('<b>Studios:', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Trim(Page.GetString(LineNr));
+      BeginPos := Pos('">', Line) + 2;
+      Value := Copy(Line, BeginPos, Length(Line));
+      SetField(fieldProducer, Value);
+    end;
+    LineNr := FindLine('<b>Réalisateur:', Page, LineNr);
+    if LineNr = -1 then
+      LineNr := FindLine('<b>Réalisateurs:', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('<font', Line);
+      Value := Copy(Line, BeginPos, Length(Line));
+      HTMLRemoveTags(Value);
+      SetField(fieldDirector, Trim(Value));
+    end;
+    LineNr := FindLine('<b>Avec:', Page, LineNr);
+    if LineNr = -1 then
+      LineNr := FindLine('<b>Avec les voix de:', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('</b>', Line);
+      Value := Copy(Line, BeginPos, Length(Line));
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldActors, Trim(Value));
+    end;
+    LineNr := FindLine('<div align="justify">', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Value := '';
+      repeat
+        Line := Page.GetString(LineNr);
+        LineNr := LineNr+1;
+        BeginPos := Pos('</div>', Line);
+        HTMLRemoveTags(Line);
+        Value := Value + Trim(Line) + #13#10;
+      until BeginPos <> 0;
+      Value := StringReplace(Value, 'œ', 'oe');
+      Value := StringReplace(Value, '…', '...');
+      SetField(fieldDescription, Value);
+    end;
+    LineNr := FindLine('<td width="145" valign="middle"><font class=black2>', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('0000">', Line) + 6;
+      EndPos := Pos('</font>', Line);
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+      IntValue := StrToInt(StrGet(Value, 1), 0) * 2;
+      if Length(Value) > 2 then
+        if StrToInt(StrGet(Value, 3), 0) >= 5 then
+          IntValue := IntValue + 1;
+      SetField(fieldRating, IntToStr(IntValue));
+    end;
+  end;
+  Page.Free;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('image.be import', 'Entrez le titre du film :', MovieName) then
+    begin
+      AnalyzePage('http://www.image.be/résultats.asp?recherche=' + UrlEncode(MovieName) + '&Type=Film');
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

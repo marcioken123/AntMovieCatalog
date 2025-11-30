@@ -1,0 +1,303 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=zilinec@email.cz
+Title=365dni.sms.cz
+Description=Import dat ze serveru 365dni.sms.cz
+Site=365dni.sms.cz
+Language=CZ
+Version=4.2
+Requires=3.5.0
+Comments=12.01.2007   v4.2|    Pokud byl nalezen prave jeden film, rovnou ho nabidne k ulozeni|13.10.2006   v4.1|    Zmena stranky pro hledani seznamu filmu + osetreni popisu, pokud byl oddelen (natvrdo) enterem|    Podpora nového vzhledu na sms.cz (maji to spatne strukturovane, takze sorry za pripadne chyby).|    Hleda bez ohledu na velka/mala/diakritiku.|    
+License=Chcete-li pripadne ocenit financnim prispevkem vytvoreni tohoto scriptu nebo financne vyvoj dalsich novych scriptu, prosim napiste si na email o kontaktni informace. Predem dekuji za Vasi pripadnou podporu. zilinec@email.cz|This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.|
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program TVP_cz;
+const
+  BaseAddress = 'http://www.sms.cz/';
+var
+  MovieName: string;
+  Language : word; {0 = neurceno, 1 = original, 2 = cesky}
+  Caption : string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  Line : String;
+  FilmName, FilmDesc, FilmAddr : String;
+  MyZadnyFilm, MySeznamFilmu, MyPrimoFilm, MyChybiSekce : Boolean;
+begin
+    Page := TStringList.Create;
+    Page.Text := GetPage(Address);
+    Page.Text := StringReplace(Page.Text, '¾', 'ž');
+    Page.Text := StringReplace(Page.Text, '¹', '‘');
+    {Vyhodnotim nalezenou stranku (po zadani filmu)}
+    MyZadnyFilm   := False;
+    MySeznamFilmu := False;
+    MyPrimoFilm   := False;
+    MyChybiSekce  := False;
+    if FindLine('Poèet nalezených záznamù: 0', Page, 0) > -1 then
+      MyZadnyFilm := True
+    else if FindLine('<title>Film: ', Page, 0) > -1 then
+      MyPrimoFilm := True
+    else if FindLine('Poèet nalezených záznamù:', Page, 0) > -1 then
+      MySeznamFilmu := True
+    else MyChybiSekce := True;
+    {Zpracuji chyby nebo pripadne spravne vysledky}
+    if MyZadnyFilm then
+      ShowMessage('Nebyly nalezeny žádné záznamy.')
+    else if MyChybiSekce then  
+      ShowMessage('Nebyla nalezena sekce s nalezenými filmy.')
+    else if MyPrimoFilm then
+      AnalyzeMoviePage(Address)
+    else {MySeznamFilmu}
+    begin
+      {Najdu odpovídající øádek s tìmi filmy}
+      Line := Page.GetString(FindLine('Poèet nalezených záznamù:', Page, 0));
+      {Pže je ten øádek joo dlouhy, tak si useknu zacatek}
+      Line := Copy(Line, Pos('Poèet nalezených záznamù', Line), Length(Line));
+      {Ted si najdu dalsi text a to predtim zase useknu ... (pak uz zacina ten seznam)}
+      Line := Copy(Line, Pos('[Roku výroby]', Line), Length(Line));
+      while True do
+      begin
+        if Pos('href="', Line) = 0 then
+          Break;
+        {Useknu zacatek az po prvni hledany text}
+        Delete(Line, 1, Pos('href="', Line) + 5);
+        FilmAddr := Copy(Line, 1, Pos('">', Line) - 1);
+        FilmName := Copy(Line, Pos('">', Line) + 2, Pos('</a>', Line) - Pos('">', Line) - 2);
+        FilmDesc := Copy(Line, Pos('</a>', Line) + 4, Pos('<br />', Line) - Pos('</a>', Line) - 4);
+        PickTreeAdd(FilmName + FilmDesc, FilmAddr);
+        {Useknu radek o dany film (staci nejaky kus, abych se zbavil pocatecniho HREF)}
+        Delete(Line, 1, Pos('href="', Line) + 5);
+      end;
+      If PickTreeExec(Address) Then {Pouziju Address, aby mi tam narval tu adresu, kteoru pak poslu do AnalyzeMoviePage} 
+        AnalyzeMoviePage(Address);
+    end;
+  Page.Free;
+end;
+
+function ZiskejViceHodnot(ALine, AOddelovac : string) : string;
+var MyPos, MyLength : Integer;
+begin
+  Result := '';
+  while Pos('TARGET="_blank">', ALine) > 0 do
+  begin
+    {Postavim se na zacatek vytahovaneho textu (tim to nachystam pro dalsi zaznam)}
+    MyPos    := Pos('TARGET="_blank">', ALine) + Length('TARGET="_blank">');
+    ALine    := Copy(ALine, MyPos, Length(ALine) - MyPos);
+    {Mùže tu být 'prázdný øetìzec'}
+    if Copy(ALine, 1, 2) = '<A' then
+      MyLength := 0
+    else MyLength := Pos('</A', ALine) - 1;
+    if MyLength > 0 then
+    begin
+      if Result <> '' then
+        Result := Result + AOddelovac;
+      Result := Result + Copy(ALine, 1, MyLength);
+    end;
+  end;
+end;
+
+function ZiskejViceHodnot_P_relativni(ALine, AOddelovac : string) : string;
+var MyPos, MyLength : Integer;
+begin
+  Result := '';
+  while Pos('P_relativni=true">', ALine) > 0 do
+  begin
+    {Postavim se na zacatek vytahovaneho textu (tim to nachystam pro dalsi zaznam)}
+    MyPos    := Pos('P_relativni=true">', ALine) + Length('P_relativni=true">');
+    ALine    := Copy(ALine, MyPos, Length(ALine) - MyPos);
+    {Mùže tu být 'prázdný øetìzec'}
+    MyLength := Pos('</a', ALine) - 1;
+    if MyLength > 0 then
+    begin
+      if Result <> '' then
+        Result := Result + AOddelovac;
+      Result := Result + Copy(ALine, 1, MyLength);
+    end;
+  end;
+end;
+
+function ZiskejViceHodnot_Tag_a(ALine, AOddelovac : string) : string;
+var MyPosOd, MyPosDo, MyLength : Integer;
+begin
+  {Pøedpokládá se nìco takovéhoto: <a href="/index.php... >Sean Connery</a>, <a href=....}
+  Result := '';
+  while Pos('<a', ALine) > 0 do
+  begin
+    {Zru‘ím v‘e, co pøedchází tomu '<a'}
+    if Pos('<a', ALine) > 1 then
+      ALine := Copy(ALine, Pos('<a', ALine), Length(ALine)); 
+    {Zjistím si pozici zaèátku txtu, tj. za '>'}
+    MyPosOd := Pos('>', ALine) + 1;
+    MyPosDo := Pos('</a>', ALine);
+    MyLength := MyPosDo - MyPosOd;
+    if MyLength > 0 then
+    begin
+      if Result <> '' then
+        Result := Result + AOddelovac;
+      Result := Result + Copy(ALine, MyPosOd, MyLength);
+    end;
+    {Zkrátím zpracovávaný text (vezmu druhou pozici a pøiètu '</a>'}
+    ALine := Copy(ALine, MyPosDo + 4, Length(ALine));
+  end;
+end;
+
+function ZiskejHodnotu(ALine, AZacatekTextu, AKonecTextu : string) : string;
+var 
+  MyPos, MyLength : Integer;
+begin
+  {Postavim se na zacatek vytahovaneho textu}
+  MyPos    := Pos(AZacatekTextu, ALine) + Length(AZacatekTextu);
+  ALine    := Copy(ALine, MyPos, Length(ALine) - MyPos);
+  MyLength := Pos(AKonecTextu, ALine) - 1;
+  Result   := Trim(Copy(ALine, 1, MyLength));
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  MyPosNazevPreloz, MyPos, MyPos2 : Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  Page.Text := StringReplace(Page.Text, '¾', 'ž');
+  Page.Text := StringReplace(Page.Text, '¹', '‘');
+  {Cesky nazev, orig. název, rok výroby - najdu (dlouhy) radek , ktery obsahuje cesky nazev}
+  LineNr := FindLine('<title>Film: ', Page, 0);
+  SetField(fieldTranslatedTitle, ZiskejHodnotu(Page.GetString(LineNr), '<title>Film:', '/'));
+  SetField(fieldOriginalTitle,   ZiskejHodnotu(Page.GetString(LineNr), '/',            '('));
+  SetField(fieldYear,            ZiskejHodnotu(Page.GetString(LineNr), '(',            ')'));
+  
+  {Spousta vìcí je už na jednom jediném (nejménì!) øádku, takže ho zjistím
+   Mohou tam být v popisech ENTERy, takže musím pøidávat øádky, dokud nebude nìco zaèínat '<'.}
+  MyPosNazevPreloz := FindLine('<h1 class="P_nadpis"><', Page, 0); 
+  Line   := '';
+  LineNr := MyPosNazevPreloz + 1;
+  repeat
+    Line   := Line + Page.GetString(LineNr) + #13#10;
+    LineNr := LineNr + 1;
+  until (Page.GetString(LineNr) = '') or (Copy(Page.GetString(LineNr), 1, 1) = '<');
+//!
+  {Rezie - vezmu opet 1 dlouhy radek a tam usek mezi 'Rezie' a 'Herci' a zpracuji vsechny rezisery}
+  MyPos  := Pos('<strong>Režie</strong>', Line);
+  MyPos2 := Pos('<strong>Herci</strong>', Line);
+  SetField(fieldDirector, ZiskejViceHodnot_Tag_a(Copy(Line, MyPos, MyPos2 - MyPos), ', '));
+//!
+  {Herci - vezmu opet 1 dlouhy radek a tam usek mezi 'Rezie' a 'Herci' a zpracuji vsechny rezisery}
+  MyPos  := Pos('<strong>Herci</strong>', Line);
+  MyPos2 := Pos('<strong>Komentáøe</strong>', Line);
+  SetField(fieldActors, ZiskejViceHodnot_Tag_a(Copy(Line, MyPos, MyPos2 - MyPos), #13#10));
+
+  {Kategorie: je to hned za hlasovanim (jinak to proste poznat nejde) a jde o 1. text pred 1. carkou}
+  MyPos := Pos('Hlasuj!</a></div></div><div class="alljustify">', Line);
+  SetField(fieldCategory, ZiskejHodnotu(Copy(Line, MyPos, Length(Line)), 'Hlasuj!</a></div></div><div class="alljustify">', ','));
+
+  {Stat: podobne jako kategorie, jde o 2. text}
+  MyPos := Pos('Hlasuj!</a></div></div><div class="alljustify">', Line);
+  MyPos := MyPos + Pos(',', Copy(Line, MyPos, Length(Line)));
+  SetField(fieldCountry, ZiskejHodnotu(Copy(Line, MyPos, Length(Line)), ' ', ','));
+
+  {Delka: podobne jako kategorie, jde o 4. text}
+  MyPos := Pos('Hlasuj!</a></div></div><div class="alljustify">', Line);
+  MyPos := MyPos + Pos(',', Copy(Line, MyPos, Length(Line)));
+  MyPos := MyPos + Pos(',', Copy(Line, MyPos, Length(Line)));
+  MyPos := MyPos + Pos(',', Copy(Line, MyPos, Length(Line)));
+  SetField(fieldLength, ZiskejHodnotu(Copy(Line, MyPos, Length(Line)), ' ', 'min'));
+
+  {URL}
+  SetField(fieldURL, Address);
+
+  {Komentar (motto)- vezmu opet ten dlouhy radek a tam to nekde vyhledam (nemusi tam ale byt)}
+  if Pos('<strong>Motto</strong><br />', Line) > 0 then
+    SetField(fieldComments, ZiskejHodnotu(Line, '<strong>Motto</strong><br />', '<br /><br />'));
+
+  {Info - vezmu opet ten dlouhy radek a tam to nekde vyhledam}
+  SetField(fieldDescription, ZiskejHodnotu(Line, '<strong>Krátký popis</strong><br />', '<br /><br />'));
+
+  {Picture - je nekde v dlouhém øádku pøed tím s názvem}
+  Line := Page.GetString(MyPosNazevPreloz);
+  MyPos := Pos('>[Fotky]</a>', Line);
+  GetPicture(ZiskejHodnotu(Copy(Line, MyPos, Length(Line)), '<IMG SRC="', '"'));
+end;
+
+function MyAnsiLowerCaseNoAccents(AStr : string) : string;
+begin
+  Result := AnsiLowerCase(AStr);
+  {Je‘tì chybí nìkteré dal‘í znaky, tak se o to postarám}
+	AStr := StringReplace(AStr, 'â', 'a');
+	AStr := StringReplace(AStr, 'ã', 'a');
+	AStr := StringReplace(AStr, 'ä', 'a');
+	AStr := StringReplace(AStr, 'ã', 'a');
+	AStr := StringReplace(AStr, 'á', 'a');
+	AStr := StringReplace(AStr, 'ç', 'c');
+	AStr := StringReplace(AStr, 'è', 'c');
+	AStr := StringReplace(AStr, 'ï', 'd');
+	AStr := StringReplace(AStr, 'ë', 'e');
+	AStr := StringReplace(AStr, 'é', 'e');
+	AStr := StringReplace(AStr, 'ì', 'e');
+	AStr := StringReplace(AStr, 'ê', 'e');
+	AStr := StringReplace(AStr, 'é', 'e');
+	AStr := StringReplace(AStr, 'ì', 'e');
+	AStr := StringReplace(AStr, 'í', 'i');
+	AStr := StringReplace(AStr, 'î', 'i');
+	AStr := StringReplace(AStr, 'ñ', 'n');
+	AStr := StringReplace(AStr, 'ñ', 'n');
+	AStr := StringReplace(AStr, 'ò', 'o');
+	AStr := StringReplace(AStr, 'ö', 'o');
+	AStr := StringReplace(AStr, 'ó', 'o');
+	AStr := StringReplace(AStr, 'ô', 'o');
+	AStr := StringReplace(AStr, 'õ', 'o');
+	AStr := StringReplace(AStr, 'à', 'r');
+	AStr := StringReplace(AStr, 'ø', 'r');
+	AStr := StringReplace(AStr, 'œ', 's');
+	AStr := StringReplace(AStr, '‘', 's');
+	AStr := StringReplace(AStr, '', 't');
+	AStr := StringReplace(AStr, 'ú', 'u');
+	AStr := StringReplace(AStr, 'ù', 'u');
+	AStr := StringReplace(AStr, 'ù', 'u');
+	AStr := StringReplace(AStr, 'û', 'u');
+	AStr := StringReplace(AStr, 'ü', 'u');
+	AStr := StringReplace(AStr, 'ý', 'y');
+	AStr := StringReplace(AStr, 'Ÿ', 'z');
+	AStr := StringReplace(AStr, 'ž', 'z');
+end;
+
+begin
+  MovieName := GetField(fieldOriginalTitle);
+  if MovieName = '' then
+    MovieName := GetField(fieldTranslatedTitle);
+  Caption := 'Zadejte název filmu:';
+  if Input('Import filmu z www.sms.cz', Caption, MovieName) then
+  begin
+    MovieName := MyAnsiLowerCaseNoAccents(MovieName);
+    PickTreeClear;
+    PickTreeAdd('Filmy: ' + MovieName, '');
+    AnalyzePage(BaseAddress + 'index.php?P_pouzesoubor=&P_id_kategorie=8750&P_soubor=televize%2Fkina_vyhledat.php&P__kategorie=8750&P__soubor=televize%2Fkina_vyhledat.php&P_navigace=&typ=&hledat_text='+UrlEncode(MovieName)+'&hledat_kde=nazev&hledat_typ%5B%5D=6&hledat_typ%5B%5D=I&hledat_typ%5B%5D=9&hledat_typ%5B%5D=K&hledat_typ%5B%5D=4&hledat_typ%5B%5D=7&hledat_typ%5B%5D=B&hledat_typ%5B%5D=5&hledat_typ%5B%5D=F&hledat_typ%5B%5D=3&hledat_typ%5B%5D=H&hledat_typ%5B%5D=S&hledat_typ%5B%5D=G&hledat_typ%5B%5D=Q&hledat_typ%5B%5D=M&hledat_typ%5B%5D=8&hledat_typ%5B%5D=R&hledat_typ%5B%5D=D&hledat_typ%5B%5D=O&hledat_typ%5B%5D=L&hledat_typ%5B%5D=C&hledat_typ%5B%5D=E&hledat_typ%5B%5D=A&hledat_typ%5B%5D=2&hledat_typ%5B%5D=P&hledat_typ%5B%5D=J&hledat_typ%5B%5D=1&hledat_typ%5B%5D=N&hledat_rok_od=&hledat_rok_do=&hledat_hodnoceni_od=&hledat_hodnoceni_do=&hledat_zeme=');
+  end;
+end.

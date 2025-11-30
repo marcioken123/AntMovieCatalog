@@ -1,0 +1,194 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=polnjumen (polnjumen@yahoo.com)
+Title=Amazon
+Description=Import picture & editorial review from Amazon
+Site=www.amazon.com
+Language=EN
+Version=1.0
+Requires=3.5.0
+Comments=Based on the script made for version 3.4.0 by facts (jfacts1731@yahoo.com)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+GetReview=2|1|0=Do not get Editorial Review|1=Save Editorial Review into Description field|2=Save Editorial Review into Comment field
+
+***************************************************)
+
+program Amazon;
+
+uses
+  StringUtils1;
+
+var
+  AmazonPage: TStringList;
+  THolder, MovieName : string;
+  LineNr, I: Integer;
+
+function GetToken(aString, SepChar: String; TokenNum: Integer):String;
+var
+   Token     : string;
+   StrLen    : Integer;
+   TNum      : Integer;
+   TEnd      : Integer;
+
+begin
+     StrLen := Length(aString);
+     TNum   := 1;
+     TEnd   := StrLen;
+     while ((TNum <= TokenNum) and (TEnd <> 0)) do
+     begin
+          TEnd := Pos(SepChar,aString);
+          if TEnd <> 0 then
+          begin
+               Token := Copy(aString,1,TEnd-1);
+               Delete(aString,1,TEnd);
+               TNum := TNum + 1;
+          end
+          else
+          begin
+               Token := aString;
+          end;
+     end;
+     if TNum >= TokenNum then
+     begin
+          GetToken := Token;
+     end
+     else
+     begin
+          GetToken := '';
+     end;
+end;
+
+function AsinParse(Line : string): string;
+begin
+  Result := GetToken(GetToken(Line,'.',2),Chr(34),1);
+end;
+
+// ***** analyze the page containing movie information *****
+
+procedure AnalyzeMoviePage(AsinNr: string);
+var
+  MovieURL, PageText, Value, Value2: string;
+  LP: integer;
+begin
+  GetPicture('http://images.amazon.com/images/P/' + AsinNr + '.01.LZZZZZZZ.jpg');
+  MovieURL := 'http://www.amazon.com/exec/obidos/tg/detail/-/' + AsinNr + '/';
+  PageText := GetPage(MovieURL);
+  // URL
+  if CanSetField(fieldURL) then
+    SetField(fieldURL, MovieURL);
+  // DVD Title & Year
+  if CanSetField(fieldOriginalTitle) or CanSetField(fieldYear) then
+  begin
+    Value := TextBetween(PageText, '<title>', '</title>');
+    LP := LastPos('(', Value);
+    Value2 := Copy(Value, LastPos('(', Value) + 1, 4);
+    if CanSetField(fieldYear) then
+      SetField(fieldYear, Value2);
+    Value2 := TextBetween(Value, 'Amazon.com: DVD: ',' ('+ Value2);
+    HTMLDecode(Value2);
+    if CanSetField(fieldOriginalTitle) then
+      SetField(fieldOriginalTitle, Value2);
+  end;
+  //Editorial Review
+  if GetOption('GetReview') > 0 then
+  begin
+    Value := TextAfter(PageText, '<a name="amzn-reviews">');
+    if Value <> '' then
+    begin
+      Value := TextBetween(Value, '<b class=h1>Editorial Reviews</b>', '<a name="cust-reviews-section">');
+      Value := StringReplace(Value, #13#10, ' ');
+      Value := StringReplace(Value, '<br>', #13#10);
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      Value := Trim(Value);
+      while Pos('  ', Value) > 0 do
+        Value := StringReplace(Value, '  ', ' ');
+      while Pos(#13#10, Value) = 1 do
+        Delete(Value, 1, 2);
+      case GetOption('GetReview') of
+        1:
+          if CanSetField(fieldDescription) then
+            SetField(fieldDescription, Value);
+        2:
+          if CanSetField(fieldComments) then
+            SetField(fieldComments, Value);
+      end;
+    end;
+  end;
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(PageText, '<b>Director:</b>','</a><br>');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldDirector, Trim(Value));
+  end;
+  // Producer
+  if CanSetField(fieldProducer) then
+  begin
+    Value := TextBetween(PageText, '<b>Studio:</b>','<li>');
+    Value := StringReplace(Value, #13#10, '');
+    SetField(fieldProducer, Trim(Value));
+  end;
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    Value := TextBetween(PageText, '<b>Run Time:</b>','<br>');
+    SetField(fieldLength, Trim(Value));
+  end;
+end;
+
+// ***** beginning of the program *****
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    AmazonPage := TStringList.Create;
+    AmazonPage.Text := GetPage('http://www.amazon.com/exec/obidos/search-handle-url/index=dvd&field-title=' + StringReplace(UrlEncode(GetField(fieldOriginalTitle)),'+', '%20'));
+    if FindLine('unable to find exact matches',AmazonPage,1) <> -1 then
+      begin
+        ShowMessage('Movie "' + GetField(fieldOriginalTitle) + '" not found.');
+        exit;
+      end
+    if FindLine('Amazon.com: DVD:',AmazonPage,1) <> -1 then
+      begin
+        LineNr := FindLine('<input type="hidden" name="asin.',AmazonPage,1);
+        THolder := AsinParse(AmazonPage.Getstring(LineNr));
+        AnalyzeMoviePage(THolder);
+        exit;
+      end
+    else
+      if (FindLine('Below are results for',AmazonPage,1) <> -1) OR (FindLine('All results',AmazonPage,1) <> -1) OR (FindLine('Most popular results for',AmazonPage,1) <> -1) OR (FindLine('Results for',AmazonPage,1) <> -1) then
+        begin
+          i := 1;
+          PickTreeClear;
+          PickTreeAdd('Movies','');
+          while (i <= AmazonPage.Count-1) do
+            begin
+              THolder := AmazonPage.GetString(i);
+              HTMLRemoveTags(THolder);
+              if (Pos('/exec/obidos/ASIN/',AmazonPage.GetString(i)) <> 0) and (THolder <> '') and (Pos('Buy new',AmazonPage.GetString(i)) = 0) and (Pos('Used & new from',AmazonPage.GetString(i)) = 0) and (Pos('THUMBZZZ',AmazonPage.GetString(i)) = 0) then
+                PickTreeAdd(THolder,GetToken(AmazonPage.GetString(i),'/',5));
+              if (Pos('/exec/obidos/tg/detail/',AmazonPage.GetString(i)) <> 0) and (THolder <> '') and (Pos('Buy new',AmazonPage.GetString(i)) = 0) and (Pos('Used & new from',AmazonPage.GetString(i)) = 0) and (Pos('THUMBZZZ',AmazonPage.GetString(i)) = 0) and (Pos('http://www.amazon.com',AmazonPage.GetString(i)) = 0) and (Pos('In-store Pickup',AmazonPage.GetString(i)) = 0) then
+                PickTreeAdd(THolder,GetToken(AmazonPage.GetString(i),'/',7));
+              i := i + 1;
+            end
+          if PickTreeExec(THolder) then
+            begin
+              AnalyzeMoviePage(THolder);
+            end
+          exit;
+        end
+      else
+        ShowMessage('Movie "' + GetField(fieldOriginalTitle) + '" not found.');
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

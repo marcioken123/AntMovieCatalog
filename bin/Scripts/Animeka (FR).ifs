@@ -1,0 +1,1639 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN - modifié par Raoul_Volfoni, Xenesys
+Title=Animeka.com
+Description=Recherche d'Animes, staff, synopsis, critiques, épisodes et images animeka ou animenewsnetwork
+Site=http://www.animeka.com
+Language=FR
+Version=51 du 22/02/2015
+Requires=3.5.1
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Choix Image=1|0|0=Image Animeka|1=Image AnimeNewsNetwork (avec choix)|2=Pas d'image
+Staff=0|0|0=Liste du Staff dans le champs Commentaires|1=Liste du Staff dans le champs Acteurs|2=Pas de Staff
+Ajout de "Animation" à la catégorie=1|0|0=Non|1=Oui
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web|4=T out automatique
+Format du Titre=3|3|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule|4=Ne rien faire
+Titre en double=0|0|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Trier les résultats=1|0|0=Non|1=Oui (Par date croissante)
+Fichier de log=1|1|0=Oui|1=Non
+Plus de dix huit ans=0|0|0=Oui - Accès aux fiches +18 du site|1=Non - Accès restreint aux fiches -18 du site
+Détenteur(s) d'une Licence=0|0|0=Oui - Liste des ayants droits (sociétés) avec les éditions et leur catégorie (BRD/DVD/TV/...)|1=Non - Pas de liste
+Fansub=0|0|0=Oui - Liste des équipes de fansub + nb d'épisodes sortis|1=Non - Pas d'information sur le fansub
+Liste des épisodes=0|0|0=Oui - Liste des épisodes avec résumé|1=Oui - Liste des épisodes sans résumé|2=Non - Pas de liste
+
+[Parameters]
+
+***************************************************)
+
+program ANIMEKA_SEARCH;
+uses
+  ScorEpioNCommonScript;
+
+const
+  VersionScript = '37 du 17/07/2006';
+  NomScript = 'ANIMEKA';
+  urlDomain = 'animeka.com';
+  urlBase   = 'http://www.animeka.com/';
+  urlSearch = urlBase+'search/index.html';
+  urlSearchParam_normal = 'type=animes&req=';
+  urlSearchParam_18plus = 'animes_restricted_filter=true&type=animes&req=';
+  sleepAuto = 5000;
+  sleepManu = 500;
+
+var
+  MovieName, NomFilm, la_liste, premiere_pageEpisode, Reponse, TypeExec, AnimeName, adresseunique: string;
+  premiereExecution, i, TimeSleep, compteur : Integer;
+  listeResultat: TStringList;
+  test : Boolean;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DE RECHERCHES
+//------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line, Value, page_film, titre_film, annee_prod_film, vol_type_dur_film, realisateur_film : string;
+  BeginPos, EndPos, compteur : Integer;
+  begin
+
+// Vide la liste des films
+  PickTreeClear;
+  listeResultat := TStringList.Create;
+// Pause pour eviter les time out
+  sleep(TimeSleep);
+// Charge la page
+  If (GetOption('Plus de dix huit ans') = 0) then
+        Line := PostPage(urlSearch, urlSearchParam_18plus + UrlEncode(Address)) // si l'option plus dix huit ans est validée alors on a accès au contenu +18
+        else
+        Line := PostPage(urlSearch, urlSearchParam_Normal + UrlEncode(Address));// sinon non (valeur par défaut)
+
+// Teste s'il y a des films trouvés
+  BeginPos := Pos('Aucun résultat', Line);
+  if BeginPos <> 0 then
+  begin
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+    titre_film := MovieName;
+    titre_film := StringReplace(titre_film, RC, '');
+    titre_film := StringReplace(titre_film, '   ', '');
+    titre_film := Trim(titre_film);
+    titre_film := AnsiLowerCase(titre_film);
+    titre_film := AnsiUpFirstLetter(titre_film);
+    showmessage('Aucun Anime trouvé pour : ' + titre_film);
+    exit;
+    end else
+    begin
+      SetField(fieldChecked, '');
+      exit;
+    end;
+  end;
+
+// Teste si on a été redirigé vers la fiche de l'anime
+  BeginPos := Pos('>Aider à compléter la fiche<', Line);
+  if BeginPos <> 0 then
+  begin
+    Delete(Line, 1, Pos('>Avis des visiteurs<', Line));
+    page_film := 'http://www.animeka.com' + TextBetween(Line, '<form action="', '"');
+    if (Pos('fansub',page_film) = 0) then
+    begin
+      AnalysePageFilm(page_film);
+      exit;
+    end else
+    begin
+      AnalyzePageFansub(page_film);
+      exit;
+    end;
+  end;
+
+// Introduction résultats
+  titre_film := MovieName;
+  titre_film := StringReplace(titre_film, RC, '');
+  titre_film := StringReplace(titre_film, '   ', '');
+  titre_film := Trim(titre_film);
+  titre_film := AnsiLowerCase(titre_film);
+  titre_film := AnsiUpFirstLetter(titre_film);
+  PickTreeAdd('Animes trouvés pour ' + titre_film + ' :', '');
+
+// Compte les résultats
+  compteur := 0;
+
+  BeginPos := Pos('<div class="countResult">',Line);
+  Delete(Line, 1, BeginPos+24);
+  BeginPos := Pos('<table class="animesindex">',Line);
+
+  repeat
+  Value := TextBetween(Line, '"animesindex">', '</table>');
+// Recherche du lien de la page du film
+  page_film := 'http://www.animeka.com' + TextBetween(Value, '<a href="', '"');
+// Recherche du nom du film
+  titre_film := TextBetween(Value, 'html">', '</a>');
+// Recherche de l'année de production
+  annee_prod_film := TextBetween(Value, ' DE PRODUCTION : ', '</td>');
+  vol_type_dur_film := TextBetween(Value, 'DUR&Eacute;E : ', '</td>');
+  HTMLdecode(titre_film);
+  HTMLremovetags(titre_film);
+  titre_film := Trim(titre_film);
+  titre_film := AnsiLowerCase(titre_film);
+  titre_film := AnsiUpFirstLetter(titre_film);
+// Ajoute les films
+    PickTreeAdd('['+annee_prod_film+'] '+ titre_film + ' ('+vol_type_dur_film+ ')', page_film);
+// Pour le mode batch le titre doit être "propre"
+    listeResultat.Add(titre_film+'|'+page_film);
+    compteur := compteur+1;
+// Efface jusqu'a la prochaine occurence
+    EndPos := Pos('</table><table class="animesindex">',Line);
+    Delete(Line, 1, EndPos+8);
+  until EndPos = 0;
+
+  if compteur = 1 then
+  begin
+    compteur := 0;
+    AnalysePageFilm(page_film);
+    exit;
+  end;
+
+  if GetOption('Trier les résultats') = 1 then
+  PickTreeSort;
+  
+  if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) or (GetOption('Type de Lancement') = 4) then
+  begin
+  begin
+    if PickTreeExec(Address)=true then
+    begin
+           AnalysePageFilm(Address);
+    end;
+  end;
+  end else
+  begin
+    if (GetOption('Type de Lancement') = 2) then
+    begin
+      Address := trouveResultat(MovieName);
+      if Address <> '' then
+        AnalysePageFilm(Address);
+    end ;
+  end;
+
+end;
+
+//------------------------------------------------------------------------------
+// TROUVE LE BON RESULTAT
+//------------------------------------------------------------------------------
+
+function trouveResultat(title : String) : String;
+var
+   oK, couple, titre, adresse : String;
+begin
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     titre := copy(couple,0,pos('|',couple)-1);
+     adresse := copy(couple,pos('|',couple)+1,length(couple));
+     oK := compareTitle(title,titre);
+     if oK = 'OK' then
+     begin
+       result := adresse;
+       exit;
+     end;
+   end;
+   if oK = 'KO' then
+     result := '';
+   listeResultat.Free;
+
+end;
+
+//------------------------------------------------------------------------------
+// IMPORTE L'IMAGE ANIMEKA
+//------------------------------------------------------------------------------
+
+procedure importImageAnimeka(Line: string);
+var
+  BeginPos, EndPos : Integer;
+begin
+  BeginPos := Pos('<img class="picture" src=', Line);
+  if BeginPos <> 0 then
+  begin
+    Delete(Line, 1, BeginPos+26);
+    EndPos := Pos(' width',Line);
+    sleep(TimeSleep);
+    MonGetPicture(urlBase + Copy(Line, 1, EndPos-2 ));
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME LES ACCENTS
+//------------------------------------------------------------------------------
+
+function supprimeAccents(title : String) : String;
+begin
+     title := supprimeLesAccents(title);
+     delete(title, pos(' - ',title), length(title));
+     if (pos(', ',title) > 0) then
+        delete(title, 1, pos(', ',title)+1);
+     if (pos('(',title) > 0) then
+        delete(title, pos('(',title), length(title));
+     if (pos(':',title) > 0) then
+        delete(title, pos(':',title), length(title));
+     result := trim(title);
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE FANSUB
+//------------------------------------------------------------------------------
+
+procedure AnalyzePageFansub(Address: string);
+var
+  Line ,page_film : string;
+  BeginPos, EndPos : Integer;
+begin
+// Pause pour eviter les time out
+  sleep(TimeSleep);
+  Line := GetPage(Address);
+  BeginPos := Pos('"animestitle"', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos('a href="', Line);
+  Delete(Line, 1, BeginPos+7);
+  EndPos := Pos('">',Line);
+  page_film := 'http://www.animeka.com' + Copy(Line, 1, EndPos-1 );
+  AnalysePageFilm(page_film);
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalysePageFilm(Address: string);
+var
+  Line, Line2, page_film,titre_film, titre_original, categorie_film, fansub, realisateur_film, studio_film, annee_film, Liste_editeurs, editeur_html, type_editeur, Distributeur_DVD, Distributeur_TV, Editeur_DVD, Editeur_VHS, Distributeur_VHS, Distributeur_Cine, Distributeur_Blueray, Editeur_Blueray, Editeur_Web, Distributeur_Web: string;
+  critique, noteRedaction, pays_film, url_film, saisons, duree, duree_film, nb_episode, duree_totale, episode_anime, page_episodes, page_staff, liste_episodes, acteurs_film, liste_acteurs, description_film, reference_film,public_film,video_film,audio_film,fichier_image,aucun,dur_epis:string;
+  BeginPos, EndPos, i: Integer;
+begin
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    beforeUpdate();
+
+// Pause pour eviter les time out
+  sleep(TimeSleep);
+// charge la page
+  Line := GetPage(Address);
+  url_film := Address;
+
+// Recherche du nom du film
+  BeginPos := Pos('"animestitle"', Line);
+  Delete(Line, 1, BeginPos+39);
+  EndPos := Pos('</td>',Line);
+  titre_film := Copy(Line, 1, EndPos-1 );
+  HTMLdecode(titre_film);
+  HTMLremovetags(titre_film);
+  titre_film := StringReplace(titre_film, RC, '');
+  titre_film := StringReplace(titre_film, '   ', '');
+  titre_film := Trim(titre_film);
+  if GetOption('Format du Titre') <> 4 then
+    begin
+    titre_film := AnsiLowerCase(titre_film);
+    titre_film := AnsiMixedCase(titre_film, ' -');
+    end;
+  titre_film := nettoieTitre(titre_film);
+
+// Chargement image animeka
+  if CanSetPicture then
+  begin
+    if (GetOption('Choix Image') = 0) then
+    begin
+      importImageAnimeka(Line);
+    end;
+  end;
+
+// Pour retrouver l'image animeka
+  fichier_image := Line;
+
+// Recherche du titre original
+   BeginPos := Pos('<td class="animestxt">&nbsp;&nbsp;', Line);
+   Delete(Line, 1, BeginPos+50);
+   EndPos := Pos('</td>',Line);
+   titre_original := Copy(Line, 1, EndPos-1 );
+   titre_original := StringReplace(titre_original, '&#9829;', ' ');
+   HTMLdecode(titre_original);
+   HTMLremovetags(titre_original);
+   titre_original := StringReplace(titre_original, RC, '');
+   titre_original := StringReplace(titre_original, '   ', '');
+   titre_original := Trim(titre_original);
+   if GetOption('Format du Titre') <> 4 then
+    begin
+    titre_original := AnsiLowerCase(titre_original);
+    titre_original := AnsiMixedCase(titre_original, ' ');
+    titre_original := AnsiMixedCase(titre_original, '-');
+    end;
+
+// Recherche de l'année
+  BeginPos := Pos('<tr><td class="animestxt">&nbsp;&nbsp;', Line);
+  Delete(Line, 1, BeginPos+66);
+  EndPos := Pos('</td>',Line);
+  annee_film := Copy(Line, 1, EndPos-1 );
+  duree_film := '';
+  i:=pos('-',annee_film);
+  if i <> 0 then
+  begin
+    duree_film := ' Années de production :' + annee_film+'.';
+    annee_film := copy(annee_film,1,i-1);
+    annee_film := Trim(annee_film);
+  end;
+
+// Recherche du studio
+  BeginPos := Pos('STUDIO', Line);
+  Delete(Line, 1, BeginPos+8);
+  EndPos := Pos('</td></tr>',Line);
+  studio_film := Copy(Line, 1, EndPos-1 );
+  HTMLRemoveTags(studio_film);
+  HTMLdecode(studio_film);
+  studio_film := StringReplace(studio_film, RC, '');
+  studio_film := StringReplace(studio_film, '   ', '');
+  studio_film := StringReplace(studio_film, '] [', ', ');
+  studio_film := StringReplace(studio_film, '[', '');
+  studio_film := StringReplace(studio_film, ']', '');
+  studio_film := Trim(studio_film);
+  studio_film := AnsiLowerCase(studio_film);
+  studio_film := AnsiMixedCase(studio_film, ' -');
+
+// Recherche de la catégorie
+  BeginPos := Pos('GENRE', Line);
+  Delete(Line, 1, BeginPos+8);
+  EndPos := Pos('</td></tr>',Line);
+  categorie_film := Copy(Line, 1, EndPos-1);
+  HTMLRemoveTags(categorie_film);
+  HTMLdecode(categorie_film);
+  categorie_film := StringReplace(categorie_film, RC, '');
+  if Pos(' [ANIMATION 3D] ', categorie_film) > 0 then
+  categorie_film := '[ANIMATION 3D] '+ StringReplace(categorie_film, ' [ANIMATION 3D] ', ' ');
+  categorie_film := StringReplace(categorie_film, '   ', '');
+  categorie_film := StringReplace(categorie_film, '] [', ' - ');
+  categorie_film := StringReplace(categorie_film, '[', '');
+  categorie_film := StringReplace(categorie_film, ']', '');
+  categorie_film := Trim(categorie_film);
+  categorie_film := AnsiLowerCase(categorie_film);
+  categorie_film := AnsiMixedCase(categorie_film, ' -');
+  categorie_film := StringReplace(categorie_film, ' - ', ', ');
+  categorie_film := StringReplace(categorie_film, '3d', '3D');
+  if (GetOption('Ajout de "Animation" à la catégorie')= 1) and  (Pos('Animation 3D', categorie_film) = 0) then
+    categorie_film := 'Animation, ' + categorie_film;
+
+// Recherche du réalisateur
+  BeginPos := Pos('AUTEUR', Line);
+  Delete(Line, 1, (BeginPos-1));
+  aucun := Copy(Line, 10, 3 );
+  if aucun = 'Non' then
+  begin
+    realisateur_film := '';
+    end else
+  begin
+  BeginPos := Pos('.html">', Line);
+  Delete(Line, 1, BeginPos+6);
+  EndPos := Pos('</td>',Line);
+  realisateur_film := Copy(Line, 1, EndPos-1 );
+  HTMLdecode(realisateur_film);
+  HTMLRemoveTags(realisateur_film);
+  realisateur_film := StringReplace(realisateur_film, RC, '');
+  realisateur_film := StringReplace(realisateur_film, '] [', ', ');
+  realisateur_film := StringReplace(realisateur_film, '[', '');
+  realisateur_film := StringReplace(realisateur_film, ']', '');
+  realisateur_film := StringReplace(realisateur_film, '   ', '');
+  realisateur_film := Trim(realisateur_film);
+  realisateur_film := AnsiLowerCase(realisateur_film);
+  realisateur_film := AnsiMixedCase(realisateur_film, ' ');
+  realisateur_film := AnsiMixedCase(realisateur_film, '-');
+  end;
+
+// Recherche de la durée
+  BeginPos := Pos('DUR', Line);
+  Delete(Line, 1, BeginPos-1);
+  EndPos := Pos('</td></tr>',Line);
+  duree_film := Copy(Line, 1, EndPos-1 ) + duree_film;
+  HTMLdecode(duree_film);
+  duree_film := StringReplace(duree_film, '   ', '');
+  duree_film := Trim(duree_film);
+
+// Durée dans le champs durée
+  aucun := duree_film;
+  BeginPos := Pos('mins',aucun);
+  delete(aucun,1,BeginPos-6);
+  BeginPos := Pos(' ',aucun);
+  EndPos := Pos(' mins',aucun);
+  aucun := copy(aucun,BeginPos+1,EndPos-BeginPos-1);
+  aucun := Trim(aucun);
+  if aucun <> '' then
+    if CanSetField(fieldLength) then
+      SetField(fieldLength,aucun);
+  duree_film := formatTitre(duree_film, 2);
+  duree_film := bestView(duree_film, aucun);
+
+// Durée et nombres d'épisodes
+  dur_epis := TextBetween(duree_film, 'Format', '.');
+  dur_epis := Stringreplace(dur_epis, 'épisodes de', '||');
+  dur_epis := Stringreplace(dur_epis, 'oav de', '||');
+  dur_epis := Stringreplace(dur_epis, 'film de', '||');
+  dur_epis := Stringreplace(dur_epis, 'épisode(s) (spécial télé) de', '||');
+  dur_epis := Stringreplace(dur_epis, 'clip de', '||');
+  nb_episode := TextBetween(dur_epis, ' : ', ' ||');
+  duree := TextBetween(dur_epis, '|| ', ' minutes');
+
+// Affichage durée totale (si conditions remplies, sinon laisse la durée déjà remplie ligne 383)
+  if (duree <> '') and (nb_episode <> '') then
+  begin
+  duree_totale := IntToStr(StrToInt(duree, 0) * StrToInt(nb_episode, 0));
+  SetField(fieldLength, duree_totale);
+  end;
+
+// Recherche du pays
+  BeginPos := Pos('show_flag.php', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos('alt=', Line);
+  Delete(Line, 1, BeginPos+4);
+  EndPos := Pos('"',Line);
+  pays_film := Copy(Line, 1, EndPos-1 );
+  HTMLdecode(pays_film);
+  pays_film := StringReplace(pays_film, RC, '');
+  pays_film := StringReplace(pays_film, '   ', '');
+  pays_film := Trim(pays_film);
+  HTMLremovetags(pays_film);
+  pays_film := AnsiLowerCase(pays_film);
+  pays_film := AnsiMixedCase(pays_film, ' ');
+  pays_film := AnsiMixedCase(pays_film, '-');
+
+// Recherche de la description
+  BeginPos := Pos('Synopsis', Line);
+  Delete(Line, 1, BeginPos+126);
+  aucun := Copy(Line, 10, 3 );
+  if aucun = 'sp;' then
+  begin
+    aucun := 'Pas de description pour le moment';
+  end else
+  begin
+  EndPos := Pos('</td></tr></table></td></tr>',Line)-1;
+  description_film := Copy(Line, 1, EndPos );
+  description_film := StringReplace(description_film, RC, ' ');
+  description_film := StringReplace(description_film, '<br />',RC);
+  description_film := StringReplace(description_film, '<b>', '');
+  description_film := StringReplace(description_film, '</b>', '');
+  description_film := StringReplace(description_film, '<i>', '');
+  description_film := StringReplace(description_film, '</i>', '');
+  description_film := StringReplace(description_film, '</div>', ' ');
+  description_film := StringReplace(description_film, '<div class="u">', '');
+  description_film := deleteBalise(description_film);
+  description_film := StringReplace(description_film, '   ', ' ');
+  description_film := StringReplace(description_film, '&#333;','o');
+  description_film := StringReplace(description_film, '&#8209;','-');
+  description_film := StringReplace(description_film, '&#8217;','''');
+  description_film := StringReplace(description_film, '&#8230;','...');
+  description_film := StringReplace(description_film, '&#8239;',' ');
+  HTMLdecode(description_film);
+  end;
+
+// Recherche des critiques
+  BeginPos := Pos('Critiques', Line);
+  Delete(Line, 1, BeginPos);
+  if Pos('Non disponible',Line) > 0 then
+    critique := ''
+  else
+  begin
+    BeginPos := Pos('<td class="animestxt">', Line);
+    Delete(Line, 1, BeginPos+21);
+    EndPos := Pos('</td></tr></table></td></tr>',Line);
+    critique := Copy(Line, 1, EndPos-1 );
+    critique := StringReplace(critique, RC, ' ');
+    If Pos('--- Critique ', critique) = 0 then
+    critique := '------------- Critique -------------'+RC+critique;
+    critique := StringReplace(critique, '<br />', ' ');
+    critique := StringReplace(critique, '<b>', '');
+    critique := StringReplace(critique, '</b>', '');
+    critique := StringReplace(critique, '<i>', '');
+    critique := StringReplace(critique, '</i>', '');
+    //critique := StringReplace(critique, 'Critiques : <span style="color:#00A">', 'Critiques : '+RC);
+    critique := StringReplace(critique, '<span style="color:#00A">------------- Critique 1','------------- Critique 1');
+    critique := StringReplace(critique, '<span style="color:#00A">', RCN(2)+'');
+    critique := StringReplace(critique, '-</span>', RC+'');
+    critique := deleteBalise(critique);
+    critique := StringReplace(critique, '   ', ' ');
+    critique := StringReplace(critique, '&#333;','o');
+    critique := StringReplace(critique, '&#8209;','-');
+    critique := StringReplace(critique, '&#8217;','''');
+    critique := StringReplace(critique, '&#8230;','...');
+    critique := StringReplace(critique, '&#8239;',' ');
+    HTMLdecode(critique);
+    description_film := description_film + RCN(2) + critique;
+  end;
+
+// Recherche de la note de la rédaction
+  {BeginPos := Pos('Note de la rédaction', Line);
+  Delete(Line, 1, BeginPos);
+  if BeginPos = 0 then
+  begin
+    noteRedaction := '';
+  end else
+  if Pos('>Nous vous',Line) > 0 then
+    noteRedaction := ''
+  else
+  begin
+    BeginPos := Pos('<td class="animestxt">', Line);
+    Delete(Line, 1, BeginPos+21);
+    EndPos := Pos('</td></tr></table></td></tr>',Line);
+    noteRedaction := 'Note de la rédaction : '+RC;
+    noteRedaction := noteRedaction + Copy(Line, 1, EndPos-1 );
+    noteRedaction := StringReplace(noteRedaction, '<br>'+RCN(2)+'<br>', '');
+    noteRedaction := StringReplace(noteRedaction, '<br />', ' ');
+    noteRedaction := StringReplace(noteRedaction, '<b>', '');
+    noteRedaction := StringReplace(noteRedaction, '</b>', '');
+    noteRedaction := StringReplace(noteRedaction, '<i>', '');
+    noteRedaction := StringReplace(noteRedaction, '</i>', '');
+    noteRedaction := StringReplace(noteRedaction, '   ', ' ');
+    noteRedaction := deleteBalise(noteRedaction);
+    noteRedaction := StringReplace(noteRedaction, '&#8217;','''');
+    noteRedaction := StringReplace(noteRedaction, '&#8230;','...');
+    HTMLdecode(noteRedaction);
+    noteRedaction := StringReplace(noteRedaction, RC+'Nous vous invitons à discuter de l''animé sur le forum !', '');
+    description_film := description_film + RCN(2) + noteRedaction;
+    if CanSetField(fieldRating) then
+      MonSetField(fieldRating, moyenneNote(noteRedaction));
+    end;}
+
+// Recherche des teams de fansub et les épisodes réalisés
+  if (GetOption('Fansub')= 0) then
+  begin
+  BeginPos := Pos('Fansubbé par', Line);
+  Delete(Line, 1, BeginPos-1);
+  if BeginPos = 0 then
+  begin
+    aucun := 'Pas de fansub';
+  end else
+  begin
+    BeginPos := Pos('Fansubbé par :', Line);
+    Delete(Line, 1, BeginPos+18);
+    EndPos := Pos('Plus de détails',Line);
+    fansub := 'Fansubbé par : ';
+    fansub := fansub + Copy(Line, 1, EndPos-1 );
+    fansub := StringReplace(fansub, '<br />', ' ');
+    fansub := StringReplace(fansub, '<b>', '');
+    fansub := StringReplace(fansub, '</b>', '');
+    fansub := StringReplace(fansub, '<i>', '');
+    fansub := StringReplace(fansub, '</i>', '');
+    fansub := StringReplace(fansub, '   ', ' ');
+    fansub := StringReplace(fansub, '&#8217;','''');
+    fansub := StringReplace(fansub, '&#8230;','...');
+    fansub := StringReplace(fansub, '&#8209;','-');
+    fansub := Stringreplace(fansub, '[', '- [');
+    fansub := deleteBalise(fansub);
+    HTMLdecode(fansub);
+    fansub := fansub;
+  end;
+  end;
+
+
+// Recherche des Editeurs
+  if (GetOption('Détenteur(s) d''une Licence')= 0) then
+  begin
+  BeginPos := Pos('Licencié par', Line);
+  Delete(Line, 1, BeginPos-1);
+  if BeginPos = 0 then
+  begin
+    aucun := 'Pas d''éditeurs';
+  end else
+    begin
+    BeginPos := Pos('Licencié par :', Line);
+    Delete(Line, 1, BeginPos+18);
+    EndPos := Pos('</tr></table>',Line);
+    Line2 := Copy(Line, 1, EndPos-1 );
+      repeat
+      // Cherche le nom de l'éditeur version HTML
+      BeginPos := Pos('/animes/editeur/',Line2);
+      Delete(Line2, 1, BeginPos+15);
+      EndPos := Pos('">',Line2);
+      editeur_html := Copy(Line2, 1, EndPos-1 );
+      // Cherche le type de l'éditeur
+      BeginPos := Pos('<br>',Line2);
+      Delete(Line2, 1, BeginPos+3);
+      EndPos := Pos('</td>',Line2)-1;
+      type_editeur := Copy(Line2, 1, EndPos );
+      type_editeur := StringReplace(type_editeur, #10, '');
+      type_editeur := StringReplace(type_editeur, #13, '');
+      // Ajoute à la liste des éditeurs catégorie par catégorie et se recale à la ligne suivante
+      if Pos('Éditeur Blu-ray',type_editeur) > 0 then
+        begin
+        if Editeur_Blueray = '' then
+        Editeur_Blueray := editeur_html
+        else
+        Editeur_Blueray := Editeur_Blueray + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur Blu-ray',type_editeur) > 0 then
+        begin
+        if Distributeur_Blueray = '' then
+        Distributeur_Blueray := editeur_html
+        else
+        Distributeur_Blueray := Distributeur_Blueray + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur DVD',type_editeur) > 0 then
+        begin
+        if Distributeur_DVD = '' then
+        Distributeur_DVD := editeur_html
+        else
+        Distributeur_DVD := Distributeur_DVD + ', ' + editeur_html;
+        end;
+      if Pos('Éditeur DVD',type_editeur) > 0 then
+        begin
+        if Editeur_DVD = '' then
+        Editeur_DVD := editeur_html
+        else
+        Editeur_DVD := Editeur_DVD + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur TV',type_editeur) > 0 then
+        begin
+        if Distributeur_TV = '' then
+        Distributeur_TV := editeur_html
+        else
+        Distributeur_TV := Distributeur_TV + ', ' + editeur_html;
+        end;
+      if Pos('Éditeur VHS',type_editeur) > 0 then
+        begin
+        if Editeur_VHS = '' then
+        Editeur_VHS := editeur_html
+        else
+        Editeur_VHS := Editeur_VHS + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur VHS',type_editeur) > 0 then
+        begin
+        if Distributeur_VHS = '' then
+        Distributeur_VHS := editeur_html
+        else
+        Distributeur_VHS := Distributeur_VHS + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur Ciné',type_editeur) > 0 then
+        begin
+        if Distributeur_Cine = '' then
+        Distributeur_Cine := editeur_html
+        else
+        Distributeur_Cine := Distributeur_Cine + ', ' + editeur_html;
+        end;
+      if Pos('Éditeur Web',type_editeur) > 0 then
+        begin
+        if Editeur_Web = '' then
+        Editeur_Web := editeur_html
+        else
+        Editeur_Web := Editeur_Web + ', ' + editeur_html;
+        end;
+      if Pos('Distributeur Web',type_editeur) > 0 then
+        begin
+        if Distributeur_Web = '' then
+        Distributeur_Web := editeur_html
+        else
+        Distributeur_Web := Distributeur_Web + ', ' + editeur_html;
+        end;
+      BeginPos := Pos('<td><a',Line2);
+      Delete(Line2, 1, BeginPos);
+      until BeginPos = 0;
+      // Formatage des résultats
+      if Editeur_Blueray <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Éditeur Blu-ray : ' + Editeur_Blueray;
+      if Distributeur_Blueray <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur Blu-ray : ' + Distributeur_Blueray;
+      if Editeur_DVD <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Éditeur DVD : ' + Editeur_DVD;
+      if Distributeur_DVD <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur DVD : ' + Distributeur_DVD;
+      if Distributeur_TV <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur TV : ' + Distributeur_TV;
+      if Distributeur_Cine <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur Ciné : ' + Distributeur_Cine;
+      if Editeur_VHS <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Éditeur VHS : ' + Editeur_VHS;
+      if Distributeur_VHS <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur VHS : ' + Distributeur_VHS;
+      if Editeur_Web <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Éditeur Web : ' + Editeur_Web;
+      if Distributeur_Web <> '' then
+      Liste_editeurs := Liste_editeurs + RC + '- Distributeur Web : ' + Distributeur_Web;
+      // Transforme les noms "html" des éditeurs en version compréhensible
+      Liste_editeurs := TransformEditeur(Liste_editeurs);
+      if Liste_editeurs <> '' then
+      Liste_editeurs := 'Licencié par :' + Liste_editeurs + RCN(2)
+      else
+      Liste_editeurs := '';
+  end;
+  end;
+
+// Recherche des autres saisons
+  BeginPos := Pos('Voir aussi', Line);
+  Delete(Line, 1, BeginPos-1);
+  if BeginPos = 0 then
+  begin
+    aucun := ''
+  end else
+  begin
+    BeginPos := Pos('Voir aussi', Line);
+    Delete(Line, 1, BeginPos+14);
+    EndPos := Pos('<br></td></tr></table>',Line);
+    saisons := Copy(Line, 1, EndPos-1 );
+    saisons := StringReplace(saisons, '<br>', RC+'• ');
+    saisons := deleteBalise(saisons);
+    HTMLdecode(saisons);
+    saisons := 'A voir aussi :'+RC+'• '+saisons +RCN(2);
+  end;
+
+// Recherche du staff
+  BeginPos := Pos('/animes/staff/', Line);
+  Delete(Line, 1, BeginPos-1);
+  if BeginPos = 0 then
+  begin
+    liste_acteurs := 'Pas de staff pour le moment';
+  end else
+  begin
+    EndPos := Pos('" class',Line);
+    page_staff := 'http://www.animeka.com'+Copy(Line, 1, EndPos-1 );
+    sleep(TimeSleep);
+    Line2 := GetPage(page_staff);
+    BeginPos := Pos(' >Staff de', Line2);
+    Delete(Line2, 1, BeginPos);
+    if BeginPos = 0 then
+    begin
+    liste_acteurs := 'Pas de staff pour le moment';
+    end else
+    begin
+    BeginPos := Pos('<a href=', Line2);
+    Delete(Line2, 1, BeginPos-1);
+    EndPos := Pos('</table></td></tr></table>',Line2);
+    liste_acteurs := '';
+    liste_acteurs := liste_acteurs + Copy(Line2, 1, EndPos-1 );
+    liste_acteurs := StringReplace(liste_acteurs, RC, ' ');
+    liste_acteurs := StringReplace(liste_acteurs, '<td style="width:60%;">- <i>', ' (');
+    liste_acteurs := StringReplace(liste_acteurs, '</td></tr>', '),');
+    liste_acteurs := StringReplace(liste_acteurs, '<br />', ' ');
+    liste_acteurs := StringReplace(liste_acteurs, '<b>', '');
+    liste_acteurs := StringReplace(liste_acteurs, '</b>', '');
+    liste_acteurs := StringReplace(liste_acteurs, '<i>', '');
+    liste_acteurs := StringReplace(liste_acteurs, '</i>', '');
+    liste_acteurs := StringReplace(liste_acteurs, '   ', ' ');
+    liste_acteurs := StringReplace(liste_acteurs, '&#8217;','''');
+    liste_acteurs := StringReplace(liste_acteurs, '&#8230;','...');
+    liste_acteurs := StringReplace(liste_acteurs, '&#8209;','-');
+    liste_acteurs := deleteBalise(liste_acteurs);
+    liste_acteurs := StringReplace(liste_acteurs, '),',')'+RC);
+    HTMLdecode(liste_acteurs);
+    liste_acteurs := 'Staff :'+RC+' '+liste_acteurs;
+    liste_acteurs := deleteEnd(liste_acteurs, ' ');
+    liste_acteurs := deleteEnd(liste_acteurs, RC);
+    end;
+  end;
+
+// Recherche des épisodes
+  if (GetOption('Liste des épisodes')= 0) or (GetOption('Liste des épisodes')= 1) then
+  begin
+  BeginPos := Pos('/animes/epis/', Line);
+  Delete(Line, 1, BeginPos-1);
+  if BeginPos = 0 then
+  begin
+    aucun := 'Pas de listing d''épisodes pour le moment';
+  end else
+  begin
+    EndPos := Pos('" class',Line);
+    page_episodes := 'http://www.animeka.com'+Copy(Line, 1, EndPos-1 );
+    premiere_pageEpisode := page_episodes;
+    liste_episodes := 'Liste des épisodes :'+RC;
+    la_liste := '';
+    TrouveEpisode(page_episodes);
+    liste_episodes := liste_episodes + la_liste;
+    liste_episodes := deleteEnd(liste_episodes, RC);
+    liste_episodes := deleteEnd(liste_episodes, ' ');
+  end;
+  end;
+
+// Charge les résultats dans la fenêtre
+  if CanSetField(fieldTranslatedTitle) then
+    SetField( fieldTranslatedTitle,formatTitre(articleDebutTitre2(titre_film,' (',')'),GetOption('Format du Titre')));
+    if CanSetField(fieldOriginalTitle) then
+    SetField( fieldOriginalTitle,formatTitre(titre_original,GetOption('Format du Titre')));
+  if titre_original = '' then
+  begin
+    if CanSetField(fieldOriginalTitle) then
+      SetField( fieldOriginalTitle,formatTitre(articleDebutTitre2(titre_film,'(',')'),GetOption('Format du Titre')));
+  end;
+  if CanSetField(fieldURL) then
+    SetField( fieldURL,url_film);
+  if CanSetField(fieldCategory) then
+    SetField( fieldCategory,categorie_film);
+  if CanSetField(fieldDirector) then
+    SetField( fieldDirector,realisateur_film);
+  if CanSetField(fieldYear) then
+    SetField( fieldYear,annee_film);
+  if CanSetField(fieldCountry) then
+    SetField( fieldCountry,pays_film);
+  if CanSetField(fieldActors) then
+    SetField( fieldActors,duree_film);
+  if CanSetField(fieldActors) and (GetOption('Staff') = 1) then
+   SetField( fieldActors,duree_film+RCN(2)+liste_acteurs);
+  if CanSetField(fieldDescription) then
+    SetField( fieldDescription,description_film);
+  if CanSetField(fieldProducer) then
+    SetField( fieldProducer,studio_film);
+  if CanSetField(fieldComments) and (GetOption('Staff') = 0) and (liste_acteurs <> '') then
+    SetField( fieldComments, saisons + fansub + Liste_editeurs + liste_acteurs + RCN(2) + liste_episodes )
+else if CanSetField(fieldComments) and ((GetOption('Staff') = 2) or (GetOption('Staff') = 1)) then
+    SetField( fieldComments, saisons + fansub + Liste_editeurs + liste_episodes);
+
+// Chargement de l'image AnimeNewsNetwork ou Animeka
+  if CanSetPicture then
+  begin
+    if (GetOption('Choix Image') = 1) then
+    begin
+    AnimeName := GetField(fieldOriginalTitle);
+    AnimeName := cleanTitle(DelFirstBlank(AnimeName));
+    AnalyzePage2('http://www.animenewsnetwork.com/encyclopedia/search.php?searchbox='+UrlEncode(AnimeName));
+      if test = False then
+        //begin
+        //if (ShowConfirmation('Voulez vous récupérer l''image Animeka ?') = True) then
+        //importImageAnimeka(fichier_image)
+        importImageAnimeka(fichier_image)
+        else
+        exit;
+        //end;
+    end;
+  end;
+
+
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    afterUpdate();
+
+// Affichage des titres si original et traduit identique
+  titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION MOYENNE SUR DIX
+//------------------------------------------------------------------------------
+
+function moyenneNote(Note : String) : String;
+var
+   lesNotes : TStringList;
+   laNote, NoteI : String;
+   Position, i : Integer;
+begin
+  lesNotes := TStringList.Create;                         // création de la liste
+  if pos('/10', Note) <> 0 then                           // s'il y a une note
+  begin
+    Note := StringReplace(Note, ',','.');
+    Position := pos('/10', Note);
+    repeat
+      if (copy(Note,Position-2,1) = '.') then
+        laNote := copy(Note,Position-4,4)                 // si note avec décimale
+      else
+        laNote := copy(Note,Position-1,1)+'.0';           // si note sans décimale
+      laNote := StringReplace(laNote, ',','.');           // au cas où le séparateur est une virgule
+      lesNotes.Add(laNote);                               // la note est ajoutée à la liste des notes
+      delete(Note, pos('/10', Note), length('/10'));
+      Position := pos('/10', Note);
+    until (pos('/10', Note) = 0);
+    if lesNotes.Count <> 1 then                           // si plus d'une seule note
+    begin
+      for i:=0 to lesNotes.Count-1 do
+      begin
+        NoteI := lesNotes.GetString(i);
+        if i = 0 then
+          Note := NoteI                                   // première boucle
+        else
+          Note := sommeNote(NoteI,Note);                  // somme des notes
+      end;
+      Note := FloatToStr(StrToFloat(Note)/lesNotes.Count);// calcul de la moyenne
+    end else
+      Note := laNote;                                     // si une seule note
+    result := Note;
+  end else
+    result := Note;                                       // si pas note
+  lesNotes.Free;                                          // suppression de la liste
+end;
+
+function sommeNote(NoteA, NoteB : string) : String;       // calcul la somme des deux notes
+var
+   unite1, decimale1, unite2, decimale2 : Integer;
+begin
+  unite1 := uniteValue(NoteA);
+  decimale1 := decimaleValue(NoteA);
+  unite2 := uniteValue(NoteB);
+  decimale2 := decimaleValue(NoteB);
+  unite1 := unite1+unite2; // Somme des deux moyennes
+  decimale1 := decimale2+decimale1;
+  if decimale1 = 10 then
+  begin
+    decimale1 := 0;
+    unite1 := unite1+1;
+  end else if decimale1 > 10 then
+  begin
+    decimale1 := decimale1-10;
+    unite1 := unite1+1;
+  end;
+  result := IntToStr(unite1)+'.'+IntToStr(decimale1);
+end;
+
+function uniteValue(Note : string) : Integer;             // retourne la valeur des chiffres avant la virgule
+var
+   unite : Integer;
+begin
+  unite := 0;
+  if pos('.',Note) <> 0 then
+    Note := copy(Note,1,pos('.',Note)-1);
+  unite := StrToInt(Note,0);
+  result := unite;
+end;
+
+function decimaleValue(Note : string) : Integer;          // retourne la valeur des chiffres après la virgule
+var
+   decimale : Integer;
+begin
+  decimale := 0;
+  if pos('.',Note) <> 0 then
+  begin
+    Note := copy(Note,pos('.',Note)+1,length(Note));
+    decimale := StrToInt(Note,0);
+  end;
+  result := decimale;
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DES EPISODES
+//------------------------------------------------------------------------------
+
+procedure TrouveEpisode(page_episodes: string);
+var
+  Line, episode_anime, liste_episodes, aucun, resume, titre_episode, chiffre :string;
+  BeginPos, EndPos, i: Integer;
+begin
+// pour eviter les time-out
+  sleep(TimeSleep);
+// charge la page
+  Line := GetPage(page_episodes);
+// compteur
+  i := 0;
+// liste les épisodes
+  repeat
+  i := i+1;
+  BeginPos := Pos('<td class="animestitle" style="padding-left:5px" >', Line);
+  Delete(Line, 1, BeginPos+49);
+  EndPos := Pos('</td></tr>',Line);
+  if BeginPos=0 then
+    aucun := '<'
+  else
+    aucun := Copy(Line, 1, 1 );
+// pour n'avoir que les épisodes
+  if aucun = '<' then
+  begin
+    exit;
+  end else
+  begin
+// Numéro et titre épisode
+    titre_episode := Copy(Line, 1, EndPos-1 );
+    titre_episode := deleteKanji(titre_episode);
+    titre_episode := StringReplace(titre_episode, RC,'');
+    la_liste := la_liste + titre_episode + RC;
+// Pour le résumé
+    if (GetOption('Liste des épisodes')= 0) then
+    begin
+    BeginPos := Pos('<table cellspacing="5"  width="100%"><tr><td class="animestxt">', Line);
+    Delete(Line, 1, BeginPos+62);
+    EndPos := Pos('</td></tr></table>',Line);
+    resume := '';
+    resume := Copy(Line, 1, EndPos-1 );
+    HTMLremovetags(resume);
+    resume := StringReplace(resume, '&#8217;','''');
+    resume := StringReplace(resume, '&#8230;','...');
+    resume := StringReplace(resume, '&#8209;','-');
+    resume := StringReplace(resume, RC,' ');
+    if resume <> '' then
+      begin
+        la_liste := la_liste + resume + RCN(2);
+      end;
+    end;
+  end;
+  until i = 25;
+
+// Si 25 épisodes et + alors page suivante
+  if i = 25 then
+  begin
+    BeginPos := Pos('<td class="animestitle" style="padding-left:5px" >', Line);
+    Delete(Line, 1, BeginPos+49);
+    EndPos := Pos('</td></tr>',Line);
+    //aucun := Copy(Line, 1, 1 );
+// Si il y a juste 25 épisodes
+  if Pos('25 résultats', Line) > 0 then
+  //if aucun = '<' then
+  begin
+    exit;
+  end else
+  begin
+    chiffre := Copy(Line, 1, 1);
+    if IsChiffreValide(chiffre) then
+      begin
+// Numéro et titre épisode
+      titre_episode := Copy(Line, 1, EndPos-1 );
+      titre_episode := deleteKanji(titre_episode);
+      titre_episode := StringReplace(titre_episode, RC,'');
+      la_liste := la_liste + titre_episode + RC;
+// Pour le résumé
+      if (GetOption('Liste des épisodes')= 0) then
+        begin
+        BeginPos := Pos('<table cellspacing="5"  width="100%"><tr><td class="animestxt">', Line);
+        Delete(Line, 1, BeginPos+62);
+        EndPos := Pos('</td></tr></table>',Line);
+        resume := Copy(Line, 1, EndPos-1 );
+        HTMLremovetags(resume);
+        resume := StringReplace(resume, '&#8217;','''');
+        resume := StringReplace(resume, '&#8230;','...');
+        resume := StringReplace(resume, RC,' ');
+        if resume <> '' then
+          begin
+          la_liste := la_liste + resume + RCN(2);
+          end;
+        end;
+      end;
+// Cherche la page suivante
+    BeginPos := Pos('Précédent', Line);
+    Delete(Line, 1, BeginPos+9);
+    BeginPos := Pos('/animes/epis/', Line);
+    if BeginPos <> 0 then
+    begin
+      Delete(Line, 1, BeginPos-1);
+      EndPos := Pos('">',Line);
+      page_episodes := 'http://www.animeka.com'+Copy(Line, 1, EndPos-1 );
+      if page_episodes <> premiere_pageEpisode then
+      begin
+        TrouveEpisode(page_episodes);
+      end;
+    end;
+  end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Retourne vrai si le caractère est bien un chiffre
+//------------------------------------------------------------------------------
+
+function IsChiffreValide(src : String) : Boolean;
+var
+  Num : String;
+begin
+Num := '0123456789';
+  if (pos(copy(src,1,1), Num) = 0) then
+  begin
+    result := False;
+    exit;
+  end else
+    result := True;
+end;
+
+//------------------------------------------------------------------------------
+// MEILLEUR AFFICHAGE DU NOMBRE D'EPISODES, OAV...
+//------------------------------------------------------------------------------
+
+function bestView(la_ligne : String; la_duree : String) : string;
+begin
+  la_ligne := StringReplace(la_ligne, 'DURÉE :','Format :');
+  la_ligne := StringReplace(la_ligne, 'EPS','épisodes');
+  la_ligne := StringReplace(la_ligne, 'OAV','oav');
+  la_ligne := StringReplace(la_ligne, 'FILM','film');
+  la_ligne := StringReplace(la_ligne, 'TV-S','épisode(s) (spécial télé)');
+  la_ligne := StringReplace(la_ligne, 'CLIP','clip');
+  la_ligne := StringReplace(la_ligne, 'mins','minutes.');
+  if la_duree <> '' then
+  begin
+    la_ligne := StringReplace(la_ligne, la_duree+' minutes','de '+la_duree+' minutes');
+  end;
+  la_ligne := Trim(la_ligne);
+  result := la_ligne;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRESSION DES BALISES
+//------------------------------------------------------------------------------
+
+function deleteBalise (la_ligne : String) : string;
+var
+  i,j, fin : Integer;
+  la_chaine_sans_balise, aucun : String;
+begin
+  la_chaine_sans_balise := '';
+  fin := Length(la_ligne);
+  repeat
+  i := pos('<',la_ligne);
+  if i <> 0 then
+  begin
+    aucun := copy(la_ligne,i+1,fin);
+    delete(aucun,2,fin);
+// pour être sûr d'avoir affaire à une balise
+    if aucun = ' ' then
+    begin
+      la_chaine_sans_balise := la_chaine_sans_balise + copy (la_ligne,1,i);
+      delete(la_ligne,1,i);
+    end else
+    begin
+      j := pos('>',la_ligne);
+      fin := Length(la_ligne);
+      la_chaine_sans_balise := la_chaine_sans_balise + copy (la_ligne,1,i-1);
+      delete(la_ligne,1,j);
+    end;
+  end;
+  until i = 0;
+  fin := Length(la_ligne);
+  la_chaine_sans_balise := la_chaine_sans_balise + copy (la_ligne,1,fin);
+  result := la_chaine_sans_balise;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRESSION DES CARACTERES JAPONAIS DANS LES NOMS D'EPISODES
+//------------------------------------------------------------------------------
+
+function deleteKanji (la_ligne : String) : string;
+var
+  i : Integer;
+begin
+  i:=pos('&#',la_ligne); // ces symboles caractérisent un caractère asiatique
+  if i <> 0 then
+  begin
+    la_ligne := copy(la_ligne,1,i-2);
+  end;
+  result := la_ligne;
+end;
+
+//------------------------------------------------------------------------------
+// NETTOIE LE TITRE
+//------------------------------------------------------------------------------
+
+function nettoieTitre(le_titre : String) : string;
+var
+  i : Integer;
+begin
+  i:=pos('(1',le_titre);
+  if i <> 0 then
+  begin
+    le_titre := copy(le_titre,1,i-1);
+    le_titre := Trim(le_titre);
+    result := le_titre;
+  end;
+  i:= 0;
+  i:=pos('(2',le_titre);
+  if i <> 0 then
+  begin
+    le_titre := copy(le_titre,1,i-1);
+    le_titre := Trim(le_titre);
+    result := le_titre;
+  end else
+    result := le_titre;
+end;
+
+//------------------------------------------------------------------------------
+// DETERMINE LE TIME-OUT SUIVANT LE TYPE DE LANCEMENT
+//------------------------------------------------------------------------------
+
+procedure timeSleepProc();
+begin
+     compteur := compteur+1;
+     if compteur = 9 then
+     begin
+        compteur := 0;
+        sleep(sleepAuto*10);
+     end;
+     if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) then
+        TimeSleep := sleepManu
+     else if (GetOption('Type de Lancement') = 2) or (GetOption('Type de Lancement') = 3) then
+        TimeSleep := sleepAuto;
+end;
+
+//------------------------------------------------------------------------------
+// COMPARE LE TITRE PASSE ET LE TITRE TROUVE
+//------------------------------------------------------------------------------
+
+function compareTitle(titleAllo, title : String) : String;
+begin
+     title := supprimeAccents(trim(AnsiLowerCase(title)));
+     titleAllo := supprimeAccents(trim(AnsiLowerCase(titleAllo)));
+     if (title = titleAllo) then
+     begin
+       result := 'OK';
+     end else
+     begin
+       result := 'KO';
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// Fonction TextBetween (retourne le texte entre BeforeText et AfterText (sans ces 2 chaines)
+//------------------------------------------------------------------------------
+
+function TextBetween(WholeText: string; BeforeText: string; AfterText: string): string;
+var
+  FoundPos: Integer;
+  WorkText, RemainingText: string;
+begin
+  RemainingText := WholeText;
+  Result := '';
+  FoundPos := Pos(BeforeText, WholeText);
+  if FoundPos = 0 then
+    Exit;
+  WorkText := Copy(WholeText, FoundPos + Length(BeforeText), Length(WholeText));
+  FoundPos := Pos(AfterText, WorkText);
+  if FoundPos = 0 then
+    Exit;
+  Result := Copy(WorkText, 1, FoundPos - 1);
+  RemainingText := Copy(WorkText, FoundPos + Length(AfterText), Length(WorkText));
+end;
+
+//------------------------------------------------------------------------------
+//                   début récup image animenewsnetwork          (Merci Baffab)
+//------------------------------------------------------------------------------
+
+function DelFirstBlank(line: string): string;
+begin
+  while (   (pos(' ', line) = 1)
+         or (pos(#09, line) = 1)
+         or (pos(#13, line) = 1)
+         or (pos(#10, line) = 1) ) do
+  Delete(line, 1, 1);
+  result := line;
+end;
+
+function Add_album_on_list(Address: string;Compteur2: Integer): Integer;
+var
+  AnimeTitle,Value,Url: string;
+  Line: string;
+  BeginPos, EndPos: Integer;
+begin
+  Line := GetPage(Address);
+  if Pos('results', Line) > 0 then
+  begin
+     // Recherche le premier album trouvé
+     BeginPos := pos('results', Line);
+     Delete(Line, 1, BeginPos-1);
+     BeginPos := pos('<a href="', Line);
+     Delete(Line, 1, BeginPos-1);
+     // Liste chaque album trouvé
+     BeginPos := pos('<a href="/e', Line);
+     PickTreeAdd('[Image Animeka]', 'animeka');
+     while (BeginPos > 0) and (pos('<br',Line)>BeginPos) do
+       begin
+         BeginPos := pos('>', Line)+1;
+         EndPos := pos('</a>', Line);
+         Value    := copy(Line, BeginPos, EndPos - BeginPos);
+         // Parse pour avoir le titre
+         AnimeTitle  := Value;
+         HTMLRemoveTags(AnimeTitle);
+         HTMLDecode(AnimeTitle);
+         // Parse pour avoir l'url
+         Url := copy(Line,1,pos('>',Line));
+         Delete(Url, 1, pos('<a href="/e', Url) + 8);
+         Url    := copy(Url,  1, pos('"', Url) -1);
+         // Ajout de la ligne dans l'interface
+         adresseunique := 'http://www.animenewsnetwork.com' + Url;
+         if pos('(manga)', AnimeTitle)=0 then PickTreeAdd(AnimeTitle, adresseunique);
+         Delete(Line, 1, EndPos-1);
+         BeginPos := pos('<a href="/e', Line);
+         Delete(Line, 1, BeginPos-1);
+         result := result + 1;
+         BeginPos := pos('<a href="/e', Line);
+       end;
+  end else
+    result := 0;
+end;
+
+procedure AnalyzePage2(Address: string);
+var
+  Res: Integer;
+  fichier_image: String;
+begin
+  // Init liste
+  PickTreeClear;
+  Res := Add_album_on_list(Address,1);
+  if ( Res >0) then
+    begin
+     if (Res = 1) then
+     begin
+       AnalyzeAnimePage(adresseunique);
+       exit;
+     end;
+    // Affiche fenetre de selection
+    if PickTreeExec(Address)= false then
+      begin
+      test := False;
+      exit;
+      end else
+      If pos('animeka', Address) > 0 then
+      begin
+      test := False;
+      exit;
+      end else
+      begin
+      if (pos('id', Address) >0) then
+        begin
+        // On a selectionné un anime
+        AnalyzeAnimePage(Address);
+        end else
+        //  On a selectionné page suivante.
+        AnalyzePage2(Address);
+    end
+  end;
+end;
+
+procedure AnalyzeAnimePage(Address:string);
+var
+  Value, PageContents: string;
+  BeginPos: Integer;
+begin
+  PageContents := GetPage(Address);
+  Sleep(500);
+  // Images
+  BeginPos := Pos('/fit200', PageContents);
+  if  (BeginPos > 0) then
+  begin
+    Value := findInfo ('/fit200', ' ', PageContents, '0');
+    Value := 'http://www.animenewsnetwork.com/thumbnails/fit200' + Value;
+    delete(Value,length(Value),1);
+    Value := StringReplace(Value,'thumbnails/fit200x200','images');
+    GetPicture(Value);
+    test := True;
+  end;
+  BeginPos := Pos('img id="vid-art"', PageContents);
+  if  (BeginPos > 0) then
+  begin
+  Value := findInfo ('<img id="vid-art" src="', '">', PageContents, '0');
+//  Value := 'http://www.animenewsnetwork.com' + Value;
+  GetPicture(Value);
+  test := True;
+  end;
+end;
+//------------------------------------------------------------------------------
+//                    Fin récup image animenewnetwork           (Merci Baffab)
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//      Transforme la version html de l'éditeur en version compréhensible
+//     en récupérant la base des éditeurs directement sur le site d'Animeka
+//------------------------------------------------------------------------------
+
+function TransformEditeur(editeurs : String) : string;
+
+var
+editeur_html, Editeur_NOTV, Editeur_TV, editeur : string;
+BeginPos, EndPos : Integer;
+
+begin
+Editeur_NOTV := GetPage('http://www.animeka.com/animes/editeur/index.html');
+// Charge la partie TV des éditeurs dans Editeur_TV
+  BeginPos := Pos('>Liste des éditeurs français (', Editeur_NOTV);
+  EndPos := Pos('<!-- end ** Animes ** -->', Editeur_NOTV);
+  Editeur_TV := Copy(Editeur_NOTV, BeginPos, EndPos-BeginPos);
+// se cale au début de la partie TV, début de la boucle
+    repeat
+  BeginPos := Pos('alt="logo" >',Editeur_TV);
+  Delete(Editeur_TV, 1, BeginPos);
+// Cherche le nom de l'éditeur version HTML
+  BeginPos := Pos('/animes/editeur/',Editeur_TV);
+  Delete(Editeur_TV, 1, BeginPos+15);
+  EndPos := Pos('">',Editeur_TV);
+  editeur_html := Copy(Editeur_TV, 1, EndPos-1 );
+// Cherche le nom de l'éditeur version compréhensible
+  BeginPos := Pos('">',Editeur_TV);
+  Delete(Editeur_TV, 1, BeginPos+1);
+  EndPos := Pos('</a></td>',Editeur_TV)-1;
+  editeur := Copy(Editeur_TV, 1, EndPos );
+  HTMLDecode(editeur);
+// Vire les [EX trucmuch] si il y en a
+      if Pos(' [EX', editeur) <> 0 then
+      begin
+      BeginPos := Pos(' [EX', editeur);
+      EndPos := Pos(']', editeur);
+      Delete(editeur, BeginPos, (EndPos-BeginPos)+1);
+      end;
+// Remplace éventuellement editeurs et se recale à la ligne suivante
+    editeurs := StringReplace(editeurs, editeur_html, editeur);
+    BeginPos := Pos('animestxthl',Editeur_TV);
+    Delete(Editeur_TV, 1, BeginPos);
+  until BeginPos = 0;
+
+// Donne le résultat
+    result := editeurs;
+end;
+
+//------------------------------------------------------------------------------
+// REMET LES ARTICLES EN DEBUT DE TITRE   (existe déjà dans ScorEpioNCommonScript, mais réécris pour éviter un reformatage des chiffres romains ex: III devient Iii)
+//------------------------------------------------------------------------------
+
+function articleDebutTitre2(title,Debut,Fin : String) : String;
+var
+  Articles: array of string;
+  i: integer;
+begin
+  //title := AnsiLowerCase(title);
+  Articles := initLesArticles2();
+  for i := 0 to GetArrayLength(Articles)-1 do
+  begin
+    if Pos(Debut+trim(Articles[i])+Fin, title) <> 0 then
+    begin
+      title := Articles[i]+title;
+      title := StringReplace(title, Debut+trim(Articles[i])+Fin, '');
+      Break;
+    end;
+  end;
+  result := title;
+end;
+
+//------------------------------------------------------------------------------
+// INITIALISE LA LISTE DES ARTICLES    (existe déjà dans ScorEpioNCommonScript, mais réécris pour éviter un reformatage des chiffres romains ex: III devient Iii)
+//------------------------------------------------------------------------------
+
+function initLesArticles2() : array of string;
+var
+  Articles: array of string;
+  i: integer;
+begin
+  SetArrayLength(Articles,64);
+  Articles[0]:='le ';
+  Articles[1]:='la ';
+  Articles[2]:='l''';
+  Articles[3]:='l ';
+  Articles[4]:='les ';
+  Articles[5]:='des ';
+  Articles[6]:='un ';
+  Articles[7]:='une ';
+  Articles[8]:='the ';
+  Articles[9]:='a ';
+  Articles[10]:='an ';
+  Articles[11]:='der ';
+  Articles[12]:='das ';
+  Articles[13]:='die ';
+  Articles[14]:='dem ';
+  Articles[15]:='den ';
+  Articles[16]:='ein ';
+  Articles[17]:='eine ';
+  Articles[18]:='einen ';
+  Articles[19]:='einer ';
+  Articles[20]:='eines ';
+  Articles[21]:='einem ';
+  Articles[22]:='uno ';
+  Articles[23]:='una ';
+  Articles[24]:='el ';
+  Articles[25]:='los ';
+  Articles[26]:='las ';
+  Articles[27]:='unos ';
+  Articles[28]:='unas ';
+  Articles[29]:='il ';
+  Articles[30]:='lo ';
+  Articles[31]:='i ';
+  Articles[32]:='Le ';
+  Articles[33]:='La ';
+  Articles[34]:='L''';
+  Articles[35]:='L ';
+  Articles[36]:='Les ';
+  Articles[37]:='Des ';
+  Articles[38]:='Un ';
+  Articles[39]:='Une ';
+  Articles[40]:='The ';
+  Articles[41]:='A ';
+  Articles[42]:='An ';
+  Articles[43]:='Der ';
+  Articles[44]:='Das ';
+  Articles[45]:='Die ';
+  Articles[46]:='Dem ';
+  Articles[47]:='Den ';
+  Articles[48]:='Ein ';
+  Articles[49]:='Eine ';
+  Articles[50]:='Einen ';
+  Articles[51]:='Einer ';
+  Articles[52]:='Eines ';
+  Articles[53]:='Einem ';
+  Articles[54]:='Uno ';
+  Articles[55]:='Una ';
+  Articles[56]:='El ';
+  Articles[57]:='Los ';
+  Articles[58]:='Las ';
+  Articles[59]:='Unos ';
+  Articles[60]:='Unas ';
+  Articles[61]:='Il ';
+  Articles[62]:='Lo ';
+  Articles[63]:='I ';
+  result := Articles;
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,1) then
+  begin
+    // Pour une mise à jour automatique du script
+    // Début
+    if GetOption('Auto-Update') = 0 then
+    begin
+      AutoUpdate(GetStatic('LastUPD'), VersionScript, NomScript);
+      SetStatic('LastUPD',GetField(fieldDate));
+    end;
+    // Fin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    // Pour ne pas avoir l'alerte sur le type de lancement à chaque fois mais uniquement à la première execution
+    // Début
+    TypeExec := GetStatic('LastExec');
+    if (TypeExec <> IntToStr(GetOption('Type de Lancement'))) then
+    begin
+      if (ShowConfirmation('Vous exécutez le script avec le type de lancement << '+IntToStr(GetOption('Type de Lancement'))+' >> pour la première fois.'+RCN(2)+'Cliquer sur ''''OUI'''' pour continuer.') = False) then
+         exit
+      else
+        SetStatic('LastExec',IntToStr(GetOption('Type de Lancement')));
+    end;
+    // Fin
+    NomFilm := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    timeSleepProc();
+    // Pour la création du fichier log
+    // Début
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      premiereExecution := -1;
+      batch(NomScript);
+      AddToLog('Les animes ayant été mis à jour sont maintenant cochés');
+    end;
+    // Fin
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre de l''anime :', NomFilm) then
+      begin
+        if Pos(urlDomain, NomFilm) > 0 then
+          begin
+            AnalysePageFilm(NomFilm);
+        end else
+        begin
+        MovieName := NomFilm;
+        NomFilm := supprimeLesArticles(NomFilm);
+        NomFilm := supprimeLesAccents(NomFilm);
+        NomFilm := StringReplace(NomFilm, '''', '+');
+        NomFilm := StringReplace(NomFilm, ' ', '+');
+        AnalyzePage(NomFilm);
+        end;
+      end;
+    end else
+		if (GetOption('Type de Lancement') = 4) then
+    begin
+      NomFilm := GetField(fieldURL);
+      if Pos(urlDomain, NomFilm) > 0 then
+         AnalysePageFilm(NomFilm)
+     else
+     if recupTitreRecherche(GetOption('Recherche sur le titre')) <> '' then
+     begin
+      NomFilm := recupTitreRecherche(GetOption('Recherche sur le titre'));
+      MovieName := NomFilm;
+      NomFilm := supprimeLesArticles(NomFilm);
+      NomFilm := supprimeLesAccents(NomFilm);
+      NomFilm := StringReplace(NomFilm, ' ', '+');
+      AnalyzePage(NomFilm);
+     end else
+     begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre de l''anime :', NomFilm) then
+      begin
+        if Pos(urlDomain, NomFilm) > 0 then
+          begin
+            AnalysePageFilm(NomFilm);
+		  end else
+        begin
+        MovieName := NomFilm;
+        NomFilm := supprimeLesArticles(NomFilm);
+        NomFilm := supprimeLesAccents(NomFilm);
+        NomFilm := StringReplace(NomFilm, '''', '+');
+        NomFilm := StringReplace(NomFilm, ' ', '+');
+        AnalyzePage(NomFilm);
+        end;
+      end;
+    end;
+	end else
+    if (GetOption('Type de Lancement') = 3) then
+    begin
+      NomFilm := GetField(fieldURL);
+      if Pos(urlDomain, NomFilm) > 0 then
+         AnalysePageFilm(NomFilm);
+    end else
+    begin
+      MovieName := NomFilm;
+      NomFilm := supprimeLesArticles(NomFilm);
+      NomFilm := supprimeLesAccents(NomFilm);
+      NomFilm := StringReplace(NomFilm, ' ', '+');
+      AnalyzePage(NomFilm);
+    end;
+  end else
+    ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.1)');
+end.

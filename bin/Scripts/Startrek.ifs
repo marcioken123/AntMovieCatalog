@@ -1,0 +1,284 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=DarkInk <link>http://www.darkink.tk</link>
+Title=startrek.com
+Description=www.startrek.com episode import
+Site=www.startrek.com
+Language=EN
+Version=20050119
+Requires=3.5.0
+Comments= v20050119 - Script update, Added Enterprise Season 4.| v20050114 - Script update, Site changed a little.| v20040203 - First version.|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+Program StarTrek;
+Var
+  IndexURL    : String;
+  EpisodeURL  : String;
+  Tmp         : String;
+
+Function ShowSeries : Boolean;
+Begin
+  PickTreeClear;
+  PickTreeAdd('The Original Serie (TOS)', '');
+    PickTreeAdd('Season 1', 'http://www.startrek.com/startrek/view/series/TOS/episodes/index.html?season=1&category=production');
+    PickTreeAdd('Season 2', 'http://www.startrek.com/startrek/view/series/TOS/episodes/index.html?season=2&category=production');
+    PickTreeAdd('Season 3', 'http://www.startrek.com/startrek/view/series/TOS/episodes/index.html?season=3&category=production');
+  PickTreeAdd('The Next Generation (TNG)', '');
+    PickTreeAdd('Season 1', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=1&category=production');
+    PickTreeAdd('Season 2', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=2&category=production');
+    PickTreeAdd('Season 3', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=3&category=production');
+    PickTreeAdd('Season 4', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=4&category=production');
+    PickTreeAdd('Season 5', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=5&category=production');
+    PickTreeAdd('Season 6', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=6&category=production');
+    PickTreeAdd('Season 7', 'http://www.startrek.com/startrek/view/series/TNG/episodes/index.html?season=7&category=production');
+  PickTreeAdd('Deep Space Nine (DS9)', '');
+    PickTreeAdd('Season 1', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=1&category=production');
+    PickTreeAdd('Season 2', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=2&category=production');
+    PickTreeAdd('Season 3', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=3&category=production');
+    PickTreeAdd('Season 4', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=4&category=production');
+    PickTreeAdd('Season 5', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=5&category=production');
+    PickTreeAdd('Season 6', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=6&category=production');
+    PickTreeAdd('Season 7', 'http://www.startrek.com/startrek/view/series/DS9/episodes/index.html?season=7&category=production');
+  PickTreeAdd('Voyager (VOY)', '');
+    PickTreeAdd('Season 1', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=1&category=production');
+    PickTreeAdd('Season 2', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=2&category=production');
+    PickTreeAdd('Season 3', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=3&category=production');
+    PickTreeAdd('Season 4', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=4&category=production');
+    PickTreeAdd('Season 5', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=5&category=production');
+    PickTreeAdd('Season 6', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=6&category=production');
+    PickTreeAdd('Season 7', 'http://www.startrek.com/startrek/view/series/VOY/episodes/index.html?season=7&category=production');
+  PickTreeAdd('Enterprise (ENT)', '');
+    PickTreeAdd('Season 1', 'http://www.startrek.com/startrek/view/series/ENT/episodes/index.html?season=1&category=production');
+    PickTreeAdd('Season 2', 'http://www.startrek.com/startrek/view/series/ENT/episodes/index.html?season=2&category=production');
+    PickTreeAdd('Season 3', 'http://www.startrek.com/startrek/view/series/ENT/episodes/index.html?season=3&category=production');
+    PickTreeAdd('Season 4', 'http://www.startrek.com/startrek/view/series/ENT/episodes/index.html?season=4&category=production');
+  ShowSeries := PickTreeExec(IndexURL);
+End;
+
+Function CleanString(Str : String) : String;
+Begin
+  Str := StringReplace(Str, '<P>', #13#10);
+  HTMLDecode(Str);
+  HTMLRemoveTags(Str);
+  Str := Trim(Str);
+  Str := StringReplace(Str, #09, '');
+  If Pos(#13#10, Str) = 1 Then Begin
+    Str := Copy(Str, 3, Length(Str) - 2);
+  End;
+  CleanString := Str;
+End;
+
+Function ShowEpisodes : Boolean;
+Var
+  Page      : TStringList;
+  I, J, K   : Integer;
+  Str       : String;
+  Tmp, Tmp1 : String;
+  Url       : String;
+  Title     : String;
+  EpisodeNo : String;
+Begin
+  PickTreeClear;
+  PickTreeAdd('Episodes', '');
+  Page := TStringList . Create;
+  Page . Text := GetPage(IndexURL);
+  I := 1;
+  While I < Page . Count Do Begin
+    Str := Page . GetString(I);
+    Tmp := '<td width="230" valign="top"><img src="images/spacer.gif" width="230" height="2"><br><a href="';
+    J := Pos(Tmp, Str);
+    If J > 0 Then Begin
+      K := J + Length(Tmp);
+      Tmp := Copy(Str, K, Length(Str) - K + 1);
+      K := Pos('"  alt="', Tmp);
+      If K > 0 Then Begin  (* URL *)
+        Url := Copy(Tmp, 1, K - 1);
+        Tmp1 := 'class="periwinkle">';
+        J := Pos(Tmp1, Tmp);
+        If J > 0 Then Begin (* Title *)
+          K := Pos('</a></td>', Tmp);
+          Title := Copy(Tmp, J + Length(Tmp1), K - (J + Length(Tmp1)));
+          HTMLDecode(Title);
+          I := I + 1; (* Episode Number *)
+          Str := Page . GetString(I);
+          J := Pos('<br>', Str);
+          If J > 0 Then Begin
+            K := Pos('</td>', Str);
+            EpisodeNo := Copy(Str, J + 4, K - (J + 4));
+            PickTreeAdd(EpisodeNo + ' - ' + Title, 'http://www.startrek.com' + Url); (* Add Episode to the tree *)
+          End;
+        End;
+      End;
+    End;
+    I := I + 1;
+  End;
+  ShowEpisodes := PickTreeExec(EpisodeURL);
+End;
+
+Procedure ProcessEpisode;
+Var
+  Page      : TStringList;
+  PagePhoto : TStringList;
+  I, J, K   : Integer;
+  Str       : String;
+  Tmp, Tmp1 : String;
+  AirDate   : String;
+  StarDate  : String;
+  EpisodeNo : String;
+  Photo     : Boolean;
+Begin
+  SetField(fieldTranslatedTitle, GetField(fieldOriginalTitle));
+  Page := TStringList . Create;
+  Photo:= FALSE;
+  Page . Text := GetPage(EpisodeURL);
+  I := 1;
+  While I < Page . Count Do Begin
+    Str := Page . GetString(I);
+    (* Title *)
+    J := Pos('<span class="episodetitle">', Str);
+    If J > 0 Then Begin
+      Str := CleanString(Str);
+      SetField(fieldOriginalTitle, Str);
+    end else Begin
+      (* Air Date *)
+      J := Pos('<span class="mainwhite">Air Date:</span>', Str);
+      If J > 0 Then Begin
+        Tmp := Copy(Str, J + 47, 4);
+        SetField(fieldYear, Tmp);
+      end else Begin
+        (* Synopsis *)
+        J := Pos('<span class="headlinewhite">Synopsis</span>', Str);
+        If J > 0 Then Begin
+          I := I + 34;
+          Str := Page . GetString(I);
+          Str := CleanString(Str);
+          SetField(fieldDescription, Str);
+        End Else Begin
+          (* Cast = Actors *)
+          J := Pos('<span class="mainwhite">Cast:</span>', Str);
+          If J > 0 Then Begin
+            I := I + 4;
+            Tmp := Page . GetString(I);
+            Tmp1 := '';
+            While Length(Tmp) <> 0 Do Begin
+              Tmp := CleanString(Tmp);
+              I := I + 4;
+              Str := Page . GetString(I);
+              Str := CleanString(Str);
+              Tmp1 := Tmp1 + Tmp + ' as ' + Str + #13#10;
+              I := I + 4;
+              Tmp := Page . GetString(I);
+            End;
+            Tmp := GetField(fieldActors);
+            SetField(fieldActors, Tmp + Tmp1);
+          End Else Begin
+            (* Guest Cast = Actors *)
+            J := Pos('<span class="mainwhite">Guest Cast:</span>', Str);
+            If J > 0 Then Begin
+              I := I + 5;
+              Tmp := Page . GetString(I);
+              Tmp1 := '';
+              While Length(Tmp) <> 0 Do Begin
+              Tmp := CleanString(Tmp);
+                I := I + 4;
+                Str := Page . GetString(I);
+                Str := CleanString(Str);
+                Tmp1 := Tmp1 + Tmp + ' as ' + Str + #13#10;
+                I := I + 4;
+                Tmp := Page . GetString(I);
+              End;
+              Tmp := GetField(fieldActors);
+              SetField(fieldActors, Tmp + Tmp1);
+            End Else Begin
+              (* Creative Staff = Director + Comments *)
+              J := Pos('<span class="mainwhite">Creative Staff:</span>', Str);
+              If J > 0 Then Begin
+                I := I + 2;
+                Str := Page . GetString(I);
+                While Str <> '</table>' Do Begin
+                  Tmp := CleanString(Str);
+                  If Tmp = 'Director:' Then Begin
+                    I := I + 2;
+                    Str := Page . GetString(I);
+                    Str := CleanString(Str);
+                    SetField(fieldDirector, Str);
+                  End Else If Tmp <> '' Then Begin
+                    Str := GetField(fieldComments);
+                    SetField(fieldComments, Str + Tmp + #13#10);
+                  End;
+                  I := I + 1;
+                  Str := Page . GetString(I);
+                End;
+              End Else Begin
+                (* Episode Number *)
+                J := Pos('<span class="mainwhite">Production:</span>', Str);
+                If J > 0 Then Begin
+                  Str := Copy(Str, J, Length(Str) - J);
+                  Str := CleanString(Str);
+                  Tmp := GetField(fieldComments);
+                  SetField(fieldComments, Tmp + Str + #13#10);
+                End Else Begin
+                  (* Star Date *)
+                  J := Pos('<span class="mainwhite">Stardate:</span>', Str);
+                  If J > 0 Then Begin
+                    I := I + 2;
+                    Str := Page . GetString(I);
+                    Str := CleanString(Str);
+                    If Str <> '' Then Begin
+                      Tmp := GetField(fieldComments);
+                      SetField(fieldComments, Tmp + 'Stardate: ' + Str + #13#10);
+                    End;
+                  End Else Begin
+                    (* Picture *)
+                    Tmp := '<a class="periwinkle" HREF="javascript:openwindow(''/startrek/mediaview?';
+                    J := Pos(Tmp, Str);
+                    If (Photo = FALSE) And (J > 0) Then Begin
+                      K := Pos(''',''mediapopup', Str);
+                      Tmp := Copy(Str, J + Length(Tmp), K - (J + Length(Tmp)));
+                      PagePhoto := TStringList . Create;
+                      PagePhoto . Text := GetPage('http://www.startrek.com/startrek/mediaview?' + Tmp);
+                      Str := PagePhoto . GetString(35);
+                      J := Pos('/imageuploads/', Str);
+                      K := Pos('jpg', Str);
+                      Str := Copy(Str, J, K - J + 3);
+                      GetPicture('http://www.startrek.com/' + Str);
+                      PagePhoto . Free;
+                      Photo := TRUE;
+                    End;
+                  End;
+                End;
+              End;
+            End;
+          End;
+        End;
+      End;
+    End;
+    I := I + 1;
+  End;
+  SetField(fieldCountry, 'United States');
+  SetField(fieldProducer, 'Paramount Pictures');
+  SetField(fieldCategory, 'Star Trek');
+  Page . Free;
+end;
+
+begin
+  If CheckVersion(3,5,0) Then Begin
+    If ShowSeries Then Begin
+      If ShowEpisodes Then Begin
+        ProcessEpisode;
+        //DisplayResults;
+      End;
+    End;
+  End
+    Else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

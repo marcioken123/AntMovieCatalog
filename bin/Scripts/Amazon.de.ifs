@@ -1,0 +1,556 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Gerhard Schaber (gerhard(.)schaber(at)gmx.at, http://schaber.gmxhome.de)
+Title=Amazon.de (All)
+Description=Retrieves movie info from the German Amazon site
+Site=http://www.amazon.de
+Language=DE
+Version=1.4
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=0
+
+[Options]
+RetrieveFullSizePicture=1|1|0=Retrieve preview picture|1=Retrieve full size picture
+RetrieveFullDescription=1|0|0=Retrieve simple descriptions|1=Retrieve all descriptions
+RetainOriginalDescription=0|0|0=Replace description|1=Retain original description
+RetainOriginalTitle=0|0|0=Replace original title|1=Retain original title
+AutoSelect=0|1|0=Always show movie selection dialog|1=Auto-select movie if there is only one|2=Auto-select first movie|3=Fully unattended
+AddOtherFieldsToSearch=0|0|0=Only search for movie name|1=Add director and actor field to search string in order to narrow the search results
+
+***************************************************)
+
+(*********************************************************
+ *                                                       *
+ * (c) 2007 Gerhard Schaber gerhard(.)schaber(at)gmx.at  *
+ *                                                       *
+ * Version history:                                      *
+ * 1.0  Initial version                                  *
+ * 1.1  Added retrieve-all-descriptions option           *
+ * 1.2  Added auto-select options; usability fixes       *
+ * 1.3  Added 'find more' functionality; bug fixes;      *
+ *      fetches NPAGES_PER_QUERY pages at once now       *
+ * 1.4  Better behaviour with & in movie name;           *
+ *      added fully unattended autoselect mode           *
+ *                                                       *
+ *********************************************************)
+program Amazon_de;
+uses
+  StringUtils1;
+  
+const
+  // search site address
+  SITE_BASE_URL          = 'http://www.amazon.de/s/ref=nb_ss_d/028-3425823-5522910?__mk_de_DE=%C5M%C5Z%D5%D1&url=search-alias%3Ddvd&field-keywords=';
+  FULLSIZE_PICT_OPTION   = 'RetrieveFullSizePicture';
+  FULL_DESCR_OPTION      = 'RetrieveFullDescription';
+  RETAIN_DESCR_OPTION    = 'RetainOriginalDescription';
+  RETAIN_TITLE_OPTION    = 'RetainOriginalTitle';
+  AUTOSELECT_OPTION      = 'AutoSelect';
+  ADD_FIELDS_OPTION      = 'AddOtherFieldsToSearch';
+  // search result tags, for instance for: <td class="resultCount">... Ergebnisse</td>
+  RESULT_TAG_1           = '<td class="resultCount">';
+  RESULT_TAG_2           = ' Ergebnis'; // ' Ergebnisse</td>' or ' Treffer</td>'
+  RESULT_TAG_3           = ' Treffer'; // ' Ergebnisse</td>' or ' Treffer</td>'
+  // movie list tags, for instance for: <a href="..."><span class="srTitle">...</span></a>
+  MOVIE_LIST_TAG_1       = '<a href="';
+  MOVIE_LIST_TAG_2       = '"><span class="srTitle">';
+  MOVIE_LIST_TAG_3       = '</span>';
+  MOVIE_LIST_FROM_TAG    = '<span class="bindingBlock">';
+  MOVIE_YEAR_TAG_1       = ' - ';
+  MOVIE_YEAR_TAG_2       = ')';
+  // movie details tags
+  MOVIE_TITLE_TAG1       = '<title>Amazon.de: ';
+  MOVIE_TITLE_TAG2       = ': ';
+  MOVIE_PICTURE_TAG1     = 'id="prodImageCell"';
+  MOVIE_PICTURE_TAG2     = '<img src="';
+  MOVIE_PICTURE_TAG3     = '" id="prodImage"';
+  MOVIE_PICT_LORES_TAG   = 'AA240_';
+  MOVIE_PICT_HIRES_TAG   = 'SS500_';
+  MOVIE_ACTOR_TAG        = 'Darsteller:';
+  MOVIE_DIRECTOR_TAG     = 'Regisseur(e):';
+  MOVIE_AUDIOFORMAT_TAG  = 'Format:';
+  MOVIE_LANGUAGE_TAG     = 'Sprache:';
+  MOVIE_VIDEOFORMAT_TAG  = 'Bildseitenformat:';
+  MOVIE_DISKS_TAG        = 'Anzahl Disks:';
+  MOVIE_FSK_TAG          = 'FSK:';
+  MOVIE_STUDIO_TAG       = 'Studio:';
+  MOVIE_RELEASE_TAG      = 'DVD-Erscheinungstermin:';
+  MOVIE_LENGTH_TAG       = 'Spieldauer:';
+  MOVIE_DESCRIPTION_TAG1 = '<b class="h1">Rezensionen</b><br />';
+  MOVIE_DESCRIPTION_TAG2 = '</b><br />';
+  MOVIE_DESCRIPTION_TAG3 = '</div>';
+  MOVIE_DESCR_LINK_TAG1  = '<a href="';
+  MOVIE_DESCR_LINK_TAG2  = '">Alle Rezensionen';
+
+  // formatting
+  DETAILS_SEPARATOR1     = ': ';
+  DETAILS_SEPARATOR2     = '';
+  
+  MAXINT                 = 2147483647;
+  LINEFEED               = Chr(13)+Chr(10);
+  INPUTPAGE_TITLE        = 'Amazon.de (All)';
+  NEXT_PAGE              = '&page=';
+  NPAGES_PER_QUERY       = 2;
+  UNHANDLED_MOVIES_FILE  = 'C:\AntMovieCatalog_Amazon_de_Movies_Unhandled.txt';
+
+var
+  gMovieName, gResultPath: String;
+  gPageNo: Integer;
+  gUnhandledMovieList: TStringList;
+
+// returns the line number of an occurrence of searchText
+//function FindLine(searchText: String; page: TStringList; searchPos: Integer): Integer;
+//var
+//  i: Integer;
+//begin
+//
+//  result := -1;
+//  if searchPos < 0 then
+//    searchPos := 0;
+//  for i := searchPos to page.Count-1 do
+//    if Pos(searchText, page.GetString(i)) > 0 then
+//    begin
+//      result := i;
+//      break;
+//    end;
+//end;
+
+// analyzes a given site for results tag
+procedure AnalyzePageHeader(movieName: String; address: String; var page: TStringList; var line: Integer);
+var
+  pos1, pos2, pos3, tmpline: Integer;
+  str, movieAddress: String;
+begin
+  page := TStringList.Create;
+  page.Text := GetPage(address);
+  line := 0;
+  repeat
+    line := FindLine(RESULT_TAG_1, page, line);
+    if (line >= 0) then
+    begin
+      str := page.GetString(line);
+      pos1 := Pos(RESULT_TAG_1, str);
+      pos2 := Pos(RESULT_TAG_2, str);
+      pos3 := Pos(RESULT_TAG_3, str);
+      if (pos1 > 0) and ((pos2 > 0) or (pos3 > 0)) then
+      begin
+        tmpline := FindLine(MOVIE_LIST_TAG_2, page, line);
+        if (tmpline >= 0) then
+        begin
+          break;
+        end
+      end
+      line := line + 1;
+    end
+  until (line < 0);
+end;
+
+// analyzes a given site for matching movie titles
+procedure AnalyzePage(movieName: String; address: string);
+var
+  page: TStringList;
+  line, cnt: Integer;
+  str: String;
+begin
+  AnalyzePageHeader(movieName, address, page, line);
+
+  if line >= 0 then
+  begin
+    PickTreeClear;
+    PickTreeAdd('Die Suche nach "' + movieName + '" ergab:', '');
+    PickTreeMoreLink(NEXT_PAGE);
+    address := GetMovies(page, line);
+    if address = '' then
+    begin
+      // get some extra result pages
+      for cnt := 2 to NPAGES_PER_QUERY do
+      begin
+        gPageNo := gPageNo + 1;
+        page.Free;
+        AnalyzePageHeader(movieName, AssembleSearchAddress(movieName) + NEXT_PAGE + IntToStr(gPageNo), page, line);
+        GetMovies(page, line);
+      end;
+      
+      // now really open the selection dialog
+      if PickTreeExec(address) then
+      begin
+        if address <> NEXT_PAGE then
+        begin
+          AnalyzeDetailPage(address);
+        end else
+        begin
+          gPageNo := gPageNo + 1;
+          AnalyzePage(movieName, AssembleSearchAddress(movieName) + NEXT_PAGE + IntToStr(gPageNo));
+        end;
+      end;
+    end else
+    begin
+      AnalyzeDetailPage(address);
+    end;
+  end else
+  begin
+    // ShowMessage('Die Suche nach "' + movieName + '" lieferte keine Treffer');
+    if (GetOption(AUTOSELECT_OPTION) < 3) then
+    begin
+      if Input(INPUTPAGE_TITLE, 'Die Suche nach "' + movieName + '" lieferte keine Treffer.' + LINEFEED + 'Bitte neuen Filmtitel eingeben: ', movieName) then
+      begin
+        AnalyzePage(movieName, AssembleSearchAddress(movieName));
+      end;
+    end else
+    begin
+      cnt := gUnhandledMovieList.Count;
+      gUnhandledMovieList.Add(movieName);
+      gUnhandledMovieList.SaveToFile(gResultPath);
+    end;
+  end;
+
+  page.Free;
+end;
+
+// analyzes the detail page
+procedure AnalyzeDetailPage(address: String);
+var
+  page: TStringList;
+  line, pos1, pos2: Integer;
+  str, fieldValue, pictureAddress, descAddress, description: String;
+begin
+  page := TStringList.Create;
+  page.Text := GetPage(address);
+
+  line := 0;
+  line := FindLine(MOVIE_TITLE_TAG1, page, line);
+  if line >= 0 then
+  begin
+    str := page.GetString(line);
+    pos1 := Pos(MOVIE_TITLE_TAG1, str) + Length(MOVIE_TITLE_TAG1);
+    str := Copy(str, pos1, MAXINT);
+    pos2 := Pos(MOVIE_TITLE_TAG2, str);
+    str := Copy(str, 1, pos2-1);
+    HTMLRemoveTags(str);
+    fieldValue := Trim(str);
+    HTMLDecode(fieldValue);
+    SetField(fieldTranslatedTitle, fieldValue);
+    if GetOption(RETAIN_TITLE_OPTION) = 0 then
+    begin
+      SetField(fieldOriginalTitle, fieldValue);
+    end;
+    line := line + 1;
+  end;
+    
+  if CanSetPicture() then
+  begin
+    line := FindLine(MOVIE_PICTURE_TAG1, page, line);
+    if line >= 0 then
+    begin
+      str := page.GetString(line);
+      pos1 := Pos(MOVIE_PICTURE_TAG2, str);
+      pos2 := Pos(MOVIE_PICTURE_TAG3, str);
+      if (pos1 > 0) and (pos2 > 0) then
+      begin
+        pos1 := pos1 + Length(MOVIE_PICTURE_TAG2);
+        pictureAddress := Copy(str, pos1, pos2-pos1);
+        if GetOption(FULLSIZE_PICT_OPTION) = 1 then
+        begin
+          // convert from http://ec2.images-amazon.com/...SCLZZZZZZZ_AA240_.jpg
+          // to http://ec1.images-amazon.com/...SCLZZZZZZZ_SS500_.jpg
+          pictureAddress := StringReplace(pictureAddress, MOVIE_PICT_LORES_TAG, MOVIE_PICT_HIRES_TAG);
+        end;
+        getPicture(pictureAddress);
+      end;
+      line := line + 1;
+    end;
+  end;
+
+  FindAndSetField(fieldActors, MOVIE_ACTOR_TAG, page, line);
+  FindAndSetField(fieldDirector, MOVIE_DIRECTOR_TAG, page, line);
+  FindAndSetField(fieldAudioFormat, MOVIE_AUDIOFORMAT_TAG, page, line);
+  FindAndSetField(fieldLanguages, MOVIE_LANGUAGE_TAG, page, line);
+  FindAndSetField(fieldVideoFormat, MOVIE_VIDEOFORMAT_TAG, page, line);
+  FindAndSetField(fieldDisks, MOVIE_DISKS_TAG, page, line);
+  FindAndSetField(fieldComments, MOVIE_FSK_TAG, page, line);
+  // FindAndSetField(fieldMedia, MOVIE_STUDIO_TAG, page, line);
+  FindAndSetField(fieldDate, MOVIE_RELEASE_TAG, page, line);
+  FindAndSetYearField(fieldYear, MOVIE_RELEASE_TAG, page, line);
+  FindAndSetField(fieldLength, MOVIE_LENGTH_TAG, page, line);
+
+  if CanSetField(fieldDescription) then
+  begin
+    if GetOption(RETAIN_DESCR_OPTION) = 1 then
+    begin
+      description := GetField(fieldDescription);
+      if description <> '' then
+      begin
+        description := description + LINEFEED;
+      end;
+    end else
+    begin
+      description := '';
+    end;
+
+    if GetOption(FULL_DESCR_OPTION) = 1 then
+    begin
+      line := FindLine(MOVIE_DESCR_LINK_TAG2, page, line);
+      if line >= 0 then
+      begin
+        str := page.GetString(line);
+        pos1 := Pos(MOVIE_DESCR_LINK_TAG1, str);
+        pos2 := Pos(MOVIE_DESCR_LINK_TAG2, str);
+        if (pos1 > 0) and (pos2 > 0) then
+        begin
+          pos1 := pos1 + Length(MOVIE_DESCR_LINK_TAG1);
+          str := Copy(str, pos1, pos2-pos1);
+          descAddress := Trim(str);
+          description := description + AnalyzeDescriptionPage(descAddress);
+        end;
+        line := line + 1;
+      end else
+      begin
+        description := description + AnalyzeDescription(page, line);
+      end;
+    end else
+    begin
+      description := description + AnalyzeDescription(page, line);
+    end;
+    SetField(fieldDescription, description);
+  end;
+
+  SetField(fieldMediaType, 'DVD');
+  SetField(fieldURL, address);
+
+  page.Free;
+end;
+
+// analyzes all descriptions
+function AnalyzeDescriptionPage(address: String): String;
+var
+  page: TStringList;
+  line, pos1, pos2: Integer;
+  str, description: String;
+begin
+  page := TStringList.Create;
+  page.Text := GetPage(address);
+
+  line := 0;
+  description := AnalyzeDescription(page, line);
+  result := description;
+  page.Free;
+end;
+
+// analyze descriptions
+function AnalyzeDescription(page: TStringList; var line: Integer): String;
+var
+  str, description: String;
+begin
+  line := FindLine(MOVIE_DESCRIPTION_TAG1, page, line);
+  if line >= 0 then
+  begin
+    line := line + 1;
+    description := '';
+    repeat
+      str := page.GetString(line);
+      if Pos(MOVIE_DESCRIPTION_TAG2, str) > 0 then
+      begin
+        str := page.GetString(line);
+        HTMLRemoveTags(str);
+        if description <> '' then
+        begin
+          description := description + LINEFEED;
+        end;
+        description := description + Trim(str);
+        line := line + 1;
+        str := page.GetString(line);
+        HTMLRemoveTags(str);
+        description := description + LINEFEED + Trim(str) + LINEFEED;
+      end else if Pos(MOVIE_DESCRIPTION_TAG3, str) > 0 then
+      begin
+        break;
+      end;
+      line := line + 1;
+    until (line = page.Count);
+    HTMLDecode(description);
+    result := description;
+  end;
+end;
+
+// gets the URLs of matching movie titles
+function GetMovies(page: TStringList; var line: Integer): String;
+var
+  nMovies, pos1, pos2, pos3, prevline: Integer;
+  str, address, firstAddress, title, from, year: String;
+begin
+  result := '';
+  nMovies := 0;
+  repeat
+    line := FindLine(MOVIE_LIST_TAG_2, page, line);
+    if line >= 0 then
+    begin
+      str := page.GetString(line);
+      pos1 := Pos(MOVIE_LIST_TAG_1, str);
+      pos2 := Pos(MOVIE_LIST_TAG_2, str);
+      pos3 := Pos(MOVIE_LIST_TAG_3, str);
+      if (pos1 > 0) and (pos2 > 0) and (pos3 > 0) and (pos2 > pos1) and (pos3 > pos2) then
+      begin
+        pos1 := pos1 + Length(MOVIE_LIST_TAG_1);
+        address := Copy(str, pos1, (pos2-pos1));
+        // remember first match
+        if nMovies = 0 then
+        begin
+          firstAddress := address;
+        end;
+        pos2 := pos2 + Length(MOVIE_LIST_TAG_2);
+        title := Copy(str, pos2, (pos3-pos2));
+        prevline := line;
+        line := FindLine(MOVIE_LIST_FROM_TAG, page, line);
+        if line >= 0 then
+        begin
+          str := page.GetString(line);
+          pos1 := Pos(MOVIE_LIST_FROM_TAG, str);
+          from := Trim(Copy(str, 1, pos1-1));
+          str := Copy(str, pos1, MAXINT);
+          pos1 := Pos(MOVIE_YEAR_TAG_1, str);
+          pos2 := Pos(MOVIE_YEAR_TAG_2, str);
+          if (pos1 > 0) and (pos2 > 0) then
+          begin
+            pos1 := pos1 + Length(MOVIE_YEAR_TAG_1);
+            year := Copy(str, pos1, pos2-pos1) + ', ';
+          end else
+          begin
+            year := '';
+          end;
+          title := title + DETAILS_SEPARATOR1 + year + from + DETAILS_SEPARATOR2;
+        end else
+        begin
+          line := prevline;
+        end;
+        PickTreeAdd(title, address);
+        nMovies := nMovies + 1;
+      end;
+      line := line + 1;
+    end;
+  until (line < 0);
+  
+  if GetOption(AUTOSELECT_OPTION) = 1 then
+  begin
+    if nMovies = 1 then
+    begin
+      result := firstAddress;
+    end;
+  end else if GetOption(AUTOSELECT_OPTION) >= 2 then
+  begin
+    if nMovies > 0 then
+    begin
+      result := firstAddress;
+    end;
+  end;
+end;
+
+// retrieve field values from current page and set the corresponding field
+procedure FindAndSetField(field: Integer; searchTag: String; page: TStringList; var line: Integer);
+var
+  pos1: Integer;
+  str, fieldValue: String;
+begin
+  line := FindLine(searchTag, page, line);
+  if line >= 0 then
+  begin
+    str := page.GetString(line);
+    pos1 := Pos(searchTag, str) + Length(searchTag);
+    str := Copy(str, pos1, MAXINT);
+    HTMLRemoveTags(str);
+    fieldValue := Trim(str);
+    HTMLDecode(fieldValue);
+    SetField(field, fieldValue);
+  end;
+end;
+
+// find and set the year field
+procedure FindAndSetYearField(field: Integer; searchTag: String; page: TStringList; var line: Integer);
+var
+  pos1, len: Integer;
+  str, fieldValue: String;
+begin
+  line := FindLine(searchTag, page, line);
+  if line >= 0 then
+  begin
+    str := page.GetString(line);
+    pos1 := Pos(searchTag, str) + Length(searchTag);
+    str := Copy(str, pos1, MAXINT);
+    HTMLRemoveTags(str);
+    fieldValue := Trim(str);
+    HTMLDecode(fieldValue);
+    len := Length(fieldValue);
+    if len >= 4 then
+    begin
+      fieldValue := Copy(fieldValue, len-3, 4);
+    end;
+    SetField(field, fieldValue);
+  end;
+end;
+
+// assembles a search url
+function AssembleSearchAddress(movieName: String): String;
+var
+  director, actors, searchText: String;
+begin
+  result:= SITE_BASE_URL;
+  searchText := movieName;
+  searchText := StringReplace(searchText, '&', '');
+  
+  // use director field to narrow the search results
+  director := GetField(fieldDirector);
+  if (director <> '') and (GetOption(ADD_FIELDS_OPTION) > 0) then
+  begin
+    searchText := searchText + ' ' + director;
+  end;
+  
+  // use actors field to narrow the search results
+  actors := GetField(fieldActors);
+  if (director = '') and (actors <> '') and (GetOption(ADD_FIELDS_OPTION) > 0) then
+  begin
+    searchText := searchText + ' ' + actors;
+  end;
+
+  result := result + UrlEncode(searchText);
+end;
+
+// main
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    gMovieName := GetField(fieldTranslatedTitle);
+    if gMovieName = '' then
+    begin
+      gMovieName := GetField(fieldOriginalTitle);
+    end;
+    gPageNo := 1;
+    if (GetOption(AUTOSELECT_OPTION) >= 3) then
+    begin
+      if gUnhandledMovieList = nil then
+      begin
+        gUnhandledMovieList := TStringList.Create;
+        gResultPath := UNHANDLED_MOVIES_FILE;
+        Input(INPUTPAGE_TITLE, 'Speichern der nicht gefundenen Filmtitel in:', gResultPath);
+      end;
+    end;
+
+    if gMovieName = '' then
+    begin
+      Input(INPUTPAGE_TITLE, 'Geben Sie einen Filmtitel ein: ', gMovieName);
+    end
+    if gMovieName <> '' then
+    begin
+      AnalyzePage(gMovieName, AssembleSearchAddress(gMovieName));
+    end;
+  end else
+  begin
+    ShowMessage('Dieses Script benötigt mindestens Version 3.5.0 von Ant Movie Catalog');
+  end;
+end.
+
+end.
+

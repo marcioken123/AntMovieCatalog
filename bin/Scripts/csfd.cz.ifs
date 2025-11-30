@@ -1,0 +1,490 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=IkE Blaster, MadMaxx, Dmitry501, Inteline, Kalten, kecinzer, MI'RA
+Title=csfd.cz
+Description=Import dat ze serveru csfd.cz
+Site=http://amc.thez.info
+Language=CZ
+Version=4.5
+Requires=3.5.0
+Comments=- Fix 21.6.2013 - Opraveno naèítání obalù|- Fix 16.4.2011 - Opraveno naèítání hercù a režisérù|- Fix 24.2.2011 - Upraveno pøiøazování názvù, možnost vynucení CZ|- Add 15.2.2011 - Pøidán rok ve výsledcích vyhledávání|- Fix 13.2.2011 - Pár oprav (URL, obsahy)|- Update 13.2.2011 - Skript celý pøepsán||- Fix 17.12.2010 - Opraveno stahování celých popisù|- Add 16.12.2010 - Pøidána možnost automat. aktualizace dle URL|- Fix 16.12.2010 - Opraveno stahování údajù|- Fix 16.6.2010 - Opraveno stahování popisu pro filmy bez popisu|- Add 16.6.2010 - Pøidána možnost nahrazení oddìlovaèe zemí za "/"|- Fix 12.5.2010 - Opravena chyba nestahování popisù|- Add 9.2.2009 - Možnost zadat URL filmu na ÈSFD pro pøímé získání informací|- Fix 16.9.2008 - Jedna malá chybka pøi hledání filmu s jedním výsledkem |- ReUpdate 8.9.2008 - Za pomoci zkušenìjšího pøedìláno rozøezávání|- Update 28.8.2008 - implentace rozøezání do kategorií - byl to boj :D|- Fix 6.8.2008 - Oprava chyby ve výsledcích|- Update 30.7.2008 - oprava kódování|- Update 10.8.2007 - Jiné øazení výsledkù (jako na webu), opraveno stahování popisu (více øádkù), pøesunutí La pøed film|- Info 5.3.2007 - Probìhlo hodnì úprav, chyba u odkazu na film (z csfd) u filmù s jedním výsledkem ve vyhledávání|- Update 3.1.2007 - opraveno zobrazování filmù s jedním výsledkem ve vyhledávání|- Update 31.12.2006 - opraveny vsechny pole |- Update 4.12.2006 - zmena podle noveho csfd, vcetne importu hodnoceni
+License=This file is standalone part of Ant Movie Catalog (AMC).||   AMC is free software; you can redistribute it and/or modify|    it under the terms of the GNU General Public License as published by|    the Free Software Foundation; either version 3 of the License, or|    (at your option) any later version.||    AMC is distributed in the hope that it will be useful,|    but WITHOUT ANY WARRANTY; without even the implied warranty of|    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the|    GNU General Public License for more details.||    You should have received a copy of the GNU General Public License|    along with this program.  If not, see http://www.gnu.org/licenses/
+GetInfo=1
+
+[Options]
+hodnoceni=1|1|0=Nedotahovat hodnoceni|1=Dotahovat hodnoceni
+allowDuplicateNames=0|0|0=Pokud je originalni nazev stejny jako prelozeny - prelozeny se nedoplni|1=Prelozeny nazev se doplni i v pripade, ze je stejny jako originalni nazev
+theEnd=1|1|0=Zachovat "The" na konci nazvu filmu|1=Presunout "The" z konce nazvu filmu na zacatek
+NahraditLomeno=0|1|1=Nahrazovat "/" u kategorie a zemì filmu|0=Nenahrazovat "/" u kategorie a zemì filmu
+AutoUpdateFromURL=1|0|0=Neaktualizovat automaticky|1=Pokud existuje URL, tak automaticky aktualizovat; jinak se zeptá
+getPicture=1|1|0=Nestahovat obrázky|1=Stahovat obrázky
+DetailPrvnichVysledku=1|1|0=Nezobrazovat základ. informace v seznamu|1=Zobrazovat základní informace pro první 4 záznamy v seznmamu
+OpravovatNazvyCeskychFilmu=1|1|0=Neopravovat|1=Odhadnout pùvodní èeský název, pokud existuje pøeložený název
+VynutitCeskeNazvy=1|0|0=Nevynucovat (výchozí)|1=Vynucovat (jen v pøípadì vkládání slovenských pøekladù)
+
+***************************************************)
+
+program Csfd_cz;
+const
+  BaseAddress = 'http://www.csfd.cz/';
+    /////////////////////////////////////////////
+   //          Aktualni spravce :)            //
+  //       IkE Blaster ike@thez.info         //
+ //          http://amc.thez.info           //
+/////////////////////////////////////////////
+
+var
+  MovieName: string;
+
+
+function iPos (Substr: String; S: String): Integer;
+begin
+  Substr := AnsiLowerCase(Substr);
+  S := AnsiLowerCase(S);
+  Result := Pos(Substr, S);
+end;
+
+
+function iTrim (Str: String): String;
+begin
+  Str := StringReplace(Str,#9,'');
+  Str := StringReplace(Str,#13#10,'');
+  Str := Trim(Str);
+  Result := Str;
+end;
+
+
+///////////////////////////// MAIN FUNCTIONS ///////////////////////////////////
+
+// analyzuje stranku s vysledky hledani
+procedure AnalyzePage(Address: String);
+var
+  Page, Line, iLine, aLine, buff, MovieTitle, MovieAddress : String;
+  BeginPos, EndPos : Integer;
+begin
+  // nacte si stranku s vysledkem hledani - kazda radka je poloza StringListu
+  // Page.Text := GetPage(Address);
+  Page := UTF8Decode(GetPage(Address));
+
+  BeginPos := iPos('<p class="search-query">Hledaný výraz: <strong>', Page);
+  if(BeginPos = 0) then
+  begin
+    AnalyzeMoviePage(Address);
+    Exit;
+  end;
+
+
+  BeginPos := iPos('<div id="search-films"', Page);
+  EndPos := iPos('<div id="search-creators"', Page);
+  Page := Copy(Page, BeginPos, EndPos - BeginPos);
+
+  // vycisti strom okna se seznamem filmu
+  PickTreeClear;
+  PickTreeAdd('Hledaný výraz: ' + MovieName, '');
+
+  Line := Page;
+
+  BeginPos := iPos('<li>', Line);
+  while (BeginPos > 0 ) do
+  begin
+    buff := '';
+    Line := Copy(Line, BeginPos, Length(Line)); // odriznu zacatek
+    EndPos := iPos('</li>', Line)+4;
+
+    iLine := Copy(Line, 0, EndPos); // samotny <li>...</li> radek s filmem
+    Line := Copy(Line, EndPos, Length(Line)); // do line vratim vse za aktualnim filmem
+
+    MovieTitle := iLine;
+    EndPos := iPos('</p>', MovieTitle);
+    if(EndPos <> 0) then
+      buff := Copy(MovieTitle, EndPos-4, 4);
+
+    MovieTitle := StringReplace(MovieTitle,'>','> ');
+    MovieTitle := StringReplace(MovieTitle,'</h3>','</h3>__');
+    HTMLRemoveTags(MovieTitle);
+    MovieTitle := iTrim(MovieTitle);
+
+    if(EndPos <> 0) then
+    begin
+      MovieTitle := StringReplace(MovieTitle, buff,'');
+      MovieTitle := StringReplace(MovieTitle,'__','('+buff+') ...');
+      if(getOption('DetailPrvnichVysledku') = 0) then
+        MovieTitle := Copy(MovieTitle, 0, iPos(' ...',MovieTitle)-1);
+    end;
+    
+    MovieTitle := StringReplace(MovieTitle,'   ',' ');
+    MovieTitle := StringReplace(MovieTitle,'  ',' ');
+    MovieTitle := StringReplace(MovieTitle,' ,',',');
+
+
+    BeginPos := iPos('<a href="/film/', iLine);
+    iLine := Copy(iLine, BeginPos+10, Length(iLine));
+
+    EndPos := Pos('</a>', iLine);
+    iLine := Copy(iLine, 0, EndPos-1);
+
+    EndPos := iPos('"', iLine);
+    aLine := Copy(iLine, 0, EndPos-1);
+    MovieAddress := BaseAddress + aLine;
+
+    //BeginPos := iPos('>', iLine);
+    //MovieTitle := iTrim(Copy(iLine, BeginPos+1, Length(iLine)));
+
+    if(MovieTitle <> '') then
+      PickTreeAdd(MovieTitle, MovieAddress);
+    
+    BeginPos := iPos('<li>', Line);
+
+  end;
+
+  BeginPos := iPos('class="not-found"', Page);
+  if (BeginPos <> 0) then
+    ShowMessage('Nebyl nalezen žádný film podle zadaného výrazu: ' + MovieName)
+  else
+    begin
+        if PickTreeExec(Address) then
+            AnalyzeMoviePage(Address);
+    end;
+
+end;
+
+// analyzuje stranku s detaily filmu
+procedure AnalyzeMoviePage(Address: string);
+var
+  LineNr : Integer;
+  listNames, listValues: TStringList;
+  Page, Line, Value, Value2 : String;
+  BeginPos, EndPos, i : Integer;
+begin
+  listNames := TStringList.Create;
+  listValues := TStringList.Create;
+
+  Address := StringReplace(Address,'/text=1','/');
+  BeginPos := iPos('&', Address);
+  if (BeginPos <> 0) then
+    Address := Copy(Address,0,BeginPos-1);
+
+  Page := UTF8Decode(GetPage(Address));
+  
+  BeginPos := iPos('id="pg-film"', Page);
+  //EndPos := iPos('<div class="ct-general th with-navigation default">', Page);
+  Page := Copy(Page, BeginPos, Length(Page));
+  
+  HTMLDecode(Page);
+
+  // hleda radek na kterem se nachazi zacatek informaci o filmu
+  BeginPos := iPos('<h1>', Page);
+
+  // pokud ho nasel
+  if (BeginPos <> 0) then
+    begin
+    
+      // nazvy
+      SetField(fieldOriginalTitle, '');
+      SetField(fieldTranslatedTitle, '');
+      
+      // hlavni nazev
+      BeginPos := iPos('<h1>', Page)+4;
+      EndPos := iPos('</h1>', Page);
+      Value := Copy(Page,BeginPos,EndPos-BeginPos);
+      HTMLRemoveTags(Value);
+      Value2 := iTrim(Value);
+      
+      listNames.Add('h1');
+      listValues.Add(Value2);
+      // END // hlavni nazev
+
+      // nazev - alternativni
+      BeginPos := iPos('<ul class="names">', Page);
+      if (BeginPos <> 0) then
+      begin
+        Line := Copy(Page,BeginPos,Length(Page));
+        EndPos := iPos('</ul>', Line);
+        Line := Copy(Line,0,EndPos-1);
+
+        BeginPos := iPos('<li>', Line);
+        while (BeginPos <> 0) do
+        begin
+          EndPos := iPos('</li>', Line);
+          Value := Copy(Line,BeginPos,EndPos-BeginPos);
+          
+          Line := Copy(Line,EndPos+5,Length(Line));
+          BeginPos := iPos('<li>', Line);
+
+          Value2 := Value;
+          HTMLRemoveTags(Value2);
+          Value2 := iTrim(Value2); // alternativni nazev
+
+          EndPos := iPos('<h3>', Value);
+          Value := Copy(Value,0,EndPos); // cast s vlajeckou
+
+
+          if (iPos('SK název', Value) <> 0) then begin
+            listNames.Add('sk'); listValues.Add(Value2);
+            continue;
+          end;
+
+          if (iPos('CZ název', Value) <> 0) then begin
+            listNames.Add('cz'); listValues.Add(Value2);
+            continue;
+          end;
+
+          if (iPos('SK název', Value) = 0) then begin
+            listNames.Add('orig'); listValues.Add(Value2);
+            continue;
+          end;
+
+        end;
+      end; // END // nazev - alternativy
+
+      // Prochazim jazyky a nastavim podle potreby
+      for i := 0 to listNames.Count-1 do
+      begin
+        if ((getOption('theEnd') = 1) and (iPos(', The', listValues.GetString(i)) > 0)) then // jestli na konci nazvu filmu je clen The -> presune se na zacatek nazvu filmu
+          listValues.SetString(i, 'The ' + Copy(listValues.GetString(i), 0, iPos(', The', listValues.GetString(i))-1));
+
+        if ((getOption('theEnd') = 1) and (iPos(', Die', listValues.GetString(i)) > 0)) then // ...
+          listValues.SetString(i, 'Die ' + Copy(listValues.GetString(i), 0, iPos(', Die', listValues.GetString(i))-1));
+
+        if ((getOption('theEnd') = 1) and (iPos(', Le', listValues.GetString(i)) > 0)) then // ...
+          listValues.SetString(i, 'Le ' + Copy(listValues.GetString(i), 0, iPos(', Le', listValues.GetString(i))-1));
+
+        if ((getOption('theEnd') = 1) and (iPos(', La', listValues.GetString(i)) > 0)) then // ...
+          listValues.SetString(i, 'La ' + Copy(listValues.GetString(i), 0, iPos(', La', listValues.GetString(i))-1));
+
+        // h1 - preklad
+        if(i=0) then
+          SetField(fieldTranslatedTitle, listValues.GetString(i));
+
+        if((i<>0) and ( ((GetField(fieldOriginalTitle) = '') and (listNames.GetString(i) = 'orig')) or (listNames.Count = 2) )) then
+          SetField(fieldOriginalTitle, listValues.GetString(i));
+
+        if((getOption('VynutitCeskeNazvy') = 1) and (listNames.GetString(i) = 'cz')) then
+        begin
+          if(listNames.Count = 2) then
+            SetField(fieldOriginalTitle, listValues.GetString(0));
+          SetField(fieldTranslatedTitle, listValues.GetString(i));
+        end;
+        
+      end;
+
+      if (getOption('allowDuplicateNames') = 0) then
+      begin
+        if (getField(fieldOriginalTitle) = getField(fieldTranslatedTitle)) then
+        begin
+            SetField(fieldTranslatedTitle, '');
+        end;
+      end;
+
+      // END // nazvy
+
+
+      // poster
+      if (getOption('getPicture') = 1) then
+      begin
+        BeginPos := iPos('<div id="poster" class="image">', Page);
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('<img src="', Value)+10;
+        EndPos := iPos('" alt="poster"', Value);
+        Value := 'http:' + Copy(Value,BeginPos,EndPos-BeginPos);
+        Value := iTrim(Value);
+
+        if(iPos('poster_free.jpg', Value) = 0) then
+          GetPicture(Value);
+      end;
+      // END // poster
+
+      // zanr
+      BeginPos := iPos('<p class="genre">', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('>', Value)+1;
+        EndPos := iPos('</p>', Value);
+
+        Value := Copy(Value,BeginPos,EndPos-BeginPos);
+        HTMLRemoveTags(Value);
+        Value := iTrim(Value);
+        if (getOption('NahraditLomeno') = 1) then
+          SetField(fieldCategory, StringReplace(Value, ' / ',', '))
+        else
+          SetField(fieldCategory, Value);
+      end; // END // zanr
+
+
+      // stat, rok, delka
+      BeginPos := iPos('<p class="origin">', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('>', Value)+1;
+        EndPos := iPos('</p>', Value);
+
+        Value := Copy(Value,BeginPos,EndPos-BeginPos);
+        Value := ',' + iTrim(Value) + ','; // pridam carky z obou stran => ',ÈR, 2009, 100 min,'
+        HTMLRemoveTags(Value);
+
+        BeginPos := iPos(',', Value); // prochazim po carkach
+        while (BeginPos > 0 ) do
+        begin
+          Value2 := Copy(Value,BeginPos+1,Length(Value));
+          EndPos := iPos(',', Value2);
+          Value2 := Copy(Value2,0,EndPos-1);
+          Value2 := iTrim(Value2);
+          
+          Value := Copy(Value,BeginPos+1,Length(Value)); // odriznu aktualni
+          BeginPos := iPos(',', Value); // najdu dalsi carku
+          
+          if(Value2 = '') then Continue; // je prazdne, preskakuji
+
+          if ((Length(Value2) = 4) and (StrToInt(Value2,-1) <> -1)) then // pokud ma 4 znaky a je int
+            SetField(fieldYear, Value2);
+
+          if (iPos(' min',Value2) <> 0) then // pokud obsahuje minuty
+            SetField(fieldLength, Copy(Value2,0,iPos(' min',Value2)-1));
+
+          if ((iPos(' min',Value2) = 0) and (StrToInt(Value2,-1) = -1)) then // pokud neobsahuje minuty a neni to int
+          begin
+            if (getOption('NahraditLomeno') = 1) then
+              SetField(fieldCountry, StringReplace(Value2, ' / ',', '))
+            else
+              SetField(fieldCountry, Value2);
+
+            if((getOption('OpravovatNazvyCeskychFilmu') = 1) and (iPos('èesko',Value2) <> 0) and (iPos('èesko',Value2) < 6) and (GetField(fieldTranslatedTitle) <> '')) then begin
+              SetField(fieldOriginalTitle, GetField(fieldTranslatedTitle));
+              SetField(fieldTranslatedTitle, '');
+            end;
+          end;
+
+        end;
+      end; // END // stat, rok, delka
+
+      // rezie
+      BeginPos := iPos('<h4>Režie:</h4>', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('</h4>', Value);
+        EndPos := iPos('</span>', Value);
+        Value := Copy(Value,BeginPos,EndPos-BeginPos);
+
+        HTMLRemoveTags(Value);
+        Value := iTrim(Value);
+
+        SetField(fieldDirector, Value);
+      end; // END // rezie
+
+      // herci
+      BeginPos := iPos('<h4>Hrají:</h4>', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('</h4>', Value);
+        EndPos := iPos('</span>', Value);
+        Value := Copy(Value,BeginPos,EndPos-BeginPos);
+
+        HTMLRemoveTags(Value);
+        Value := iTrim(Value);
+
+        SetField(fieldActors, Value);
+      end; // END // herci
+
+
+      // hodnoceni
+      if (getOption('hodnoceni') = 1) then
+      begin
+        BeginPos := iPos('<div id="rating">', Page);
+        if (BeginPos <> 0) then
+        begin
+          Value := Copy(Page,BeginPos,Length(Page));
+          EndPos := iPos('</div>', Value);
+          Value := Copy(Value,0,EndPos);
+
+          HTMLRemoveTags(Value);
+          Value := iTrim(Value);
+          Value := copy(Value, 0, Length(Value)-1);
+
+          if(StrToInt(Value,-1) <> -1) then
+            SetField(fieldRating, FloatToStr(StrToInt(Value,-1)/10)); // prevedu na cislo, vydelim 10, pevedu na string
+        end;
+      end; // END // hodnoceni
+
+
+      // popis
+      BeginPos := iPos('<div id="plots"', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos,Length(Page));
+        BeginPos := iPos('<ul>', Value);
+        EndPos := iPos('<script', Value)-1;
+        Value := Copy(Value,BeginPos,EndPos-BeginPos);
+        
+        Value := iTrim(Value);
+        Value := StringReplace(Value,'<li>','-\n-');
+
+        HTMLRemoveTags(Value);
+        Value := iTrim(Value);
+        Value := Copy(Value,5,Length(Value));
+        Value := StringReplace(Value,'-\n-',#10#13#10#13#10#13);
+
+        SetField(fieldDescription, Value);
+      end; // END // popis
+
+      // url
+      BeginPos := iPos('<form action="/film/', Page);
+      if (BeginPos <> 0) then
+      begin
+        Value := Copy(Page,BeginPos+15,Length(Page));
+        EndPos := iPos('?do=pof-ordererSelectForm-submit', Value)-1;
+        Value := Copy(Value,0,EndPos);
+
+        Value := iTrim(Value);
+        Value := BaseAddress + Value;
+
+        SetField(fieldURL, Value);
+      end
+      else
+      begin
+        SetField(fieldURL, Address);
+      end; // END // url
+
+  end
+end;
+
+
+
+
+
+
+
+begin
+  // kontrola verze movie catalogu
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldTranslatedTitle);
+      
+      // pokud je originalni jmeno filmu prazdne, vem jmeno prelozene
+      if (MovieName = '') then
+        MovieName := GetField(fieldOriginalTitle);
+
+      if ((getOption('AutoUpdateFromURL') = 1) and (GetField(fieldURL) <> '')) then
+        MovieName := GetField(fieldURL)
+      else
+        if Input('Import údajù z www.csfd.cz', 'Zadejte název filmu:', MovieName) = false then
+          Exit;
+
+      // zadani z inputu
+      if pos('csfd.cz/film/', MovieName) > 0 then
+        AnalyzeMoviePage(MovieName)
+      else
+        if(iTrim(MovieName) <> '') then
+          AnalyzePage(BaseAddress + 'hledat/?q=' + UrlEncode(UTF8Encode(MovieName)));
+
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

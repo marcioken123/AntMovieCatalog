@@ -1,0 +1,1504 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Raulsara
+Title=Labutaca
+Description=Extrae información de la web Labutaca.com
+Site=www.Labutaca.com
+Language=ES
+Version=4.0
+Requires=3.5.0
+Comments=Previous versions by Legrad|Web muy complicada y con infinidades de formatos. Cada pelicula puede ser diferente de otra, obliga a programar muchas casuisticas, funciona al 90%.
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program LabutacaImportar;
+
+// Creado por Raulsara
+
+// Web muy complicada con infinidades de formatos. Cada pelicula puede terner
+// un formato diferente de la otra, ello obliga a programar muchas casuisticas,
+// de ahí la cantidad de lineas del programa. 1 de cada 10 peliculas puede no
+// mostrar alguna información.
+
+uses
+  StringUtils1;
+
+var
+  Title: string;
+  Titleorig: string;
+  c: Char;
+  PageOfLetter: Array of string;
+  Index: Integer;
+  swprepara: Integer;
+
+//
+// Función que suprime los acentos
+//
+
+function Sinacento(Conacento : String): String;
+
+var
+  Acento, Noacento : String;
+  i : integer;
+begin
+  Acento := 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÿ';
+  Noacento := 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuy';
+ for i := 1  to Length(Acento) do
+    Conacento := StringReplace(Conacento,copy(Acento, i, 1),copy(Noacento, i, 1));
+  result := Conacento;
+end;
+
+//
+// Quita los espacios, deja el simple espacio.
+//
+
+Function Rs(AText: string; LineBreaksToo: Boolean): string;
+
+  begin
+    Result := Trim(StringReplace(StringReplace(StringReplace(AText, #9, ''), #10, ''), #13, ''));
+      while Pos('  ', Result) > 0 do
+      Result := StringReplace(Result, '  ', ' ');
+  end;
+  
+//
+//  ConvertAlphaNum: Quita todo menos letras (mayusculas y minusculas) y numeros
+//
+
+Function ConvertAlphaNum(s: string) : string;
+var
+  i: Integer;
+  s2, ch: string;
+begin
+  s2 := '';
+  For i := 1 To Length(s) do
+    begin
+      ch := copy(s, i, 1);
+      if ((ch >= 'a') and (ch <= 'z')) or ((ch >= '0') and (ch <= '9')) or ((ch >= 'A') and (ch <= 'Z'))  then
+      s2 := s2 + ch;
+    end;
+  result := s2;
+end;
+
+//
+// Función para convertir a ascii
+//
+
+function Caracter(str1: string) : string;
+begin
+  str1 := StringReplace(str1, 'Ã¡'  , 'á');
+  str1 := StringReplace(str1, 'Ã©' , 'é');
+  str1 := StringReplace(str1, 'Ã­' , 'í');
+  str1 := StringReplace(Str1, 'Ã³' , 'ó');
+  str1 := StringReplace(str1, 'Ãº' , 'ú');
+  str1 := StringReplace(str1, 'Ã±' , 'ñ');
+  str1 := StringReplace(str1, 'Ã‰' , 'É');
+  str1 := StringReplace(str1, 'Ã?' , 'Í');
+  str1 := StringReplace(str1, 'Ã“' , 'Ó');
+  str1 := StringReplace(str1, 'Ãš' , 'Ú');
+  str1 := StringReplace(str1, 'Ã‘' , 'Ñ');
+  str1 := StringReplace(str1, 'Â'  ,  '');
+  str1 := StringReplace(str1, 'Ã¢' , 'â');
+  str1 := StringReplace(str1, 'Ãª' , 'ê');
+  str1 := StringReplace(str1, 'Ã®' , 'î');
+  str1 := StringReplace(str1, 'Ã´' , 'ô');
+  str1 := StringReplace(str1, 'Ã»' , 'û');
+  str1 := StringReplace(str1, 'Ã¨' , 'è');
+  str1 := StringReplace(str1, 'Ã¬' , 'ì');
+  str1 := StringReplace(str1, 'Ã²' , 'ò');
+  str1 := StringReplace(str1, 'Ã¹' , 'ù');
+  str1 := StringReplace(str1, 'Ã¤' , 'ä');
+  str1 := StringReplace(str1, 'Ã«' , 'ë');
+  str1 := StringReplace(str1, 'Ã¯' , 'ï');
+  str1 := StringReplace(str1, 'Ã¶' , 'ö');
+  str1 := StringReplace(str1, 'Ã¼' , 'ü');
+  str1 := StringReplace(str1, 'Ã' , 'Á');
+  str1 := StringReplace(str1, 'Ã' ,  'à');
+  str1 := StringReplace(str1, '¥' ,  'å');
+  str1 := StringReplace(str1 , '&#8220;' , '"'  );
+  str1 := StringReplace(str1 , '&#8221;' , '"'  );
+  str1 := StringReplace(str1 , '&#8217;' , '''' );
+  str1 := StringReplace(str1 , '&#8216;' , '''' );
+  str1 := StringReplace(str1 , '&amp;'   , '&'  );
+  str1 := StringReplace(str1 , '&#8211;' , '-'  );
+  str1 := StringReplace(str1 , '&#038;'  , '&'  );
+  str1 := StringReplace(str1 , '&#8243;' , '"'  );
+  str1 := StringReplace(str1 , '&#8230;' , '...');
+
+
+  result := str1;
+  
+end;
+
+//
+// Quitar tags
+//
+
+function DeleteTags(var S: string): string;
+var
+  n,len, tag: Integer;
+  c: char;
+  t: String;
+begin
+  tag := 0;
+  t := '';
+  len := length(s);
+  for n :=1 to len do
+  begin
+    c := Copy(s,n,1);
+      if c = #9 then
+        c := ' ';
+      if(tag=1) then
+      begin
+        if(c='>') then tag := 0;
+          continue;
+      end
+      else
+      begin
+        if(c='<') then
+        begin
+          tag := 1;
+          continue;
+        end;
+          t := t + c;
+      end;
+  end
+  s := t;
+  result := t;
+end;
+
+//
+// Función que quita el primer espacio del string
+//
+
+function QuitaEspacio (Item: string): string;
+var
+  Item2 : string;
+  
+  begin
+    Item2 := Copy(Item , 1 , 1);
+    If item2 = ' ' then
+      begin
+        Delete (Item , 1 , 1);
+      end;
+     result := Item;
+  end;
+//
+// Funcion para cambiar el artículo
+// Ej. "Sirenita, La" lo convierte en "La Sirenita".
+//
+
+function TransformTitle(Titleweb: string): string;
+var
+  BeginPos,EndPos: Integer;
+  Value: string;
+  Words: array of string;
+  Articles: array of string;
+  Replace,Original: string;
+  Index, CommaCount: Integer;
+
+Begin
+
+  //  Titulo
+
+  Result:=Titleweb;
+
+  Setarraylength(Words,11);
+  Words[0]:=' In ';
+  Words[1]:=' On ';
+  Words[2]:=' Of ';
+  Words[3]:=' As ';
+  Words[4]:=' As ';
+  Words[5]:=' At ';
+  Words[6]:=' And A ';
+  Words[7]:=' And ';
+  Words[8]:=' An ';
+  Words[9]:=' To ';
+  Words[10]:=' For ';
+
+  SetArrayLength(Articles,35);
+  Articles[0]:=' Unas';
+  Articles[1]:=' a';
+  Articles[2]:=' An';
+  Articles[3]:=' Le';
+  Articles[4]:=' L''';
+  Articles[5]:=' Les';
+  Articles[6]:=' Der';
+  Articles[7]:=' Das';
+  Articles[8]:=' Die';
+  Articles[9]:=' Des';
+  Articles[10]:=' Dem';
+  Articles[11]:=' Den';
+  Articles[12]:=' Ein';
+  Articles[13]:=' Eine';
+  Articles[14]:=' Einen';
+  Articles[15]:=' Einer';
+  Articles[16]:=' Eines';
+  Articles[17]:=' Einem';
+  Articles[18]:=' Il';
+  Articles[19]:=' Lo';
+  Articles[20]:=' La';
+  Articles[21]:=' I';
+  Articles[22]:=' Gli';
+  Articles[23]:=' Le';
+  Articles[24]:=' Uno';
+  Articles[25]:=' Una';
+  Articles[26]:=' Un''';
+  Articles[27]:=' O';
+  Articles[28]:=' Os';
+  Articles[29]:=' As';
+  Articles[30]:=' El';
+  Articles[31]:=' Los';
+  Articles[32]:=' Las';
+  Articles[33]:=' Unos';
+  Articles[34]:=' Unas';
+
+  // Cuenta las comas que hay en el titulo
+
+  CommaCount := 0;
+  EndPos := 0;
+  Value := Titleweb;
+  repeat
+     BeginPos := Pos(',' , Value);
+     if BeginPos > 0 then
+     begin
+       Delete(Value, 1, BeginPos);
+       CommaCount := CommaCount + 1;
+       EndPos := EndPos + BeginPos;
+     end;
+  until( Pos(',',Value) = 0);
+
+  // Compara el articulo del titulo con los de la tabla
+
+  for Index := 0 to 34 do
+  begin
+    if Pos(Articles[Index], Value) <> 0 then
+    begin
+      CommaCount := 1;
+      BeginPos := EndPos;
+      Break;
+    end;
+  end;
+
+  if (BeginPos > 0) and (CommaCount = 1) then
+  begin
+    Value := Copy(Titleweb, BeginPos + 1, Length(Titleweb));
+    Value := Trim(Value);
+    Result := Value + ' ' + Copy(Titleweb, 1, BeginPos - 1);
+  end;
+
+  BeginPos := Pos(': ', Result);
+  if BeginPos > 0 then
+    Result := StringReplace(Result, ': ', ' - ');
+    Result := AnsiMixedCase(Result, ' ');
+
+  for Index := 0 to 10 do
+  begin
+    if Pos(Words[Index],Result) <> 0 then
+    begin
+      Original := Words[Index];
+      Replace := AnsiLowerCase(Original);
+      Result := StringReplace(Result, Original, Replace);
+    end;
+  end;
+
+  Result := StringReplace(Result, ' - the ', ' - The ');
+  Result := Trim(Result);
+end;
+
+// Funcion para eliminar el artículo del titulo introducido y poder buscar
+// en la web por la primera letra que hay despues del titulo
+// En la web, los articulos van al final Ej. Sirenita, La
+// Ej. el titulo que buscamos "La sirenita" lo convierte en "Sirenita".
+
+function Quitararticulo (T: string): string;
+
+var
+  Espaciopos: Integer;
+  Words: array of string;
+  Articles: array of string;
+  Articulo: string;
+  Index: Integer;
+
+Begin
+
+  //  Titulo
+
+  Result:=Title;
+  Result:=T;
+  Setarraylength(Words,11);
+  Words[0]:=' In ';
+  Words[1]:=' On ';
+  Words[2]:=' Of ';
+  Words[3]:=' As ';
+  Words[4]:=' In ';
+  Words[5]:=' At ';
+  Words[6]:=' And A ';
+  Words[7]:=' And ';
+  Words[8]:=' An ';
+  Words[9]:=' To ';
+  Words[10]:=' For ';
+
+  SetArrayLength(Articles,13);
+  Articles[0]:='les';
+  Articles[1]:='les';
+  Articles[2]:='lo';
+  Articles[3]:='la';
+  Articles[4]:='le';
+  Articles[5]:='uno';
+  Articles[6]:='una';
+  Articles[7]:='un';
+  Articles[8]:='el';
+  Articles[9]:='los';
+  Articles[10]:='las';
+  Articles[11]:='unos';
+  Articles[12]:='unas';
+  
+  // Borra el articulo del titulo introducido
+  
+  Espaciopos := Pos(' ' , Title);
+  If Espaciopos > 0 then
+    begin
+      Articulo := (Copy(Title, 1, Espaciopos-1));
+      Index := 0;
+      for Index := 0 to 12 do
+        begin
+          If Articles [index] = Articulo then
+            begin
+              Delete(Title, 1, Espaciopos);
+              break
+            end
+          else
+            begin
+
+            end
+        end;
+    end;
+end;
+
+
+function EliminaInicio(S: string; CR: string): string;
+begin
+  result := S;
+  while Pos(CR, result) = 1 do
+  begin
+    Delete(result, 1, Length(CR));
+  end;
+end;
+
+//
+// Funcion que borra signos y quita acentos
+//
+
+function PreparaTitulo(T: string): string;
+
+var
+  i: Integer;
+  
+begin
+  HTMLDecode(result);
+  result := AnsiLowerCase(T);
+  result := StringReplace(result, chr(146), '');
+  result := StringReplace(result, chr(39), '');
+  result := StringReplace(result, '´', '');
+  result := StringReplace(result, '`', '');
+  result := StringReplace(result, '"', '');
+  result := StringReplace(result, '¿', '');
+  result := StringReplace(result, '?', '');
+  result := StringReplace(result, '¡', '');
+  result := StringReplace(result, '!', '');
+  result := StringReplace(result, '.', '');
+  If swprepara = 1 then
+    begin
+    result := StringReplace(result, ',', '');
+    end;
+  result := StringReplace(result, ':', '');
+  result := StringReplace(result, ';', '');
+  result := StringReplace(result, '-', '');
+  result := StringReplace(result, '/', '');
+  result := StringReplace(result, '\', '');
+  result := StringReplace(result, '_', '');
+  result := StringReplace(result, 'á', 'a');
+  result := StringReplace(result, 'Á', 'a');
+  result := StringReplace(result, 'À', 'a');
+  result := StringReplace(result, 'é', 'e');
+  result := StringReplace(result, 'í', 'i');
+  result := StringReplace(result, 'ó', 'o');
+  result := StringReplace(result, 'ú', 'u');
+  result := StringReplace(result, 'ä', 'a');
+  result := StringReplace(result, 'ë', 'e');
+  result := StringReplace(result, 'ï', 'i');
+  result := StringReplace(result, 'ö', 'o');
+  result := StringReplace(result, 'ü', 'u');
+//  result := StringReplace(result, 'ñ', 'n');
+  result := StringReplace(result, 'â€“', '-'  );
+  result := StringReplace(result, 'â€¦', '...');
+
+  result := Caracter (result);
+end;
+
+//
+// Funcion que crea la URL para acceder a la web.
+// Primer extrae la primera letra del titulo (sin articulos) y despues accede
+// a la web donde están las peliculas que empiezan por esa letra
+//
+
+function GetLabutacaDir(MovieTitle: string): string;
+
+var
+
+d: string;
+
+begin
+  Setarraylength(PageOfLetter,36);
+  PageOfLetter[0]:='0';  PageOfLetter[1]:='1';  PageOfLetter[2]:='2';  PageOfLetter[3]:='3';
+  PageOfLetter[4]:='4';  PageOfLetter[5]:='5';  PageOfLetter[6]:='6';  PageOfLetter[7]:='7';
+  PageOfLetter[8]:='8';  PageOfLetter[9]:='9';  PageOfLetter[10]:='a'; PageOfLetter[11]:='b';
+  PageOfLetter[12]:='c'; PageOfLetter[13]:='d'; PageOfLetter[14]:='e'; PageOfLetter[15]:='f';
+  PageOfLetter[16]:='g'; PageOfLetter[17]:='h'; PageOfLetter[18]:='i'; PageOfLetter[19]:='j';
+  PageOfLetter[20]:='k'; PageOfLetter[21]:='l'; PageOfLetter[22]:='m'; PageOfLetter[23]:='n';
+  PageOfLetter[24]:='o'; PageOfLetter[25]:='p'; PageOfLetter[26]:='q'; PageOfLetter[27]:='r';
+  PageOfLetter[28]:='s'; PageOfLetter[29]:='t'; PageOfLetter[30]:='u'; PageOfLetter[31]:='v';
+  PageOfLetter[32]:='w'; PageOfLetter[33]:='x'; PageOfLetter[34]:='y'; PageOfLetter[35]:='z';
+
+  C := copy(MovieTitle, 1, 1);
+  if (C >= '0') and (C <= '9') then
+
+  begin
+    d:= '09';
+    Index := Ord(C) - Ord('0');
+  end
+  else
+  begin
+     Index := 10 + Ord(C) - Ord('a');
+     d:= c;
+  end;
+
+  begin
+    result:='http://www.labutaca.net/guiacine/'  + d + '.htm';
+  end
+
+end;
+
+//
+// Carga Titulo original y titulo traducido
+//
+
+procedure Titulooriginal (LineNr :integer ; Address :string);
+   var
+   Page: TStringList;
+   Line, Line2, Line3, Line4, Line5 : string;
+   Item, Item1, C : string;
+   Bool : Boolean;
+
+    begin
+      Page := TStringList.Create;
+      Page.Text := GetPage(Address);
+      LineNr := LineNr + 2;
+      Line   := Page.GetString(LineNr);
+      Line2  := Page.GetString(LineNr + 1);
+      Line3  := Page.GetString(LineNr + 2);
+      Line4  := Page.GetString(LineNr + 3);
+      Line5  := Page.GetString(LineNr + 4);
+      Line   := Line + Line2 + Line3 + Line4 + Line5;
+      Line   := RS (Line, Bool);
+
+      If TextBetween(Line, 'Verdana">' , '</font') <> '' then
+        begin
+          Item:= TextBetween(Line, 'Verdana">' , '</font')
+        end
+      else
+        if TextBetween(Line,  '0000">'  ,'<br>' ) <> '' then
+          begin
+            Item := TextBetween(Line, '0000">'    , '<br>')
+          end
+        else
+          if TextBetween(Line, '0000">'    , '</font') <> '' then
+            begin
+              Item := TextBetween(Line, '0000">'    , '</font');
+             end
+          else
+            if TextBetween(Line, 'Verdana">' , '<br')    <> '' then
+            begin
+              Item :=TextBetween(Line, 'Verdana">' , '<br')
+            end
+            If TextBetween(Line, '"><strong>'   , '<br') <> '' then
+              begin
+                Item := TextBetween(Line, '"><strong>'   , '<br>')
+              end
+                if TextBetween(Line,  '"><strong>' , '</font') <> '' then
+                  begin
+                    Item := TextBetween(Line, '"><strong>' , '</font')
+                  end;
+        Item  := DeleteTags (Item);
+        Item  := QuitaEspacio (Item);
+        Item  := AnsiLowerCase (Item);
+        Item  := AnsiUpFirstLetter (Item);
+        Item  := Caracter (Item);
+        SetField(fieldTranslatedTitle, Item);
+        Item1 := TextBetween(Line, '(' , ')');
+
+        If Item1 = '' then
+          begin
+            Item := AnsiLowerCase (Item);
+            Item := AnsiUpFirstLetter (Item);
+            SetField(fieldOriginalTitle, Item);
+          end
+        else
+          begin
+            Item  := Caracter (Item);
+            Item1 := AnsiLowerCase (Item1);
+            Item1 := AnsiUpFirstLetter (Item1);
+            SetField(fieldOriginalTitle, Item1);
+          end;
+     end;
+
+//
+//Rutina que carga las lineas de la sinopsis
+//
+
+procedure CargaSinopsis (LineNr :integer ; Address :string);
+   var
+   Page: TStringList;
+   Line, Item : string;
+   Posini : integer;
+
+   begin
+     Page := TStringList.Create;
+     Page.Text := GetPage(Address);
+       repeat
+         Line  := Page.GetString(LineNr);
+         Delete(Line, 1 , 15);
+         Item := Item + Line;
+         Item := DeleteTags(Item);
+         LineNr := LineNr + 1;
+       until (Pos('</font></p>' , Line) > 0) or (Pos('</font></strong></p>' , Line) > 0);
+
+     Posini := Pos('>' , item);
+     if Posini > 0 then
+         Delete (item , 1 , Posini)
+     else
+         Delete (Item , 1 , 1);
+     Item := StringReplace (Item , '-' , '');
+     Item := StringReplace(Item , '&#147;' , '"');
+     Item := StringReplace(Item , '&#148;:' , '"');
+     Item := StringReplace(Item , '&quot;' , '"');
+     Item := StringReplace(Item , '&nbsp;' , '');
+//     Item := StringReplace(Item , ' ' , '');
+
+     SetField(fieldDescription, Item);
+   end;
+
+      
+//
+// Analiza la página donde se muestran todas las peliculas que empiezan por
+// la misma letra que el titulo introducido.
+// Busca todas las peliculas con texto igual al introducido.
+// Al final muestra un cuadro con todas las peliculas que tenga en su
+// descripción el texto de la pelicula introducida para seleccionar la pelicula.
+//
+
+procedure AnalyzePageLabutaca(Ttl: string);
+
+var
+  LabutacaPage, Page: TStringList;
+  PageDir, MovieDir, Line, Line2, Line3, LineTmp, TitleWeb, PageWeb, Titulo: string;
+  SubPage, Encontrado, LineNr, LineMov, Index : Integer;
+
+  
+begin
+    PickTreeClear;
+    PickTreeAdd('Resultados de la búsqueda para "' + Title + '" (www.Labutaca.com):', '');
+
+    Encontrado := 0;
+    Index := 1;
+    
+    PageDir := GetLabutacaDir(Ttl);
+    LabutacaPage := TStringList.Create;
+    LabutacaPage.Text := GetPage(PageDir);
+    Labutacapage.Text := StringReplace(LabutacaPage.text, 'li>', #13#10);
+    LineNr := FindLine('padding-left: 30px; text-align:', LabutacaPage, 0);
+    LineNr := LineNr + 1;
+    Line := LabutacaPage.GetString(LineNr);
+
+    while  (Pos('guiacine', Line) > 0) do
+      begin
+        Line := LabutacaPage.GetString(LineNr);
+        LineNr := LineNr + 1;
+        Pageweb := TextBetween(Line, 'href=''' , ''' class=''g');
+        Titleweb:= TextBetween(Line, 'guiacine''' , '</a>');
+        Titleweb := Caracter(Titleweb);
+        swprepara := 2;
+        Titleweb := PreparaTitulo(TitleWeb);
+        Delete(Titleweb, 2, 1);
+        if Pos(Title, Titleweb) > 0 then
+          begin
+            Titleweb := TransformTitle (Titleweb);
+            DeleteTags(Titleweb);
+            HTMLDecode(Titleweb);
+            PickTreeAdd(TitleWeb, PageWeb);
+            Encontrado := 1;
+          end;
+      end;
+
+  if (Encontrado = 1) then
+    begin
+      if PickTreeExec(pageweb) then
+        begin
+          Page := TStringList.Create;
+          Page.Text := GetPage(PageWeb);
+          LineNr := 0;
+          Line := Page.GetString(LineNr);
+          LineNr := 1;
+          Line2 := Page.GetString(LineNr);
+          LineNr := 2;
+          Line3 := Page.GetString(LineNr);
+          If (Copy(Line, 1, 6) = '<html>') or (Copy(Line2, 1 ,6) = '<html>') or (Copy(Line3, 1 ,6) = '<html>')then
+            begin
+              AnalyzeMoviePageHtml (Pageweb);
+            end
+          else
+            begin
+              AnalyzeMoviePageNoHtml (Pageweb);
+            end;
+       end;
+    end
+      else
+        ShowMessage('Titulo ' + Title + ' no encontrado en Caratulas de cine');
+end;
+
+ //
+ // Analiza la pagina de la pelicula formato html y extrae los datos
+ //
+ 
+procedure AnalyzeMoviePageHtml(Address: string);
+var
+   Page: TStringList;
+   LineNr, LineInc, Posini, Posend, Len: Integer;
+   Line, Line2, Line3, Line4, Line5, Posfinal: string;
+   Item, Item1: string;
+   Comments: string;
+   Bool : Boolean;
+
+begin
+   Comments := '';
+
+   // URL
+   SetField(fieldURL, Address);
+
+   Page := TStringList.Create;
+   Page.Text := GetPage(Address);
+   
+   //
+   // Titulo Traducido
+   //
+
+   Item := '';
+   SetField(fieldTranslatedTitle, '');
+   LineNr := FindLine('<title>LA BUTACA' , Page, 0);
+   if LineNr <> -1   then
+     begin
+       Line  := Page.GetString(LineNr);
+       Line2 := Page.GetString(LineNr + 1);
+       Line  := Line + Line2;
+       If Pos('(' , Line) > 0 then
+         begin
+           Item := TextBetween (Line , ' - ' , ' (');
+         end
+       else
+         begin
+           Item := TextBetween (Line , ' - ' , '<');
+         end
+       Item := DeleteTags (Item);
+       Item := Caracter (Item);
+       HTMLDecode(Item);
+       SetField(fieldTranslatedTitle, Item);
+     end
+   else
+     ;
+     LineNr := FindLine('LA BUTACA</title>' , Page , 0);
+     if LineNr <> -1   then
+     begin
+       Line  := Page.GetString(LineNr);
+       Line2 := Page.GetString(LineNr + 1);
+       Line  := Line + Line2;
+       If Pos('(' , Line) > 0 then
+         begin
+           Item := TextBetween (Line , '<title>' , ' (');
+           end
+       else
+         begin
+           Item := TextBetween (Line , '<title>' , ' -');
+         end
+       Item := DeleteTags (Item);
+       Item := Caracter (Item);
+       HTMLDecode(Item);
+       SetField(fieldTranslatedTitle, Item);
+     end;
+     
+   //
+   // Titulo Original
+   //
+   
+     SetField(fieldOriginalTitle, '');
+     If Pos('(' , Line) > 0 then
+         begin
+           Item := TextBetween (Line , '(' , ')');
+         end;
+       Item := DeleteTags (Item);
+       Item := Caracter (Item);
+
+       SetField(fieldOriginalTitle, Item);
+
+   //
+   // Caratula
+   //
+   
+   Item := '';
+   RemovePicture;
+   LineNr := FindLine('/crt/' , Page, 0);
+   if LineNr <> -1 then
+     begin
+       Line := Page.GetString(LineNr);
+       Item := TextBetween(Line, '../..' , '.jpg');
+       Item := (Item + '.jpg');
+       Item := ('http://www.labutaca.net' + Item);
+       GetPicture(Item);
+     end;
+
+   //
+   // Año
+   //
+    
+   SetField(fieldYear, '');
+   LineNr := FindLine('>Año:<', Page, LineNr);
+   if LineNr <> -1 then
+     begin
+        LineNr := LineNr + 1;
+        Line  := Page.GetString(LineNr);
+        Line2 := Page.GetString(LineNr + 1);
+        Line3 := Page.GetString(LineNr + 2);
+        Line  := Line + Line2 + Line3;
+        Line  := RS (Line, Bool);
+        Item  := TextBetween (Line , '> ' , '.<');
+        If Item = '' then
+          begin
+            Item := TextBetween (Line , '">' , '.<');
+          end;
+        SetField(fieldYear, Item);
+      end;
+      
+   //
+   // Duración
+   //
+
+   SetField(fieldLength, '');
+   LineNr := FindLine(' min.<' , Page , 0);
+   if LineNr <> -1 then
+     begin
+       Line  := Page.GetString(LineNr);
+       Posini := Pos(' min.' , Line);
+       Item := Copy (Line , Posini - 3 , 3);
+       SetField(fieldLength, Item);
+   end;
+   
+   //
+   // Pais
+   //
+
+   SetField(fieldCountry, '');
+   LineNr := FindLine('País', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString(LineNr +2);
+      Delete (Line2 , 1 , 15);
+      Line := (Line + Line2);
+      Item := TextBetween(Line, 'Verdana"> ' , '.');
+      Item := DeleteTags (Item);
+      SetField(fieldCountry, Item);
+   end;
+   
+   //
+   // Director
+   //
+
+   SetField(fieldDirector, '');
+   LineNr := FindLine('strong>Dirección' , Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString (LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Line3 := Page.GetString (LineNr + 3);
+      Delete (Line2 , 1 , 15);
+      Delete (Line3 , 1 , 15);
+      Line := Line + Line2 + Line3;
+      Item := TextBetween(Line, 'Verdana"> ' , '.<');
+      Item := Caracter (Item);
+      Item := DeleteTags (Item);
+      SetField(fieldDirector, Item);
+   end;
+   
+   //
+   // Actores
+   //
+   SetField(fieldActors, '');
+   LineNr := FindLine('>Interpretación:<', Page, LineNr);
+   If LineNr = -1 then
+     begin
+       LineNr := Findline('>Intervenciones:<' , Page , 0);
+       If LineNr = -1 then
+         begin
+           LineNr := Findline('Personajes<' , Page , 0);
+         end;
+     end;
+   Item := '';
+   if LineNr <> -1 then
+   begin
+      LineNr := LineNr + 1;
+      Line := Page.GetString (LineNr);
+      Delete(Line, 1 , 6);
+      If Pos ('</font>' , Line) <> 0 then   // A veces pone una linea con </font> y hay que saltarla
+        begin
+          Line := '';
+        end;
+      while pos('</font>' , Line) < 1 do    // Al final de los actores hay un </font>
+        begin
+          Item := Item + Line;
+          Item := DeleteTags(Item);
+          LineNr := LineNr + 1;
+          Line := Page.GetString(LineNr);
+          Delete(Line, 1 , 6);
+        end;
+      Posini := Pos('>' , Item);
+      Delete (Item , 1 , Posini);
+      Item := QuitaEspacio (Item);
+      Item := RS (item, Bool);
+      Repeat
+          Posini := Pos ('(' , Item);
+          Posend := Pos (')' , Item);
+          Lineinc := Length (Item);
+//          Posfinal := Copy (Item , Posend , 4);
+          Len := (Posend - Posini);
+          Delete (Item , Posini - 1 , Len + 2);
+      until Pos ('(' , Item) < 1;
+      Len := Length (Item);
+      Delete (Item, Len, 1);
+      Item := StringReplace (Item, ', ' , #13#10);
+      Item := StringReplace (Item, ','  , #13#10);
+      SetField(fieldActors, Item);
+   end;
+   
+   //
+   // Productor
+   //
+
+   SetField(fieldProducer, '');
+   LineNr := FindLine('Producción:' , Page, 0);
+   if LineNr = -1 then
+     begin
+       LineNr := FindLine('Producción ejecutiva:' , Page, 0);
+     end;
+   if LineNr <> -1 then
+     begin
+       Line  := Page.GetString (LineNr + 1);
+       Line2 := Page.GetString (LineNr + 2);
+       Line3 := Page.Getstring (LineNr + 3);
+       Delete (Line2 , 1 , 15);
+       Delete (Line3 , 1 , 15);
+       Line := Line + Line2 + Line3;
+       Item := TextBetween(Line, 'Verdana"> ' , '.<br>');
+       If Item = '' then
+         begin
+           Item := TextBetween(Line , 'Verdana">' , '.</font>');
+         end;
+       Item := DeleteTags (Item);
+       SetField(fieldProducer, Item);
+     end;
+     
+   //
+   // Genero
+   //
+
+   SetField(fieldCategory, '');
+   LineNr := FindLine('Género:' , Page, 0);
+   if LineNr <> -1 then
+     begin
+      Line  := Page.GetString(LineNr);
+      Line2 := Page.GetString (LineNr + 1);
+      Line3 := Page.Getstring (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Delete (Line3 , 1 , 15);
+      Line := Line + Line2 + Line3;
+      If Pos ('</font><font' , Line) < 1 then
+        begin
+          Item := TextBetween(Line, 'Verdana">' , '.</font>');
+        end
+      else
+        begin
+          Item := TextBetween(Line, '/strong>' , '.</font>');
+          If Item = '' then
+            begin
+              Item := TextBetween(Line, '/strong>' , '.<br>');
+            end;
+        end;
+      Item := DeleteTags (Item);
+      Item := QuitaEspacio (Item);
+      SetField(fieldCategory, Item);
+     end;
+     
+   //
+   // Sinopsis
+   //
+
+   SetField(fieldDescription, '');
+   LineNr := FindLine('SINOPSIS', Page, 0);
+   for LineInc := 1 to 5 do
+     begin
+       Line  := Page.GetString(LineNr + LineInc);
+       If (Pos('size="2">' , Line) > 0) or (Pos (' 400">' , Line) > 0) then
+         begin
+           LineNr :=  LineNr + LineInc ;
+           CargaSinopsis (LineNr , address)
+           break
+         end;
+     end;
+     
+   //
+   // Guion
+   //
+   
+   Comments := '';
+   
+   LineNr := FindLine('Guión:' , Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString (LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Line3 := Page.GetString (LineNr + 3);
+      Line4 := Page.GetString (LineNr + 4);
+      Line5 := Page.GetString (LineNr + 5);
+      Delete (Line2 , 1 , 15);
+      Delete (Line3 , 1 , 15);
+      Delete (Line4 , 1 , 15);
+      Delete (Line5 , 1 , 15);
+      Line := Line + Line2 + Line3 + Line4 + Line5;
+      Item := TextBetween(Line, 'Verdana"> ' , '.');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Guión: ' + Item + #13#10 + #13#10;
+    end;
+    
+   //
+   // Musica
+   //
+   
+   LineNr := FindLine('Música:' , Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Line := Line + Line2;
+      Item := TextBetween(Line, 'Verdana">' , '.');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Música: ' + Item + #13#10 + #13#10;
+   end;
+   
+   //
+   // Fotografia
+   //
+   
+   LineNr := FindLine('Fotografía:', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Line := Line + Line2;
+      Item := TextBetween(Line, 'Verdana"> ' , '.');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Fotografia: ' + Item + #13#10 + #13#10;
+   end;
+
+   //
+   // Montaje
+   //
+
+   LineNr := FindLine('Montaje:', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Line := Line + Line2;
+      Item := TextBetween(Line, 'Verdana"> ' , '.');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Montaje: ' + Item + #13#10 + #13#10;
+   end;
+   
+   //
+   // Vestuario
+   //
+
+   LineNr := FindLine('Vestuario:', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString (LineNr );
+      Line2 := Page.GetString (LineNr + 1);
+      Line3 := Page.GetString (LineNr + 2);
+      Delete (Line  , 1 , 15);
+      Delete (Line2 , 1 , 15);
+      Delete (Line3 , 1 , 15);
+      Line  := Line + Line2 + Line3;
+      Posini := Pos(':' , Line);
+      Delete (Line , 1 , Posini);
+      Item  := deletetags (Line);
+      Posini := Pos ('.' , Item);
+      Delete (Item , Posini , 99);
+      Comments := Comments + 'Vestuario: ' + Item + #13#10 + #13#10;
+   end;
+   
+   //
+   // Direccion artisitica
+   //
+   
+   LineNr := FindLine('Dirección art', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Line := Line + Line2;
+      Item := TextBetween(Line, 'Verdana"> ' , '.<');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Dirección artística: ' + Item + #13#10 + #13#10;
+   end;
+   
+    //
+    // Diseño de produccion
+    //
+
+   LineNr := FindLine('Diseño', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr + 1);
+      Line2 := Page.GetString (LineNr + 2);
+      Delete (Line2 , 1 , 15);
+      Line := Line + Line2;
+      Item := TextBetween(Line, 'Verdana"> ' , '.');
+      Item := DeleteTags (Item);
+      Comments := Comments + 'Diseño de producción: ' + Item + #13#10 + #13#10;
+   end;
+   
+   SetField(fieldComments, Comments);
+   
+end;
+
+//
+ // Analiza la pagina de la pelicula formato no html y extrae los datos
+ //
+
+procedure AnalyzeMoviePageNoHtml(Address: string);
+var
+   Page: TStringList;
+   LineNr, LineInc, Posini, Posend, Len: Integer;
+   Line, Line2, Line3, Line4, Line5, Posfinal: string;
+   Item, Item1, Item2: string;
+   Comments: string;
+   Bool : Boolean;
+
+begin
+   Comments := '';
+   
+   //
+   // URL
+   //
+   
+   SetField(fieldURL, Address);
+
+   Page := TStringList.Create;
+   Page.Text := GetPage(Address);
+
+   //
+   // Titulo Traducido
+   //
+   
+   Item := '';
+   SetField(fieldTranslatedTitle, '');
+   Page.text := Caracter (page.text);
+   LineNr := FindLine('>Inicio<' , Page, 0);
+   if LineNr <> -1   then
+     begin
+       LineNr := LineNr + 2;
+       Line := Page.GetString(LineNr);
+       If Pos('(' , Line) > 0 then
+         begin
+           Item := TextBetween (Line , '>' , ' (');
+         end
+       else
+         begin
+           Item := TextBetween (Line , '>' , '<');
+         end;
+       Item := DeleteTags (Item);
+       Item := Caracter (Item);
+       Item := StringReplace(Item , '"' , ''  );
+       SetField(fieldTranslatedTitle, Item);
+     end;
+
+   //
+   // Titulo Original
+   //
+
+   SetField(fieldOriginalTitle, '');
+   LineNr := FindLine('Estreno en España:' , Page, 0);
+   if LineNr <> -1   then
+     begin
+       Line := Page.GetString(LineNr);
+       if Pos('Título original:' , Line) > 0 then
+         begin
+           Line := StringReplace(Line , '. <'  , '. <');      // Caracter raro entre . y <
+           Line := StringReplace(Line , '. <' , '.<');
+           Item := TextBetween(Line, 'Título original:' , '.<');
+           Item := DeleteTags (Item);
+           Item := QuitaEspacio (Item);
+           Item := Caracter (Item);
+           SetField(fieldOriginalTitle, Item);
+         end
+       else
+         begin
+           SetField(fieldOriginalTitle, Item);
+         end;
+     end;
+     
+   //
+   // Caratula
+   //
+
+   Item := '';
+   RemovePicture;
+   LineNr  := FindLine('cartel.jpg' , Page, 0);
+   LineInc := FindLine('cartel1.jpg' , Page, 0);
+   Len     := FindLine('cartel2.jpg' , Page, 0);
+   if (LineNr <> -1) or (LineInc <> -1) or (Len <> -1) then
+     begin
+      If LineNr <> -1 then
+        begin
+          Line := Page.GetString(LineNr);
+          Item:= TextBetween(Line, '"http://www.labutaca.net/peliculas/wp-content/uploads' , 'jpg');
+          Item := '"http://www.labutaca.net/peliculas/wp-content/uploads' + Item + 'jpg';
+          GetPicture(Item);
+        end
+      else
+        If LineInc <> -1 then
+          begin
+            Line := Page.GetString(LineInc);
+            Item:= TextBetween(Line, '"http://www.labutaca.net/peliculas/wp-content/uploads' , 'jpg');
+            Item := '"http://www.labutaca.net/peliculas/wp-content/uploads' + Item + 'jpg';
+            GetPicture(Item);
+          end
+        else
+          If Len <> -1 then
+            begin
+              Line := Page.GetString(Len);
+              Item:= TextBetween(Line, '"http://www.labutaca.net/peliculas/wp-content/uploads' , 'jpg');
+              Item := '"http://www.labutaca.net/peliculas/wp-content/uploads' + Item + 'jpg';
+              GetPicture(Item);
+            end;
+     end;
+
+    //
+    // Año
+    //
+
+   Item := '';
+   SetField(fieldYear, '');
+   LineNr := FindLine('Estreno en España:' , Page, 0);
+   If LineNr <> -1 then
+     begin
+       Line := Page.GetString(LineNr);
+       Line := caracter (Line);
+       Line := SinAcento (Line);
+       Item := TextBetween(Line, '<strong>Año' , '.');
+       DeleteTags (Item);
+       Item := StringReplace (Item, ' ' , '');
+       Item := StringReplace (Item, ':' , '');
+       SetField(fieldYear, Item);
+     end;
+
+   //
+   // Duración
+   //
+
+   Item := '';
+   SetField(fieldLength, '');
+   Item := TextBetween (Line, 'Duracion' ,'min.');
+   If Item = '' then
+     begin
+       Item := TextBetween (Line, 'Duracion' , 'min,');
+     end;
+   if Item <> '' then
+     begin
+       Item := Deletetags (Item);
+       Item := ConvertAlphaNum (Item);
+       SetField(fieldLength, Item);
+     end;
+     
+   //
+   // Pais
+   //
+
+   Item := '';
+   SetField(fieldCountry, '');
+   Item := TextBetween (Line, 'Pais:' ,'</a>.');
+   If Item = '' then
+     begin
+       Item := TextBetween (Line, 'Paises:' ,'</a>.');
+     end;
+   if Item <> '' then
+     begin
+       Item := Deletetags   (Item);
+       Item := QuitaEspacio (Item);
+       SetField(fieldCountry, Item);
+     end
+   else
+     begin
+       Item := TextBetween (Line, 'Pais:' , '. <strong>');
+       Item := Deletetags   (Item);
+       Item := QuitaEspacio (Item);
+       SetField(fieldCountry, Item);
+     end;
+
+   // Director
+
+   Item := '';
+   SetField(fieldDirector, '');
+   if TextBetween(Line , 'Direccion:' , '. <strong>') <> '' then
+     Item := TextBetween(Line , 'Direccion:' , '. <strong>')
+   else
+     if TextBetween(Line , 'Direccion y guion:' , '</a>.') <> '' then
+       Item := TextBetween(Line , 'Direccion y guion:' , '</a>.');
+   if Item <> '' then
+   begin
+     Item := Deletetags (Item);
+     Item := QuitaEspacio (Item);
+     SetField(fieldDirector, Item);
+     Item1 := Item;                 //Guarda el director por si es el mismo que el guionista.
+   end;
+   
+   //
+   // Actores
+   //
+
+   SetField(fieldActors, '');
+   Item := '';
+   If Pos('Interpretacion:' , Line) <> -1 then
+     begin
+       Item := TextBetween (Line , 'Interpretacion:' , '. <strong>');
+       Item := DeleteTags (Item);
+       Item := QuitaEspacio (Item);
+       Item := RS (Item, Bool);
+       Item := Caracter (Item);
+       Repeat
+         Posini := Pos ('(' , Item);
+         Posend := Pos (')' , Item);
+//         Posfinal := Copy (Item , Posend , 4);
+         Len := (Posend - Posini);
+         Delete (Item , Posini - 1 , Len + 2);
+       until Pos ('(' , Item) < 1;
+       Item := StringReplace(Item, ' ', ' ');
+       Item := QuitaEspacio (Item);
+       Item := StringReplace (Item, ', ' , #13#10);
+       SetField(fieldActors, Item);
+     end;
+
+   //
+   // Productor
+   //
+
+   SetField(fieldProducer, '');
+   Item := '';
+   Item := TextBetween (Line , 'Produccion:' ,'. <strong>');
+   If Item = '' then
+     begin
+       Item := TextBetween(Line , 'Produccion ejecutiva:' , '. <strong>');
+     end;
+   if Item <> '' then
+     begin
+       Item := Deletetags (Item);
+       Item := QuitaEspacio (Item);
+       SetField(fieldProducer, Item);
+     end;
+     
+   //
+   // Genero
+   //
+
+   SetField(fieldCategory, '');
+   Item := '';
+   Item := TextBetween (Line, 'Genero:' ,'. ');
+   if Item <> '' then
+     begin
+       Item := Deletetags (Item);
+       Item := QuitaEspacio (Item);
+       SetField(fieldCategory, Item);
+     end;
+     
+   //
+   // Sinopsis
+   //
+   
+   SetField(fieldDescription, '');
+   Len := 0;
+   LineNr := 1;
+   while Len = 0 do
+     begin
+       If FindLine('>Sinopsis</span>', Page, LineNr) > 0 then
+         LineNr :=  FindLine('>Sinopsis</span>', Page, LineNr);
+         Line  := Page.GetString(LineNr + 1);
+         If (Pos('</td>' , Line) > 0) or (Pos('</tr>' , Line) > 0) then
+           Len := 1
+         else
+           LineNr := LineNr +1;
+     end;
+
+   LineNr :=  FindLine ('<p>', Page, LineNr);
+   Line   := Page.GetString(LineNr);
+   Item   := TextBetween (Line , '<p>' , '</p>');
+   Item   := DeleteTags (Item);
+   Item   := Caracter (Item);
+   Item := StringReplace(Item , 'â€œ'     , '"'  );
+   Item := StringReplace(Item , 'â€'     , '"'  );
+   Item := StringReplace(Item , 'â€“'     , '"'  );
+   Item := StringReplace(Item , '&#8220;' , '"'  );
+   Item := StringReplace(Item , '&#8221;' , '"'  );
+   Item := StringReplace(Item , '&#8230;' , '...');
+   Item := StringReplace(Item , 'â€™'     , '''' );
+   Item := StringReplace(Item , 'â€¦'     , '...');
+   Item := StringReplace(Item , '&#8243;' , '"'  );
+   Item := StringReplace(Item , 'â€”'     , '-'  );
+   SetField(fieldDescription, Item);
+
+   //
+   // Guion
+   //
+   
+   Comments := '';
+   Item := '';
+
+   LineNr := FindLine('Estreno en España:' , Page, 0);
+   Line  := Page.GetString(LineNr);
+   Line  := SinAcento (Line);
+   Line  := Caracter (Line);
+   If (Pos ('Direccion y guion:' , Line) > 0) then
+     begin
+       Item := Item1;
+       Comments := Comments + 'Guión: ' + Item + #13#10 + #13#10;
+     end
+   else
+     If Pos ('Guion:' , Line) > 0 then
+       begin
+         Item := TextBetween (LIne , 'Guion:' , '. <strong>');
+         Item := DeleteTags (Item);
+         Comments := Comments + 'Guión: ' + Item + #13#10 + #13#10;
+       end;
+
+   //
+   // Musica
+   //
+
+   If Pos ('Musica:' , Line) > 0 then
+     begin
+       Item := TextBetween (Line , 'Musica:' , '. <strong>');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Música: ' + Item + #13#10 + #13#10;;
+     end;
+
+   //
+   // Fotografia
+   //
+
+   If Pos ('Fotografia:' , Line) > 0 then
+     begin
+       Item := TextBetween (LIne , 'Fotografia:' , '. <strong>');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Fotografía: ' + Item + #13#10 + #13#10;
+     end;
+
+   //
+   // Montaje
+   //
+
+   If Pos ('Montaje:' , Line) > 0 then
+     begin
+       Item := TextBetween (LIne , 'Montaje:' , '. <strong>');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Montaje: ' + Item + #13#10 + #13#10;;
+     end;
+     
+   //
+   // Vestuario
+   //
+
+   If Pos ('Vestuario:' , Line) > 0 then
+     begin
+       Item := TextBetween (LIne , 'Vestuario:' , '. <strong>');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Vestuario: ' + Item + #13#10 + #13#10;;
+     end;
+
+   //
+   // Direccion de producción
+   //
+
+   If Pos ('Diseño de produccion:' , Line) > 0 then
+     begin
+       Item := TextBetween (LIne , 'Diseño de produccion:' , '. <strong>');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Diseño de producción: ' + Item + #13#10 + #13#10;
+     end;
+     
+   //
+   // Fotografía en blanco y negro
+   //
+
+   If Pos ('Fotografia en blanco y negro:' , Line) > 0 then
+     begin
+       Item := TextBetween (LIne , 'Fotografia en blanco y negro:' , '.');
+       Item := Deletetags (Item);
+       Comments := Comments + 'Fotografía en blanco y negro: ' + Item + #13#10 + #13#10;
+     end;
+   
+   SetField(fieldComments, Comments);
+   
+end;
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    Title := GetField(fieldTranslatedTitle);
+    if Title = '' then
+      Title := GetField(fieldOriginalTitle);
+      Title := PreparaTitulo(Title);
+
+    if Input('Importar de Labutaca.com', 'Por favor, introduce el titulo:', Title) then
+      begin
+        swprepara := 1;
+        Title := PreparaTitulo(Title);
+        Titleorig := Title;
+        Quitararticulo (Title);
+        AnalyzePageLabutaca(Title);
+      end;
+  end else
+    ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

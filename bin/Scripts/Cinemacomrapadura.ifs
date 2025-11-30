@@ -1,0 +1,206 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Luis Henrique Carneiro
+Title=Cinemacomrapadura
+Description=Movie importation script for Cinemacomrapadura
+Site=http://cinemacomrapadura.com.br
+Language=BR
+Version=1.0 (19 Março 2010)
+Requires=3.5.1
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+Link do site Oficial=0|0|0=Não|1=Sim
+
+***************************************************)
+
+program Cinemacomrapadura;
+uses StringUtils1,StringUtils7552;
+var nomeFilme: string;
+
+
+// simple string procedures
+
+function ra(S : string) : string;
+Begin
+  S:=StringReplaceAll(S,'Ã§','c');
+  S:=StringReplaceAll(S,'Ã£','a');
+  S:=StringReplaceAll(S,'Ã©','e');
+  S:=StringReplaceAll(S,'Ã­','i');
+  S:=StringReplaceAll(S,'Ã','a');
+  S:=StringReplaceAll(S,'â€œ','"');
+  S:=StringReplaceAll(S,'â€','"');
+  S:=StringReplaceAll(S,'acute;','');
+  S:=StringReplaceAll(S,'tilde;','');
+  S:=StringReplaceAll(S,'cedil;','');
+  S:=StringReplaceAll(S,'&','');
+  S:=StringReplaceAll(S,'aª','ê');
+  S:=StringReplaceAll(S,'a¢','â');
+  S:=StringReplaceAll(S,'a¼','u');
+  S:=StringReplaceAll(S,'a¡','á');
+  S:=StringReplaceAll(S,'','');
+  S:=StringReplaceAll(S,'a³','ó');
+  S:=StringReplaceAll(S,'aµ','õ');
+
+  Result := S;
+End;
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+ while Pos(Old, S) > 0 do
+ S := StringReplace(S, Old, New);
+ Result := S;
+end;
+
+Function ConvertNum(s: string) : string;
+var
+i: Integer;
+s2, ch: string;
+begin
+    s := AnsiLowerCase(s);
+    s2 := '';
+    For i := 1 To Length(s) do
+    begin
+      ch := copy(s, i, 1);
+      if ((ch >= '0') and (ch <= '9')) then
+        s2 := s2 + ch;
+    end;
+    result := s2;
+end;
+
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+ Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+ Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+// Loads and analyses page from internet
+procedure AnalyzePage(Address: string);
+var
+ Page: TStringList;
+begin
+ Page := TStringList.Create;
+ Page.Text := GetPage(Address);
+ if Pos('<h4 class="block_title filmes_title">Filmes</h4>', Page.Text) = 0 then
+ begin
+ ShowMessage('Nothing found.');
+ Exit;
+ end
+ else
+ begin
+ PickTreeClear;
+ PickTreeAdd('Search results:', '');
+ AddMoviesTitles(Page);
+ if PickTreeExec(Address) then
+     AnalyzeMoviePage(Address);
+ end
+end;
+
+procedure AnalyzeMoviePage(Address: String);
+var
+  Page: TStringList;
+  LineNr, BeginPos: integer;
+  value, value2: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  value:=Address;
+  SetField(fieldURL, value );
+
+  value:=TextBetween(Page.Text,'<title>','/title>');
+  value:=RA(TextBetween(value,'»  ','<'));
+  SetField(fieldTranslatedTitle, value);
+
+  value:=TextBetween(Page.Text,'<meta name="description" content="',',');
+  SetField(fieldOriginalTitle, trim(value));
+
+  value:=TextBetween(Page.Text,'<meta name="description" content="','>');
+  value:=TextBetween(value,', ','" /');
+  SetField(fieldYear, trim(value));
+
+  value:=TextBetween(Page.Text,'<dt>Origem:','</dd>');
+  value:=TextBetween(value,'<dd>','<');
+  SetField(fieldCountry, trim(value));
+
+  value:=TextBetween(Page.Text,'nero: </dt>','</dd>');
+  value:=TextBetween(value,'<dd>','<');
+  value:=ra(value);
+  SetField(fieldCategory, trim(value));
+  
+  value:=TextBetween(Page.Text,'<dt>Dura','</dd>');
+  value:=TextBetween(value,'<dd>','<');
+  value:=ConvertNum(value);
+  SetField(fieldLength,trim(value));
+  
+  value:=TextBetween(Page.Text,'dio: </dt>','</dd>');
+  value:=TextBetween(value,'<dd>','<');
+  SetField(fieldProducer, FullTrim(value));
+
+  value:=TextBetween(Page.Text,'<dt>Dire','</dd>');
+  value:=RA(TextBetween(value,'">','<'));
+  SetField(fieldDirector, trim(value));
+
+  value:=TextBetween(Page.Text,'>Elenco</h4>','ticas');
+  value:=FormatText2(value);
+  value:=ra(value);
+  SetField(fieldActors, value);
+
+  value:=TextBetween(Page.Text,'<div class="sinopse">','</div>');
+  value:=ra(FormatText2(value));
+  SetField(fieldDescription, value);
+
+  value:=TextBetween(Page.Text,'rios</h3>','<div class="navigation">');
+  value:=ra(FormatText2(value));
+  SetField(fieldComments, value);
+
+
+  value:=TextBetween(Page.Text,'> - Nota','/');
+  SetField(fieldRating, value);
+
+  value:=TextBetween(Page.Text,'http://cinemacomrapadura.com.br/filmes/poster/','.jpg');
+  value:='http://cinemacomrapadura.com.br/filmes/poster/' + value + '.jpg';
+  if (value <> '') and CanSetPicture then GetPicture(value);
+  GetPicture(value);
+  
+  SetField(fieldMediaType,'DVD');
+
+end;
+
+procedure AddMoviesTitles(ResultsPage: TStringList);
+var
+ Page: string;
+ MovieTitle, MovieAddress : String;
+begin
+ Page := ResultsPage.Text;
+ CutBefore(Page, '<h4 class="block_title filmes_title">Filmes</h4>');
+ while Pos('<em>', Page) > 0 do
+ begin
+ MovieAddress := TextBetween(Page, '<a href="', '" rel=');
+ MovieTitle := TextBetween(Page, '<em>(', ')</em>');
+ MovieTitle := ra(MovieTitle);
+ CutAfter(Page, '</em>');
+ PickTreeAdd(MovieTitle, MovieAddress);
+ end;
+end;
+
+begin
+  PickListClear;
+  nomeFilme := GetField(fieldTranslatedTitle);
+  if (length(nomeFilme)=0) then
+    nomeFilme := GetField(fieldOriginalTitle);
+  if Input('Importar do Cinemacomrapadura', 'Escreve o nome do filme:', nomeFilme) then
+  begin
+    nomeFilme:=stringreplace(nomeFilme,' ','+');
+    AnalyzePage('http://cinemacomrapadura.com.br/?s='+nomeFilme);
+  end;
+end.
+end.

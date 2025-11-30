@@ -1,0 +1,354 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Thierry Colier
+Title=CDiscount
+Description=CDiscount (FR) Descriptif et image
+Site=http://www.cdiscount.com
+Language=FR
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program CDISCOUNT_FR;
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure RecupereGrandeImage (Adr : String);
+var
+   Page : TStringList;
+   Line, Value : string;
+   LineNr: Integer;
+   BeginPos : Integer;
+begin
+   HTMLDecode(Adr);
+   Page := TStringList.Create;
+   Page.Text := GetPage('http://www.cdiscount.com/newmag/mag_dvd/' + Adr);
+   
+   LineNr := FindLine('<img border="0" src="', Page, 0); 
+   if LineNR > -1 then
+   begin 
+      Line := Page.GetString(LineNr);
+      BeginPos := pos ('<img border="0" src="', Line);
+      Delete(Line, 1, BeginPos+20);
+      BeginPos := pos ('"></a>', Line);
+      value := copy (Line, 1, BeginPos - 1);
+      GetPicture(value); 
+   end;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2 : string;
+  LineNr: Integer;
+  BeginPos, EndPos, valeur : Integer;
+begin
+   // Image
+   LineNr := FindLine('zoom_fiche.asp?rep=', Page, 0); // on récupère la grande image s'il y en a une
+   if LineNR > -1 then
+   begin 
+      Line := Page.GetString(LineNr);
+      BeginPos := pos ('zoom_fiche.asp?rep=', Line);
+      Delete(Line, 1, BeginPos-1);
+      BeginPos := pos (',530,400,', Line);
+      value := copy (Line, 1, BeginPos - 10);
+      RecupereGrandeImage(Value);
+   end
+   else
+   begin
+      LineNr := FindLine('"#000000"><IMG border="0" src="', Page, 0);
+      if LineNr > -1 then
+      begin
+         Line := Page.GetString(LineNr);
+         BeginPos := pos ('"#000000"><IMG border="0" src="', Line);
+         Delete(Line, 1, BeginPos + 30);
+         BeginPos := pos ('"></TD></TR></TABLE>', Line);
+         value := copy (Line, 1, BeginPos - 1);
+         GetPicture(value); 
+      end;
+   end;
+
+   // Description
+   LineNr := FindLine('histoire</TD><TD', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('histoire</TD><TD', Line);
+      Delete (Line, 1, BeginPos+51);
+      EndPos := pos('</TD></TR></TABLE>', Line);
+      Value := copy (Line, 1, EndPos);
+      value := StringReplace (Value, '<br>', #13#10); 
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      Delete(Line, 1, EndPos);
+      SetField(fieldDescription, Value);
+   end;
+      
+   // Titre
+   LineNr := FindLine('>Titre</TD><TD', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('>Titre</TD><TD', Line);
+      Delete (Line, 1, BeginPos+49);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      Value := AnsiUpFirstLetter(AnsiLowerCase(trim(Value)));
+      SetField(fieldTranslatedTitle, Value);
+   end;
+   
+   // Acteurs
+   LineNr := FindLine('>Acteurs</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Acteurs</TD>', Line);
+      Delete (Line, 1, BeginPos+51);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldActors, Value);
+   end;
+   
+   // Réalisateur
+   LineNr := FindLine('>Réalisateur</TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Réalisateur</TD>', Line);
+      Delete (Line, 1, BeginPos+55);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldDirector, Value);
+   end;
+   
+   //Durée  : format 2 h 20 ou 1h55 min ...
+   LineNr := FindLine('>Durée</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Durée</DIV>', Line);
+      Delete (Line, 1, BeginPos+55);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      BeginPos := pos('h', value);
+      if (BeginPos > 0) then
+      begin
+         value := StringReplace (Value, 'min', #32); 
+         value := StringReplace (Value, 'mn', #32); 
+           value2 := copy(Value, 1, BeginPos-1);
+         valeur := StrToInt(trim(value2), 10)*60;
+         value2 := copy(value, BeginPos+1, 10);
+         valeur := valeur + StrToInt(trim(value2), 10);
+         value := IntToStr(valeur);
+      end;
+      SetField(fieldLength, Value);
+   end;
+   
+   //Format Audio 
+   LineNr := FindLine('>Le son</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Le son</DIV>', Line);
+      Delete (Line, 1, BeginPos+56);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldAudioFormat, Value); 
+   end;
+   
+   //Sous-Titres 
+   LineNr := FindLine('>Les sous-titres</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Les sous-titres</DIV>', Line);
+      Delete (Line, 1, BeginPos+65);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldSubtitles, Value); 
+   end;
+   
+   //Zone 
+   LineNr := FindLine('>Code régional</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Code régional</DIV>', Line);
+      Delete (Line, 1, BeginPos+63);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldVideoFormat, Value);  //à décortiquer
+   end;
+   
+   //Langues
+   LineNr := FindLine('>Choix de langues</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Choix de langues</DIV>', Line);
+      Delete (Line, 1, BeginPos+66);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldLanguages, Value);  
+   end;
+   
+   //Résolution 
+   LineNr := FindLine('>Format image</DIV>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>Format image</DIV>', Line);
+      Delete (Line, 1, BeginPos+62);
+      EndPos := pos('</TD></TR>', Line);
+      Value := copy(Line, 1, EndPos-1);
+      SetField(fieldResolution, Value);  
+   end;
+   
+   //Bonus 
+   LineNr := FindLine('>BONUS</DIV></TD>', Page, 0);
+   if LineNr > -1 then
+   begin
+      Value := 'Bonus :'+#13#10;
+      Line := Page.GetString(LineNr);
+      BeginPos := Pos('>BONUS</DIV></TD>', Line);
+      Delete (Line, 1, BeginPos+55);
+      EndPos := pos('</TD></TR>', Line);
+      Value := value + copy(Line, 1, EndPos-1);
+      value := StringReplace (Value, '<br>', #13#10); 
+      SetField(fieldComments, Value);  
+   end;
+
+   //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+  EndPos: Integer;
+  LastLine: Integer;
+
+begin
+   repeat
+      Line := Page.GetString(LineNr);
+      StartPos := pos('bgcolor="#c50000"><A target="fich_prod"', Line);
+      if StartPos > 0 then 
+      begin
+         StartPos := pos('href="http://www.cdiscount.com', Line);
+         EndPos := pos('navid=104">', Line);
+         MovieAddress := copy(Line, StartPos+6, EndPos-StartPos+3);
+         Delete(Line, 1, EndPos+10);
+         EndPos := Pos ('</A></TD>', Line);
+         MovieTitle := copy(Line, 1, EndPos-1);
+         HTMLDecode(MovieAddress);
+         HTMLDecode(Movietitle);
+         PickTreeAdd(MovieTitle, MovieAddress);
+      end; 
+      LineNr := LineNr + 1;
+   until (LineNR > Page.count)
+{   if (pos('&laquo; Page pr&eacute;c&eacute;dente</a>', Line) > 0) then
+   begin
+      StartPos := pos('<a href="', Line);
+      EndPos :=     pos('" class="roll">&laquo; Page', Line);
+      PickTreeAdd('... << Résultats précédents', 'http://www.alapage.com' + copy (Line, StartPos+9, Endpos-StartPos-9));
+   end;
+   if (pos('Page&nbsp;suivante&nbsp;&raquo</DIV>', Line) > 0) then
+   begin
+      StartPos := pos('|&nbsp;&nbsp;<A href="', Line);
+      EndPos :=     pos('" class="roll">Page&nbsp;suivante&nbsp;', Line);
+      PickTreeAdd('Résultats suivants >> ...', 'http://www.alapage.com' + copy (Line, StartPos+22, Endpos-StartPos-22));
+   end;}
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line : String;
+  StartPos, EndPos : integer;
+  Adr : String;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  PickTreeClear;
+  LineNr := 0;
+  LineNr := FindLine('résultats correspondent<BR>', Page, LineNr); // trouvé plusieurs réponses
+  if LineNr > -1 then
+  begin
+       Line := Page.GetString(LineNr);
+       StartPos := pos ('"center"><B>', Line);
+       EndPos := pos(' résultats correspondent<BR>', Line);
+       PickTreeAdd(copy (Line, StartPos+12, EndPos-StartPos-12)+' Films Trouvés pour ' + MovieName + ' :', '');
+       AddMoviesTitles(Page, LineNr);
+       if PickTreeExec(Address) then
+          AnalyzePage(Address);
+  end
+  else
+     if (pos('1 résultat correspond', Page.Text) > 0) then
+     begin
+        LineNr := FindLine('1 résultat correspond', Page, LineNr); // trouvé 1 réponse
+        Line := Page.GetString(LineNr);
+        StartPos := pos('bgcolor="#c50000"><A target="fich_prod"', Line);
+        if StartPos > 0 then 
+        begin
+           StartPos := pos('href="http://www.cdiscount.com', Line);
+           EndPos := pos('navid=104">', Line);
+           Adr := copy(Line, StartPos+6, EndPos-StartPos+3);
+           HTMLDecode(Adr);
+           AnalyzePage(Adr);
+        end; 
+     end
+     else
+     begin
+        if ( pos('fiche/fiche_produit.gif"', Page.Text) > 0) then
+        begin
+           SetField(fieldURL, Address);
+           AnalyzeMoviePage(Page)
+        end;
+     end;
+
+  Page.Free;
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+
+    if Input('CDiscount.com Import', 'Entrer le titre du film :', MovieName) then
+    begin
+       AnalyzePage('http://www.cdiscount.com/newmag/mag_dvd/list_prod_resultat_sinequa.asp?p_StrSearch='+UrlEncode(MovieName)+'&mscssid=031016203459XQGJXIBLJFBWVWL13346&refer=&REFERER_SURFEUR=&keyid=33203623');
+    end;
+  end 
+  else
+      ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+end.

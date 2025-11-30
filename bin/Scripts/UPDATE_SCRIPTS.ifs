@@ -1,0 +1,467 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Sascha Biesgen, Yeti
+Title=[  UPDATE SCRIPTS  ]
+Description=Download latest script updates and additional scripts for Ant Movie Catalog 3.5.1 and higher!
+Site=http://update.antp.be/amc/scripts/
+Language=UPDATE SCRIPTS
+Version=v.5.1 - 2022 bugfix
+Requires=3.5.0
+Comments=
+License=This script is released under the GPL General Public License. ||This script is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.||This script is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.|||What this script does:|- it checks http://update.antp.be/amc/scripts for latest script updates|- it lets you choose which script you want to update|- it then downloads and installs the script automatically||What this script does NOT:|- it does NOT send any data to internet|- it does NOT make any changes to your movie collection|||Important notes:|- you have to choose exactly ONE film when running the script - if you choose none, it will not work and if you choose more than one, it will start multiple times and you will see no update summary at the end of the update process|- WINDOWS VISTA™ users must login as administrator when using autodetection or edit file restrictions to allow MovieCatalog.exe to write to program's folder or install Ant Movie Catalog into a folder outside Vistas' program's folder|||Visit AMC support forum for help and more informations: http://forum.antp.be/ !|||Information : You have to accept this license only once, it will not pop up again.|
+GetInfo=1
+RequiresMovies=0
+
+[Options]
+autodetect_new_scripts=1|1|0=Manual mode :  Shows ALL available scripts from Ant Movie Catalog website.|1=Autodetect mode :  Checks your local script files, shows new scripts and available updates for your scripts. (Recommended)|2=Autoupdate mode : Checks your local script files, downloads and installs ALL new scripts and ALL available updates for your scripts automatically.
+
+[Parameters]
+
+***************************************************)
+
+// UPDATE_SCRIPTS.ifs version 5.0.1 by Sascha Biesgen
+// Please report any problems on AMC support forum http://forum.antp.be/ - thanks !
+//
+// Includes functions from StringUtils1.pas v.3 by Antoine Potten
+//
+// List of server triggered functions:
+// force_message.xxx - loads file force_message.xxx and shows a message to the user 
+//                     depending on installed script version, with xxx being 'all' or 
+//                     maximum script version number to show the message
+// force_update.xxx  - asks user to load and install new version of UPDATE_SCRIPTS.ifs
+//                     depending on installed script version, with xxx being 'all' or 
+//                     maximum script version number to update to new version
+
+program UpdateScriptsML;
+
+const
+	CRLF = #13#10;
+	Script_Version = 502;
+	UpdatesPage = 'http://update.antp.be/amc/scripts/';
+	ArchivePage = 'http://update.antp.be/amc/scripts/archive/';
+var
+	DownloadPage, RemainingText: string;
+	SupportAutoDetect, AutoDetect: integer;
+	IndexPage, UpdateList, DirList: TStringList;
+
+function UTF8ToAnsi(Text: string): string;
+var
+  TmpChar1, TmpChar2, TmpChar3: Char;
+  UTF8Pos, UTF8NextPos, TmpInt1, TmpInt2, TmpInt3, i: Integer;
+
+begin
+  for i := 192 to 195 do
+  begin
+    UTF8Pos := 1;
+    UTF8NextPos := 1;
+
+    while UTF8Pos > 0 do
+    begin
+      UTF8Pos := AnsiPosEx2(Chr(i), Text, False, False, UTF8NextPos);
+      
+      if UTF8Pos > 0 then
+      begin
+        TmpChar1 := Copy(Text, UTF8Pos, 1);
+        TmpChar2 := Copy(Text, UTF8Pos+1, 1);
+        TmpInt1 := ord(TmpChar1);
+        TmpInt2 := ord(TmpChar2);
+
+        if (TmpInt2 and $C0) = $80 then
+        begin
+          TmpInt1 := TmpInt1 and 3;
+          TmpInt1 := TmpInt1 shl 6;
+          TmpInt2 := TmpInt2 and $3F;
+          TmpInt3 := TmpInt1 or TmpInt2;
+          TmpChar3 := Chr(TmpInt3);
+          Delete(Text, UTF8Pos, 2);
+          Insert(TmpChar3, Text, UTF8Pos);
+        end;
+      end;
+      UTF8NextPos := UTF8Pos + 1;
+    end;
+  end;
+  Result := Text;
+end;
+	
+// FindLine function
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+	i: Integer;
+begin
+	result := -1;
+	if StartAt < 0 then
+		StartAt := 0;
+	for i := StartAt to List.Count-1 do
+		if Pos(Pattern, List.GetString(i)) <> 0 then
+		begin
+			result := i;
+			Break;
+		end;
+end;
+
+// TextAfter function
+function TextAfter(WholeText: string; SearchText: string): string;
+var
+	FoundPos: Integer;
+begin
+	Result := '';
+	FoundPos := Pos(SearchText, WholeText);
+	if FoundPos = 0 then
+		Exit;
+	Result := Copy(WholeText, FoundPos + Length(SearchText), Length(WholeText));
+end;
+
+// TextBetween function
+function TextBetween(WholeText: string; BeforeText: string; AfterText: string): string;
+var
+	FoundPos: Integer;
+	WorkText: string;
+begin
+	RemainingText := WholeText;
+	Result := '';
+	FoundPos := Pos(BeforeText, WholeText);
+	if FoundPos = 0 then
+		Exit;
+	WorkText := Copy(WholeText, FoundPos + Length(BeforeText), Length(WholeText));
+	FoundPos := Pos(AfterText, WorkText);
+	if FoundPos = 0 then
+		Exit;
+	Result := Copy(WorkText, 1, FoundPos - 1);
+	RemainingText := Copy(WorkText, FoundPos + Length(AfterText), Length(WorkText));
+end;
+
+// Find DateTime format for scripts on website
+function FindScriptDateTime(ScriptDate: string): string;
+var
+	ScriptYear, ScriptMonth, ScriptDay, ScriptHour, ScriptMinute: string;
+begin
+	ScriptYear := Copy(ScriptDate,3,2);
+	ScriptMonth := Copy(ScriptDate,6,2);
+	ScriptDay := Copy(ScriptDate,9,2);
+	ScriptHour := Copy(ScriptDate,12,2);
+	ScriptMinute := Copy(ScriptDate,15,2);
+	Result := ScriptYear + ScriptMonth + ScriptDay + ScriptHour + ScriptMinute;
+end;
+
+// Find DateTime format for scripts on local folder
+function FindLocalDateTime(LocalDate: string): string;
+var
+	LocalYear, LocalMonth, LocalDay, LocalHour, LocalMinute, Value: string;
+begin
+	LocalYear := Copy(LocalDate,Length(LocalDate)-16,2);
+	LocalMonth := Copy(LocalDate,Length(LocalDate)-13,2);
+	LocalDay := Copy(LocalDate,Length(LocalDate)-10,2);
+	LocalHour := Copy(LocalDate,Length(LocalDate)-7,2);
+	LocalMinute := Copy(LocalDate,Length(LocalDate)-4,2);
+	Result := LocalYear + LocalMonth + LocalDay + LocalHour + LocalMinute;
+end;
+
+// Analyze scripts page
+procedure AnalyzeIndexPage(Address: string);
+var
+	Value: string;
+	i: Integer;
+	UpdateMessage: TStringList;
+begin
+	IndexPage := TStringList.Create;
+	IndexPage.Text := GetPage(Address);
+
+	// Show AMC messages depending on script version ("force_message.xxx")
+	if Pos('force_message.', IndexPage.Text) > 1 then
+  begin
+		Value := '';
+		Value := Copy(IndexPage.Text, Pos('force_message.', IndexPage.Text)+14, 3);
+		if (Value = 'all') or (StrToInt(Value,0) > Script_Version) then
+    begin
+			UpdateMessage := TStringList.Create;
+			UpdateMessage.Text := GetPage(UpdatesPage + 'force_message.' + Value);
+			ShowInformation(UpdateMessage.Text);
+			UpdateMessage.Free;
+    end;
+  end;
+
+	// Force update of Update_Scripts for script versions < xxx ("force_update.xxx")
+	if Pos('force_update.', IndexPage.Text) > 1 then
+	begin
+		Value :='';
+		Value := Copy(IndexPage.Text, Pos('force_update.', IndexPage.Text)+13, 3);
+		if (Value = 'all') or (StrToInt(Value,0) > Script_Version) then
+			if ShowWarning('Ant Movie Catalog needs to download a new version of UPDATE_SCRIPTS. Continue?') = True then
+			begin
+				DownloadScript(UpdatesPage + 'UPDATE_SCRIPTS.ifs');
+				ShowMessage('Download successful. Please close the scripting window, before you continue!');
+				Exit;
+			end
+		else
+			Exit;
+	end;
+
+	// Change month to numeric value
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Jan-','-01-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Feb-','-02-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Mar-','-03-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Apr-','-04-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-May-','-05-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Jun-','-06-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Jul-','-07-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Aug-','-08-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Sep-','-09-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Oct-','-10-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Nov-','-11-');
+	IndexPage.Text := StringReplace(IndexPage.Text,'-Dec-','-12-');
+	
+	// Check for a new version of UPDATE_SCRIPTS.ifs
+	if AutoDetect > 0 then
+	begin
+		DirList := TStringList.Create;
+		DirList.Text := ListDirectory(dirScripts, '*.*');
+		if (CheckUpdateScript(IndexPage, DirList) = 1) then
+		begin
+		DirList.Free;
+		DirList := TStringList.Create;
+		DirList.Text := ListDirectory(dirScripts, '*.*');
+		end;
+	end;
+
+	// Build results list
+	i := 0;
+	if (Pos('.ifs', IndexPage.Text) > 0) or (Pos('.pas', IndexPage.Text) > 0) then
+	begin
+		while i = 0 do
+		begin
+			PickTreeClear;
+      if CheckVersion(4,1,2) = True then
+        PickTreeTitle('Script selection');
+			AddScripts(IndexPage, DirList);
+			if DownloadPage <> ArchivePage then
+				PickTreeMoreLink(ArchivePage);
+			i := 1;
+			if AutoDetect < 2 then
+			if (PickTreeExec(Address)) then
+			begin
+				if (Pos('.ifs',Address) = 0) and (Pos('.pas', Address) = 0) then
+				begin
+					IndexPage.Free;
+					if AutoDetect > 0 then
+						DirList.Free;
+					DownloadPage := ArchivePage;
+					AnalyzeIndexPage(DownloadPage);
+					Exit;
+				end
+				else
+				begin
+					DownloadScript(Address);
+					if AutoDetect > 0 then
+					begin
+						DirList.Free;
+						DirList := TStringList.Create;
+						DirList.Text := ListDirectory(DirScripts, '*.*');
+					end;
+					i := 0;
+				end;
+			end
+			else
+				Break;
+		end;
+		// Show summary
+		if UpdateList.Text <> '' then
+			ShowInformation('The following scripts have been successfully updated or added to your local scripts folder if there were no error messages:' + #13#10 + #13#10 + UpdateList.Text + #13#10 + #13#10 + 'IMPORTANT :' + #13#10 + 'Close the "Scripting" window to make AMC use the latest update(s) !' + #13#10 + #13#10 + 'For help or suggestions visit http://forum.antp.be/  - thank you !');
+		if (AutoDetect = 2) and (UpdateList.Text = '') then
+			ShowInformation('All your scripts are up-to-date!' + #13#10 + #13#10 + 'If you have problems with a script and there is no update available, you should check for updates again later or leave a short message on Ant Movie Catalog support forum:  http://forum.antp.be/' + #13#10 + #13#10 + 'Thank you !');
+		if (AutoDetect < 2) and (UpdateList.Text = '') then
+			ShowInformation('You did not update any scripts.' + #13#10 + #13#10 + 'If you have problems with a script and there is no update available, you should check for updates again later or leave a short message on Ant Movie Catalog support forum:  http://forum.antp.be/' + #13#10 + #13#10 + 'Thank you !');
+	end
+	else
+		ShowMessage('Cannot find any scripts on ' + DownloadPage + ' !' + #13#10 + 'Maybe update website is temporary down, please try again later.');
+	IndexPage.Free;
+	if AutoDetect > 0 then
+		DirList.Free;
+	UpdateList.Free;
+end;
+
+// Download scriptfile
+procedure DownloadScript(Address :string);
+var
+	ScriptFile: TStringlist;
+	Line, ScriptName, ScriptContents: string;
+	i, LineNr: Integer;
+begin
+	ScriptName := URLDecode(StringReplace(Address,DownloadPage,''));
+	ScriptFile := TStringList.Create;
+	ScriptContents := GetPage(Address);
+	if CheckVersion(4,2,2) then
+	begin
+	  ScriptContents := UTF8ToAnsi(ScriptContents);
+	end;
+	ScriptFile.Text := ScriptContents;
+	ScriptFile.SaveToFile(dirScripts + ScriptName);
+	LineNr := -1;
+	for i := 0 to UpdateList.Count-1 do
+		if Pos(ScriptName, UpdateList.GetString(i)) = 3 then
+			LineNr := i;
+	if LineNr = -1 then
+		UpdateList.Add('- ' + ScriptName);
+	ScriptFile.Free;
+end;
+
+// Automatic update of UPDATE_SCRIPTS.ifs
+function CheckUpdateScript(ResultsPage: TStringList; LocalDir: TStringList): Integer;
+var
+	ScriptDate, LocalDate, ScriptAddress, Line, ScriptDateTime, LocalDateTime: string;
+	LineNr, i: Integer;
+begin
+	Result := 0;
+	ScriptDateTime := '0000';
+	LocalDateTime := '0000';
+	LineNr := FindLine('<a href="UPDATE_SCRIPTS.ifs">', ResultsPage, 0);
+	if LineNr > -1 then
+	begin
+		Line := ResultsPage.GetString(LineNr);
+		ScriptAddress := UpdatesPage + 'UPDATE_SCRIPTS.ifs';
+		ScriptDate := TextAfter(Line, '">UPDATE_SCRIPTS.ifs</');
+		ScriptDate := TextBetween(ScriptDate, '<td class="m">', '</td>');
+		ScriptDateTime := FindScriptDateTime(ScriptDate);
+	end
+	else
+	begin
+		LineNr := FindLine('<A HREF="UPDATE_SCRIPTS.ifs">', ResultsPage, 0);
+		if LineNr > -1 then
+		begin
+			Line := ResultsPage.GetString(LineNr);
+			ScriptAddress := UpdatesPage + 'UPDATE_SCRIPTS.ifs';
+			ScriptDate := TextAfter(Line, '">UPDATE_SCRIPTS.ifs</');
+			ScriptDate := TextBetween(ScriptDate, '<td class="m">', '</td>');
+			ScriptDateTime := FindScriptDateTime(ScriptDate);
+		end;
+	end;
+	LineNr := -1;
+	for i := 1 to LocalDir.Count-1 do
+		if Pos('UPDATE_SCRIPTS.ifs' + #9, LocalDir.GetString(i)) = 1 then
+			LineNr := i;
+	if LineNr > -1 then
+	begin
+		LocalDate := TextAfter(LocalDir.GetString(LineNr), 'UPDATE_SCRIPTS.ifs' + #9);
+		LocalDate := TextBetween(LocalDate, #9, #9);
+		LocalDateTime := FindLocalDateTime(LocalDate);
+	end;
+	if LocalDateTime < ScriptDateTime then
+	begin
+		DownloadScript(ScriptAddress);
+		Result := 1;
+		if AutoDetect = 1 then
+			ShowMessage('A new version of [ UPDATE SCRIPTS ] has been installed.' + #13#10 + 'It will be available next time you open Ant Movie Catalogs´ scripting window.');
+	end;
+end;
+
+// Build scripts list and download automatically
+procedure AddScripts(ResultsPage: TStringList; LocalDir: TStringList);
+var
+	ScriptDate, LocalDate, ScriptAddress, ScriptName, Line, LocalLine, ScriptDateTime, LocalDateTime: string;
+	LineNr, LocalLineNr, i, j: Integer;
+begin
+	for j := 1 to 2 do
+	begin
+		if (AutoDetect = 0) and (DownloadPage <> ArchivePage) and (j = 1) then
+			PickTreeAdd('LATEST SCRIPTS', '');
+		if (AutoDetect = 1) and (DownloadPage <> ArchivePage) and (j = 1) then
+			PickTreeAdd('UPDATED SCRIPTS', '');
+		if (AutoDetect = 1) and (DownloadPage <> ArchivePage) and (j = 2) then
+			PickTreeAdd('ADDITIONAL SCRIPTS', '');
+		if (DownloadPage = ArchivePage) and (j = 1) then
+			PickTreeAdd('ARCHIVED SCRIPTS', '');
+		for LineNr := FindLine('">Parent Directory</', ResultsPage, 0)+1 to ResultsPage.Count-1 do
+		begin
+			ScriptDateTime := '0000';
+			LocalDateTime := '0000';
+			Line := '';
+			Line := ResultsPage.GetString(LineNr);
+			if (Pos('.ifs', Line) > 0) or (Pos('.pas', Line) > 0) then
+			begin
+				ScriptName := '';
+				ScriptName := TextBetween(Line, '<a href="', '">');
+				if ScriptName = '' then
+					ScriptName := TextBetween(Line, '<A HREF="', '">');
+				ScriptName := UTF8Decode(ScriptName);
+				ScriptAddress := DownloadPage + ScriptName;
+				if Pos('</a>', Line) > 0 then
+				begin
+					ScriptDate := TextAfter(Line, '</a>');
+					ScriptDate := TextBetween(ScriptDate, '<td class="m">', '</td>');
+					ScriptDateTime := FindScriptDateTime(ScriptDate);
+				end;
+				if Pos('</A>', Line) > 0 then
+				begin
+					ScriptDate := TextAfter(Line, '</A>');
+					ScriptDate := TextBetween(ScriptDate, '<TD CLASS="m">', '</TD>');
+					ScriptDateTime := FindScriptDateTime(ScriptDate);
+				end;
+				if (AutoDetect > 0) and (DownloadPage <> ArchivePage) then
+				begin
+					LocalLine := '';
+					LocalLineNr := -1;
+					for i := 0 to LocalDir.Count-1 do
+						if Pos(URLDecode(ScriptName) + #9, LocalDir.GetString(i)) = 1 then
+							LocalLineNr := i;
+					if LocalLineNr > -1 then
+					begin
+						LocalLine := LocalDir.GetString(LocalLineNr);
+						LocalDate := TextAfter(LocalLine, #9);
+						LocalDate := TextBetween(LocalDate, #9, #9);
+						LocalDateTime := FindLocalDateTime(LocalDate)
+					end;
+				end;
+				if (AutoDetect = 0) and (j = 1) then
+					PickTreeAdd(URLDecode(ScriptName) + '     [ uploaded: ' + ScriptDate + ' ]', ScriptAddress);
+				if (AutoDetect = 1) and (DownloadPage <> ArchivePage) and (LocalDateTime < ScriptDateTime) and (LocalDateTime > '0000') and (j = 1) then
+					PickTreeAdd(URLDecode(ScriptName) + '     [ updated: ' + ScriptDate + ' ]', ScriptAddress);
+				if (AutoDetect = 1) and (DownloadPage <> ArchivePage) and (LocalDateTime < ScriptDateTime) and (LocalDateTime = '0000') and (j = 1) and (LocalLineNr > -1) then
+					PickTreeAdd(URLDecode(ScriptName) + '     [ uploaded: ' + ScriptDate + ' ]', ScriptAddress);
+				if (AutoDetect = 1) and (DownloadPage <> ArchivePage) and (LocalDateTime < ScriptDateTime) and (LocalDateTime = '0000') and (j = 2) and (LocalLineNr = -1) then
+					PickTreeAdd(URLDecode(ScriptName) + '     [ uploaded: ' + ScriptDate + ' ]', ScriptAddress);
+				if (AutoDetect = 1) and (DownloadPage = ArchivePage) and (LocalDateTime < ScriptDateTime) and (j = 1) then
+					PickTreeAdd(URLDecode(ScriptName) + '     [ uploaded: ' + ScriptDate + ' ]', ScriptAddress);
+				if (AutoDetect = 2) and (DownloadPage <> ArchivePage) and (LocalDateTime < ScriptDateTime) and (j = 1) then
+					DownloadScript (ScriptAddress);
+			end;
+		end;
+	end;
+end;
+
+// Search for updated scripts
+begin
+	if CheckVersion(3,5,1) = True then
+		SupportAutoDetect := 1
+	else
+		SupportAutoDetect := 0;
+  	if GetOption('autodetect_new_scripts') = 0 then
+    		AutoDetect := 0;
+  	if GetOption('autodetect_new_scripts') = 1 then
+    		AutoDetect := 1;
+  	if GetOption('autodetect_new_scripts') = 2 then
+    		AutoDetect := 2;
+  	if SupportAutoDetect = 0 then
+    		AutoDetect := 0;
+ 	if CheckVersion(3,5,0) = True then
+	begin
+		if AcceptLicense(15) = False then
+			Exit;
+		UpdateList := TStringList.Create;
+		DownloadPage := UpdatesPage;
+		if (AutoDetect = 0) and (SupportAutoDetect = 1) then
+			ShowMessage('Autodetect mode = OFF.' + #13#10 + #13#10 + 'You will see ALL SCRIPTS available for download from Ant Movie Catalog website.' + #13#10 + #13#10 + 'Click the "Find more" button to show older scripts from archive folder.' + #13#10 + #13#10 + 'Double-click a script to download and install automatically.');
+		if (AutoDetect = 1) and (SupportAutoDetect = 1) then
+			ShowMessage('Autodetect mode = ON.' + #13#10 + #13#10 + 'You will see ALL UPDATES AND NEW SCRIPTS available for download from Ant Movie Catalog website.' + #13#10 + #13#10 + 'Click the "Find more" button to show older scripts from archive folder.' + #13#10 + #13#10 + 'Double-click a script to download and install automatically.');
+		if (AutoDetect = 2) and (SupportAutoDetect = 1) then
+			if ShowConfirmation('Autoupdate mode = ON.' + #13#10 + #13#10 + 'The script will install ALL UPDATES AND NEW SCRIPTS available for download from Ant Movie Catalog website automatically.' + #13#10 + #13#10 + 'Do you want to continue ?') = False  then
+				exit;
+	if SupportAutoDetect = 0 then
+    ShowMessage('AutoDetect mode = OFF.' +#13#10 + #13#10 + 'You are using an outdated version of Ant Movie Catalog that does not support specific file functions, so that you cannot use AutoDetect for new scripts until you update to latest AMC version (at least version 3.5.1).' #13#10 + #13#10 + 'You will still be able to download and install latest script updates without using AutoDetect, so the script will now list ALL available scripts from Ant Movie Catalog website, though we recommend updating your software to a newer version soon.');
+	AnalyzeIndexPage(DownloadPage);
+	end
+	else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least version 3.5.0)');
+end.

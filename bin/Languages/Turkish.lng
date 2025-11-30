@@ -1,0 +1,1893 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAzCwAAMwsAABAAAAAQAAAAAAAAAAAAqgAAAP0AZWX/AMzMzAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFVVVVVVVVVVAAAAAAAAAAABERERERERIAEiIiIiIiIwASIiIiIiIjABIkQiIiIiMAEkREQiIiIwAUQiIkIiIjABRCIkRCIiMAFEIiJCIiIwASRERCIiIjABIkQiIiIiMAEiIiIiIiIwAjMzMzMzMzAAAAAAAAAAAFVVVVVVVVVV
+Name=Turkish
+LocalName=Türkçe
+Encoding=windows-1254
+Version=4.1.0
+VersionFormat=4.2.2
+Comments=If you want to contribute by updating this translation, simply open Turkish.lng with a text editor (e.g. Notepad) and modify it.|Hata ve önerilerinizi bildirin
+Authors=Özkan Ak|ozkan_ak@istanbul.com.com
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Yeni
+ActionFileNew.Hint=Yeni|Yeni dosya oluþtur
+ActionFileOpen.Caption=&Aç...
+ActionFileOpen.Hint=Aç...|Bir dosya açar
+ActionFileOpenNoRecent.Caption=Yakýn zamanda kullanýlan dosya yok
+ActionFileSave.Caption=&Kaydet
+ActionFileSave.Hint=Kaydet|Þu anki dosyayý kaydeder
+ActionFileSaveAs.Caption=&Farklý Kaydet...
+ActionFileSaveAs.Hint=Farklý Kaydet...|Geçerli dosyayý farklý bir isimle kaydeder
+ActionFilePrint.Caption=Ya&zdýr...
+ActionFilePrint.Hint=Liste Yazdýrma|Geçerli kataloðun içeriðini döken bir listenin yazdýrýlmasý
+ActionFileImport.Caption=&Dosyadan al...
+ActionFileImport.Hint=Dosyadan al...|Farklý bir dosya biçiminden bilgi alýr
+ActionFileExport.Caption=Dosya &ver...
+ActionFileExport.Hint=Dosya ver...|Kataloðu farklý bir dosya biçiminde verir
+ActionFileProperties.Caption=&Özellikler...
+ActionFileProperties.Hint=Özellikler...|Dosya özelliklerini ve katalog bilgileri görüntüler
+
+ActionExit.Caption=&Çýkýþ
+ActionExit.Hint=Çýkýþ|Programdan çýkýþ
+ActionOptions.Caption=&Tercihler...
+ActionOptions.Hint=Tercihler...|Program seçeneklerini deðiþtirmek için
+ActionLanguage.Caption=&Dil...
+ActionLanguage.Hint=Dil...|Kullanýcý arabirim dilini deðiþtirir
+ActionLoan.Caption=&Ödünç...
+ActionLoan.Hint=Ödünç...|Baþkasýna ödünç verilen filmlerin listesi
+ActionToolsScripting.Caption=S&cript iþlemleri...
+ActionToolsScripting.Hint=Script iþlemleri...|Seçili filmlere script uygula
+ActionToolsGrid.Caption=Liste olarak görüntüle
+ActionToolsGrid.Hint=Liste olarak görüntüle|Tüm Filmleri liste biçiminde görüntüler
+ActionStretchList.Caption=&Listeyi geniþlet
+ActionStretchList.Hint=Listeyi geniþlet|Listeyi saða doðru geniþletir
+ActionDisplayHTML.Caption=&HTML Göster
+ActionDisplayHTML.Hint=HTML Göster|Film bilgisini HTML þablonunda gösterir
+ActionSelectHTML.Caption=HTML &Seç
+ActionSelectHTML.Hint=HTML Seç|HTML þablonu seçer
+ActionDisplayThumbnails.Caption=&Küçük resim olarak göster
+ActionDisplayThumbnails.Hint=Küçük resim olarak göster|Film listesini küçük resimler halinde gösterir
+ActionSortAscend.Caption=Artan
+ActionSortAscend.Hint=|Artan sýra ile listeler
+ActionSortDescend.Caption=Azalan
+ActionSortDescend.Hint=|Azalan sýrada listeler
+  ActionSortAdvanced.Caption=Advanced...
+  ActionSortAdvanced.Hint=|Advanced sort
+ActionGroupNone.Caption=< Yok >
+ActionGroupNone.Hint=|Filmleri gruplandýrma
+ActionManageFields.Caption=&Alanlarý Yönet...
+ActionManageFields.Hint=Alanlarý Yönet...|Mevcut katalog ta ki özel alanlarý ayarlar
+  ActionManagePictures.Caption=Manage p&ictures...
+  ActionManagePictures.Hint=Manage pictures...|Manage pictures of current catalog
+  ActionHTMLEditor.Caption=&HTML editor...
+  ActionHTMLEditor.Hint=HTML editor...|Edit HTML templates
+
+ActionHelpIndex.Caption=&Yardým
+ActionHelpIndex.Hint=Yardým|Program yardýmý açar
+ActionHelpAbout.Caption=&Hakkýnda...
+ActionHelpAbout.Hint=Hakkýnda...|Bu program hakkýnda
+ActionHelpVersion.Caption=&Sürümler...
+ActionHelpVersion.Hint=Sürümler...|Dosyalarýn sürüm bilgilerini gösterir
+
+ActionMovieAdd.Caption=&Ekle...
+ActionMovieAdd.Hint=Ekle...|Yeni film ekle
+ActionMovieUndo.Caption=&Geri Al
+ActionMovieUndo.Hint=Geri Al|Geçerli filmde yapýlan deðiþiklikleri geri al
+ActionMovieDelete.Caption=&Sil
+ActionMovieDelete.Hint=Sil|Geçerli filmi sil
+ActionMovieCopy.Caption=&Kopyala
+ActionMovieCopy.Hint=Kopyala|Film bilgilerini pano'ya kopyala
+ActionMoviePaste.Caption=&Yapýþtýr
+ActionMoviePaste.Hint=Yapýþtýr|Film bilgilerini pano'dan yapýþtýr
+ActionMovieRenumber.Caption=&Yeniden Numaralandýr...
+ActionMovieRenumber.Hint=Filmleri tekrar numaralandýr...|Filmleri, 1'den baþlayarak yeniden numaralandýrýr
+ActionMovieFind.Caption=&Bul...
+ActionMovieFind.Hint=Bul...|Belirlediðiniz alanlardaki ilkelere uygun olarak film arar 
+ActionFindFindNext.Caption=&Sonrakini bul
+ActionFindFindNext.Hint=|Ayný arama ilkelerine uyan bir sonraki filmi bulur
+ActionFindWholeField.Caption=Sadece &tam sözcükler
+ActionFindWholeField.Hint=|Belirtilen deðerin tamamýna uyan filmleri dahil eder
+  ActionFindReverse.Caption=&Reverse results
+  ActionFindReverse.Hint=|Reverse search results
+ActionFindDisplay.Caption=S&onuçlarý göster
+ActionFindDisplay.Hint=|Arama ilkelerine uyan tüm filmleri göster (filtrelenmiþ görünüm)
+LField.Caption=&Aranacak Alan:
+LValue.Caption=Aranacak &Deðer:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=&Numara deðiþtir...
+ActionMovieNumber.Hint=Numara deðiþtir|Filmin numarasýný deðiþtirir
+ActionMovieStats.Caption=&Ýstatistik...
+ActionMovieStats.Hint=Ýstatistik...|Katalog ve içerdiði filmlerin istatistiðini verir
+ActionMovieImportFiles.Caption=&Dosyadan...
+ActionMovieImportFiles.Hint=Bilgileri bir dosyadan alýr...|Film bilgilerini bir dosyadan alýr
+ActionMovieImportScript.Caption=&Script kullanarak internetten...
+ActionMovieImportScript.Hint=Bilgileri script kullanarak internetten al...|Film bilgilerini script dosyasý kullanarak internetten al
+ActionMovieSearch.Caption=&Internette ara
+ActionMovieSearch.Hint=Bilgileri internette arar|Film hakkýndaki bilgileri internette arar
+ActionMovieRandom.Caption=&Rastgele
+ActionMovieRandom.Hint=Rastgele|Rasgele seçim
+ActionMoviePictureShow.Caption=&Resim göster
+ActionMoviePictureShow.Hint=Film resmini gösterir veya gizler|Filmin resim penceresini gösterir veya gizler
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Seç...
+ActionPicSelect.Hint=Resim seç...|Geçerli filme eklemek ve baðlantý kurmak için resim seçer
+ActionPicDelete.Caption=&Sil
+ActionPicDelete.Hint=Sil|Geçerli resmi sil
+ActionPicUndock.Caption=Dahili/Ayrý
+ActionPicUndock.Hint=Dahili/Ayrý|Resim penceresi dahili (ana pencereye gömülü olarak) veya ayrý (ayrý bir pencere olarak) görüntülenir
+ActionPicSaveAs.Caption=&Farklý Kaydet...
+ActionPicSaveAs.Hint=Resmi Farklý Kaydet...|Resmin bir kopyasýný yeni bir dosyaya kayýt eder
+ActionPicCopy.Caption=&Kopyala
+ActionPicCopy.Hint=Panoya kopyala|Resmi panoya kopyalar
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+ActionMovieUrl.Caption=URL
+ActionMovieUrl.Hint=URL|Filmin adresi
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=&Dosya
+ActionMenuMovie.Caption=&Film
+ActionMenuDisplay.Caption=&Görünüm
+ActionMenuTools.Caption=&Araçlar
+ActionMenuHelp.Caption=&Yardým
+ActionMenuPicture.Caption=&Resim
+ActionMenuPicture.Hint=Film Resmi|Film Resim komutlarý
+ActionMenuGet.Caption=&Bilgi Al
+ActionMenuGet.Hint=Bilgi Al|Film hakkýnda bilgi al
+ActionMenuGridFields.Caption=&Liste Alanlarý
+ActionMenuGridFields.Hint=Liste Alanlarý|Liste hangi alanlarýn gösterilip gizleneceði
+ActionMenuSort.Caption=&Sýralama ölçütü
+ActionMenuSort.Hint=Filmleri sýrala|Film listesini belirtilen alana göre sýralar
+ActionMenuGroup.Caption=&Gruplandýr
+ActionMenuGroup.Hint=Filmleri Gruplandýr|Listede bulunan filmleri belirli bir alana göre gruplandýrýr
+ActionRefresh.Caption=&Yenile
+ActionRefresh.Hint=Listeyi Yenile|Film listesini yeniler
+  ActionMenuGroupsFormat.Caption=Groups f&ormatting
+  ActionMenuGroupsFormat.Hint=Format the group names|Format the group names depending on the chosen option
+  ActionGroupsFormatNone.Caption=< &none >
+  ActionGroupsFormatNone.Hint=|Do not format group names
+  MnuGpf1L.Caption=Extract first letter
+  MnuGpf2L.Caption=Extract two first letters
+  MnuGpf3L.Caption=Extract three first letters
+  MnuGpf4L.Caption=Extract four first letters
+  MnuGpf5L.Caption=Extract five first letters
+  MnuGpfDateY.Caption=Extract the year of dates
+  MnuGpfDateYM.Caption=Extract the year and month of dates
+  MnuGpfRound0001.Caption=Round numbers to thousandths
+  MnuGpfRound001.Caption=Round numbers to hundredth
+  MnuGpfRound01.Caption=Round numbers to tenth
+  MnuGpfRound1.Caption=Round numbers to unit
+  MnuGpfRound10.Caption=Round numbers to ten
+  MnuGpfRound100.Caption=Round numbers to hundred
+  MnuGpfRound1000.Caption=Round numbers to thousand
+  MnuGpfRoundType.Caption=&Kind of rounding
+  MnuGpfRoundDown.Caption=Round &down
+  MnuGpfRoundNearest.Caption=Round to &nearest
+  MnuGpfRoundUp.Caption=Round to &up
+
+MnuSelect.Caption=Seç
+ActionMovieSelGroup.Caption=Tüm Grup
+ActionMovieSelGroup.Hint=Grup Seç|Bu gruba ait olan tüm filmleri seçer
+ActionMovieSelCheck.Caption=Ýþaretlenen
+ActionMovieSelCheck.Hint=Ýþaretlenen seç|Sadece iþaretli filmleri seçer
+ActionMovieSelUncheck.Caption=Ýþaretlenmeyenler
+ActionMovieSelUncheck.Hint=Ýþaretlenmeyen seç|Sadece iþaretsiz filmleri seçer
+
+MnuSelected.Caption=Seçilen Filmler
+ActionMovieCheck.Caption=Ýþaretle
+ActionMovieCheck.Hint=Ýþaretle|Seçilen filmlere onay iþareti koyar
+ActionMovieUncheck.Caption=Ýþaretleme
+ActionMovieUncheck.Hint=Ýþaretleme|Seçilen filmlerin onay iþaretini kaldýrýr
+
+ActionDisplayPictureToolbar.Caption=&Resim Araç Çubuðu
+ActionDisplayPictureToolbar.Hint=Resim araç çubuðu göster|Resim araç çubuðu gösterir veya gizler
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=&Ana Araç Çubuðu
+ActionDisplayMainToolbar.Hint=Ana araç çubuðu gösterir|Ana araç çubuðu gösterir veya gizler
+ActionDisplayStatusBar.Caption=&Durum Çubuðu
+ActionDisplayStatusBar.Hint=Durum çubuðu göster|Durum çubuðu gösterir veya gizler
+
+ActionURLOpen.Caption=URL Aç
+ActionURLOpen.Hint=|URL veya belirli bir alanda dosya aç
+ActionURLExplore.Caption=Klasör Aç
+ActionURLExplore.Hint=|Alanda belirtilen dosyayý içeren klasörü aç
+ActionURLCopy.Caption=URL Kopyala
+ActionURLCopy.Hint=|Alanda belirtilen URL yada dosyayý kopyala
+ActionURLBrowse.Caption=Gözat...
+ActionURLBrowse.Hint=|Alana konulmak üzere dosya adýna gözat
+
+MnuHtmlCopy.Caption=Kopyala
+MnuHtmlCopy.Hint=|Seçilen yazýyý kopyala
+  MnuHtmlEdit.Caption=Edit...
+  MnuHtmlEdit.Hint=|Edit HTML template
+MnuTlsBrowseHTML.Caption=Gözat...
+
+ToolbarMenu.Caption=Menü Çubuðu
+ToolbarMain.Caption=Ana Araç Çubuðu
+ToolbarPicture.Caption=Resim Araç Çubuðu
+ToolbarPictureWindow.Caption=Resim
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Bul
+
+Listview1.HeaderSections.Item[0].Text=No
+Listview1.HeaderSections.Item[1].Text=Film Adý
+
+MoviePicture.Hint=|Resmi gerçek boyutunda görmek için týklayýn
+
+  ThumbsSizer.Hint=|Change size of pictures
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display movie title
+
+Messages.Strings.String[0]=%s : "%s" adlý filmi silmek istediðinize emin misiniz?
+Messages.Strings.String[1]=Geçerli filmin bir önceki kayýt edilen bilgilerine geri dönmek istediðinizden emin misiniz?
+  Messages.Strings.String[2]=%d movies
+  Messages.Strings.String[3]=(%0:d selected, %1:d checked, %2:d visible)
+Messages.Strings.String[4]=Geçerli katolog deðiþti. Deðiþiklikleri kaydetmek ister misiniz ?
+Messages.Strings.String[5]=Bir daha onaylama sorusu sorma
+Messages.Strings.String[6]=Deðiþtirildi
+Messages.Strings.String[7]=Resim
+Messages.Strings.String[8]=Resmin bir kopyasýný yeni bir dosya olarak kaydeder
+Messages.Strings.String[9]=Bilgi alýnýyor %s...
+Messages.Strings.String[10]=Kaydediliyor %s...
+Messages.Strings.String[11]=Yükleniyor %s...
+Messages.Strings.String[12]=Bir resim seçiniz
+Messages.Strings.String[13]=Bu resmi siler. Emin misiniz ?
+Messages.Strings.String[14]=Bu resim kullanýlamýyor: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Bilgileri alacaðýnýz dosyayý seçiniz
+Messages.Strings.String[17]=Bilgileri ara %0:s|%0:s 'de film hakkýndaki bilgileri ara
+Messages.Strings.String[18]=Yakýn Zamanda kullanýlan dosya yok
+Messages.Strings.String[19]=Bu katalog dosyasý resim dosyalarý içermektedir. Kataloðu XML kaydedebilmek için resim dosyalarý ayrý dosyalar olmak zorundadýr. Dosyayý halen XML formatýnda saklamak istiyorsanýz, resimleri dönüþtürmek için -Tamam-a veya onlarý tutmak istemiyorsanýz -Yoksay- týklayýn (link'li resimler tutulacakdýr).
+Messages.Strings.String[20]=|Gruplandýrma: %s
+Messages.Strings.String[21]=< Yok >
+Messages.Strings.String[22]=Resime ait olan link'i kaldýrdýðýnýz gibi (%s) adlý resim dosyasýný diskten silmek ister misiniz?
+Messages.Strings.String[23]=Bu film halen bir resime baðlantýlý, bu baðlantýyý baþka bir resim ile deðiþtirdiðinizde eski resmi de diskten silmek ister misiniz? (%s)
+Messages.Strings.String[24]=Kataloðun bir adý olmadan resim katalog klasörüne kopyalanamaz, lütfen bir yere kaydedin ve tekrar deneyin
+Messages.Strings.String[25]=Kataloða %s olarak kaydedildi
+Messages.Strings.String[26]=Dýþ dosya: %s
+Messages.Strings.String[27]=%.0n bayt
+Messages.Strings.String[28]=Baský önizleme yükleniyor
+Messages.Strings.String[29]=Yazýcýlar aranýyor
+Messages.Strings.String[30]=URL alanýnda baþvuru için kullanýlacak bir dosya seçin
+Messages.Strings.String[31]=< diðerleri >
+Messages.Strings.String[32]=Tümü
+Messages.Strings.String[33]=|%s olarak sýrala
+Messages.Strings.String[34]=Film Alanlarý
+Messages.Strings.String[35]=Özel Alanlar
+Messages.Strings.String[36]="%s" dosyasý yok
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+Messages.Strings.String[38]=Dosyalar Alýnýyor...
+Messages.Strings.String[39]=Ayný renk etiketini seç|Ayný renk etiketine sahip filmleri seçer
+Messages.Strings.String[40]=Seçili olana renk iþareti koy|Seçili filme renk etiketi koyar
+  Messages.Strings.String[41]=All Fields
+  Messages.Strings.String[42]=You have choosen to replace an existing catalog. Do you want to delete the old copied pictures of this catalog?
+  Messages.Strings.String[43]=Copy/paste on movie "%s"
+  Messages.Strings.String[44]=Delete old copied pictures...
+  Messages.Strings.String[45]=Copy pictures into a subfolder pictures
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Numara
+Fields.Strings.String[1]=Onaylý
+Fields.Strings.String[2]=Renk Etiketi
+Fields.Strings.String[3]=Ortam Etiketi
+Fields.Strings.String[4]=Ortam Türü
+Fields.Strings.String[5]=Kaynak
+Fields.Strings.String[6]=Eklenme Tarihi
+Fields.Strings.String[7]=Ödünç Alan
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Derecelendirme
+Fields.Strings.String[11]=Özgün Adý
+Fields.Strings.String[12]=Çeviri Adý
+Fields.Strings.String[13]=Düzenlenmiþ Adý
+Fields.Strings.String[14]=Yönetmen
+Fields.Strings.String[15]=Yapýmcý
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=Oyuncular
+Fields.Strings.String[19]=Ülke
+Fields.Strings.String[20]=Yýl
+Fields.Strings.String[21]=Uzunluðu
+Fields.Strings.String[22]=Kategori
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Tanýmlama
+Fields.Strings.String[26]=Yorum
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Video Sýkýþtýrmasý
+Fields.Strings.String[29]=Video Veri Hýzý
+Fields.Strings.String[30]=Ses Biçimi
+Fields.Strings.String[31]=Ses Veri Hýzý
+Fields.Strings.String[32]=Çözünürlük
+Fields.Strings.String[33]=Kare Hýzý
+Fields.Strings.String[34]=Diller
+Fields.Strings.String[35]=Altyazýlar
+Fields.Strings.String[36]=Dosya Boyutlarý
+Fields.Strings.String[37]=Disk sayýsý
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+Media.Strings.String[0]=Birim Etiketi
+Media.Strings.String[1]=Dosya Yolu
+Media.Strings.String[2]=Yol + Dosya Adý
+Media.Strings.String[3]=Yol + Dosya Adý + Uzantý
+Media.Strings.String[4]=Dosya Adý
+Media.Strings.String[5]=Dosya Adý (Filtreli)
+Media.Strings.String[6]=Dosya Adý + Uzantý
+  Media.Strings.String[7]=Folder Name
+  Media.Strings.String[8]=Folder Name (Filtered)
+Media.Strings.String[9]=Dosya Uzantýsý
+Media.Strings.String[10]Dosya Uzantýsý (Noktasýz)
+Media.Strings.String[11]Boyut (Karakter dizisi- "650+530")
+Media.Strings.String[12]=Boyut (Toplam - "1180")
+Media.Strings.String[13]=Diskler
+  Media.Strings.String[14]=Picture
+Media.Strings.String[15]=Süre
+Media.Strings.String[16]=Çözünürlük ("Geniþlik x Yükseklik")
+Media.Strings.String[17]=Çözünürlük (Geniþlik)
+Media.Strings.String[18]=Çözünürlük (Yükseklik)
+Media.Strings.String[19]=Kare Hýzý
+Media.Strings.String[20]=Video Kodek
+Media.Strings.String[21]=Video Veri Hýzý
+Media.Strings.String[22]=Ses Kodek
+  Media.Strings.String[23]=Audio Channels
+  Media.Strings.String[24]=Audio Codec + Audio Channels
+Media.Strings.String[25]=Ses Veri Hýzý
+Media.Strings.String[26]=Diller
+Media.Strings.String[27]=Alt Yazýlar
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Uyarý
+Captions.Strings.String[1]=Hata
+Captions.Strings.String[2]=Bilgi
+Captions.Strings.String[3]=Onaylama
+Captions.Strings.String[4]=&Evet
+Captions.Strings.String[5]=&Hayýr
+Captions.Strings.String[6]=&Tamam
+Captions.Strings.String[7]=&Ýptal
+Captions.Strings.String[8]=&Durdur
+Captions.Strings.String[9]=Te&kar Dene
+Captions.Strings.String[10]=&Yoksay
+Captions.Strings.String[11]=&Tümü
+Captions.Strings.String[12]=Tümüne Hayýr
+Captions.Strings.String[13]=Tümüne Evet
+Captions.Strings.String[14]=Y&ardým
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=Program hakkýnda
+btn3.Caption=Kapat
+btn2.Caption=&Sürümler...
+btn1.Caption=&Krediler...
+Messages.Strings.String[0]=%s : sürüm %s (%s tarihinde oluþturuldu)
+Messages.Strings.String[1]=(Bilgileri panoya kopyalamak için Ctrl+C'ye basýnýz)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Film &numara seçimi
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+LEnterNumber.Caption=Film için bir sayý giriniz:
+btnFindNum.Hint=Uygun bir sayý bul|
+grpNotUnique.Caption=Bu sayýya sahip bir film var...
+grpNotUnique.Items.String[0]=&Benzerini kabul et
+grpNotUnique.Items.String[1]=&Varolan filme baþka bir sayý ver
+grpNotUnique.Items.String[2]=&Film numaralarýný benzerlik olmayýncaya kadar kaydýr
+CBDoNotAsk.Caption=Bir daha sorma; otomatik numaralandýrma kullan
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+Caption=Katalog özellikleri
+LHOwnerInfo.Caption=Sahibi Bilgisi
+LFileName.Caption=Adý:
+LFileSize.Caption=Boyutu:
+LFileVersion.Caption=Biçimi:
+LHXMLHeader.Caption=XML Sayfa Baþlýðý
+LEncoding.Caption=Kodlama:
+LOwnerName.Caption=Adý:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=Web sitesi:
+LDescription.Caption=Tanýmlama:
+EOwnerMail.ButtonHint=E-Mail gönder
+EOwnerSite.ButtonHint=URL'ye git
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Ödünç Alanlar
+btn2.Caption=Kapat
+btn1.Caption=&Yardým
+
+ActionBorrowerAdd.Caption=Ekle...
+ActionBorrowerAdd.Hint=Ödünç alan kiþi ekle|Listeye yeni bir kiþi ekle
+ActionBorrowerDel.Caption=Sil
+ActionBorrowerDel.Hint=Ödünç alan kiþi sil|Seçili olan kiþiyi listeden sil
+ActionCheckOut.Caption=Giden
+ActionCheckOut.Hint=Giden|Seçili olan filmi ödünç alan kiþinin film listesine ekle
+ActionCheckIn.Caption=Gelen
+ActionCheckIn.Hint=Gelen|Seçili filmi ödünç alan kiþinin film listesinden çýkart
+ActionMovieGetBorrower.Caption=Kiþi bul
+ActionMovieGetBorrower.Hint=Ödünç alan kiþi bul|Ödünç alan kiþiler listesinde, kiþi veya seçili filmi bul
+ActionMovieFindNext.Caption=Sonraki Bul
+ActionMovieFindNext.Hint=Sonraki Bul|Girilen kritere uyan bir sonraki filmi bulur
+ActionOptions.Caption=&Seçenekler
+ActionOptions.Hint=Seçenekler|Gelen ve giden için seçenekler
+ActionOptionsIncNum.Caption=Filmleri ayni numara ile içer
+ActionOptionsIncNum.Hint=Filmleri ayni &numara ile içer|Gelen ve giden diðer filmleri seçili biriyle ayni numarayý içersin
+ActionOptionsIncLab.Caption=Filmleri ayni &etiket ile içer
+ActionOptionsIncLab.Hint=Filmleri ayni &etiket ile içer|Gelen ve giden diðer filmleri seçili biriyle ayni etiketi içersin
+
+LvMovies.HeaderSections.Item[0].Text=No
+LvMovies.HeaderSections.Item[1].Text=Etiket
+LvMovies.HeaderSections.Item[2].Text=Film Adý
+LvMovies.HeaderSections.Item[3].Text=Ödünç alan kiþi
+LvNames.HeaderSections.Item[0].Text=Ödünç alan kiþi
+LvNames.HeaderSections.Item[1].Text=Miktar
+LvLent.HeaderSections.Item[0].Text=No
+LvLent.HeaderSections.Item[1].Text=Etiket
+LvLent.HeaderSections.Item[2].Text=Film Adý
+
+Messages.Strings.String[0]="%s" ödünç alanlar listesinden silinecektir ve bu kiþinin aldýðý tüm filmler gelmiþ olarak giriþ yapýlacaktýr.
+Messages.Strings.String[1]=Liste yükleniyor...
+Messages.Strings.String[2]=Bu film baþka bir kiþiye ödünç verilmiþtir
+Messages.Strings.String[3]=Lütfen bir isim giriniz
+Messages.Strings.String[4]=Aþaðýdaki filmler baþka bir kiþiye ödünç verilmiþtir:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Bir ad giriniz
+Messages.Strings.String[7]=Yeni kiþi
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Farklý dosya biçimde ver
+lvFormat.Columns.Item[0].Caption=Desteklenen dosya biçimleri
+Btn3.Caption=&Dosya ver...
+Btn2.Caption=&Kapat
+Btn1.Caption=&Yardým
+grpImages.Caption=Resimler
+CBCopyPictures.Caption=Verilen dosya ile kopyala
+CBCopyPictures.Hint=Resmi verilen dosya ile ayný klasöre kopyalar
+  CBCopyPicturesInPicDir.Caption=Into a subfolder
+  CBCopyPicturesInPicDir.Hint=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Sadece yoksa kopyala
+CBCopyPicturesNew.Hint=Sadece resim dosyasý yoksa kopyala (ör: üzerine yazma)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Lütfen bir biçim seçin...
+
+LCSVDelimiter.Caption=Alan ayýracý:
+ECSVDelimiter.Hint=|Alan deðerlerini birbirinden ayýracak karakter
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Metin bölümü ayýracý:
+ECSVBloc.Hint=|Metin dizileri etrafýndaki karakter (Kullanýlmayacaksa boþ býrakýn)
+LCSVLinebreaks.Caption=Satýr sonlarýný bununla deðiþtir:
+ECSVLinebreaks.Hint=|Tanýmlama ve yorumlardaki satýr sonlarýnýn yerine konacak karakter
+CBCSVColumnTitles.Caption=Sütun adý ekle
+LSQLTableName.Caption=Tablo ismi:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Insert" yerine "Update"
+LSQLCommands.Caption=Ýlave edilecek SQL komutlarý:
+LSQLLinebreaks.Caption=Satýr sonlarýný bununla deðiþtir:
+LOrigonsLink.Caption=Bu biçim, film listenizi Origons web sitesinde yayýnlamanýza olanak verir<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Verilecek Alanlar
+FieldsSQL.LSelected.Caption=Verilecek Alanlar
+  LAMCNote.Caption=You can also export to AMC (without export options) from the main window using the File -> Save As command, then select AMC as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+LXMLNote.Caption=XML olarak kaydetmek için ana pencereden Dosya -> Farklý Kaydet komutunu da kullanabilirsiniz, dosya türünü XML olarak seçin. Daha sonra bu dosya Ant Movie Catalog tarafýndan  normal katalog gibi açýlýp, kullanýlabilir.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Liste Sýralanýyor...
+Messages.Strings.String[1]=%s adlý dosyaya yazýlýyor.
+Messages.Strings.String[2]=Dosyalar kopyalanýyor...
+Messages.Strings.String[3]=HTML ver
+Messages.Strings.String[4]=CSV ver
+Messages.Strings.String[5]=SQL ver
+Messages.Strings.String[6]=Resimleri ver
+Messages.Strings.String[7]=Origons.com için kayýt edin
+  Messages.Strings.String[8]=Export to AMC
+  Messages.Strings.String[9]=Export to XML
+  Messages.Strings.String[10]=You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+
+[ImportWin2]
+Caption=Farklý dosya biçiminden al 
+Btn3.Caption=&Dosya al...
+Btn2.Caption=Kapat
+Btn1.Caption=&Yardým
+lvFormat.Columns.Item[0].Caption=Desteklenen dosya biçimleri
+lvFormat.Items.Item[5].Caption=Ortam Dosyalarý
+Messages.Strings.String[0]=Ortam dosyalarý aranýyor...
+Messages.Strings.String[1]=Ortam dosyalarý bulundu:
+Messages.Strings.String[2]=Ortam bilgisi alýnýyor...
+Messages.Strings.String[3]=%s dan bilgi alýnýyor...
+  Messages.Strings.String[4]=Some files or folders cannot be scanned because they contains not supported characters:
+
+[TImportFrame]
+lblLink.Caption=Bu %s filmleri almanýzý saðlayacaktýr
+grpSettings.Caption=Ayarlar
+chkAllowDup.Caption=Ayný sayýlara izin ver
+  chkAllowClear.Caption=Allow to clear fields when new value is empty
+chkAutoAssign.Caption=Sütunlara alanlarý otomatik olarak atamayý dene
+lblPictures.Caption=Resimleri alma yöntemi:
+  cmbPictures.Items.String[0]=1 - Store into catalog
+  cmbPictures.Items.String[1]=2 - Copy to catalog folder and make relative link
+  cmbPictures.Items.String[2]=3 - Copy to catalog folder only if it was not stored
+  cmbPictures.Items.String[3]=4 - Copy to pictures folder and make relative link
+  cmbPictures.Items.String[4]=5 - Copy to pictures folder only if it was not stored
+  cmbPictures.Items.String[5]=6 - Make absolute links to current pictures
+  cmbPictures.Items.String[6]=7 - Make relative links to current pictures
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=Kaynak Dosya
+btnBrowse.Hint=Gözat...|Alýnacak dosya için gözatýn
+btnReload.Caption=&Dosyayý Yeniden Yükle
+grpPreview.Caption=Öngörünüm
+lblPreview.Caption=Sütun baþlýklarýna týklayarak alanlarý atayýn
+btnFieldsLoad.Hint=Alanlarý Yükle|Önceden kaydedilmiþ alan-sütun baðlantýsýný yükler
+btnFieldsSave.Hint=Alanlarý Kaydet|Þu anki alan-sütun baðlantýsýný kaydeder
+  btnFieldsAutoLoad.Hint=Reload fields automatically|Reload automatically field-column links that was previously saved
+  btnColumnsAutoResize.Hint=Resize columns automatically|Resize columns automatically
+ActionListCheck.Caption=&Seçilenleri iþaretle
+ActionListCheck.Hint=Seçilenleri iþaretle|Seçilen öðeleri iþaretler
+ActionListUncheck.Caption=&Seçilenlerden iþareti kaldýr
+ActionListUncheck.Hint=Seçilenlerden iþareti kaldýr|Seçilen öðelerden iþareti kaldýrýr
+ActionListAll.Caption=&Tümünü Ýþaretle
+ActionListAll.Hint=Tümünü Ýþaretle|Tüm öðeleri iþaretler
+ActionListNone.Caption=Hiç biri&ni iþaretleme
+ActionListNone.Hint=Hiç birini iþaretleme|Tüm öðelerden iþareti kaldýrýr
+  ActionListCheckExists.Caption=Check existing movies
+  ActionListCheckExists.Hint=Check existing movies|Check existing movies in current catalog
+  ActionListUncheckExists.Caption=Uncheck existing movies
+  ActionListUncheckExists.Hint=Uncheck existing movies|Uncheck existing movies in current catalog
+  ActionSortAscend.Caption=Sort ascending
+  ActionSortAscend.Hint=Sort ascending|Sort column values into ascending order
+  ActionSortDescend.Caption=Sort descending
+  ActionSortDescend.Hint=Sort descending|Sort column values into descending order
+  ActionDefineKeyField.Caption=Define as key field
+  ActionDefineKeyField.Hint=|Use this key field to compare movies
+ActionHeaderNoImport.Caption=Bu alaný alma
+MnuMov.Caption=Film Alanlarý
+MnuMovCF.Caption=Özel Alanlar
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=Alýnacak film yok
+Messages.Strings.String[1]=Herhangi bir sütuna bir alan atamadýnýz. Bunun için sütun baþlýklarýna týklayabilirsiniz.
+Messages.Strings.String[2]=Resmi bu yöntemle alabilmek için, katalog dosyasýnýn bir adý olmalý; lütfen bir yere kaydedip yeniden deneyin
+Messages.Strings.String[3]=Klasör Seç:
+Messages.Strings.String[4]=%s film bulundu!
+Messages.Strings.String[5]=%s film eklendi!
+Messages.Strings.String[6]=%s film güncellendi!
+  Messages.Strings.String[7]=The values of key field are not unique in current catalog.|A movie in the list could match with several movies in current catalog.
+  Messages.Strings.String[8]=To do this action, you must first select a key field to compare movies (click on a column header of the list).
+  Messages.Strings.String[9]=Importing movies into current catalog...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Ýlk satýr baþlýklarý içerir
+lblDelim.Caption=Alan ayýracý:
+edtDelim.Hint=|Alan deðerlerini birbirinden ayýracak karakter
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Metin bölümleri ayýracý:
+edtQuote.Hint=|Metin dizileri etrafýndaki karakter (Kullanýlmayacaksa boþ býrakýn)
+lblLinebreaks.Caption=Satýr sonlarý:
+edtLinebreaks.Hint=|Tanýmlama ve yorumlardaki satýr sonlarýnýn yerine konacak karakter
+
+[TImportFrameQuery]
+grpQuery.Caption=Çalýþtýrma sorgusu
+btnQueryExec.Hint=Çalýþtýr|Sorguyu çalýþtýr
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Kaynak klasörü
+Messages.Strings.String[11]=Gözat...|Taranacak klasöre gözatýn
+Messages.Strings.String[12]=&Klasör tara
+  lblExtractProcess.Caption=Extract process:
+  cmbExtractProcess.Items.String[0]=1 - Extract advanced media info during scanning
+  cmbExtractProcess.Items.String[1]=2 - Only extract advanced media info during final import
+  cmbExtractProcess.Items.String[2]=3 - Do not extract advanced media info
+chkInternalAVI.Caption=AVI bilgisi için dahili motoru kullan (daha hýzlý)
+chkMultiDisks.Caption=Birden fazla parçalý/diskli ortam bilgilerini birleþtir
+lblDiskTag.Caption=Disk Etiketi:
+edtDiskTag.Hint=|Örn. 'filmadý.cd1', 'filmadý.cd2' gibi isimler için 'cd' etiketini seçin...
+lblBrowseDepth.Caption=Gözatýlacak alt klasör derinliði:
+edtBrowseDepth.Hint=|0 = Hiçbiri, * = Tümüne gözat
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Dosya adýný filtrele
+lblExtVideo.Caption=Uzantýlar:
+btnDefaultExtVideo.Caption=Varsayýlan
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+  Caption=Movies importation method
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LMsg1.Caption=You have selected a key field to compare checked movies of the list with movies in current catalog.
+  LMsg2.Caption=You will import all checked movies of the list in current catalog. To check if movies do not already exist, you can define a key field to compare them click on a column header of the list.
+  grpImportMethod.Caption=What do you want to do ?
+  grpImportMethod.Items.String[0]=Import all movies
+  grpImportMethod.Items.String[1]=Import only new movies
+  grpImportMethod.Items.String[2]=Update only existing movies
+  grpImportMethod.Items.String[3]=Import new movies and update existing movies
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Tercihler
+Btn3.Caption=&Kaydet
+Btn2.Caption=Ýptal
+Btn1.Caption=&Yardým
+
+LvCat.Items.Item[0].Text=Genel Görünüm
+LHToolbar.Caption=Araç çubuklarý ve menüler
+LIconSet.Caption=Simgeler:
+LColorType.Caption=Renk Türü:
+cbxColorType.Items.String[0]=Otomatik
+cbxColorType.Items.String[1]=Etkin olmayanlarý gri göster
+cbxColorType.Items.String[2]=Etkin olmayanlarý açýk tonda göster
+cbxColorType.Items.String[3]=Etkin olmayanlarý koyu tonda göster
+cbxColorType.Items.String[4]=Her zaman renkli
+CBOfficeXP.Caption=Office XP style
+CBMenuImages.Caption=Menülerde resimler göster
+LHMainWindow.Caption=Genel Görünüm
+CBSoftBorders.Caption=Film listesi, Bilgi Paneli ve Resim Kutusu için yumuþak kenarlýklar kullan
+  CBNatCmp.Caption=Use natural comparison (detect numbers automatically) to sort strings
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+  CBAutoFocus.Hint=|Give focus to component when the mouse pointer moves over it
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Baþlangýç
+CBLogo.Caption=Logo göster
+
+LvCat.Items.Item[1].Text=Araç çubuðunu özelleþtir
+LHCustomizeToolbar.Caption=Ana araç çubuðunda gösterilecek simgeleri seçiniz
+
+LvCat.Items.Item[2].Text=Dosyalar
+LHSaving.Caption=Kataloglar
+CBBackup.Caption=Her zaman bir yedek kopya oluþtur
+CBAutoLoad.Caption=Baþlangýçta, boþ dosya açmak yerine aþaðýdaki dosyayý kullan:
+EAutoLoad.ButtonHint=Gözat...|Dosya seçiniz
+CBAutoLoadLast.Caption=En son kullanýlan dosyayý tekrar aç
+CBAutoLoadCF.Caption=Yeni kataloglar için özel alanlarý aþaðýdaki dosyadan al:
+EAutoLoadCF.ButtonHint=Gözat...|Dosya seç
+LRecentFiles.Caption=Görüntülenenecek en son kullanýlan dosya sayýsý:
+LRepairAssociations.Caption=.amc dosyalarý Ant Movie Catalog ile iliþkilendirmek için aþaðýdaki düðmeye basýnýz:
+BtnRepairAssoc.Caption=Dosya iliþkilendirilmesini onar
+LHHistory.Caption=Ödünç alanlar geçmiþi
+CBHistory.Caption=Ödünç alanlar geçmiþini aþaðýdaki dosyada sakla (Sekmeyle ayrýlmýþ biçimlendirme kullanarak):
+EHistoryFile.ButtonHint=Gözat...|Dosya seçiniz
+LHHTMLTemplate.Caption=HTML Þablonu
+EHTMLTemplate.ButtonHint=Gözat...|Dosya seçiniz
+
+LvCat.Items.Item[3].Text=Film listesi
+LHDisplay.Caption=Görünüm
+CBCheckboxes.Caption=Ýþaretleme kutularý (Film renk etiketini deðiþtirmek için sað týklayýn)
+  CBCheckboxesInThumbs.Caption=Checkboxes in thumbnails display
+CBCheckboxesColor.Caption=Ýþaretleme kutularýnýn arkaplan rengi film renk etiketini göstersin
+CBLinesColor.Caption=Satýrlarýn arkaplan rengi film renk etiketini göstersin
+CBHotTrack.Caption=Fare izleri
+CBEnhScrollbars.Caption=Geliþmiþ kaydýrma çubuklarý
+CBMovieNumColumn.Caption="Film Numara" kolonu
+LGridTextSize.Caption=Liste modunda her sütundaki harf sayýsý (0 = sýnýr yok):
+LGridTextSize.Hint=|Düzenlenmiþ adý, Özgün adý ve Çeviri adý sütunlarý etkilenmeyecek
+CBAutoStretchListGrid.Caption=Liste görünümünde otomatik geniþlet
+CBAutoStretchListThumbs.Caption=Küçük resim görünümünde otomatik geniþlet
+LHOperations.Caption=Ýþlemler
+CBDelete.Caption=Silmeye onay al
+CBUndo.Caption=Geri Al'maya onay al
+LHShortcut.Caption=Kýsayol tuþlarý
+LShortcutPrev.Caption=Önceki Film
+LShortcutNext.Caption=Sonraki Film
+
+LvCat.Items.Item[4].Text=Ad Biçimlendirme
+LHFormatting.Caption=Biçim
+LTitleColumn.Caption=Gösterilecek ad:
+cbxTitle.Items.String[0]=Özgün Adý
+cbxTitle.Items.String[1]=Çeviri Adý
+cbxTitle.Items.String[2]=Özgün Adý (Çeviri Adý)
+cbxTitle.Items.String[3]=Çeviri Adý (Özgün Adý)
+cbxTitle.Items.String[4]=Ortam Etiketi
+  cbxTitle.Items.String[5]=Custom title
+  LTitleTemplate.Caption=Template of title:
+  BtnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+CBPrefixes.Caption=Aþaðýdaki önekleri adýn sonuna getir:
+LPrefixes1.Caption=Sadece boþluk veya týrnak iþareti ile ayrýlmýþ kelimeler algýlanacak.
+LPrefixes2.Caption=Listeye önek girmek için, her birini ayrý satýrda boþluk veya týrnak iþareti içermeden yazýn.
+
+LvCat.Items.Item[5].Text=Gruplandýrma
+LHGrouping.Caption=Gruplar
+CBGroupCount.Caption=Grup toplamlarýný göster
+CBGroupExpand.Caption=Varsayýlan olarak tam geniþlet
+CBGroupMulti.Caption=Bu iþaretle ayýrýlan çoklu deðeri olan alanlardan grup yap:
+CBGroupMulti.Hint=|Çoklu deðeri olan alanlar Kategori, Oyuncular, Diller, Altyazýlar...
+EGroupMultiSep.Hint=|Çoklu alanlarda deðerleri ayýran ayraç
+CBGroupMultiRmAllP.Caption=Çoklu alanlardaki parantez içindeki deðerleri kaldýr
+CBGroupMultiRmAllP.Hint=|Varsayýlan olarak oyuncu alaný + Diðer çoklu alanlar
+CBGroupMultiAddPatch.Caption=(I, (II, (II, (IV... (XXX gibi parantezleri yok say
+CBSortGroupsByCount.Caption=Gruplarý büyüklüklerine göre sýrala
+LHCommonGroups.Caption=Ortak gruplar
+lblGroupLocation.Caption=Konum:
+RBGroupsAbove.Caption=Gruplar ortak gruplarýn üstüne
+RBGroupsBelow.Caption=Gruplar ortak gruplarýn altýna
+CBGroupUnique.Caption=Özel ortak grup öðelerini kendi gruplarýnda tek olabilecek þekilde tutun
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Yeni film ekleme
+CBAskNumber.Caption=Numara sor
+CBFirstAvailable.Caption=En yüksek film numarasý + 1 kullanmak yerine ilk kullanabilir sayýyý kullan
+CBAddOpenScript.Caption="Bilgileri Script'ten al" penceresini aç
+CBAddOpenFiles.Caption="Bilgileri Dosya'dan al" penceresini aç
+LDefaultValues.Caption=Yeni filmlerin varsayýlan deðerlerini deðiþtirmek için aþaðýdaki düðmeye týklayýnýz:
+BtnDefaultValues.Caption=Filmlerin varsayýlan deðerlerini düzenle...
+CBSetCurrentDate.Caption="Eklenme Tarihi" alanýna belirli tarih yerine þu anki tarihi gir
+CBChecked.Caption=Ýþaretli
+LColorTag.Caption=Renk Etiketi:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Derecelendirme
+CBRatingTrunc.Caption=Ana görünüm, dosya verme ve baský iþlemlerinde ondalýklarý gösterme
+LHPictureWindow.Caption=Resim
+LPictureBackground.Caption=Arkaplan rengi:
+CBFitPicture.Caption=Resmi pencereye uydur
+CBShowPicInfo.Caption=Tam boyutlu resim penceresinde, resim boyutu, türü ve yol bilgilerini göster
+LHMovieFrame.Caption=Film alaný çerçevesi
+LMovieFrameBackground.Caption=Arka plan rengi:
+
+LvCat.Items.Item[8].Text=Açýlan listeler
+LHComboBoxItems.Caption=Liste ögeleri
+CBComboSameForAll.Caption=Tüm listeler için ayný seçenekler (liste içeriðini etkilemez)
+LListOptions.Caption=Liste Seçenekleri:
+CBComboSort.Caption=Ögeleri otomatik olarak sýrala
+CBComboAutoComplete.Caption=Yazarken otomatik tamamla
+CBComboCatalogValues.Caption=Ön tanýmlý listeyi kullanmak yerine geçerli kataloðun deðerlerini kullan
+CBComboAutoAdd.Caption=Listede bulunmayan ögeleri otomatik olarak listeye ekle
+LListEdit.Caption=Ögeleri düzenle:
+
+LvCat.Items.Item[9].Text=Ortam dosyalarý alýmý
+LHVideoDragDrop.Caption=Sürükle && Býrak / Bilgileri dosyadan al
+CBDNDMediaLabel.Caption=Ortam Etiketi Al
+CBDNDFileName.Caption=Dosya adýný Film adý olarak yaz
+btnFilterFileName.Caption=Dosya adýný filtrele
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Dosya adýný URL alanýna yaz
+CBDNDSize.Caption=Dosyadan Al'daki dosya boyutu:
+RBDNDString.Caption=Dizgi yap, örnek "650+530" þeklinde
+RBDNDSum.Caption=Toplama yap, örnek "1180"
+LDNDSizeUnit.Caption=Birim:
+cbxDNDSizeUnit.Items.String[0]=Bayt
+cbxDNDSizeUnit.Items.String[1]=Kilobayt (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabayt (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabayt (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Süreyi tespit et
+  CBDNDAllowClear.Caption=Allow to clear fields when new value is empty
+CBDNDInternalAVI.Caption=AVI bilgilerini alýrken MediaInfo DLL yerine dahili motoru kullan (daha hýzlý)
+LExtVideo.Caption=Uzantýlar:
+btnDefaultExtVideo.Caption=Varsayýlan
+LHGetInfoVideo.Caption=Video akýmýndan bilgi al
+CBDNDResolution.Caption=Çözünürlüðü al
+CBDNDFramerate.Caption=Kare Hýzýný al
+CBDNDVideoCodec.Caption=Video Kodeðini al
+CBDNDVideoBitrate.Caption=Video Veri Hýzýný al
+LHGetInfoAudio.Caption=Ses akýþlarýndan bilgi al
+CBDNDAudioCodec.Caption=Ses Kodeðini al
+  CBDNDAudioChannels.Caption=Import audio channels
+CBDNDAudioBitrate.Caption=Ses veri hýzýný al
+CBDNDLanguages.Caption=Dilleri al
+CBDNDSubtitles.Caption=Altyazýlarý al
+
+LvCat.Items.Item[10].Text=Resim Alýmý
+LHImportPic.Caption=Dýþ kaynaklardan resim alýmý
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=Sürükle && býrak için / Dosyalardan bilgi al
+CBPicImportGetInfoNoAsk.Caption=Resim alým yöntemini sorma; her zaman yukarýdaki seçeneði kullan
+PicImportScripting.grp.Caption=internet script iþlemleri için
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Not: Resim adý baþka bir film tarafýndan alýnmýþsa, rastgele ad üretilecek. Asýl resim adý olmadýðýnda (ör. amc den xml dosyasýna dönüþtürülünce), film adý kullanýlacak.
+
+LvCat.Items.Item[11].Text=internette ara
+LHSearch.Caption=internette ara
+LSearchEdit.Caption=Seçili satýrý düzenle:
+btnSearchAdd.Hint=Ekle|Seçili öðenin üzerine yeni öðe ekle
+btnSearchDel.Hint=Sil|Seçili öðeyi sil
+btnSearchUp.Hint=Yukarý taþý|Seçili öðeyi yukarý taþý
+btnSearchDown.Hint=Aþaðý taþý|Seçili öðeyi aþaðý taþý
+LSearchNotes.Caption=Not:
+LSearchNote1.Caption=- Ýsimler benzersiz olmalý
+LSearchNote2.Caption=- Programýn film adýný koymasý gerektiði yere adreste %s koyunuz
+LSearchNote3.Caption=- Listeye bir ayýrýcý koymak için, çizgi "-" ile baþlayan (benzersiz) bir isim giriniz
+
+LvCat.Items.Item[12].Text=Script Ýþlemleri
+LHScript.Caption=Script ayarlarý
+CBAutorunScript.Caption="Bilgi al Script kullanarak" ile kullanýlan son script otomatik çalýþtýr
+LScriptPicImport.Caption=Resim alým tercihleri için, <LINK>Resim Alýmý</LINK> sayfasýna bakýn
+LHConnection.Caption=Internet baðlantýsý
+CBProxy.Caption=internete eriþirken proxy kullan:
+LProxyServer.Caption=Sunucu:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Kullanýcý adý:
+LProxyPassword.Caption=Parola:
+CBKeepConnection.Caption=Baðlantýyý açýt tut
+CBHTTP10.Caption=HTTP 1.0 sýnýrla (bazý proxy sunucularý için gerekli olabilir)
+
+LvCat.Items.Item[13].Text=Dosya Ver
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Son kullanýlan þablonu tekrar yükle
+LLineBreaks.Caption=Satýr atlamalar yandaki Tag ile deðiþtirilecektir:
+ELineBreaks.Hint=|Satýr atlamalarý deðiþtirmek istemiyorsanýz bu alaný boþ býrakýnýz
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Geniþliði belirlemek istemiyorsanýz boþ býrakýnýz
+EForcePicSizeH.Hint=|Yüksekliði belirlemek istemiyorsanýz boþ býrakýnýz
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Tarih biçimi (üst týrnaklarýn arasýna özel karakterleri koyun):
+ESQLDate.Hint=|Windows varsayýlanlarý için boþ býrakýnýz
+LHExportFileNames.Caption=Dosya isimleri
+CBLastFileName.Caption=En son verilen dosya adýný hatýrla
+CBOpenExportedFile.Caption=Verilen dosyayý, iþlem bittikten sonra aç
+ExpFileNamingFrame.grp.Caption=Tek sayfalar ve resimlerin dosya isimlendirmesi
+LExpFileExt.Caption=Eklenecek uzantý:
+EExpFileExt.Hint=|Boþ býrakýrsanýz verilen ana dosya ile ayný uzantý kullanýlýr
+LHPictures.Caption=Resimler
+CBCopyPictures.Caption=Resimleri oluþturulan dosya ile ayný klasöre kopyala
+  CBCopyPicturesInPicDir.Caption=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Kopyalamayý sadece hedef dosya yok ise gerçekleþtir
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Klasörler
+LHFoldersDialogs.Caption=Ýletiþim kutularý
+LFolderToUse.Caption=Kullanýlacak klasör
+cbxWindow.Items.String[0]=Katalog dosyalarýn yüklenmesi/kaydedilmesi için
+cbxWindow.Items.String[1]=Film resimlerinin yüklenmesi için
+cbxWindow.Items.String[2]=Dosya ver için
+cbxWindow.Items.String[3]=Þablon dosyalarýn yüklenmesi/kaydedilmesi için
+cbxWindow.Items.String[4]=Dosyadan al için
+cbxWindow.Items.String[5]=Dosyadan bilgi alýnmasý için
+cbxWindow.Items.String[6]=Grafiklerin kaydedilmesi için
+cbxWindow.Items.String[7]=Script'lerin yüklenmesi/kaydedilmesi için
+cbxWindow.Items.String[8]=Özel alanlar yükle/kaydet 
+cbxWindow.Items.String[9]=Filtreleri yükle/kaydet
+RBFolderDefault.Caption=Windows varsayýlanlarý (Windows sürümüne göre deðiþir)
+RBFolderRemember.Caption=En son kullanýlan klasörleri hatýrla
+RBFolderSpecified.Caption=Bu klasörü kullan:
+EFolderSpecified.ButtonHint=Gözat...|Klasör seçiniz
+CBSameForAll.Caption=Tüm pencereler için ayný seçenek
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Filmlerin varsayýlan deðerlerini düzenle
+Btn3.Caption=Varsayýlan
+Btn3.Hint=|Varsayýlanlarý geri yükle
+Btn2.Caption=Tamam
+Btn1.Caption=Ýptal
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Varsayýlan
+Btn3.Hint=|Varsayýlanlarý geri yükle
+Btn2.Caption=Tamam
+Btn1.Caption=Ýptal
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Bir dil seçin
+Btn2.Caption=Tamam
+Btn1.Caption=Ýptal
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Adý
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Yerel Adý
+LanguageFrame.lblVersion.Caption=Sürüm:
+LanguageFrame.lblMadeBy.Caption=Oluþturan:
+LanguageFrame.lblComments.Caption=Yorumlar:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Geliþmiþ Sýralama Ayarlarý
+Fields.LSelected.Caption=Sýralamada kullanýlacak alanlar:
+  BtnSortOrder.Hint=Invert sort order|Invert sort order of selected field
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Ýstatistik
+btn1.Caption=Kapat
+ActionSaveAs.Caption=Farklý Kaydet...
+ActionSaveAs.Hint=Farklý Kaydet...|Resmi bir dosyaya kaydeder
+ActionCopy.Caption=Kopyala
+ActionCopy.Hint=Kopyala|Resmi panoya kopyala
+ActionCopyWMF.Caption=Meta-dosyasý olarak kaydet
+ActionCopyWMF.Hint=Meta-dosyasý olarak kopyala|Resmi panoya (boyutlandýrýlabilir) meta-dosya olarak kopyalar
+ActionCopyBMP.Caption=Bitmap olarak kaydet
+ActionCopyBMP.Hint=Bitmap olarak kopyala|Resmi panoya bitmap olarak kopyala
+ActionOptions.Caption=&Seçenekler
+ActionOptions.Hint=Seçenekler|Grafiðin bazý özelliklerini deðiþtirir
+ActionOptionsLegend.Caption=Açýklamalar
+ActionOptionsLegend.Hint=Açýklamalarý göster|Grafiðin saðýnda açýklama gösterir
+ActionOptionsLabels.Caption=Etiketler
+ActionOptionsLabels.Hint=Etiketleri Göster|Grafikte etiketleri gösterir
+ActionOptionsEmpty.Caption=Boþ aylar
+ActionOptionsEmpty.Hint=Boþ aylarý göster|Toplamýn sýfýr olduðu aylarý grafikte göster
+ActionOptionsGroup.Caption=Deðerleri grupla
+ActionOptionsGroup.Hint=Deðerleri Grupla|Belirli aralýklarý kullanarak deðerleri gruplandýr; Pasta: Küçük deðerleri birlikte gruplandýr
+Messages.Strings.String[0]=%.1f dakika
+Messages.Strings.String[1]=< Yok >
+Messages.Strings.String[2]=Grafiði kaydet
+Messages.Strings.String[3]=%d gün %d saat %d dakika
+Messages.Strings.String[4]=< diðerleri >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Toplam film sayýsý
+lstGeneral.Items.Item[1].Caption=Ortalama film süresi
+lstGeneral.Items.Item[2].Caption=Toplam film süresi
+lstGeneral.Items.Item[3].Caption=Toplam film dosyasý boyutu
+lstGeneral.Items.Item[4].Caption=Toplam disk sayýsý
+lstCategories.Items.String[0]=Genel Bilgiler
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Script Ýþlemleri
+btn2.Caption=&Kapat
+btn1.Caption=&Yardým
+ActionFileNew.Caption=Yeni
+ActionFileNew.Hint=Yeni|Yeni bir script oluþturur
+ActionFileOpen.Caption=Aç...
+ActionFileOpen.Hint=Aç...|Bir script dosyasýný açar
+ActionFileNoRecent.Caption=Son kullanýlan dosya yok
+ActionFileSave.Caption=Kaydet
+ActionFileSave.Hint=Save|Geçerli script'i kaydeder
+ActionFileSaveAs.Caption=Farklý Kaydet...
+ActionFileSaveAs.Hint=Farklý Kaydet...|Geçerli script'i yeni bir adla kaydeder
+ActionFileProperties.Caption=Özellikler...
+ActionFileProperties.Hint=Özellikler ve seçenekler...|Script özellikleri ve seçeneklerini düzenler
+ActionDebugRun.Caption=Çalýþtýr
+ActionDebugRun.Hint=Script'i Çalýþtýr|Script'i çalýþtýrýr
+ActionDebugStop.Caption=Dur
+ActionDebugStop.Hint=Script'i durdur|Script'in iþlenmesi durdurulur
+ActionDebugBreakpoint.Caption=Kesme noktasý
+ActionDebugBreakpoint.Hint=Kesme noktasý anahtarla|Geçerli satýrýn Kesme noktasýný etkinleþtirin veya devre dýþý býrakýn
+ActionDebugBreakpointClear.Caption=Kesme noktalarýný temizle
+ActionDebugBreakpointClear.Hint=Kesme noktalarýný temizle|Tüm kesme noktalarýný kaldýrýr
+ActionDebugStep.Caption=Sonraki adým
+ActionDebugStep.Hint=Sonraki adým|Kaynak kodunun sonraki satýrýný çalýþtýrýr
+ActionDebugRunToCursor.Caption=Ýmlece kadar çalýþtýr
+ActionDebugRunToCursor.Hint=Ýmlece kadar çalýþtýr|Programý geçerli imleç konumuna kadar çalýþtýrýr
+ActionDebugEval.Caption=Deðerlendir...
+ActionDebugEval.Hint=Deðiþkenleri Deðerlendir...|Seçili deðiþkenlerin içeriðini göster
+ActionDebugWatchAdd.Caption=Ýzleyici Ekle
+ActionDebugWatchAdd.Hint=Deðiþken Ýzleyici Ekle|Seçili deðiþkeni izleme listesine ekle
+ActionDebugWatchRemove.Caption=Kaldýr
+ActionDebugWatchRemove.Hint=Deðiþken Ýzleyici Kaldýr|Seçili deðiþkeni izleme listesinden çýkar
+ActionDebugWatchClear.Caption=Listeyi temizle
+ActionDebugWatchClear.Hint=Deðiþken Ýzleyici Listesini Temizli|Tüm deðiþkenleri izleme listesinden çýkar
+ActionListCheck.Caption=&Onayla
+ActionListCheck.Hint=Onayla|Seçili öðeleri onayla
+ActionListUncheck.Caption=Onayý &Kaldýr
+ActionListUncheck.Hint=Onayý kaldýr|Seçili öðelerden onayý kaldýr
+ActionListAll.Caption=&Hepsini onayla
+ActionListAll.Hint=Hepsini onayla|Tüm öðeleri onayla
+ActionListNone.Caption=H&içbirini onaylama
+ActionListNone.Hint=Hiçbirini onaylama|Tüm öðelerden onayý kaldýr
+ActionDisplayScripts.Caption=Scriptler
+ActionDisplayScripts.Hint=Script Seç|Kullanýlabilir scriptleri göster
+ActionDisplayEditor.Caption=Editor
+ActionDisplayEditor.Hint=Script editörü|Script editörü göster
+ActionViewFilter.Caption=&Dil filtresi
+ActionViewFilter.Hint=Dil filtresi|Filtre belirli dillerde bilgi almanýz için scriptleri gizlemenizi saðlar
+ActionViewList.Caption=Liste
+ActionViewList.Hint=Liste görünümü|Scriptleri liste olarak gösterir
+ActionViewDetailed.Caption=Ayrýntýlý
+ActionViewDetailed.Hint=Ayrýntýlý görünüm|Scriptleri iki kolonda gösterir (açýklamalarý ile birlikte)
+ActionOptionsEdit.Caption=Deðiþtir...
+ActionOptionsEdit.Hint=Deðeri deðiþtir...|Seçili seçeneðin deðerini deðiþtirir
+ActionOptionsDefault.Caption=Varsayýlan deðerler
+ActionOptionsDefault.Hint=Varsayýlan deðerler|Seçenekleri varsayýlan deðerlerine döndürür
+lstScripts.Hint=|Bir script seçin ve "Çalýþtýr" basýn, yada script adýna çift týklayýn, yada F9 veya Enter basýn.
+lstScripts.Columns.Item[0].Caption=Adý
+lstScripts.Columns.Item[1].Caption=Açýklama
+ActionEditUndo.Caption=&Geri Al
+ActionEditCut.Caption=K&es
+ActionEditCopy.Caption=&Kopyala
+ActionEditPaste.Caption=&Yapýþtýr
+ActionEditDelete.Caption=&Sil
+ActionEditSelectAll.Caption=&Tümünü Seç
+ActionEditFind.Caption=Bul...
+ActionEditfind.Hint=Bul|yazýdaki belirlenen metni bulur
+ActionEditFindNext.Caption=Sonrakini bul
+ActionEditFindNext.Hint=Sonrakini bul|Metne uyan bir sonraki sonucu gösterir
+DockpanelExec.Caption=Çalýþtýrma Seçenekleri
+CBShowResults.Caption=&Sonuç penceresini göster
+CBShowResults.Hint=Hangi alanlarýn kalacaðýnýn seçilmesi için her filmin eski yeni deðer alanlarýný göster
+CBCloseThis.Caption=Bu pencereyi sonda &kapat
+CBCloseThis.Hint=Bu pencereyi script çalýþtýrma baþarýlýya sonuçlanýrsa kapat
+CBAllowClear.Caption=&Alanlarý temizlemeye izin ver
+CBAllowClear.Hint=Script te özellikle belirtilmiþse, deðerleri boþ olanlarla deðiþtirilibilmesini saðlar
+DockpanelOptions.Caption=Script seçenekleri
+DockpanelOptions.Hint=|Bir seçeneði deðiþtirmek için çift-týkla. Not: Alan seçimleri script çalýþtýrýldýðýnda kaydedilir.
+  DockpanelParameters.Caption=Script parameters
+  DockpanelParameters.Hint=|Double-click on a parameter to change it. Note: parameters are saved only when executing the script.
+DockpanelLimitations.Caption=Script sýnýrlamalarý
+grpLimitFields.Caption=Deðiþtirilebilir alanlar
+lstLimitFields.Hint=|Not: Alan seçimleri script çalýþtýrýldýðýnda kaydedilir.
+grpScriptInfo.Caption=Bilgi
+tabScriptInfo.Tabs.String[0]=Genel
+tabScriptInfo.Tabs.String[1]=Yorumlar
+tabScriptInfo.Tabs.String[2]=Lisans
+DockpanelWatch.Caption=Ýzleme listesi
+
+Messages.Strings.String[0]=Script hatasý "%s": %s satýr %d
+Messages.Strings.String[1]=Geçerli script deðiþti. Deðiþiklikleri kayýt etmek ister misiniz?
+Messages.Strings.String[2]=bilinmiyor
+Messages.Strings.String[3]=Katýlýyorum
+Messages.Strings.String[4]=Geçerli script sýnýrlama seçenekleri için film bulunamadý (%s: %s)
+Messages.Strings.String[5]=Toplu script iþlemlemini iptal etmek istiyor musunuz?
+Messages.Strings.String[6]=Deðiþtirildi
+Messages.Strings.String[7]=Seçenek "%s" için deðerler
+  Messages.Strings.String[8]=Value for parameter "%s"
+Messages.Strings.String[9]=Bul
+Messages.Strings.String[10]=Aranacak metni girin:
+Messages.Strings.String[11]="%s" için daha fazla sonuç bulunamýyor
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Film seçimi
+btnView.Caption=&Sayfayý görüntüle
+btnView.Hint=Web Tarayýcý çalýþtýr|
+btn3.Caption=Tamam
+btn2.Caption=Daha &fazla bul
+btn1.Caption=Ýptal
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Taným seçimi
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+  Caption=Script properties, options and parameters
+btn3.Caption=&Kaydet
+btn2.Caption=&Ýptal
+btn1.Caption=&Yardým
+lstProperties.TitleCaptions.String[0]=Özellik
+lstProperties.TitleCaptions.String[1]=Deðer
+grpOptions.Caption=Seçenekler
+btnOptionAdd.Hint=Ekle|Yeni seçenek ekle
+btnOptionDel.Hint=Sil|Seçili seçeneði sil
+  btnOptionUp.Hint=Move up|Move up selected option
+  btnOptionDown.Hint=Move down|Move down selected option
+grpValues.Caption=Seçili seçenekler için kullanýlabilir deðerler
+lblValueDefault.Caption=Varsayýlan:
+  btnValueAdd.Hint=Add|Add a new value
+  btnValueDel.Hint=Delete|Delete selected value
+  btnValueUp.Hint=Move up|Move up selected value
+  btnValueDown.Hint=Move down|Move down selected value
+  grpParameters.Caption=Parameters
+  btnParameterAdd.Hint=Add|Add a new parameter
+  btnParameterDel.Hint=Delete|Delete selected parameter
+  btnParameterUp.Hint=Move up|Move up selected parameter
+  btnParameterDown.Hint=Move down|Move down selected parameter
+
+Messages.Strings.String[0]=Script yazarlarý:
+Messages.Strings.String[1]=Script adý:
+Messages.Strings.String[2]=Açýklama:
+Messages.Strings.String[3]=Site adres:
+Messages.Strings.String[4]=Site Dili:
+Messages.Strings.String[5]=Script sürümü:
+Messages.Strings.String[6]=En düþük gereksinimler:
+Messages.Strings.String[7]=Yorumlar:
+Messages.Strings.String[8]=Script lisans:
+Messages.Strings.String[9]=Web'den bilgi al
+  Messages.Strings.String[10]=Requires movies:
+Messages.Strings.String[11]=Deðer
+Messages.Strings.String[12]=Açýklama
+Messages.Strings.String[13]=Bu seçenek "%s" silecektir
+Messages.Strings.String[14]=Seçenek adý:
+  Messages.Strings.String[15]=Rename the option "%s"
+  Messages.Strings.String[16]=An option with the name "%s" already exist!
+  Messages.Strings.String[17]=Name
+  Messages.Strings.String[18]=Default value
+  Messages.Strings.String[19]=Description
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Script çalýþtýrma sonuçlarý
+btn4.Caption=&Kaydet
+btn4.Hint=|Bu filmin bilgilerini kaydet
+btn3.Caption=Tümünü &Kaydet
+btn3.Hint=|Bu ve bundan sonraki filmleri kaydet
+btn2.Caption=A&tla
+btn2.Hint=|Sadece bu filmi atla
+btn1.Caption=&Durdur
+btn1.Hint=|Script iþlemini durdur
+listValues.HeaderSections.Item[0].Text=Alan
+listValues.HeaderSections.Item[1].Text=Önceki deðer
+listValues.HeaderSections.Item[2].Text=Yeni deðer
+ActionListCheck.Caption=&Onayla
+ActionListCheck.Hint=Onayla|Seçili öðeleri onayla
+ActionListUncheck.Caption=Onayý &Kaldýr
+ActionListUncheck.Hint=Onayý kaldýr|Seçili öðelerden onayý kaldýr
+ActionListAll.Caption=&Hepsini onayla
+ActionListAll.Hint=Hepsini onayla|Tüm öðeleri onayla
+ActionListNone.Caption=H&içbirini onaylama
+ActionListNone.Hint=Hiçbirini onaylama|Tüm öðelerden onayý kaldýr
+
+Messages.Strings.String[0]=Film %1:d için script "%0:s" sonuçlarý
+Messages.Strings.String[1]=Boyut: %.0n KB, görmek için buraya týklayýn
+Messages.Strings.String[2]=Script çalýþtýrmasýnýn sonraki filmler için hangi alanlarýnýn korunacaðýný hatýrlamasýný istiyor musunuz? (Hayýr derseniz, Scrip ile kullanýlacak tüm alanlar deðiþtirilelecek)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Filmleri yeniden numaralandýr
+SortBy.grp.Caption=Numaralandýrmadan önce, sýrala:
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+
+Messages.Strings.String[0]=Filmler numaralandýrýlýyor...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=&Yazdýr...
+btn2.Caption=&Kapat
+btn1.Caption=&Yardým
+ActionFileLoad.Caption=Þablon yükle...
+ActionFileLoad.Hint=Þablon yükleme|Farklý þablon ekle
+ActionFileDesigner.Caption=&Tasarýmcý...
+ActionFileDesigner.Hint=Tasarýmcýyý Aç|Rapor tasarýmýný açar
+ActionPrint.Caption=Yazdýr...
+ActionPrint.Hint=Yazdýr|Geçerli raporu yazdýrýr
+ActionPreviewRefresh.Caption=&Yenile
+ActionPreviewRefresh.Hint=Önizlemeyi yenile|Önizlemeyi yenile
+ActionPreviewPageFirst.Caption=Ýlk Sayfa
+ActionPreviewPageFirst.Hint=lk Sayfa|Ýlk sayfaya gider
+ActionPreviewPagePrevious.Caption=Önceki Sayfa
+ActionPreviewPagePrevious.Hint=Önceki Sayfa|Bir önceki sayfaya gider
+ActionPreviewPageNext.Caption=Sonraki Sayfa
+ActionPreviewPageNext.Hint=Sonraki Sayfa|Bir sonraki sayfaya gider
+ActionPreviewPageLast.Caption=Son Sayfa
+ActionPreviewPageLast.Hint=Son Sayfa|Son sayfaya gider
+ActionPreviewPageFull.Caption=Tam Sayfa
+ActionPreviewPageFull.Hint=Tam Sayfa|Sayfanýn tamamýný gösterir
+ActionPreviewPageTwo.Caption=Ýki Sayfa
+ActionPreviewPageTwo.Hint=Ýki Sayfa|Ýki sayfa gösterir
+ActionPreviewPageWidth.Caption=Sayfa Geniþliði
+ActionPreviewPageWidth.Hint=Sayfa Geniþliði|Sayfa Geniþliðine uyarlar
+ActionPreviewZoomOut.Caption=Uzaklaþtýr
+ActionPreviewZoomOut.Hint=Uzaklaþtýr|Önizlemeyi uzaklaþtýrýr
+ActionPreviewZoomIn.Caption=Yakýnlaþtýr
+ActionPreviewZoomIn.Hint=Yakýnlaþtýr|Önizlemeyi yakýnlaþtýrýr
+LvScripts.Columns.Item[0].Caption=Kullanýlabilir þablonlar
+Messages.Strings.String[0]=Yazdýr - %s
+Messages.Strings.String[1]=<hiçbir dosya seçili deðil>
+Messages.Strings.String[2]=Önizleme için: %s dosyasý yüklenemiyor
+Messages.Strings.String[3]=Rapor tasarýmcý bulunamýyor. %s Ant Movie kataloðu ile ayný klasörde bulunmalý.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Resim Al
+Btn3.Caption=Tamam
+Btn2.Caption=Ýptal
+Btn1.Caption=&Yardým
+CBDoNotAsk.Caption=Tekrar sorma, Ýlerideki alýmlarda benim seçimimi hatýrla
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+Caption=Özel alanlar yönetici
+btn2.Caption=Tamam
+btn1.Caption=Ýptal
+btnDel.Hint=Alaný sil|Özel alaný siler
+btnClearAll.Hint=Tüm alanlarý sil|Tüm özel alanlarý siler
+btnImport.Hint=Alanlarý Al|Özel alanlarý içe aktarýr
+btnExport.Hint=Alanlarý Ver|Özel alanlarý dýþa aktarýr
+LField.Caption=Alan:
+LTag.Caption=Etiket:
+LName.Caption=Adý:
+LExt.Caption=Uzantýlar:
+LType.Caption=Tür:
+LDefaultValue.Caption=Varsayýlan deðer:
+  LTemplate.Caption=Template:
+  btnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+LMediaInfo.Caption=Ortam bilgisini al:
+LMultiValues.Caption=Çoklu deðer:
+EMultiValues.Hint=|Çoklu alan deðerleri ile grup oluþtur
+LMultiValuesSep.Caption=Ayýrýcý:
+LMultiValuesRmp.Caption=Parantezleri sil:
+EMultiValuesRmp.Hint=|Parantezler arasýndaki deðerleri sil
+LMultiValuesPatch.Caption=Yama:
+EMultiValuesPatch.Hint=|Bazý parantezleri yoksaymak için yama uygular
+LListValues.Caption=Liste deðerleri:
+EListSort.Caption=Öðeleri otomatik sýrala
+EListAutoComplete.Caption=Yazarken otomatik tamamla
+EListCatalogValues.Caption=Ön tanýmlý liste yerine mevcut katalog deðerlerini kullan
+EListAutoAdd.Caption=Listede olmayan deðerleri otomatik ekle
+Messages.Strings.String[0]=Özel alanlarý al
+Messages.Strings.String[1]=Özel alanlarý ver
+Messages.Strings.String[2]=Alan ekle|Özel alan ekle
+Messages.Strings.String[3]=Etiketi deðiþtir|Özel alan etiketini deðiþtirir
+Messages.Strings.String[4]=--- Yeni Alan ---
+Messages.Strings.String[5]=Karakter dizisi
+Messages.Strings.String[6]=Tam sayý
+  Messages.Strings.String[7]=Real (1 decimal)
+  Messages.Strings.String[8]=Real (2 decimals)
+  Messages.Strings.String[9]=Real (3 decimals)
+Messages.Strings.String[10]=Boolean
+Messages.Strings.String[11]=List
+Messages.Strings.String[12]=Tarih
+Messages.Strings.String[13]=Yazý
+Messages.Strings.String[14]=URL
+  Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+Caption=Filtre
+LNote1.Caption=Notes: Bu filtre her ifade dizisini liste sýrasýna göre iliþkilen dize ile deðiþtirir.
+LNote2.Caption=Düzenli ifadeler kullanmak için ifadeye '::>' dizisi ile baþlayýn.
+LNote3.Caption=Düzenli ifade örnekleri görmek için 'Varsayýlan' düðmesine basýn.
+LNote4.Caption=Düzenli ifade sözdizimi kurallarý hakkýnda ayrýntý için, regexpstudio.com sitesindeki yardýma bakabilirsiniz
+LExprString.Caption=Ýfade karakter dizisi
+LReplaceString.Caption=Karakter dizisini deðiþtir
+btn1.Caption=Ýptal
+btn2.Caption=Tamam
+btn3.Caption=Varsayýlan
+btn3.Hint=Varsayýlan|Ön tanýmlý filtreyi geri getirir
+btnClearAll.Hint=Tümünü temizle|Tüm ifadeleri temizler
+btnImport.Hint=Al|Filtreleri içeri aktarýr
+btnExport.Hint=Ver|Filtreleri dýþarý aktarýr
+btnAdd.Hint=Ekle|Seçili ifadenin altýna yeni bir ifade ekler
+btnDel.Hint=Sil|Seçili ifadeyi siler
+btnUp.Hint=Yukarý Taþý|Seçili ifadeyi yukarý taþýr
+btnDown.Hint=Aþaðý Taþý|Seçili ifadeyi aþaðý taþýr
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+  Caption=Pictures manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+
+  Messages.Strings.String[0]=Applying changes on movie pictures...
+  Messages.Strings.String[1]=Unable to apply changes on picture of movie "%0:s": %1:s
+  Messages.Strings.String[2]=After applying this changes, the current catalog must be saved to remain consistent! Do you want to save catalog automatically after applying this changes?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+  Caption=HTML templates editor
+  Btn2.Caption=&Close
+  Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Ortam Etiketi:
+LMediaType.Caption=Ortam Türü:
+LSource.Caption=Kaynak:
+LDate.Caption=Eklenme Tarihi:
+LBorrower.Caption=Ödünç Alan:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Derecelendirme:
+LOriginalTitle.Caption=&Özgün Adý:
+LTranslatedTitle.Caption=Ç&eviri Adý:
+LDirector.Caption=Yönetmen:
+LProducer.Caption=Yapýmcý:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Ülke:
+LCategory.Caption=Kategori:
+  LCertification.Caption=Certification:
+LYear.Caption=Yýl:
+LLength.Caption=Süresi:
+LLengthMin.Caption=dk.
+LActors.Caption=Oyuncular:
+LURL.Caption=URL:
+LDescription.Caption=Tanýmlama:
+LComments.Caption=Yorum:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Video Biçimi:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Ses Biçimi:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Çözünürlük:
+LFramerate.Caption=Kare Hýzý:
+LFramerateFPS.Caption=fps
+LSize.Caption=Dosya Boyutlarý:
+LDisks.Caption=Diskler:
+LLanguages.Caption=Diller:
+LSubtitles.Caption=Altyazýlar:
+
+EMedia.Hint=|Ortam Etiketi, bir numara veya barkod
+EMediaType.Hint=|Ortam Türü (CD-Rom, DVD vs.)
+ESource.Hint=|Kaynak (filmin nereden/nasýl alýndýðý/geldiði)
+EDate.Hint=|Filmin listeye eklenme tarihi
+EBorrower.Hint=|Film kimlere verildiði
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|0 ile 10 arasýnda derecelendirme
+EOriginalTitle.Hint=|&Özgün Adý
+ETranslatedTitle.Hint=|Ç&eviri Adý
+EDirector.Hint=|Yönetmen
+EProducer.Hint=|Yapýmcý
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Ülke
+ECategory.Hint=|Kategori
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Yýl
+ELength.Hint=|Süre (dakika)
+EActors.Hint=|Oyuncular listesi
+EURL.Hint=|Filmin Web sitesi
+EDescription.Hint=|Tanýmlama
+EComments.Hint=|Yorumlar
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Video Sýkýþtýrmasý / kodek
+EVideoBitrate.Hint=|Video bitrate
+EAudioFormat.Hint=|Ses formatý/codec
+EAudioBitrate.Hint=|Video Veri Hýzý
+EResolution.Hint=|Video çözünürlüðü
+EFramerate.Hint=|Video Kare Hýzý
+ESize.Hint=|Dosya boyutlarý
+EDisks.Hint=|Disk veya teyp sayýsý
+ELanguages.Hint=|Diller
+ESubtitles.Hint=|Altyazýlar
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Özel alan ekle
+ActionAddCustomField.Hint=|Özel bir alan ekler
+ActionModifyCustomField.Caption=Özel alan deðiþtir
+ActionModifyCustomField.Hint=|Özel alaný deðiþtirir
+ActionDeleteCustomField.Caption=Özel alaný sil
+ActionDeleteCustomField.Hint=|Özel alaný siler
+ActionMoveResizeCustomFields.Caption=Özel alanlarý taþý
+ActionMoveResizeCustomFields.Hint=|Özel alanlarý taþýr ve yeniden boyutlandýrýr
+ActionDefaultPositioning.Caption=Ön tanýmlý konum
+ActionDefaultPositioning.Hint=|Özel alanlarý ön tanýmlý konuma geri getirir
+ActionAutoStretchWidth.Caption=Otomatik geniþliðe uydur
+ActionAutoStretchWidth.Hint=Alanlarý otomatik geniþletir
+ActionAutoStretchHeight.Caption=Otomatik yüksekliðe uydur
+ActionAutoStretchHeight.Hint=Alanlarý otomatik yüksekliðe uydurur
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Kullanýlabilir alanlar:
+LSelected.Caption=Yazýlacak alanlar:
+BtnAdd.Hint=Ekle|Seçili alaný ekle
+BtnRem.Hint=Kaldýr|Seçili alaný kaldýr
+BtnAddAll.Hint=Tümünü Ekle|Tüm alanlarý ekle
+BtnRemAll.Hint=Tümü Kaldýr|Tüm alanlarý kaldýr
+BtnUp.Hint=Yukarý|Seçili alaný listede yukarýya taþýr
+BtnDown.Hint=Aþaðý|Seçili alaný listede aþaðýya taþýr
+
+[TSortByFrame]
+grp.Caption=Sýrala
+BtnAdvSort.Caption=Geliþmiþ...
+EOrderBy.Items.String[4]=Geliþmiþ sýralama seçenekleri...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=Kapsanacak filmler
+rbtAll.Caption=Tümü
+rbtSelected.Caption=Seçilenler
+rbtChecked.Caption=Ýþaretlenenler
+rbtVisible.Caption=Görünürler
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Resim alma yöntemi
+rbtStorePic.Caption=&Resimleri kataloðun içine depola
+  rbtCopyPicInCatDir.Caption=Copy picture to &catalog folder, and link it to catalog
+  rbtCopyPicInPicDir.Caption=Copy picture to &pictures folder of catalog, and link it to catalog
+rbtLinkPic.Caption=Sadece resme baðlantý oluþtur
+chkLinkRelative.Caption=Mümkünse &göreceli yol yap
+
+[TPictureOperationFrame]
+  grp.Caption=Pictures operation
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInCatDirIfCopied.Caption=Copy picture to catalog folder only if picture is copied in pictures folder
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtCopyInPicDirIfCopied.Caption=Copy picture to pictures folder only if picture is copied in catalog folder
+  rbtRenameIfCopied.Caption=Rename picture if it is copied in catalog or pictures folder
+  rbtAbsToRelLink.Caption=Transform absolute link to relative link if possible if picture is only linked
+  rbtRelToAbsLink.Caption=Transform relative link to absolute link if picture is only linked
+  rbtDelete.Caption=Delete picture (and picture file if it is copied in catalog or pictures folder)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+  grp.Caption=Pictures exportation method
+  rbtNoChangeAMC.Caption=Same as current catalog
+  rbtNoChangeXML.Caption=Same as current catalog (stored pictures will be lost)
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtDelete.Caption=Delete picture
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Yeni
+ActionHTMLNew.Hint=Yeni þablon|Yeni bir þablon oluþturur
+ActionHTMLOpen.Caption=Yükle
+ActionHTMLOpen.Hint=Yükle...|Varolan bir þablonu yükler
+ActionHTMLNoRecent.Caption=En son kullanýlan dosya yok
+ActionHTMLSave.Caption=Kaydet
+ActionHTMLSave.Hint=Kaydet|Geçerli þablonu kayýt eder
+ActionHTMLSaveAs.Caption=Farklý Kaydet...
+ActionHTMLSaveAs.Hint=Farklý Kaydet...|Geçerli þablonu yeni bir adla kayýt eder
+ActionInsertTag.Caption=&Özel Etiket Ekle
+ActionInsertTag.Hint=|Katalog veya film bilgileri ile yer deðiþtirecek özel bir deðer ekle
+ActionEditUndo.Caption=&Geri Al
+ActionEditCut.Caption=K&es
+ActionEditCopy.Caption=&Kopyala
+ActionEditPaste.Caption=&Yapýþtýr
+ActionEditDelete.Caption=&Sil
+ActionEditSelectAll.Caption=Tümü &Seç
+ActionExportBoth.Caption=Ýkisinide ver
+ActionExportBoth.Hint=|Hem "Tam" hemde "Tek" þablonlarý ver
+ActionExportSelected.Caption=Seçili olaný ver
+ActionExportSelected.Hint=|Sadece seçili olan þablonu ver
+ActionDisplayFull.Caption=Tam
+ActionDisplayFull.Hint=Tam film listesi þablonu göster|Tüm film listesi için kullanýlacak HTML sayfayý göster
+ActionDisplayIndividual.Caption=Tek
+ActionDisplayIndividual.Hint=Tek film listesi þablonu göster|Tek film için kullanýlacak HTML sayfasýný göster
+
+MnuGen.Caption=&Genel
+MnuGenDte.Caption=Þu anki Tarih
+MnuGenTme.Caption=Þu anki Saat
+MnuCat.Caption=&Katalog
+MnuCatNme.Caption=Dosya Adý
+MnuCatPth.Caption=Tam yolu içeren dosya adý
+MnuCatNbr.Caption=Film sayýsý
+MnuCatDsk.Caption=Disk sayýsý
+MnuOwnNam.Caption=Katalog sahibinin Adý
+MnuOwnEml.Caption=Katalog sahibinin E-mail'i
+MnuOwnWeb.Caption=Katalog sahibinin Web Sitesi
+MnuCatDsc.Caption=Tanýmlama
+MnuMovBeg.Caption=Liste Baþlangýçý
+MnuMovEnd.Caption=Liste Sonu
+MnuMovRec.Caption=Kayýt numarasý
+MnuMovInd.Caption=Tek film sayfasýnýn dosya adý
+
+MnuMov.Caption=&Film Alanlarý
+MnuMovCF.Caption=&Özel Alanlar
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Resim
+MnuMovPfn.Caption=Resim dosya adý
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+MnuMovR04.Caption=Derecelendirme (0 dan 4 e ondalýksýz)
+MnuMovR10.Caption=Derecelendirme (0 dan 10 a ondalýksýz)
+MnuMovApp.Caption=Beðeni (0 dan 4 yýldýza)
+MnuMovA10.Caption=Beðeni (0 dan 10 yýldýza)
+MnuMovFT1.Caption=Film adý biçimi: Özgün (Çeviri)
+MnuMovFT2.Caption=Film adý biçimi: Çeviri (Özgün)
+MnuMovHtm.Caption=Renk Etiketi (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+MnuLab.Caption=&Etiketler Film Alanlarý
+MnuLabCF.Caption=&Etiketler Özel Alanlar
+  MnuLabExtras.Caption=&Labels extra fields
+MnuLabPic.Caption=Resim
+MnuLabUAF.Caption=Birim ses veri hýzý
+MnuLabUVF.Caption=Birim video veri hýzý
+MnuLabUFS.Caption=Birim dosya boyutu
+MnuLabUFP.Caption=Birim kare hýzý
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]="%s": %s adlý dosya kayýt edilemiyor
+Messages.Strings.String[1]="%s": %s adlý dosya yüklenemiyor
+  Messages.Strings.String[2]=HTML template has been modified. Do you want to save it?
+Messages.Strings.String[3]=Tam Liste için olan HTML þablonu deðiþti. Kaydetmek ister misiniz?
+Messages.Strings.String[4]=Tek Liste için olan HTML þablonu deðiþti. Kaydetmek ister misiniz?

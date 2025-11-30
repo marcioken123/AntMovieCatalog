@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+<title>All My Movies:: Movie Card</title>
+<meta http-equiv="Author" content="Evgeny Dmitriev, evgeny.dmitriev@gmail.com">
+<style type="text/css">
+
+body, td {font-family: Tahoma, Verdana, Arial, sans-serif;font-size:11px;color:#333;}
+body {width:100%;margin:0px;padding:13px;background-image:url(bkg-page.png);background-color:#B6BCD5;}
+div {margin:0px;padding:0px;}
+img {border: none;}
+
+a:link, a:visited {text-decoration:none;color:#1869D1;}
+a:hover, a:active {text-decoration:underline;}
+
+a.ftr:link, a.ftr:visited {text-decoration:underline;color:#B5A9C5;}
+a.ftr:hover, a.ftr:active {text-decoration:underline;color:#B5A9C5;}
+
+h1 {font-family:Arial, Tahoma, Verdana, sans-serif;font-size:18px;color:#7E76A5;font-weight:normal;margin:0px 0px 20px 0px;}
+h2 {font-size:12px;color:#7E76A5;font-weight:bold;margin:0px;padding:0px;}
+
+div.CoverBack {padding:1px;background-image:url(bkg-no_cover.gif);background-repeat:no-repeat;background-position:center;}
+div.Raiting {padding:10px 0px 10px 0px;text-align:center;}
+div.MediaInfo {color:#7a7a7b;padding:10px 0px 10px 3px;}
+div.CollectionInfo {color:#9693B0;padding:10px 0px 10px 3px;}
+div.Loan {color:#E9032E;padding:10px 0px 10px 3px;}
+div.Loan a:link, div.Loan a:visited {color:#E9032E;text-decoration:none;}
+div.Loan a:hover, div.Loan a:active {color:#E9032E;text-decoration:underline;}
+
+table.MovieInfo {width:100%;background:#ccc;border:none;}
+table.MovieInfo td.Name {width:1%;margin:0px;padding:5px 15px 5px 15px;background:#f7f7f7;color:#777;font-weight:bold;}
+table.MovieInfo td {width:99%;margin:0px;padding:5px 15px 5px 15px;background:#fff;color:#333;font-weight:normal;}
+
+div.Url {text-align:right;padding:10px 0px 0px 0px;}
+div.Url img {width:8px;height:8px;border:0px;margin-right:5px;}
+div.Description {padding:25px 0px 0px 0px;}
+div.Screenshots {padding:20px 0px 0px 0px;}
+div.Comments {padding:20px 0px 0px 0px;}
+div.Userfields {padding:20px 0px 0px 0px;}
+div.Screenshots img {border:1px solid #ccc;}
+
+</style>
+</head>
+
+<body>
+
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<!-- MSTableType="nolayout" -->
+<tr valign="top"><td><img src="crn-main-tl.gif" width="10" height="21" alt="" /></td><td bgcolor="#EEEDF4" style="background-image:url(bkg-main-top.gif);background-repeat:repeat-x;background-position:top left;"><div style="width:182px;height:1px;"><!-- --></div></td><td width="100%">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td width="100%" bgcolor="#ffffff" style="background-image:url(bkg-inner-top.gif);background-repeat:repeat-x;background-position:top left;"><img src="crn-inner-tl.gif" width="4" height="21" alt="" /></td><td><img src="crn-main-ttr.gif" width="26" height="21" alt="" /></td></tr>
+</table>
+</td></tr>
+
+
+<tr valign="top"><td style="background-image:url(bkg-main-left.gif);background-repeat:repeat-y;background-position:top left;"><div style="width:10px;height:1px;"><!-- --></div></td><td bgcolor="#EEEDF4" style="padding:2px 15px 0px 11px;">
+
+<div class="CoverBack">
+<table cellpadding="0" cellspacing="0" border="0"><tr><td><img src="crn-cover-tl.gif" width="3" height="3" alt="" /></td><td style="background-image:url(bkg-cover-top.gif);background-repeat:repeat-x;background-position:top left;"><div style="width:1px;height:3px;"><!-- --></div></td><td><img src="crn-cover-tr.gif" width="3" height="3" alt="" /></td></tr><tr><td style="background-image:url(bkg-cover-left.gif);background-repeat:repeat-y;background-position:center;"><div style="width:3px;height:1px;"><!-- --></div></td><td bgcolor="#ffffff" style="padding:1px;background-image:url(bkg-no_cover.gif);background-repeat:no-repeat;background-position:center;">
+	<img SRC="$$ITEM_PICTUREFILENAME" ID="cover" width="230" /></td><td style="background-image:url(bkg-cover-right.gif);background-repeat:repeat-y;background-position:bottom right;"><div style="width:3px;height:1px;"><!-- --></div></td></tr><tr><td><img src="crn-cover-bl.gif" width="3" height="3" alt="" /></td><td style="background-image:url(bkg-cover-bottom.gif);background-repeat:repeat-x;background-position:bottom left;"><div style="width:1px;height:3px;"><!-- --></div></td><td><img src="crn-cover-br.gif" width="3" height="3" alt="" /></td></tr></table>
+<address align="center">
+	$$ITEM_APPR10</address>
+<div style="width:1px;height:3px;"><!-- --></div>
+<address>
+	<strong><font size="1">$$LABEL_DATEADD<span lang="en-us">: </span>
+	$$ITEM_DATEADD</font></strong></address>
+<address>
+	<strong><font size="1">$$LABEL_LANGUAGES</font><span lang="en-us"><font size="1">: 
+	$$ITEM_LANGUAGES </font></span></strong>
+</address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_SUBTITLES: 
+	$$ITEM_SUBTITLES</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_DISKS: $$ITEM_DISKS</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_TYPE: $$ITEM_TYPE</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_MEDIA: $$ITEM_MEDIA</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_SOURCE: $$ITEM_SOURCE</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_BORROWER: $$ITEM_BORROWER</font></span></strong></address>
+<address>
+&nbsp;</address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_VIDEOBITRATE: 
+	$$ITEM_VIDEOBITRATE $$LABEL_VIDEOKBPS</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_AUDIOFORMAT: 
+	$$ITEM_AUDIOFORMAT</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_AUDIOBITRATE: 
+	$$ITEM_AUDIOBITRATE $$LABEL_AUDIOKBPS</font></span></strong></address>
+<address>
+	<strong><span lang="en-us"><font size="1">$$LABEL_FRAMERATE : 
+	$$ITEM_FRAMERATE&nbsp; $$LABEL_FPS</font></span></strong></address>
+</div>
+
+</td><td bgcolor="#EEEDF4" style="background-image:url(bkg-main-right.gif);background-repeat:repeat-y;background-position:top right;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+<tr valign="top"><td width="100%" style="background-image:url(bkg-inner-left.gif);background-repeat:repeat-y;background-position:top left;padding:0px 15px 10px 24px;">
+
+<h1><!--#title --></h1>
+
+<h1 align="center"><font size="2">$$ITEM_FORMATTEDTITLE</font></h1>
+
+<table cellpadding="0" cellspacing="1" class="MovieInfo">
+<tr><td class="Name" width="16%"><!--#originaltitle_lbl --><font size="1">
+	$$LABEL_YEAR</font></td><td width="74%"><h2><!--#originaltitle -->
+	<font size="1">$$ITEM_YEAR</font></h2></td></tr>
+<tr><td class="Name" width="16%"><!--#serie_lbl --><font size="1">
+	$$LABEL_COUNTRY</font></td><td width="74%"><b>
+	<font size="1" color="#7E76A5">$$ITEM_COUNTRY</font></b></td></tr>
+<tr><td class="Name" width="16%"><!--#volume_lbl --><font size="1">
+	$$LABEL_PRODUCER</font></td><td width="74%"><b>
+	<font size="1" color="#7E76A5">$$ITEM_PRODUCER<!--#volume --></font></b></td></tr>
+<tr><td class="Name" width="16%"><!--#year_lbl --><font size="1">
+	$$LABEL_DIRECTOR</font></td><td width="74%"><b>
+	<font size="1" color="#7E76A5">$$ITEM_DIRECTOR<!--#year --></font></b></td></tr>
+<tr><td class="Name" width="16%"><font size="1"><!--#subject_lbl -->
+	$$LABEL_CATEGORY</font></td><td width="74%"><font size="1">
+	<font color="#7E76A5"><b>$$ITEM_CATEGORY</b></font><!--#subject --></font></td></tr>
+<tr><td class="Name" width="16%"><!--#authors_lbl --><font size="1">
+	$$LABEL_LENGTH</font></td><td width="74%"><b><font size="1" color="#7E76A5">
+	$$ITEM_LENGTH<!--#authors --> <span lang="en-us">min.</span></font></b></td></tr>
+<tr><td class="Name" width="16%"><!--#editors_lbl --><font size="1">$$LABEL_SIZE</font></td>
+	<td width="74%"><b><font size="1" color="#7E76A5">$$ITEM_SIZE<span lang="en-us"> 
+	$$LABEL_UNIT</span><!--#editors --></font></b></td></tr>
+<tr><td class="Name" width="16%"><!--#translators_lbl --><font size="1">
+	$$LABEL_RESOLUTION</font></td><td width="74%"><!--#translators --><b>
+	<font color="#7E76A5" size="1">$$ITEM_RESOLUTION</font></b></td></tr>
+<tr><td class="Name" width="16%"><!--#publisher_lbl --><font size="1">
+	$$LABEL_VIDEOFORMAT</font></td><td width="74%"><!--#publisher --><b>
+	<font size="1" color="#7E76A5">$$ITEM_VIDEOFORMAT</font></b></td></tr>
+</table>
+
+<address style="text-align: center">
+	<!--#url --><span style="font-style: normal; font-weight: 700">
+	<font size="1">$$LABEL_ACTORS<span lang="en-us">:</span></font></span></address>
+<address style="text-align: center">
+	<span lang="en-us"><font size="1"><span style="font-style: normal">
+	$$ITEM_ACTORS</span></font></span></address>
+<address style="text-align: left">
+	<span style="font-style: normal; font-weight: 700"><font size="1">
+	$$LABEL_DESCRIPTION</font><span lang="en-us"><font size="1">:</font></span></span></address>
+<address style="text-align: center">
+	<span lang="en-us"><font size="1"><span style="font-style: normal">
+	$$ITEM_DESCRIPTION</span></font></span></address>
+<address style="text-align: left">
+	<span lang="en-us"><font size="1">
+	<span style="font-style: normal; font-weight: 700">$$LABEL_COMMENTS:</span></font></span></address>
+<address style="text-align: center">
+	<span lang="en-us"><font size="1"><span style="font-style: normal">
+	$$ITEM_COMMENTS</span></font></span></address>
+<div class="Userfields"><!--#userfield --></div>
+<div class="Comments" align="center"><!--#playbutton --></div>
+
+
+</td><td style="background-image:url(bkg-inner-right.gif);background-repeat:repeat-y;background-position:top right;"><img src="crn-main-trr.gif" width="10" height="5" alt="" /></td></tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+<tr><td width="100%" style="background-image:url(bkg-inner-bottom.gif);background-repeat:repeat-x;background-position:bottom left;"><img src="crn-inner-bl.gif" width="10" height="21" alt="" /></td>
+<td><img src="crn-inner-br.gif" width="10" height="21" alt="" /></td></tr>
+</table>
+</td></tr>
+
+<tr valign="top" bgcolor="#EEEDF4"><td style="background-image:url(bkg-main-left.gif);background-repeat:repeat-y;background-position:top left;"><div style="width:10px;height:1px;"><!-- --></div></td><td colspan="2" style="background-image:url(bkg-main-right.gif);background-repeat:repeat-y;background-position:top right;font-size:10px;color:#B5A9C5;text-align:right;padding:7px 24px 3px 0px;">Template made by <a class="ftr" href="mailto:evgeny.dmitriev@gmail.com">E.Dmitriev</a><span lang="en-us"> 
+	(Adapted for Ant Movie Catalog by <a href="mailto:stirch-s@yandex.ru">Stir</a>)</span></td></tr>
+
+<tr><td><img src="crn-main-bl.gif" width="10" height="10" alt="" /></td>
+<td colspan="2">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td width="100%" style="background-image:url(bkg-main-bottom.gif);background-repeat:repeat-x;background-position:top left;"><div style="width:1px;height:10px;"><!-- --></div></td><td align="right"><img src="crn-main-br.gif" width="10" height="10" alt="" /></td></tr>
+</table>
+</td></tr>
+</table>
+
+
+</body>
+</html>

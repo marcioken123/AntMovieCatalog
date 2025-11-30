@@ -1,0 +1,315 @@
+(****************************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=yasia22
+Title=KinoKolo
+Description=Movie importation script for Kino-Коло
+Site=http://www.kinokolo.ua/
+Language=UA
+Version=0.2 (2008-10-28)
+Requires=3.5.1
+Comments=Unfortunately, the last issue of KINO-KOLO magazine was published in July '08 and the web site is not being updated anymore.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ActorsLayout=0|0|0=Actors separated by commas|1=Actors separated by linebreaks
+Awards=1|1|0=Do not import awards|1=Import awards to Description field, after the summary|2=Import awards to Comments field, after comments
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not ask for movie title, but halts if no movie found
+CrewMembers=1|1|0=Don't get any of the crew|1=Get the writer only|2=Get all available
+
+****************************************************************)
+
+program KinoKolo;
+
+uses StringUtils1;
+
+var
+    MovieName: String;
+    MovieURL: String;
+    MovieNumber: String;
+
+
+// *** Analyze search results page *** //
+// *** @input: link to the list of movies that start with the first letter of the target movie *** //
+// *** @ouput: list of movies *** //
+// *** Calls AnalyzeMoviePage() if exact movie found *** //
+procedure AnalyzePage(Address: String);
+var
+    PageStr, MovieAddr, MovieTitle, MovieYear, MovieID: String;
+    BeginPos, EndPos: Integer;
+    isFound: Boolean;
+    
+begin
+    isFound := False;
+    PageStr := GetPage(Address);
+    BeginPos := Pos('<hr noshade size="1"><br>', PageStr);
+    if (BeginPos > 0) then
+    begin
+        PickTreeClear;
+        Delete(PageStr, 1, BeginPos);
+        BeginPos := Pos('<p>', PageStr);
+        EndPos := 1;
+        while ((BeginPos > 0) and (EndPos > 0) and not (isFound)) do
+        begin
+            Delete(PageStr, 1, BeginPos);
+            EndPos := Pos('</p>', PageStr);
+            MovieID := TextBetween(PageStr, '/cyclopedia/film.php/', '">');
+            MovieAddr := 'http://www.kinokolo.ua/cyclopedia/film.php/' + MovieID;
+            MovieTitle := TextBetween(PageStr, '">', '</a>');
+            MovieYear := TextBetween(PageStr, '</a>,&nbsp;', ' &nbsp;рік');
+            if (EqualIgnoreCase(MovieName, MovieTitle)) then
+            begin
+                isFound := True;
+                Break;
+            end; // names are equal
+            PickTreeAdd(MovieTitle + ' (' + MovieYear + ')', MovieAddr);
+            BeginPos := Pos('<p>', PageStr);
+            if(Pos('</div>', PageStr) < BeginPos) then
+                BeginPos := -1;
+        end; // while there are more movies to add
+    end; // if there are any search results
+
+    if (isFound) then
+        AnalyzeMoviePage(MovieAddr)
+    else
+    begin
+        if PickTreeExec(Address) then
+            AnalyzeMoviePage(Address);
+    end; // exact movie title was not found
+end;
+// *** End of AnalyzePage() *** //
+
+// *** Analyze particular movie page *** //
+// *** @input: link to the movie page*** //
+// *** @output: parsed values *** //
+procedure AnalyzeMoviePage(Address: String);
+var
+    Page: TStringList;
+    PageStr: String;
+    Item, Crew, Awards: String;
+    
+begin
+    Page := TStringList.Create;
+    PageStr := GetPage(Address);
+    // *  Original title * //
+    if (CanSetField(fieldOriginalTitle)) then
+        SetField(fieldOriginalTitle, GetProperty(PageStr, '<h1', 'h1>', '>', '/'));
+    // * Director(s) * //
+    if (CanSetField(fieldDirector)) then
+        SetField(fieldDirector, GetProperty(PageStr, '<b>Режисер', '<b>', '</b>', '<br>'));
+    // *  Studio * //
+    if (CanSetField(fieldCountry)) then
+    begin
+        Item := GetProperty(PageStr, '<b>Кіностудія', '<b>', '</b>', '<br>');
+        if Pos('Довженка', Item) > 0 then
+            Item := 'Довженка';
+        SetField(fieldCountry, Item);
+    end; // Studio added
+    // *  Year * //
+    if (CanSetField(fieldYear)) then
+        SetField(fieldYear, GetProperty(PageStr, '<b>Рік', '<b>', '</b>', '<br>'));
+    // *  Length * //
+    if (CanSetField(fieldLength)) then
+        SetField(fieldLength, GetProperty(PageStr, '<b>Час', '<b>', '</b>', '&nbsp;хв'));
+    // * URL * //
+    if (CanSetField(fieldURL)) then
+        SetField(fieldURL, Address);
+    // *  Description * //
+    if (CanSetField(fieldDescription)) then
+        SetField(fieldDescription, GetProperty(PageStr, '<br><p', '/div>', '>', '<'));
+    // *  Picture * //
+    if (CanSetPicture) then
+        ImportPicture(PageStr, '', 'javascript: window.open', '</a>', 'src=' + #39, #39);
+    // * Actor(s) * //
+    if (CanSetField(fieldActors)) then
+    begin
+        Item := GetProperty(PageStr, '<b>Актор', '<b>', '</b>', '<br>');
+        if (1 = GetOption('ActorsLayout')) then
+            Item := StringReplace(Item, ', ', #13#10);
+        SetField(fieldActors, Item);
+    end; // Actor(s) added
+    // * Award(s) * //
+    Item := GetProperty(PageStr, '<b>Нагороди', '<b>', '</b>', '<br>');
+    Item := StringReplace(Item, '; ', #13#10);
+    case GetOption('Awards') of
+        0:
+            Item := '';
+        1:
+            if (Length(Item) > 0) then
+                SetField(fieldDescription, GetField(fieldDescription) + #13#10#13#10 + Item);
+        2:
+            if (Length(Item) > 0) then
+                SetField(fieldComments, Item);
+    end; // Case awards option
+    // * Crew  members: writer(s), operator(s), composer(s), artist(s), sound editor(s) * //
+    Crew := '';
+    case GetOption('CrewMembers') of
+        0: // No crew
+        begin
+            Crew := '';
+        end; // case 0
+        1: // Writer(s) only
+        begin
+            if (CanSetField(fieldProducer)) then
+            begin
+                Crew := GetProperty(PageStr, '<b>Сценарист', '<b>', '</b>', '<br>');
+                if (0 < Length(Crew)) then
+                    Crew := StringReplace(Crew, ', ', ' (сценарист), ') + ' (сценарист)';
+                SetField(fieldProducer, Crew);
+            end; // Writer(s) found
+        end; // case 1
+        2: // Whole crew
+        begin
+            if (Pos('<b>Сценарист', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, '<b>Сценарист', '<b>', '</b>', '<br>');
+                if (0 < Length(Item)) then
+                    Item := StringReplace(Item, ', ', ' (сценарист), ') + ' (сценарист)';
+                Crew := Item;
+            end; // Writer(s)
+            if (Pos('<b>Композитор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, '<b>Композитор', '<b>', '</b>', '<br>');
+                Item := StringReplace(Item, ', ', ' (композитор), ') + ' (композитор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Composer(s)
+            if (Pos('<b>Оператор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, '<b>Оператор', '<b>', '</b>', '<br>');
+                Item := StringReplace(Item, ', ', ' (оператор), ') + ' (оператор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Operator(s)
+            if (Pos('<b>Художник', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, '<b>Художник', '<b>', '</b>', '<br>');
+                Item := StringReplace(Item, ', ', ' (художник), ') + ' (художник)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Artist(s)
+            if (Pos('<b>Звукорежисер', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, '<b>Звукорежисер', '<b>', '</b>', '<br>');
+                Item := StringReplace(Item, ', ', ' (звукорежисер), ') + ' (звукорежисер)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // SoundEditor(s)
+            
+            if (CanSetField(fieldProducer)) then
+                SetField(fieldProducer, Crew);
+        end; //case 2
+    end; // Case crew option
+end;
+// *** End of AnalyzeMoviePage() *** //
+
+// *** Returns the number of the first character as a string *** //
+// *** @input: movie name *** //
+// *** @output: movie's first letter position in the alphabet *** //
+// *** First letter of a movie must be capital *** //
+function FirstCharStr(MovieNameStr: String): String;
+var
+    Alphabet : String;
+    FirstCharNum : Integer;
+    
+begin
+    Alphabet := 'АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЮЯ';
+    FirstCharNum := Pos(Copy(MovieNameStr, 1, 1), Alphabet) - 1;
+    if ((FirstCharNum < 0) or (FirstCharNum > 31)) then
+        FirstCharNum := 32;
+    Result := IntToStr(FirstCharNum);
+end;
+// *** End of FirstCharStr() *** //
+
+// *** Compare two strings *** //
+// *** @input: two strings *** //
+// *** @output: boolean comparison result *** //
+// *** Ignores case of input strings *** //
+function EqualIgnoreCase(String1: string; String2: string): boolean;
+var
+    i: Integer;
+begin
+    Result := True;
+    if (Length(String1) = Length(String2)) then
+    begin
+        String1 := AnsiLowerCase(String1);
+        String2 := AnsiLowerCase(String2);
+        for i := 0 to Length(String1) do
+        begin
+            if (Copy(String1, i, 1) <> Copy(String2, i, 1)) then
+            begin
+                Result := False;
+                Break
+            end;
+        end;
+    end
+    else
+    begin
+        Result := False;
+        Break;
+    end;
+end;
+// *** End of EqualIgnoreCase() *** //
+
+// *** Get movie property *** //
+// *** @input: string, and two pairs of boundaries*** //
+// ***@output: parsed value, stripped of tags *** //
+function GetProperty(PageStr: String; Start1: String; End1: String; Start2: String; End2: String): String;
+var
+    Item: String;
+begin
+    Result := '';
+    if (Pos(Start1, PageStr) > 0) then
+    begin
+        Item := TextBetween(PageStr, Start1, End1);
+        Item := TextBetween(Item, Start2, End2);
+        Item := StringReplace(Item, '<br>', #13#10);
+        HTMLRemoveTags(Item);
+        HTMLDecode(Item);
+        Trim(Item);
+        Result := Item;
+    end;
+end;
+// *** End of GetProperty() *** //
+
+// *** Import a picture *** //
+// *** @input: string, base url, and two pairs of boundaries*** //
+// ***@output: gets a picture *** //
+procedure ImportPicture(PageStr: String; BaseURL: String; Start1: String; End1: String; Start2: String; End2: String);
+var
+    i: Integer;
+    Source: String;
+begin
+    Source := TextBetween(PageStr, Start1, End1);
+    if ('' <> Source) then
+    begin
+        Source := BaseURL + TextBetween(Source, Start2, End2);
+        if ('' <> Source) then
+            GetPicture(Source);
+    end;
+end;
+// *** End of ImportPicture() *** //
+
+// *** Main function *** //
+Begin
+    if (CheckVersion(3,5,1)) then
+    begin
+        MovieName := GetField(fieldOriginalTitle);
+        if ('' = MovieName) then
+            MovieName := GetField(fieldTranslatedTitle);
+        if (1 = GetOption('BatchMode')) then
+            AnalyzePage('http://www.kinokolo.ua/cyclopedia/index.php/ukr/0/' + FirstCharStr(MovieName))
+        else if (Input('Імпорт з KINO-КОЛО', 'Назва фільму:', MovieName)) then
+            AnalyzePage('http://www.kinokolo.ua/cyclopedia/index.php/ukr/0/' + FirstCharStr(MovieName));
+    end // version is fine
+    else
+        ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.1.1)');
+End.

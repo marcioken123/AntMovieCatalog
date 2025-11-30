@@ -1,0 +1,193 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ledrag
+Title=Carteles-Metropoli Global Caratula
+Description=Para elegir caratula
+Site=
+Language=ES
+Version=
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Metropoliglobal;
+
+
+const
+
+  BaseURL1 = '';
+
+ 
+
+var
+  MovieName: string;
+  MovieURL: string;
+
+//------------------------------------------------------------------------------------
+            function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end;
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('<font size=-1>Cartel de:', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://carteles.metropoliglobal.com/paginas/pgrande.php?id=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+     
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" clas', strPage);
+          MovieId := Copy(strPage,+65, EndPos-65);
+          MovieAddr := 'http://carteles.metropoliglobal.com/paginas/pgrande.php?id=' + MovieId;
+          BeginPoss := Pos('Cartel de:',strPage);
+          EndPoss := Pos(' Dimensiones: ', strPage);
+          MovieTitle := Copy(strPage,BeginPoss+9, EndPoss);
+          DeleteTags(MovieTitle);
+          MovieTitle := TextBetween (MovieTitle, ':', '.');
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://carteles.metropoliglobal.com/paginas/pgrande.php?id=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+
+begin
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+// Caratula
+  LineNr := FindLine('#FFFFFF"><img src="', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, '<img src="', '" width');
+     GetPicture (Item);
+  end;
+ end;
+
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('MetropiliGlobal', 'Caratula:', MovieName);
+
+     if(GetOption('No se ha encontrado') = 0) then  Input('MetropiliGlobal', 'Caratula:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?as_q=' + UrlEncode(MovieName)+'&hl=es&num=100&btnG=Buscar+con+Google&as_epq=&as_oq=&as_eq=&lr=&as_ft=i&as_filetype=&as_qdr=all&as_occt=any&as_dt=i&as_sitesearch=carteles.metropoliglobal.com&as_rights=&safe=images');
+
+end.

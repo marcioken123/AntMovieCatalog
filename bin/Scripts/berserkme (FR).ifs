@@ -1,0 +1,288 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=berserkme
+Title=berserkme
+Description=berserkme (FR) descriptif et image
+Site=http://www.berserkme.com
+Language=FR
+Version=
+Requires=3.5.0
+Comments= basé sur le code de cinefil   (Danone kid)
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program berserkme;
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line,page_film,titre_film, realisateur_film, annee_film: string;
+  BeginPos, EndPos: Integer;
+  begin
+  //vide la liste des films
+  PickTreeClear;
+  //charge la page
+  Line := GetPage(Address);
+  //teste si il y a des films trouvés
+  BeginPos := Pos('Aucun film trouv', Line);
+  if BeginPos <> 0 then
+  begin
+    showmessage('Aucun film trouvé !');
+    exit;
+  end;
+  //teste si il n'y a pas qu'un seul film
+  //  BeginPos := Pos('FILMS TROUVÉS', Line);
+  //  if BeginPos = 0 then
+  //  begin
+  // AnalysePageFilm(Address);
+   // exit;
+  // end;
+  //supprime tout le code avant la liste des films
+  // BeginPos := Pos('<B>ANNÉE</B>', Line);
+  // Delete(Line, 1, BeginPos-1);
+  repeat
+  //cherche le lien de la page du film
+  BeginPos := Pos('<a href="details.asp?ref=',Line);
+  Delete(Line, 1, BeginPos+8);
+  EndPos := Pos('">',Line);
+  page_film := 'http://www.berserkme.com/amc/' + Copy(Line, 1, EndPos-1 );
+  //cherche le nom du film
+  BeginPos := Pos('">',Line);
+  Delete(Line, 1, BeginPos+1);
+  EndPos := Pos('</a><br>',Line)-1;
+  titre_film := Copy(Line, 1, EndPos );
+  HTMLdecode(titre_film);
+  HTMLremovetags(titre_film);
+  titre_film := StringReplace(titre_film, #13#10, '');
+  titre_film := StringReplace(titre_film, '   ', '');
+  titre_film := Trim(titre_film);
+  titre_film := AnsiLowerCase(titre_film);
+  titre_film := AnsiUpFirstLetter(titre_film);
+
+  //ajoute les films
+    PickTreeAdd(titre_film , page_film);
+  //cherche le lien de la page du film
+    BeginPos := Pos('href="details.asp?ref=',Line);
+  until BeginPos = 0;
+  begin
+    if PickTreeExec(Address)=true then
+    AnalysePageFilm(Address);
+  end;
+end;
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+procedure AnalysePageFilm(Address: string);
+var
+  Line,page_film,titre_film,titre_original, categorie_film, realisateur_film, annee_film: string;
+  pays_film, duree_film, acteurs_film, liste_acteurs, description_film, reference_film,public_film,video_film,audio_film,fichier_image:string;
+  BeginPos, EndPos: Integer;
+begin
+  //charge la page
+  Line := GetPage(Address);
+  //cherche le nom du film
+  BeginPos := Pos('titre:', Line);
+  Delete(Line, 1, BeginPos+5);
+  EndPos := Pos('<br>',Line)-1;
+  titre_film := Copy(Line, 1, EndPos );
+  HTMLdecode(titre_film);
+  titre_film := StringReplace(titre_film, #13#10, '');
+  titre_film := StringReplace(titre_film, '   ', '');
+  titre_film := Trim(titre_film);
+  titre_film := AnsiLowerCase(titre_film);
+  titre_film := AnsiMixedCase(titre_film, ' ');
+  titre_film := AnsiMixedCase(titre_film, '-');
+ 
+  //cherche la description
+  BeginPos := Pos('descriptif', Line);
+  Delete(Line, 1, BeginPos+12);
+  EndPos := Pos('<br>',Line)-1;
+  description_film := Copy(Line, 1, EndPos );
+  HTMLdecode(description_film);
+  description_film := StringReplace(description_film, #13#10, '');
+  description_film := StringReplace(description_film, '   ', '');
+ 
+  //cherche le titre original
+  //BeginPos := Pos('Titre Original : "', Line);
+  //Delete(Line, 1, BeginPos+17);
+  //EndPos := Pos('"</FONT>',Line)-1;
+  //titre_original := Copy(Line, 1, EndPos );
+  //HTMLdecode(titre_original);
+  //titre_original := StringReplace(titre_original, #13#10, '');
+  //titre_original := StringReplace(titre_original, '   ', '');
+  //titre_original := Trim(titre_original);
+  //titre_original := AnsiLowerCase(titre_original);
+  //titre_original := AnsiMixedCase(titre_original, ' ');
+  //titre_original := AnsiMixedCase(titre_original, '-');
+ 
+  //cherche l'année
+  BeginPos := Pos('année:', Line);
+  Delete(Line, 1, BeginPos+6);
+  EndPos := Pos('<br>',Line)-1;
+  annee_film := Copy(Line, 1, EndPos );
+  HTMLdecode(annee_film);
+  annee_film := StringReplace(annee_film, #13#10, '');
+  annee_film := StringReplace(annee_film, '   ', '');
+  annee_film := Trim(annee_film);
+
+  //cherche le pays
+  BeginPos := Pos('pays:', Line);
+  Delete(Line, 1, BeginPos+6);
+  EndPos := Pos('<br>',Line)-1;
+  pays_film := Copy(Line, 1, EndPos );
+  HTMLdecode(pays_film);
+  pays_film := StringReplace(pays_film, #13#10, '');
+  pays_film := StringReplace(pays_film, '   ', '');
+  pays_film := Trim(pays_film);
+  HTMLremovetags(pays_film);
+  pays_film := AnsiLowerCase(pays_film);
+  pays_film := AnsiMixedCase(pays_film, ' ');
+  pays_film := AnsiMixedCase(pays_film, '-');
+ 
+  //cherche la catégorie
+  BeginPos := Pos('genre:', Line);
+  Delete(Line, 1, BeginPos+7);
+  EndPos := Pos('<br>',Line)-1;
+  categorie_film := Copy(Line, 1, EndPos );
+  HTMLdecode(categorie_film);
+  categorie_film := StringReplace(categorie_film, #13#10, '');
+  categorie_film := StringReplace(categorie_film, '   ', '');
+  categorie_film := Trim(categorie_film);
+  categorie_film := AnsiLowerCase(categorie_film);
+  categorie_film := AnsiMixedCase(categorie_film, ' ');
+  categorie_film := AnsiMixedCase(categorie_film, '-');
+
+    //cherche le réalisateur
+  BeginPos := Pos('réalisateur:', Line);
+  Delete(Line, 1, BeginPos+12);
+  EndPos := Pos('<br>',Line)-1;
+  realisateur_film := Copy(Line, 1, EndPos );
+  HTMLdecode(realisateur_film);
+  realisateur_film := StringReplace(realisateur_film, #13#10, '');
+  realisateur_film := StringReplace(realisateur_film, '   ', '');
+  realisateur_film := Trim(realisateur_film);
+  realisateur_film := AnsiLowerCase(realisateur_film);
+  realisateur_film := AnsiMixedCase(realisateur_film, ' ');
+  realisateur_film := AnsiMixedCase(realisateur_film, '-');
+  repeat
+ 
+  //cherche les acteurs
+  BeginPos := Pos('acteurs:', Line);
+  Delete(Line, 1, BeginPos+9);
+  EndPos := Pos('<br>',Line)-1;
+  acteurs_film := Copy(Line, 1, EndPos );
+  HTMLdecode(acteurs_film);
+  acteurs_film := StringReplace(acteurs_film, #13#10, '');
+  acteurs_film := StringReplace(acteurs_film, '   ', '');
+  acteurs_film := Trim(acteurs_film);
+  acteurs_film := AnsiLowerCase(acteurs_film);
+  acteurs_film := AnsiMixedCase(acteurs_film, ' ');
+  acteurs_film := AnsiMixedCase(acteurs_film, '-');
+  BeginPos := Pos('acteurs:', Line);
+  if BeginPos = 0 then liste_acteurs := liste_acteurs + acteurs_film;
+  if BeginPos <> 0 then liste_acteurs := liste_acteurs + acteurs_film + ', ';
+  until BeginPos = 0;
+ 
+    //quel type de public
+    BeginPos := Pos('public:', Line);
+    Delete(Line, 1, BeginPos+6);
+    EndPos := Pos('<br>',Line)-1;
+    public_film := Copy(Line, 1, EndPos );
+    HTMLdecode(public_film);
+    public_film := StringReplace(public_film, #13#10, '');
+    public_film := StringReplace(public_film, '   ', '');
+    public_film := Trim(public_film);
+    public_film := AnsiLowerCase(public_film);
+    public_film := AnsiMixedCase(public_film, ' ');
+    public_film := AnsiMixedCase(public_film, '-');
+
+//chargement des jaquettes
+      BeginPos := Pos('<img src="../base/imgpromo/', Line);
+    if BeginPos <> 0 then
+      begin
+        Delete(Line, 1, BeginPos+26);
+        EndPos := Pos('">',Line)-1;
+        fichier_image := 'http://www.berserkme.com/base/imgpromo/' + Copy(Line, 1, EndPos );
+        GetPicture(fichier_image);
+      end;
+     
+    //cherche le format video
+  BeginPos := Pos('video:', Line);
+  Delete(Line, 1, BeginPos+7);
+  EndPos := Pos('<br>',Line)-1;
+  video_film := Copy(Line, 1, EndPos );
+  HTMLdecode(video_film);
+  video_film := StringReplace(video_film, #13#10, '');
+  video_film := StringReplace(video_film, '   ', '');
+  video_film := Trim(video_film);
+  video_film := AnsiLowerCase(video_film);
+  video_film := AnsiMixedCase(video_film, ' ');
+  video_film := AnsiMixedCase(video_film, '-');
+ 
+      //cherche le format audio
+  BeginPos := Pos('audio:', Line);
+  Delete(Line, 1, BeginPos+7);
+  EndPos := Pos('<br>',Line)-1;
+  audio_film := Copy(Line, 1, EndPos );
+  HTMLdecode(audio_film);
+  audio_film := StringReplace(audio_film, #13#10, '');
+  audio_film := StringReplace(audio_film, '   ', '');
+  audio_film := Trim(audio_film);
+  audio_film := AnsiLowerCase(audio_film);
+  audio_film := AnsiMixedCase(audio_film, ' ');
+  audio_film := AnsiMixedCase(audio_film, '-');
+
+  //charge les résultats dans la fenêtre
+  SetField( fieldTranslatedTitle,titre_film);
+  SetField( fieldOriginalTitle,titre_original);
+  if titre_original = '' then
+  begin
+  SetField( fieldOriginalTitle,titre_film);
+  end;
+  SetField( fieldCategory,categorie_film );
+  SetField( fieldDirector,realisateur_film);
+  SetField( fieldYear,annee_film);
+  SetField( fieldCountry,pays_film);
+  //SetField( fieldLength,duree_film);
+  SetField( fieldActors,liste_acteurs);
+  SetField( fieldDescription,description_film);
+  SetField( fieldURL,'http://www.berserkme.com');
+  SetField( fieldcomments,public_film);
+  SetField( fieldVIDEOFORMAT,video_film);
+  SetField( fieldAUDIOFORMAT,audio_film);
+  //DisplayResults;
+end;
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Berserkme avec image', 'Entrez le titre du film :', MovieName) then
+    begin
+      //remplace les caractères accentués
+      MovieName:= AnsiLowerCase(MovieName);
+      MovieName:= StringReplace(MovieName, 'é', 'e');
+      MovieName:= StringReplace(MovieName, 'è', 'e');
+      MovieName:= StringReplace(MovieName, 'à', 'a');
+      MovieName:= StringReplace(MovieName, 'ç', 'c');
+      MovieName:= StringReplace(MovieName, 'ù', 'u');
+      MovieName := 'http://www.berserkme.com/amc/question.asp?titre='+ UrlEncode(MovieName);
+      AnalyzePage(MovieName);
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

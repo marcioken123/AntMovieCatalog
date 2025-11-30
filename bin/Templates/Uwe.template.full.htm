@@ -1,0 +1,190 @@
+<!--
+** Version 1.0
+** Author Uwe Mayer      (merkosh@hadiko.de)
+**
+** This is the top template for displaying a list of movie titles with Ant Movie
+** Catalogue (AMC). See http://www.antp.be/software/moviecatalog/ for details.
+**
+** This overview creates a html file with the following layout:
+** <AMC logo>
+** <preface>
+** <movie list>
+** <statistics>
+** <address>
+**
+** Each section is separated in the source code with long html comments. The
+** <preface> and <address> section contain personalized data and you will probably
+** want to adjust it to your needs.
+**
+** The source code is separated into the following subsections.
+** <javascript initialisations and definitions>
+** <style sheet declarations>
+**   <AMC logo heading>
+**   <preface>
+** <table heading for the movie listing>
+**   <table items (repeated by AMC)>
+** <javascript postprocessing code>
+** <end of table rule>
+**   <statistics>
+**   <address>
+**
+** The indented lines have been mentioned in the html file layout above already.
+**
+** There is a difference between <javascript initialisations and definitions> and
+** <javascript postprocessing code>, because JavaScript can only work on data
+** that has already been processed by the html generator of your browser, so
+** putting that code together bevore the html table containing the movie entries
+** will probably not work as you want it to.
+**
+** All icons and images refered to by this script, like the AMC logo and the
+** statistics assume the following file structure:
+** ./                   contains *.html and all movie pictures
+** ./static_images/     contains all non movie specific images like the *new* icon
+**                      or the statistic files exported from AMC as *.wmf (which
+**                      only work with the internet explorer)
+**
+** The image files looked for in ./static_images are:
+** amc_logo.png         the AMC logo used
+** new.gif              icon displayed after movies with the newest add date
+** audio_formats.wmf    statistic on which audio formats are used
+** categories.wmf       statistic on which genres are used
+** countries.wmf        statistic on the countries the movies come from
+** framerates.wmf       statistic on framerates of the movies
+** languages.wmf        statistic on which languages occur in the movies
+** lengths.wmf          statistic on the length of the movies
+** video_formats.wmf    statistic on which video formats are used
+** years.wmf            statistic on the age of the movies
+**
+** -->
+
+<html>
+<head>
+  <title>Moviearchive Uwe Mayer</title>
+</head>
+
+<body>
+
+<!-- javascript code ---------------------------------------------------------->
+<script language="javascript">
+var i = 1;
+var date_max = 0;
+var date_added = Array();
+
+//takes a date of the form dd.mm.yyyy and turns it into yyyymmdd
+function normalizeDate(text){
+  return text.slice(6,10)+text.slice(3,5)+text.slice(0,2);
+}
+</script>
+
+
+<!-- style sheets ------------------------------------------------------------->
+<style>
+a{color: blue;}  /* leave the color of links unchanged even after haveing used them */
+
+#mainTableHeading{background-color:#DCDCDC; font-weight:bold;}
+</style>
+
+
+<!-- heading ------------------------------------------------------------------>
+<a href="http://www.antp.be/software/moviecatalog/"><img src="static_images/amc_logo.png" alt="AMC Logo" border="0"></a>
+
+
+<!-- preface ------------------------------------------------------------------>
+<u><h1>Contents</h1></u>
+<div>
+The following movies are available on CD and can be traded and borrowed from me.<br>
+<br>
+The movies are sorted alphabetically. There are mostly german movies, many english and
+a few with only english /german subtitles.<br>
+<br>
+Left click on the movie name brings up the summary. Apart of the obvious information
+on the movie, the title is linked to the appropriate section on IMDB and the thumbnail
+expands to the big picture.<br>
+<br>
+At the bottom you'll find some statistics.
+Have Fun!<br>
+<br>
+<u>Last update:&nbsp;</u>$$DATE ($$TIME)
+</div>
+
+<!-- table heading ------------------------------------------------------------>
+<table border="1" style="margin-top:30px;" cellspacing="0" cellpadding="2">
+<tr id='mainTableHeading'>
+  <td>No.</td>
+  <td width="30">Id.</td>
+  <td>Translated Title (Original Title)</td>
+  <td>Language</td>
+  <td>Resolution</td>
+  <td>Rating</td>
+</tr>
+
+<!-- table items -------------------------------------------------------------->
+$$ITEM_BEGIN
+<tr>
+  <!-- create ascending numeration -->
+  <td><script language="javascript">date_added[$$ITEM_NUMBER] = normalizeDate("$$ITEM_DATEADD"); if (date_max < date_added[$$ITEM_NUMBER]) date_max = date_added[$$ITEM_NUMBER]; document.write(i++);</script></td>
+  <td>$$ITEM_NUMBER</td>
+  <!-- make popup to inividual movie description -->
+  <td style="color:blue;"><a href="javascript:" onclick="window.open('$$ITEM_FILEINDIV','','width=660,height=500 dependent=yes,location=no,menubar=no,scrollbars=no,status=no,toolbar=no');" id="id$$ITEM_NUMBER">$$ITEM_MEDIA</a></td>
+  <td>$$ITEM_LANGUAGES</td>
+  <td>$$ITEM_RESOLUTION</td>
+  <td>$$ITEM_RATING&nbsp;(/10)</td>
+</tr>
+$$ITEM_END
+</table>
+
+
+<!-- javascript postprocessings ----------------------------------------------->
+<script language="javascript">
+<!-- mark items with newest date -->
+for (j = 1; j < i; j++){
+  if (date_added[j] == date_max) document.all['id'+j].innerHTML += '<img src="static_images/new.gif" alt="new" border="0">';
+}
+</script>
+
+<!-- end of table ------------------------------------------------------------->
+<br>
+<hr size="2" width="50%">
+<br>
+
+<!-- statistics --------------------------------------------------------------->
+<u>And here some statistics:</u><br>
+<table>
+<tr style="font-weight:bold;">
+  <td>Genres:</td>
+  <td>Languages:</td>
+</tr>
+<tr>
+  <td><img src='static_images/categories.wmf' alt='Genres'></td>
+  <td><img src='static_images/languages.wmf' alt='Languages'></td>
+</tr>
+<tr style="font-weight:bold;">
+  <td>Video Format:</td>
+  <td>Audio Format:</td>
+</tr>
+<tr>
+  <td><img src='static_images/video_formats.wmf' alt='Video Format'></td>
+  <td><img src='static_images/audio_formats.wmf' alt='Audio Format'></td>
+</tr>
+<tr style="font-weight:bold;">
+  <td>Length: (min)</td>
+  <td>Years:</td>
+</tr>
+<tr>
+  <td><img src='static_images/lengths.wmf' alt='Length'></td>
+  <td><img src='static_images/years.wmf' alt='Years'></td>
+</tr>
+</table>
+
+
+<!-- end of file notice /address ---------------------------------------------->
+<br>
+<div>
+  Uwe Mayer<br>
+  <a href="mailto:merkosh@planet-interkom.de?subject=Question">merkosh@planet-interkom.de</a><br>
+  ICQ: #9522023
+</div>
+
+</body>
+</html>
+

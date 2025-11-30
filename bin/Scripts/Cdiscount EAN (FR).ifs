@@ -1,0 +1,190 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=Cdiscount (EAN)
+Description=Télécharger les informations du site Cdiscount à partir du code EAN d'un DVD
+Site=http://www.cdiscount.com
+Language=FR
+Version=01 du 08/07/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=1|0|0=Demande l'EAN|1=EAN dans le champs adresse web
+Casse Choisie=3|3|0=Titre et Nom en minuscule|1=Titre et Nom en majuscule|2=Première lettre en majuscule|3=Première lettre de chaque mot en majuscule
+Fichier de log=1|1|0=Oui|1=Non
+
+***************************************************)
+
+program CDISCOUNT_EAN_FR;
+uses
+  ScorEpioNCommonScript;
+
+const
+     VersionScript = '01 du 08/07/2005';
+     NomScript = 'CDISCOUNT';
+     urlDomain = 'cdiscount.com';
+     urlBase = 'http://www.cdiscount.com/';
+     urlSearch = urlBase+'dp.asp?refer=dvdpascher&sku=';
+     urlImage = 'http://ak.cdiscount.com/products/';
+     timeSleep = 500;
+var
+  MovieName, Address : string;
+  i, premiereExecution : Integer;
+  listeResultat: TStringList;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS
+//------------------------------------------------------------------------------
+
+procedure recupInfo(Adresse : String);
+var
+   Value, Value2, Line: String;
+   StartPos : Integer;
+begin
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     beforeUpdate();
+// Importe la page
+   Sleep(timeSleep);
+   Line := GetPage(Adresse);
+
+//******************************************************************************
+// Début récupération des informations
+//******************************************************************************
+
+// Jaquette DVD
+   if CanSetPicture then
+   begin
+     Value := StringReplace(URLencode(urlImage+findInfo(urlImage, '"', Line,'0')), '%09', '');
+     if (pos('type_zoom=0',Line) <> 0) then
+     begin
+        MonGetPicture(Value);
+     end else
+     begin
+        Value := StringReplace(Value, 'fp', 'zoom');
+        MonGetPicture(Value);
+     end;
+   end;
+
+// Titre Traduit
+   if CanSetField(fieldTranslatedTitle) then
+   begin
+     Value := findInfo('<td bgcolor="#1C75E4" align="center">', '</td>', Line,'0');
+     Value := supprSubString(' (', ')', Value);
+     MonSetField(fieldTranslatedTitle, formatTitre(Trim(Value),GetOption('Casse Choisie')));
+   end;
+
+// Description
+   if CanSetField(fieldDescription) then
+   begin
+     Value := findInfo('<td class="tdmarket">', '</td>', Line,'3');
+     Value := StringReplace(Value, '<P ', #13#10#13#10+'<P ');
+     HTMLRemoveTags(Value);
+     Value2 := findInfo('L''histoire</li></td></tr><tr>', '</td>', Line,'0');
+     if Value2 <> '' then
+        Value := Value+#13#10#13#10+Value2;
+     MonSetField(fieldDescription, Value);
+   end;
+
+// Genre
+   if CanSetField(fieldCategory) then
+   begin
+      Value := findInfo(' <a class="lnkbarretitre" ', '</a>', Line,'0');
+      Value := supprSubString('href', '">', Value);
+      MonSetField(fieldCategory, formatTitre(Value,GetOption('Casse Choisie')));
+   end;
+
+// Durée
+   if CanSetField(fieldLength) then
+      MonSetField(fieldLength, Trim(findInfo('Durée', ' min', Line,'0')));
+
+// Acteurs
+   if CanSetField(fieldActors) then
+      MonSetField(fieldActors, formatTitre(findInfo('Acteurs</li></td></tr><tr>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+
+// Réalisateur
+   if CanSetField(fieldDirector) then
+      MonSetField(fieldDirector, formatTitre(findInfo('Réalisateur</li></td></tr><tr>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+
+// Langues
+   if CanSetField(fieldLanguages) then
+   begin
+      Value := findInfo('Langues</td>', '</td>', Line,'0');
+      if Value <> '' then
+         MonSetField(fieldLanguages, Value)
+      else
+         MonSetField(fieldLanguages, findInfo('Langues : ', ' -', Line,'0'));
+   end;
+
+// Sous-titres
+   if CanSetField(fieldSubtitles) then
+   begin
+      Value := findInfo('Sous-titres</td>', '</td>', Line,'0');
+      if Value <> '' then
+         MonSetField(fieldSubtitles, Value)
+      else
+      MonSetField(fieldSubtitles, findInfo('Sous-titres : ', ' -', Line,'0'));
+   end;
+
+// Adresse Web
+  if CanSetField(fieldURL) then
+      MonSetField(fieldURL, Adresse);
+      
+//******************************************************************************
+// Fin récupération des informations
+//******************************************************************************
+
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    afterUpdate();
+
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    Sleep(timeSleep);
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      batch(NomScript);
+      AddToLog('Les films ayant été mis à jour sont maintenant cochés');
+    end;
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le numéro EAN du DVD (Code-Barre) :', MovieName) then
+          recupInfo(urlSearch+MovieName);
+    end else
+    if (GetOption('Type de Lancement') = 1) then
+    begin
+      if (premiereExecution = 0) then
+      begin
+        premiereExecution := -1;
+        if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = False) then
+           exit;
+      end;
+      MovieName := GetField(fieldURL);
+      if Pos(urlSearch, MovieName) > 0 then
+         recupInfo(MovieName)
+      else
+         recupInfo(urlSearch+MovieName);
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

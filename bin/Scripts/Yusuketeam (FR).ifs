@@ -1,0 +1,369 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=Yusuketeam.com
+Description=Référencement d'animes, Skin Winamp, AMV, Paroles...
+Site=http://www.yusuketeam.com
+Language=FR
+Version=05 du 12/08/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=Informations récupérées sur le site www.yusuketeam.com,|avec l'autorisation de leurs webmasters.|
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web
+Casse Choisie=3|3|0=Titre et Nom en minuscule|1=Titre et Nom en majuscule|2=Première lettre en majuscule|3=Première lettre de chaque mot en majuscule|4=Formatage identique au site d'origine
+Choix Titre=0|0|0=Titre dans Titre Traduit|1=Titre dans Titre Original
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Fichier de log=1|1|0=Oui|1=Non
+
+***************************************************)
+
+program Yusuketeam_FR;
+uses
+  ScorEpioNCommonScript;
+
+const
+     VersionScript = '05 du 12/08/2005';
+     NomScript = 'YUSUKETEAM';
+     urlDomain = 'yusuketeam.com';
+     urlBase = 'http://www.yusuketeam.com/fansub/';
+     urlSearch = urlBase+'index.php';
+     urlSearchParams = 'serie_search=';
+     //urlReferer = 'http://www.yusuketeam.com/fansub/index.php';
+
+var
+  MovieName, Address : string;
+  i,j, premiereExecution : Integer;
+  listeResultat : TStringList;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES RESULTATS YUSUKETEAM.COM
+//------------------------------------------------------------------------------
+
+procedure recherche(title : String);
+var
+  Line, titre, adresse : String;
+  StartPos : Integer;
+  oK : Boolean;
+begin
+  //Line := PostPage2(urlSearch,urlSearchParams+UrlEncode(title),'application/x-www-form-urlencoded',urlReferer,False,False);
+  Line := PostPage(urlSearch,urlSearchParams+UrlEncode(title));
+  if pos('Aucun résultat trouvé', Line) > 0 then
+  begin
+    SetField(fieldChecked, '');
+    exit;
+  end else
+  begin
+    oK := True;
+    listeResultat := TStringList.Create;
+    StartPos := pos('résultats trouvés pour', Line);
+    delete(Line, 1, StartPos+length('résultats trouvés pour')-1);
+    StartPos := pos('<a href="', Line);
+    delete(Line, 1, StartPos-1);
+    repeat
+         StartPos := pos('<a href="', Line);
+         delete(Line, 1, StartPos-1);
+         adresse := urlBase+findInfo('<a href="', '">', Line,'0');
+         titre := findInfo('">', '</a>', Line,'0');
+// Ajoute les films
+         if (titre = '')then
+           oK := False
+         else {if (pos('index.php?serie',adresse) <> 0) then}
+           listeResultat.Add(titre+'|'+adresse);
+         delete(Line, 1, length('<a href="'));
+    until (oK = False);
+// Création de la liste de résultats
+    nettoieListe();
+    afficheResultat(title);
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// NE PAS METTRE DEUX RESULTATS IDENTIQUES DANS LA LISTE
+//------------------------------------------------------------------------------
+
+procedure nettoieListe();
+var
+   couple, titre, adresse : String;
+begin
+      for i:=0 to listeResultat.Count-1 do
+      begin
+           couple := listeResultat.GetString(i);
+           titre := copy(couple,0,pos('|',couple)-1);
+           delete(couple, 1, length(titre)+1);
+           adresse := copy(couple,0,length(couple));
+           for j:=i+1 to listeResultat.Count-1 do
+           begin
+                if (supprimeLesAccents(copy(listeResultat.GetString(j),0,pos('|',listeResultat.GetString(j))-1)) = supprimeLesAccents(titre)) then
+                  listeResultat.SetString(j,'');
+           end;
+      end;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+procedure afficheResultat(title : String);
+var
+   StartPos, k: Integer;
+   couple, titre, adresse, adresseunique : String;
+begin
+
+  if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) then
+  begin
+   PickTreeClear;
+   PickTreeAdd('Résultats trouvés pour ' + title + ' :', '');
+   k := 0;
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     adresse := URLEncode(adresse);
+     if titre <> '' then
+     begin
+        PickTreeAdd(titre, adresse);
+        k:= k+1;
+        adresseunique := adresse;
+     end;
+   end;
+
+   if (listeResultat.Count = 1) or (k = 1) then
+   begin
+     recupInfo(adresseunique);
+     exit;
+   end;
+// ******************** DEBUT AFFICHAGE
+    begin
+      if PickTreeExec(Address)=true then
+      begin   
+          recupInfo(Address);
+      end;
+    end;
+// ******************** FIN AFFICHAGE
+  end else if (GetOption('Type de Lancement') = 2) then
+  begin
+   if listeResultat.Count = 1 then
+   begin
+     couple := listeResultat.GetString(0);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     adresse := URLEncode(adresse);
+     recupInfo(adresse);
+     exit;
+   end else
+   begin
+     trouveTitle(title);
+   end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS
+//------------------------------------------------------------------------------
+
+procedure recupInfo(Adresse : String);
+var
+   Value, Value2, Line: String;
+   StartPos : Integer;
+begin
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     beforeUpdate();
+// Début du script de récupération
+   Sleep(500);
+   line  := PostPage(Adresse,'vol=0');
+// Jaquette Anime
+   if CanSetPicture then
+     MonGetPicture(urlBase+findInfo('<td valign=top><img src="', '"', Line,'0'));
+// Titre
+   if CanSetField(fieldTranslatedTitle) and (GetOption('Choix Titre') = 0) then
+     MonSetField(fieldTranslatedTitle, formatTitre(findInfo('<b style=''font-size:18px;color:#ffffff''>', '</b></td>', Line,'0'),GetOption('Casse Choisie')));
+   if CanSetField(fieldOriginalTitle) and (GetOption('Choix Titre') = 1) then
+     MonSetField(fieldOriginalTitle, formatTitre(findInfo('<b style=''font-size:18px;color:#ffffff''>', '</b></td>', Line,'0'),GetOption('Casse Choisie')));
+// Genre
+   if CanSetField(fieldCategory) then
+      MonSetField(fieldCategory, formatTitre(findInfo('Catégories</td>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+// L'histoire
+   if CanSetField(fieldDescription) then
+   begin
+         Value := findInfo('<img src="images/sfv_btn_histoire.gif" border=0>', '</tr></table>', Line,'0');
+         Value := StringReplace(Value,'			','');
+         MonSetField(fieldDescription,Value);
+   end;
+// Note
+   if CanSetField(fieldRating) then
+      MonSetField(fieldRating, findInfo('Note de la série</td>', '/10', Line,'0'));
+// Année
+   if CanSetField(fieldYear) then
+      MonSetField(fieldYear, findInfo('Série créée en  </td>', '</td>', Line,'0'));
+// Réalisateur
+   if CanSetField(fieldDirector) then
+      MonSetField(fieldDirector, formatTitre(findInfo('Réalisateur</td>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+// Studio
+   if CanSetField(fieldProducer) then
+      MonSetField(fieldProducer, formatTitre(findInfo('Studio</td>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+// Informations Complémentaires
+   if CanSetField(fieldActors) then
+   begin
+      Value2 := '';
+      Value := '';
+      Value := formatTitre(findInfo('Charac-designer</td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      if Value <> '' then
+        Value2 := Value2+'Charac-designer : '+Value+#13#10;
+      Value := formatTitre(findInfo('Directeur d''animation</td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      if Value <> '' then
+        Value2 := Value2+'Directeur d''animation : '+Value+#13#10;
+      Value := formatTitre(findInfo('Compositeur</td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      if Value <> '' then
+        Value2 := Value2+'Compositeur : '+Value+#13#10;
+      Value := formatTitre(findInfo('Nombre d''épisode prévus </td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      if Value <> '' then
+        Value2 := Value2+'Nombre d''épisodes prévus : '+Value+#13#10;
+      MonSetField(fieldActors, Value2);
+   end;
+// Adresse Web
+  if CanSetField(fieldURL) then
+      SetField(fieldURL, Adresse);
+
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    afterUpdate();
+
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME LES ACCENTS
+//------------------------------------------------------------------------------
+
+function supprimeAccents(NomFilm : String) : String;
+begin
+// les accents
+     NomFilm := supprimeLesAccents(NomFilm);
+// Pour n'avoir que le titre
+     delete(NomFilm, pos(' - ',NomFilm), length(NomFilm));
+     if (pos(', ',NomFilm) > 0) then
+        delete(NomFilm, 1, pos(', ',NomFilm)+1);
+     if (pos('(',NomFilm) > 0) then
+        delete(NomFilm, pos('(',NomFilm), length(NomFilm));
+     if (pos(':',NomFilm) > 0) then
+        delete(NomFilm, pos(':',NomFilm), length(NomFilm));
+     result := trim(NomFilm);
+end;
+
+//------------------------------------------------------------------------------
+// COMPARE LE TITRE PASSE ET LE TITRE TROUVE
+//------------------------------------------------------------------------------
+
+function compareTitle(titleAllo, title : String) : String;
+begin
+     title := supprimeAccents(trim(AnsiLowerCase(title)));
+     titleAllo := supprimeAccents(trim(AnsiLowerCase(titleAllo)));
+     if (title = titleAllo) then
+     begin
+       result := 'OK';
+     end else
+     begin
+       result := 'KO';
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// TROUVE LE BON TITRE SI LE PREMIER N'EST PAS LE BON
+//------------------------------------------------------------------------------
+
+procedure trouveTitle(title : String);
+var
+   oK, couple, titre, adresse : String;
+begin
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     adresse := URLEncode(adresse);
+     oK := compareTitle(title,titre);
+     if oK = 'OK' then
+     begin
+       recupInfo(adresse);
+       exit;
+     end;
+   end;
+   listeResultat.Free;
+
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+if AcceptLicense(1) then
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    Sleep(1000);
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      batch(NomScript);
+      AddToLog('Les films ayant été mis à jour sont maintenant cochés');
+    end;
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre de l''anime :', MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+        begin
+          recupInfo(MovieName);
+        end else
+          recherche(MovieName);
+      end;
+    end else
+    if (GetOption('Type de Lancement') = 3) then
+    begin
+      if (premiereExecution = 0) then
+      begin
+        premiereExecution := -1;
+        if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = False) then
+           exit;
+      end;
+      MovieName := GetField(fieldURL);
+      if Pos(urlDomain, MovieName) > 0 then
+         recupInfo(MovieName);
+    end else
+    begin
+      if (premiereExecution = 0) then
+      begin
+          premiereExecution := -1;
+	      if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = True) then
+          begin
+            recherche(MovieName);
+          end else
+            exit;
+      end else
+      begin
+          recherche(MovieName);
+      end;
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,1892 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAATCwAAEwsAAAAAAAAAAAAAAAAAAGh4TwC2XxAAjGouAMyZAADPoBIA3LlQAEdWswBE9vwA6taaAOzapACvu9IAzdHPAPjy3wDk0sIA9fb2AIiIiIiIiIiIAAAAAAAAAAAO7u7u7u7qYA7//////WRADv///u+lRGAO//9CKUREkA7//yESRG3wDv/9IRJZ//AO/5ZCJN//8A7WRDd8///wBkREt3v///AGREn8z///8AZp3//////wBp7u7u7u7uAAAAAAAAAAAIiIiIiIiIiI
+Name=Galician
+LocalName=Galego
+Encoding=windows-1252
+Version=3.5.1
+VersionFormat=4.2.2
+Comments=Calquera suxestión sobre a tradución deste programa será aceptada de bo grado. Non o dubide, contacte comigo.
+Authors=Fidi [Gz]|fidi_gz@ya.com
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Novo
+ActionFileNew.Hint=Novo|Crea un novo ficheiro
+ActionFileOpen.Caption=&Abrir...
+ActionFileOpen.Hint=Abrir...|Abre un ficheiro
+ActionFileOpenNoRecent.Caption=Non hai ficheiros recentes
+ActionFileSave.Caption=&Gardar
+ActionFileSave.Hint=Gardar|Garda o ficheiro actual
+ActionFileSaveAs.Caption=Gardar &como...
+ActionFileSaveAs.Hint=Gardar como...|Garda o ficheiro actual cun nome diferente
+ActionFilePrint.Caption=&Imprimir...
+ActionFilePrint.Hint=Imprimir lista|Imprime unha lista cos contidos do catálogo actual
+ActionFileImport.Caption=&Importar...
+ActionFileImport.Hint=Importar...|Importa datos desde outro formato
+ActionFileExport.Caption=&Exportar...
+ActionFileExport.Hint=Exportar...|Exporta o catálogo a outro formato
+ActionFileProperties.Caption=&Propiedades...
+ActionFileProperties.Hint=Propiedades...|Mostra as propiedades do ficheiro e a información do catálogo
+
+ActionExit.Caption=&Saír
+ActionExit.Hint=Saír|Pechar a aplicación
+ActionOptions.Caption=&Preferencias...
+ActionOptions.Hint=Preferencias...|Cambia as opcións do programa
+ActionLanguage.Caption=I&dioma...
+ActionLanguage.Hint=Idioma...|Cambia o idioma da interface de usuario
+ActionLoan.Caption=&Filmes emprestados...
+ActionLoan.Hint=Filmes emprestados...|Lista dos filmes emprestados na actualidade
+ActionToolsScripting.Caption=S&cripting...
+ActionToolsScripting.Hint=Scripting...|Aplica un script aos filmes seleccionados
+ActionToolsGrid.Caption=M&ostrar como táboa
+ActionToolsGrid.Hint=Mostrar como táboa|Mostra a lista de filmes nunha gran táboa con todos os filmes
+  ActionStretchList.Caption=Stretch &list
+  ActionStretchList.Hint=Stretch list|Stretch the list to the right
+  ActionDisplayHTML.Caption=&Display HTML
+  ActionDisplayHTML.Hint=Display HTML|Display movie information according to HTML template
+  ActionSelectHTML.Caption=&Select HTML
+  ActionSelectHTML.Hint=Select HTML|Select HTML template
+  ActionDisplayThumbnails.Caption=Display as &thumbnails
+  ActionDisplayThumbnails.Hint=Display as thumbnails|Display the movie list as thumbnails
+  ActionSortAscend.Caption=Ascending
+  ActionSortAscend.Hint=|Sort in ascending order
+  ActionSortDescend.Caption=Descending
+  ActionSortDescend.Hint=|Sort in descending order
+  ActionSortAdvanced.Caption=Advanced...
+  ActionSortAdvanced.Hint=|Advanced sort
+ActionGroupNone.Caption=< ningún >
+ActionGroupNone.Hint=|Non agrupar filmes
+  ActionManageFields.Caption=Manage &fields...
+  ActionManageFields.Hint=Manage fields...|Manage custom fields of current catalog
+  ActionManagePictures.Caption=Manage p&ictures...
+  ActionManagePictures.Hint=Manage pictures...|Manage pictures of current catalog
+  ActionHTMLEditor.Caption=&HTML editor...
+  ActionHTMLEditor.Hint=HTML editor...|Edit HTML templates
+
+ActionHelpIndex.Caption=Índice de &axuda
+ActionHelpIndex.Hint=Índice de axuda|Inicia a axuda do programa
+ActionHelpAbout.Caption=&Acerca de...
+ActionHelpAbout.Hint=&Acerca de...|Acerca deste programa
+ActionHelpVersion.Caption=&Versións...
+ActionHelpVersion.Hint=Versións...|Mostra información da versión dos ficheiros
+
+ActionMovieAdd.Caption=&Engadir...
+ActionMovieAdd.Hint=Engadir...|Engade un novo filme
+ActionMovieUndo.Caption=&Desfacer cambios
+ActionMovieUndo.Hint=Desfacer cambios|Desfai os cambios feitos no filme actual
+ActionMovieDelete.Caption=&Eliminar
+ActionMovieDelete.Hint=Eliminar|Elimina o filme actual
+ActionMovieCopy.Caption=&Copiar
+ActionMovieCopy.Hint=Copiar|Copia a información do filme no portapapeis
+ActionMoviePaste.Caption=&Pegar
+ActionMoviePaste.Hint=Pegar|Pega a información do filme desde o portapapeis
+ActionMovieRenumber.Caption=&Renumerar...
+ActionMovieRenumber.Hint=Renumerar filmes...|Renumera os filmes con números consecutivos comezando polo 1
+ActionMovieFind.Caption=&Buscar...
+ActionMovieFind.Hint=Buscar...|Busca un filme baseándose nun campo específico
+ActionFindFindNext.Caption=Buscar &Seg.
+ActionFindFindNext.Hint=|Busca o seguinte filme que coincida cos parámetros de busca
+ActionFindWholeField.Caption=Só campo &completo
+ActionFindWholeField.Hint=|Inclúe filmes só cando o campo completo coincide co valor especificado
+  ActionFindReverse.Caption=&Reverse results
+  ActionFindReverse.Hint=|Reverse search results
+ActionFindDisplay.Caption=&Mostrar resultados
+ActionFindDisplay.Hint=|Mostra todos os filmes que coincidan co criterio de busca (vista filtrada)
+LField.Caption=&Busca no campo:
+LValue.Caption=Busca do &valor:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Cambiar &número...
+ActionMovieNumber.Hint=Cambiar número|Cambia o número do filme
+ActionMovieStats.Caption=&Estatísticas...
+ActionMovieStats.Hint=Estatísticas...|Mostra as estatísticas do catálogo e dos filmes que contén
+ActionMovieImportFiles.Caption=Desde un &ficheiro...
+ActionMovieImportFiles.Hint=Obter información dun ficheiro...|Obtén información do filme dun ficheiro
+ActionMovieImportScript.Caption=Desde a internet usando un &script...
+ActionMovieImportScript.Hint=Obter información desde a internet usando un script...|Obtén información desde a internet usando un ficheiro de script
+ActionMovieSearch.Caption=&Busca na internet
+ActionMovieSearch.Hint=Busca de información na internet|Busca información sobre o filme na internet
+  ActionMovieRandom.Caption=&Random
+  ActionMovieRandom.Hint=Random|Random selection
+ActionMoviePictureShow.Caption=Mostrar &portada
+ActionMoviePictureShow.Hint=Mostrar ou ocultar a portada do filme|Mostra ou oculta a ventá de portada do filme
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Seleccionar...
+ActionPicSelect.Hint=Seleccionar unha portada...|Selecciona unha portada para importar ou ligar ao filme actual
+ActionPicDelete.Caption=&Eliminar
+ActionPicDelete.Hint=Eliminar|Elimina a portada actual
+ActionPicUndock.Caption=Ancorar/&Desancorar
+ActionPicUndock.Hint=Ancorar/Desancorar|Ventá de portada: Ancorado (integrado na ventá principal) ou Desancorado (ventá independente)
+ActionPicSaveAs.Caption=Gardar &como...
+ActionPicSaveAs.Hint=Gardar portada como...|Garda unha copia da portada nun novo ficheiro
+ActionPicCopy.Caption=&Copiar
+ActionPicCopy.Hint=Copiar no portapapeis|Copia a portada no portapapeis
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  ActionMovieUrl.Caption=URL
+  ActionMovieUrl.Hint=URL|Movie URL
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=&Ficheiro
+ActionMenuMovie.Caption=&Filme
+  ActionMenuDisplay.Caption=&Display
+ActionMenuTools.Caption=&Ferramentas
+ActionMenuHelp.Caption=&Axuda
+ActionMenuPicture.Caption=P&ortada
+ActionMenuPicture.Hint=Portada do filme|Comandos da portada do filme
+ActionMenuGet.Caption=&Obter información
+ActionMenuGet.Hint=Obter información|Obtén información do filme
+  ActionMenuGridFields.Caption=Grid &fields
+  ActionMenuGridFields.Hint=Grid fields|Select grid fields to show or hide
+  ActionMenuSort.Caption=&Sort by
+  ActionMenuSort.Hint=Sort movies|Sort by a specified field the movies of the list
+ActionMenuGroup.Caption=A&grupar por
+ActionMenuGroup.Hint=Agrupar filmes|Agrupa os filmes da lista por un campo específico
+ActionRefresh.Caption=&Actualizar
+ActionRefresh.Hint=Actualizar a lista|Actualiza a lista de filmes
+  ActionMenuGroupsFormat.Caption=Groups f&ormatting
+  ActionMenuGroupsFormat.Hint=Format the group names|Format the group names depending on the chosen option
+  ActionGroupsFormatNone.Caption=< &none >
+  ActionGroupsFormatNone.Hint=|Do not format group names
+  MnuGpf1L.Caption=Extract first letter
+  MnuGpf2L.Caption=Extract two first letters
+  MnuGpf3L.Caption=Extract three first letters
+  MnuGpf4L.Caption=Extract four first letters
+  MnuGpf5L.Caption=Extract five first letters
+  MnuGpfDateY.Caption=Extract the year of dates
+  MnuGpfDateYM.Caption=Extract the year and month of dates
+  MnuGpfRound0001.Caption=Round numbers to thousandths
+  MnuGpfRound001.Caption=Round numbers to hundredth
+  MnuGpfRound01.Caption=Round numbers to tenth
+  MnuGpfRound1.Caption=Round numbers to unit
+  MnuGpfRound10.Caption=Round numbers to ten
+  MnuGpfRound100.Caption=Round numbers to hundred
+  MnuGpfRound1000.Caption=Round numbers to thousand
+  MnuGpfRoundType.Caption=&Kind of rounding
+  MnuGpfRoundDown.Caption=Round &down
+  MnuGpfRoundNearest.Caption=Round to &nearest
+  MnuGpfRoundUp.Caption=Round to &up
+
+  MnuSelect.Caption=Select
+  ActionMovieSelGroup.Caption=Whole group
+ActionMovieSelGroup.Hint=Seleccionar o grupo|Selecciona todos os filmes deste grupo
+  ActionMovieSelCheck.Caption=Checked
+ActionMovieSelCheck.Hint=Seleccionar os marcados|Selecciona só os filmes que están marcados
+  ActionMovieSelUncheck.Caption=Unchecked
+ActionMovieSelUncheck.Hint=Selecionar os desmarcados|Selecciona só os filmes non marcados
+
+  MnuSelected.Caption=Selected movies
+  ActionMovieCheck.Caption=Check
+ActionMovieCheck.Hint=Marcar os seleccionados|Marca os filmes seleccionados
+  ActionMovieUncheck.Caption=Uncheck
+ActionMovieUncheck.Hint=Desmarcar os seleccionados|Desmarca os filmes seleccionados
+
+ActionDisplayPictureToolbar.Caption=Barra de Ferramentas de P&ortada
+ActionDisplayPictureToolbar.Hint=Mostrar a barra de ferramentas de portada|Mostra ou oculta a barra de ferramentas de portada
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=Barra de Ferramentas &Principal
+ActionDisplayMainToolbar.Hint=Mostrar a barra de ferramentas principal|Mostra ou oculta a barra de ferramentas principal
+ActionDisplayStatusBar.Caption=Barra de &Estado
+ActionDisplayStatusBar.Hint=Mostrar a barra de estado|Mostra ou oculta a barra de estado
+
+ActionURLOpen.Caption=Abrir URL
+ActionURLOpen.Hint=|Abre a URL ou o ficheiro especificado no campo
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+ActionURLBrowse.Caption=Explorar...
+ActionURLBrowse.Hint=|Explore na busca dun nome de ficheiro para introducir no campo
+
+  MnuHtmlCopy.Caption=Copy
+  MnuHtmlCopy.Hint=|Copy text selected
+  MnuHtmlEdit.Caption=Edit...
+  MnuHtmlEdit.Hint=|Edit HTML template
+  MnuTlsBrowseHTML.Caption=Browse...
+
+ToolbarMenu.Caption=Barra de Menú
+ToolbarMain.Caption=Barra Principal
+ToolbarPicture.Caption=Barra de Ferramentas de Portada
+ToolbarPictureWindow.Caption=Portada
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Buscar
+
+Listview1.HeaderSections.Item[0].Text=Nº
+Listview1.HeaderSections.Item[1].Text=Título
+
+MoviePicture.Hint=|Premer para mostrar a portada a tamaño completo
+
+  ThumbsSizer.Hint=|Change size of pictures
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display movie title
+
+Messages.Strings.String[0]=Seguro que quere eliminar o filme nº %s: "%s"?
+Messages.Strings.String[1]=Seguro que quere devolver á información anterior ao filme actual?
+  Messages.Strings.String[2]=%d movies
+  Messages.Strings.String[3]=(%0:d selected, %1:d checked, %2:d visible)
+Messages.Strings.String[4]=Modificouse o catálogo actual. Quere gardalo?
+Messages.Strings.String[5]=Non volver a pedir confirmación
+Messages.Strings.String[6]=Modificado
+Messages.Strings.String[7]=Portada
+Messages.Strings.String[8]=Gardar unha copia da portada nun novo ficheiro
+Messages.Strings.String[9]=Importando %s...
+Messages.Strings.String[10]=Gardando %s...
+Messages.Strings.String[11]=Cargando %s...
+Messages.Strings.String[12]=Seleccionar unha portada
+Messages.Strings.String[13]=Eliminarase a portada. Está seguro?
+Messages.Strings.String[14]=Imposible usar esta portada: %s
+; a seguinte liña especifica a unidade empregada no tamaño dos ficheiros da fiestra principal (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Seleccionar os ficheiros dos que obter información
+Messages.Strings.String[17]=Buscar información en %0:s|Busca información en %0:s sobre este filme
+Messages.Strings.String[18]=Ningún ficheiro recente
+Messages.Strings.String[19]=Este catálogo contén portadas almacenadas nel. Para gardar o catálogo como XML, as portadas deben ser ficheiros individuais.|Se aínda quere gardar o ficheiro como XML, prema Aceptar para converter estas portadas ou en Ignorar se non desexa mantelas (as imaxes ligadas manteranse).|O nome das portadas basearase no valor "Nomear portada" do apartado "Importación de portadas" da ventá Preferencias.
+Messages.Strings.String[20]=|Agrupar por %s
+Messages.Strings.String[21]=< ningún >
+Messages.Strings.String[22]=Ademais da ligazón, quere tamén eliminar do disco duro a portada? (%s)
+Messages.Strings.String[23]=Este filme ten unha portada ligada, ao substituír esta ligazón por outra portada, quere eliminar a portada antiga do disco duro? (%s)
+Messages.Strings.String[24]=Non se pode copiar a portada no cartafol do catálogo ata que este teña un nome; gárdea nalgún outro sitio e inténteo de novo
+Messages.Strings.String[25]=Almacenado no catálogo como %s
+Messages.Strings.String[26]=Ficheiro externo: %s
+Messages.Strings.String[27]=%.0n bytes
+Messages.Strings.String[28]=Cargando a previsualización de impresión
+Messages.Strings.String[29]=Buscando impresoras
+Messages.Strings.String[30]=Seleccionar un ficheiro para referirse ao campo URL
+Messages.Strings.String[31]=< outros >
+Messages.Strings.String[32]=Todos
+  Messages.Strings.String[33]=|Sort by %s
+  Messages.Strings.String[34]=Movie Fields
+  Messages.Strings.String[35]=Custom Fields
+  Messages.Strings.String[36]=File "%s" doesn't exist
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+  Messages.Strings.String[38]=Get information from files...
+  Messages.Strings.String[39]=Select same color tag|Select only the movies that have the same color tag
+  Messages.Strings.String[40]=Mark selected with a color tag|Mark selected movies with a color tag
+  Messages.Strings.String[41]=All Fields
+  Messages.Strings.String[42]=You have choosen to replace an existing catalog. Do you want to delete the old copied pictures of this catalog?
+  Messages.Strings.String[43]=Copy/paste on movie "%s"
+  Messages.Strings.String[44]=Delete old copied pictures...
+  Messages.Strings.String[45]=Copy pictures into a subfolder pictures
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Número
+Fields.Strings.String[1]=Marcado
+  Fields.Strings.String[2]=Color Tag
+Fields.Strings.String[3]=Etiqueta do Soporte
+Fields.Strings.String[4]=Tipo de Soporte
+Fields.Strings.String[5]=Fonte
+Fields.Strings.String[6]=Data de adición
+Fields.Strings.String[7]=Prestameiro
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Cualificación
+Fields.Strings.String[11]=Título Orixinal
+Fields.Strings.String[12]=Título Traducido
+Fields.Strings.String[13]=Título con Formato
+Fields.Strings.String[14]=Director
+Fields.Strings.String[15]=Produtor
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[19]=País
+Fields.Strings.String[18]=Intérpretes
+Fields.Strings.String[20]=Ano
+Fields.Strings.String[21]=Duración
+Fields.Strings.String[22]=Categoría
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Descrición
+Fields.Strings.String[26]=Comentarios
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Formato de Vídeo
+Fields.Strings.String[29]=Taxa de Bits (Bitrate) de Vídeo
+Fields.Strings.String[30]=Formato de Son
+Fields.Strings.String[31]=Taxa de Bits (Bitrate) de Son
+Fields.Strings.String[32]=Resolución
+Fields.Strings.String[33]=Taxa de Fotogramas (Framerate)
+Fields.Strings.String[34]=Idiomas
+Fields.Strings.String[35]=Subtítulos
+Fields.Strings.String[36]=Tamaño dos Ficheiros
+Fields.Strings.String[37]=Número de discos
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+  Media.Strings.String[0]=Volume Label
+  Media.Strings.String[1]=File Path
+  Media.Strings.String[2]=Path + File Name
+  Media.Strings.String[3]=Path + File Name + Extension
+  Media.Strings.String[4]=File Name
+  Media.Strings.String[5]=File Name (Filtered)
+  Media.Strings.String[6]=File Name + Extension
+  Media.Strings.String[7]=Folder Name
+  Media.Strings.String[8]=Folder Name (Filtered)
+  Media.Strings.String[9]=File Extension
+  Media.Strings.String[10]=File Extension (Without dot)
+  Media.Strings.String[11]=Size (String - "650+530")
+  Media.Strings.String[12]=Size (Sum - "1180")
+  Media.Strings.String[13]=Disks
+  Media.Strings.String[14]=Picture
+  Media.Strings.String[15]=Length
+  Media.Strings.String[16]=Resolution ("Width x Height")
+  Media.Strings.String[17]=Resolution (Width)
+  Media.Strings.String[18]=Resolution (Height)
+  Media.Strings.String[19]=Framerate
+  Media.Strings.String[20]=Video Codec
+  Media.Strings.String[21]=Video Bitrate
+  Media.Strings.String[22]=Audio Codec
+  Media.Strings.String[23]=Audio Channels
+  Media.Strings.String[24]=Audio Codec + Audio Channels
+  Media.Strings.String[25]=Audio Bitrate
+  Media.Strings.String[26]=Languages
+  Media.Strings.String[27]=Subtitles
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Aviso
+Captions.Strings.String[1]=Erro
+Captions.Strings.String[2]=Información
+Captions.Strings.String[3]=Confirmación
+Captions.Strings.String[4]=&Si
+Captions.Strings.String[5]=&Non
+Captions.Strings.String[6]=&Aceptar
+Captions.Strings.String[7]=&Cancelar
+Captions.Strings.String[8]=&Abortar
+Captions.Strings.String[9]=&Reintentar
+Captions.Strings.String[10]=&Ignorar
+Captions.Strings.String[11]=&Todo
+Captions.Strings.String[12]=Non a todo
+Captions.Strings.String[13]=Si a todo
+Captions.Strings.String[14]=&Axuda
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=Aceptar
+btn1.Caption=Cancelar
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=Sobre o programa
+btn3.Caption=Pechar
+btn2.Caption=&Versións...
+btn1.Caption=&Créditos...
+Messages.Strings.String[0]=%s: versión %s (creado o %s)
+Messages.Strings.String[1]=(prema Ctrl+C se quere copiar esta información no portapapeis)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Selección do número de filme
+btn2.Caption=Aceptar
+btn1.Caption=Cancelar
+LEnterNumber.Caption=Introduza un número para o filme:
+btnFindNum.Hint=Atopar un número dispoñible|
+grpNotUnique.Caption=Xa hai un filme con este número...
+grpNotUnique.Items.String[0]=&Admitir duplicados
+grpNotUnique.Items.String[1]=&Darlle outro número ao filme existente
+grpNotUnique.Items.String[2]=&Desprazar núms. de filme ata non atopar duplicados
+CBDoNotAsk.Caption=Non volver a preguntar; usar autonumeración
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=Aceptar
+btn1.Caption=Cancelar
+Caption=Propiedades do catálogo
+LHOwnerInfo.Caption=Información do Propietario
+LFileName.Caption=Nome:
+LFileSize.Caption=Tamaño:
+LFileVersion.Caption=Formato:
+LHXMLHeader.Caption=Cabeceira XML
+LEncoding.Caption=Codificación:
+LOwnerName.Caption=Nome:
+LOwnerMail.Caption=Correo-e:
+LOwnerSite.Caption=Sitio Web:
+LDescription.Caption=Descrición:
+EOwnerMail.ButtonHint=Enviar un correo-e
+EOwnerSite.ButtonHint=Ir a URL
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Filmes emprestados
+btn2.Caption=Pechar
+btn1.Caption=Axuda
+
+ActionBorrowerAdd.Caption=Engadir...
+ActionBorrowerAdd.Hint=Engadir prestameiro|Engade un novo prestameiro á lista
+ActionBorrowerDel.Caption=Eliminar
+ActionBorrowerDel.Hint=Eliminar prestameiro|Elimina da lista o prestameiro seleccionado
+ActionCheckOut.Caption=Marcar como emprestado
+ActionCheckOut.Hint=Marcar como emprestado|Engade o filme seleccionado á lista de prestameiros
+ActionCheckIn.Caption=Marcar como devolto
+ActionCheckIn.Hint=Marcar como devolto|Elimina o filme seleccionado da lista de prestameiros
+ActionMovieGetBorrower.Caption=Obter prestameiro
+ActionMovieGetBorrower.Hint=Obter prestameiro|Busca, na lista de prestameiros, o prestameiro ou o filme seleccionado
+ActionMovieFindNext.Caption=Buscar seguinte
+ActionMovieFindNext.Hint=Buscar seguinte|Busca o seguinte filme cun título que conteña o texto especificado
+ActionOptions.Caption=&Opcións
+ActionOptions.Hint=Opcións|Opcións de préstamos e devolucións
+ActionOptionsIncNum.Caption=Incluír filmes co mesmo &número
+ActionOptionsIncNum.Hint=Incluír filmes co mesmo número|Inclúe en préstamos e devolucións outros filmes que teñan o mesmo número que o seleccionado
+ActionOptionsIncLab.Caption=Incluír filmes coa mesma &etiqueta
+ActionOptionsIncLab.Hint=Incluír filmes coa mesma etiqueta|Inclúe en préstamos e devolucións outros filmes que teñan a mesma etiqueta que o seleccionado
+
+LvMovies.HeaderSections.Item[0].Text=Nº
+LvMovies.HeaderSections.Item[1].Text=Etiqueta
+LvMovies.HeaderSections.Item[2].Text=Título
+LvMovies.HeaderSections.Item[3].Text=Prestameiro
+LvNames.HeaderSections.Item[0].Text=Prestameiro
+LvNames.HeaderSections.Item[1].Text=Cantidade
+LvLent.HeaderSections.Item[0].Text=Nº
+LvLent.HeaderSections.Item[1].Text=Etiqueta
+LvLent.HeaderSections.Item[2].Text=Título
+
+Messages.Strings.String[0]=Eliminarase a "%s" da lista de prestameiros, e marcaranse como devoltos todos os filmes emprestados.
+Messages.Strings.String[1]=Cargando a lista...
+Messages.Strings.String[2]=Este filme xa está emprestado a outra persoa
+Messages.Strings.String[3]=Introduza un nome
+Messages.Strings.String[4]=Os seguintes filmes xa están emprestados a outra persoa:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Introduza un nome
+Messages.Strings.String[7]=Novo prestameiro
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Exportar a outro formato
+lvFormat.Columns.Item[0].Caption=Formatos de ficheiro soportados
+Btn3.Caption=&Exportar...
+Btn2.Caption=Pechar
+Btn1.Caption=&Axuda
+grpImages.Caption=Portadas
+CBCopyPictures.Caption=Copiar co ficheiro exportado
+CBCopyPictures.Hint=Copiar as portadas ao mesmo cartafol que o ficheiro exportado
+  CBCopyPicturesInPicDir.Caption=Into a subfolder
+  CBCopyPicturesInPicDir.Hint=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Tan só se aínda non existe
+CBCopyPicturesNew.Hint=Copiar só os ficheiros de portada que aínda non existan (ex. non sobreescribir)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Seleccione un formato...
+
+LCSVDelimiter.Caption=Delimitador:
+ECSVDelimiter.Hint=|Carácter que delimita os valores dos campos
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Delimitador do bloqueador de texto:
+ECSVBloc.Hint=|Carácter arredor das cadeas de texto (deixar baleiro se non se usa)
+LCSVLinebreaks.Caption=Reemprazar as quebras de liña por:
+ECSVLinebreaks.Hint=|Carácter que se usa para representar as quebras de liña nas descricións e os comentarios
+CBCSVColumnTitles.Caption=Engadir títulos de columnas
+LSQLTableName.Caption=Nome da tabla:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption=Actualizar" no lugar de "Inserir
+LSQLCommands.Caption=Comandos SQL a incluír:
+LSQLLinebreaks.Caption=Reemprazar as quebras de liña por:
+LOrigonsLink.Caption=Este formato permítelle poñer a lista de filmes na rede no sitio web Origons<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Campos a exportar:
+FieldsSQL.LSelected.Caption=Campos a exportar:
+  LAMCNote.Caption=You can also export to AMC (without export options) from the main window using the File -> Save As command, then select AMC as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+LXMLNote.Caption=Tamés pode exportar a XML desde a ventá principal a través de Ficheiro -> Gardar como, seleccionando XML como formato do ficheiro. Este ficheiro posteriormente poderase abrir e usar por Ant Movie Catalog como un catálogo calquera
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Ordenando a lista...
+Messages.Strings.String[1]=Exportando a %s...
+Messages.Strings.String[2]=Copiando os ficheiros...
+Messages.Strings.String[3]=Exportar a HTML
+Messages.Strings.String[4]=Exportar a CSV
+Messages.Strings.String[5]=Exportar a SQL
+Messages.Strings.String[6]=Exportar as portadas
+Messages.Strings.String[7]=Exportar a un ficheiro para Origons.com
+  Messages.Strings.String[8]=Export to AMC
+  Messages.Strings.String[9]=Export to XML
+  Messages.Strings.String[10]=You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Importar desde outro formato de ficheiro
+  Btn3.Caption=&Import...
+  Btn2.Caption=Close
+Btn1.Caption=&Axuda
+lvFormat.Columns.Item[0].Caption=Formatos de ficheiro soportados
+  lvFormat.Items.Item[5].Caption=Media files
+  Messages.Strings.String[0]=Searching for media files...
+  Messages.Strings.String[1]=Media files found:
+  Messages.Strings.String[2]=Importing media info...
+  Messages.Strings.String[3]=Importing from %s...
+  Messages.Strings.String[4]=Some files or folders cannot be scanned because they contains not supported characters:
+
+[TImportFrame]
+lblLink.Caption=Permite importar filmes desde %s
+grpSettings.Caption=Configuración
+chkAllowDup.Caption=Permitir a duplicidade de números
+  chkAllowClear.Caption=Allow to clear fields when new value is empty
+chkAutoAssign.Caption=Intentar asignar campos as columnas automaticamente
+lblPictures.Caption=Método de importación de portadas:
+  cmbPictures.Items.String[0]=1 - Store into catalog
+  cmbPictures.Items.String[1]=2 - Copy to catalog folder and make relative link
+  cmbPictures.Items.String[2]=3 - Copy to catalog folder only if it was not stored
+  cmbPictures.Items.String[3]=4 - Copy to pictures folder and make relative link
+  cmbPictures.Items.String[4]=5 - Copy to pictures folder only if it was not stored
+  cmbPictures.Items.String[5]=6 - Make absolute links to current pictures
+  cmbPictures.Items.String[6]=7 - Make relative links to current pictures
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=Ficheiro fonte
+btnBrowse.Hint=Examinar...|Busca dun ficheiro para importar
+btnReload.Caption=&Recargar ficheiro
+grpPreview.Caption=Previsualizar
+lblPreview.Caption=Premer na cabeceira das columnas para asignarlle campos
+btnFieldsLoad.Hint=Cargar campos|Carga a ligazón campo-columna que foi previamente gardada
+btnFieldsSave.Hint=Gardar campos|Garda as actuais ligazóns campo-columna
+  btnFieldsAutoLoad.Hint=Reload fields automatically|Reload automatically field-column links that was previously saved
+  btnColumnsAutoResize.Hint=Resize columns automatically|Resize columns automatically
+ActionListCheck.Caption=&Marcar o seleccionado
+ActionListCheck.Hint=Marcar o seleccionado|Marca os elementos seleccionados
+ActionListUncheck.Caption=&Desmarcar o seleccionado
+ActionListUncheck.Hint=Desmarcar o seleccionado|Desmarca os elementos seleccionados
+ActionListAll.Caption=Marca &todo
+ActionListAll.Hint=Marcar todo|Marca todos os elementos
+ActionListNone.Caption=Non marcar &ningún
+ActionListNone.Hint=Desmarcar todo|Desmarca todos os elementos
+  ActionListCheckExists.Caption=Check existing movies
+  ActionListCheckExists.Hint=Check existing movies|Check existing movies in current catalog
+  ActionListUncheckExists.Caption=Uncheck existing movies
+  ActionListUncheckExists.Hint=Uncheck existing movies|Uncheck existing movies in current catalog
+  ActionSortAscend.Caption=Sort ascending
+  ActionSortAscend.Hint=Sort ascending|Sort column values into ascending order
+  ActionSortDescend.Caption=Sort descending
+  ActionSortDescend.Hint=Sort descending|Sort column values into descending order
+  ActionDefineKeyField.Caption=Define as key field
+  ActionDefineKeyField.Hint=|Use this key field to compare movies
+ActionHeaderNoImport.Caption=Non importar este campo
+  MnuMov.Caption=Movie Fields
+  MnuMovCF.Caption=Custom Fields
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=Non hai filmes para importar
+Messages.Strings.String[1]=Non asignou campos a ningunha columna. Prema na cabeceira da columna para facelo.
+Messages.Strings.String[2]=Para este método de importación de portadas o catálogo debe ter un nome; gárdeo nalgún sitio e inténteo de novo
+  Messages.Strings.String[3]=Select a folder:
+  Messages.Strings.String[4]=%s movie(s) found!
+  Messages.Strings.String[5]=%s movie(s) added!
+  Messages.Strings.String[6]=%s movie(s) updated!
+  Messages.Strings.String[7]=The values of key field are not unique in current catalog.|A movie in the list could match with several movies in current catalog.
+  Messages.Strings.String[8]=To do this action, you must first select a key field to compare movies (click on a column header of the list).
+  Messages.Strings.String[9]=Importing movies into current catalog...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=A primeira liña contén as cabeceiras
+lblDelim.Caption=Delim. de campo:
+edtDelim.Hint=|Carácter delimitador dos valores dos campos
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Delim. bloque de texto:
+edtQuote.Hint=|Carácter para cadeas de texto (deixar baleiro se non se usa)
+lblLinebreaks.Caption=Quebras de liña:
+edtLinebreaks.Hint=|Carácter para converter á quebra de liña nas descricións e nos comentarios
+
+[TImportFrameQuery]
+grpQuery.Caption=Execución de consultas
+btnQueryExec.Hint=Executar|Executa a consulta
+
+[TImportFrameDir]
+  Messages.Strings.String[10]=Source folder
+  Messages.Strings.String[11]=Browse...|Browse for a folder to scan
+  Messages.Strings.String[12]=&Scan folder
+  lblExtractProcess.Caption=Extract process:
+  cmbExtractProcess.Items.String[0]=1 - Extract advanced media info during scanning
+  cmbExtractProcess.Items.String[1]=2 - Only extract advanced media info during final import
+  cmbExtractProcess.Items.String[2]=3 - Do not extract advanced media info
+  chkInternalAVI.Caption=Use internal engine for AVI importation (faster)
+  chkMultiDisks.Caption=Merge info of media in multi parts/disks
+  lblDiskTag.Caption=Disk Tag:
+  edtDiskTag.Hint=|E.g. choose tag 'cd' for names like 'moviename.cd1', 'moviename.cd2',...
+  lblBrowseDepth.Caption=Browse subfolders with depth of:
+  edtBrowseDepth.Hint=|0 = none, * = browse all
+  edtBrowseDepth.Left=244
+  btnFilterFileName.Caption=Filter the file name
+  lblExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+  Caption=Movies importation method
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LMsg1.Caption=You have selected a key field to compare checked movies of the list with movies in current catalog.
+  LMsg2.Caption=You will import all checked movies of the list in current catalog. To check if movies do not already exist, you can define a key field to compare them click on a column header of the list.
+  grpImportMethod.Caption=What do you want to do ?
+  grpImportMethod.Items.String[0]=Import all movies
+  grpImportMethod.Items.String[1]=Import only new movies
+  grpImportMethod.Items.String[2]=Update only existing movies
+  grpImportMethod.Items.String[3]=Import new movies and update existing movies
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Preferencias
+Btn3.Caption=&Gardar
+Btn2.Caption=Cancelar
+Btn1.Caption=&Axuda
+
+LvCat.Items.Item[0].Text=Pantalla principal
+LHToolbar.Caption=Barras de Ferramentas e de Menús
+LIconSet.Caption=Grupo de iconas:
+LColorType.Caption=Tipo de cor:
+cbxColorType.Items.String[0]=Automático
+cbxColorType.Items.String[1]=Sombreado cando esté inactivo
+cbxColorType.Items.String[2]=Esvaído claro cando esté inactivo
+cbxColorType.Items.String[3]=Esvaído escuro cando esté inactivo
+cbxColorType.Items.String[4]=Sempre con cor
+CBOfficeXP.Caption=Estilo Office XP
+CBMenuImages.Caption=Imaxes nos menús
+LHMainWindow.Caption=Pantalla principal
+CBSoftBorders.Caption=Bordos suaves para a Lista de Filmes, o Panel de Información e a Caixa de Portada
+  CBNatCmp.Caption=Use natural comparison (detect numbers automatically) to sort strings
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+  CBAutoFocus.Hint=|Give focus to component when the mouse pointer moves over it
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Inicio
+CBLogo.Caption=Mostrar logo
+
+LvCat.Items.Item[1].Text=Personalizar a barra de ferramentas
+LHCustomizeToolbar.Caption=Seleccionar as iconas que aparecerán na barra de ferramentas principal
+
+LvCat.Items.Item[2].Text=Ficheiros
+LHSaving.Caption=Catálogos
+CBBackup.Caption=Crear sempre unha copia de seguridade
+CBAutoLoad.Caption=Ao comezar, abrir automaticamente o seguinte catálogo no lugar de crear un baleiro:
+EAutoLoad.ButtonHint=Explorar...|Seleccione un ficheiro
+CBAutoLoadLast.Caption=Abrir o último ficheiro usado
+  CBAutoLoadCF.Caption=Automatically import custom fields from following file for new catalogs:
+  EAutoLoadCF.ButtonHint=Browse...|Select file
+LRecentFiles.Caption=Núm. de ficheiros recentes para mostrar no menú:
+LRepairAssociations.Caption=Para asociar a extensión .amc con Ant Movie Catalog, prema no botón seguinte:
+BtnRepairAssoc.Caption=Reparar as asociacións de ficheiros
+LHHistory.Caption=Historial de filmes emprestados
+CBHistory.Caption=Almacenar historial de préstamos no seg. ficheiro (formato delimitado por tabuladores):
+EHistoryFile.ButtonHint=Explorar...|Seleccione un ficheiro
+  LHHTMLTemplate.Caption=HTML Template
+  EHTMLTemplate.ButtonHint=Browse...|Select file
+
+LvCat.Items.Item[3].Text=Lista de filmes
+LHDisplay.Caption=Mostrar
+  CBCheckboxes.Caption=Checkboxes (right click to change movie color tag)
+  CBCheckboxesInThumbs.Caption=Checkboxes in thumbnails display
+  CBCheckboxesColor.Caption=Checkboxes with background color associated to movie color tag
+  CBLinesColor.Caption=Lines with background color associated to movie color tag
+CBHotTrack.Caption=Hot track
+CBEnhScrollbars.Caption=Barras de desprazamento avanzadas
+CBMovieNumColumn.Caption=Columna "Número de filme"
+  LGridTextSize.Caption=Number of characteres per column in grid mode (0 = no limit):
+  LGridTextSize.Hint=|The columns FormatedTitle, OriginalTitle and TranslatedTitle are not affected
+  CBAutoStretchListGrid.Caption=Auto stretch list in grid mode view
+  CBAutoStretchListThumbs.Caption=Auto stretch list in thumbnails view
+LHOperations.Caption=Operacións
+CBDelete.Caption=Pedir confirmación para Eliminar
+CBUndo.Caption=Pedir confirmación para Desfacer
+LHShortcut.Caption=Atallos
+LShortcutPrev.Caption=Filme anterior
+LShortcutNext.Caption=Filme seguinte
+
+LvCat.Items.Item[4].Text=Formatado do título
+LHFormatting.Caption=Formatado
+LTitleColumn.Caption=Título que se mostrará:
+cbxTitle.Items.String[0]=Título orixinal
+cbxTitle.Items.String[1]=Título traducido
+cbxTitle.Items.String[2]=Título orixinal (Título traducido)
+cbxTitle.Items.String[3]=Título traducido (Título orixinal)
+cbxTitle.Items.String[4]=Etiqueta do soporte
+  cbxTitle.Items.String[5]=Custom title
+  LTitleTemplate.Caption=Template of title:
+  BtnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+CBPrefixes.Caption=Poñer os seguintes prefixos ao final do título:
+LPrefixes1.Caption=Só se recoñecerán como tales as palabras seguidas dun espazo ou dunha comiña no título.
+LPrefixes2.Caption=Introdúzaos na lista en liñas á parte, sen o espazo ou a comiña ao final.
+
+LvCat.Items.Item[5].Text=Agrupamento
+LHGrouping.Caption=Agrupamento
+CBGroupCount.Caption=Mostrar o reconto dos grupos
+CBGroupExpand.Caption=Expandir totalmente de xeito predefinido
+  CBGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBGroupMulti.Hint=|For multi fields such as Category, Actors, Languages, Subtitles...
+  EGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBGroupMultiRmAllP.Caption=Remove values between parentheses for all multi fields
+  CBGroupMultiRmAllP.Hint=|Field Actors by default + Others multi fields
+  CBGroupMultiAddPatch.Caption=Add patch to ignore parenthesis of (I, (II, (II, (IV... (XXX values
+  CBSortGroupsByCount.Caption=Sort groups by groups count
+  LHCommonGroups.Caption=Common groups
+lblGroupLocation.Caption=Localización:
+  RBGroupsAbove.Caption=Groups above common groups
+  RBGroupsBelow.Caption=Groups below common groups
+CBGroupUnique.Caption=Poñer estes filmes nun grupo común especial
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Ao engadir un novo filme
+CBAskNumber.Caption=Pedir un número
+CBFirstAvailable.Caption=Usar o primeiro número dispoñible no lugar de usar o máis grande + 1
+CBAddOpenScript.Caption=Abrir a ventá "Obter información desde script"
+CBAddOpenFiles.Caption=Abrir a ventá "Obter información desde ficheiros"
+LDefaultValues.Caption=Para modificar valores predefinidos dun novo filme, prema no seguinte botón:
+BtnDefaultValues.Caption=Editar os valores predefinidos para filmes...
+  CBSetCurrentDate.Caption=Fill field "Date Added" with current date instead of specified date
+  CBChecked.Caption=Checked
+  LColorTag.Caption=Color Tag:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Cualificación
+CBRatingTrunc.Caption=Non mostrar decimais na vista principal, en exportar e en imprimir
+LHPictureWindow.Caption=Portada
+LPictureBackground.Caption=Cor de fondo:
+CBFitPicture.Caption=Axustar a portada á ventá
+CBShowPicInfo.Caption=Mostrar tamaño da portada, formato e ruta na ventá de portada a tamaño completo
+  LHMovieFrame.Caption=Frame movie fields
+  LMovieFrameBackground.Caption=Background color:
+
+LvCat.Items.Item[8].Text=Listas despregables
+LHComboBoxItems.Caption=Elementos
+CBComboSameForAll.Caption=Aplicar as mesmas opcións a todas as listas (non afecta aos contidos da lista)
+LListOptions.Caption=Opcións para a lista:
+CBComboSort.Caption=Ordenar elementos automaticamente
+CBComboAutoComplete.Caption=Autocompletar mentres escribe
+CBComboCatalogValues.Caption=Usar os valores do catálogo actual no lugar dos da lista predefinida
+CBComboAutoAdd.Caption=Engadir automaticamente valores que non están na lista
+LListEdit.Caption=Editar elementos:
+
+LvCat.Items.Item[9].Text=Importación de ficheiros de soporte
+LHVideoDragDrop.Caption=Arrastrar e Soltar / Obter información dos ficheiros
+CBDNDMediaLabel.Caption=Importar etiqueta de soporte
+CBDNDFileName.Caption=Importar nome de ficheiro como título
+  btnFilterFileName.Caption=Filter the file name
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Importar nome de ficheiro ao campo URL
+CBDNDSize.Caption=Importar tamaño:
+RBDNDString.Caption=En forma de cadea, ex. "650+530"
+RBDNDSum.Caption=En forma de suma, ex. "1180"
+LDNDSizeUnit.Caption=Unidade:
+cbxDNDSizeUnit.Items.String[0]=Bytes
+cbxDNDSizeUnit.Items.String[1]=Kilobytes (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabytes (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabytes (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Importar lonxitude
+  CBDNDAllowClear.Caption=Allow to clear fields when new value is empty
+CBDNDInternalAVI.Caption=Usar o motor interno antes que a DLL MediaInfo para a importación AVI (máis rápido)
+  LExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+LHGetInfoVideo.Caption=Información a coller sobre os fluxos de vídeo
+CBDNDResolution.Caption=Importar resolución
+CBDNDFramerate.Caption=Importar a taxa de fotogramas (framerate)
+CBDNDVideoCodec.Caption=Importar o códec de vídeo
+CBDNDVideoBitrate.Caption=Importar a taxa de bits de vídeo
+LHGetInfoAudio.Caption=Información a coller sobre os fluxos de son
+CBDNDAudioCodec.Caption=Importar o códec de son
+  CBDNDAudioChannels.Caption=Import audio channels
+CBDNDAudioBitrate.Caption=Importar taxa de bits de son
+CBDNDLanguages.Caption=Importar idiomas
+CBDNDSubtitles.Caption=Importar subtítulos
+
+LvCat.Items.Item[10].Text=Importación de portadas
+LHImportPic.Caption=Importando a portada de fontes externas
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=Para Arrastrar e soltar / Obter información dos ficheiros
+CBPicImportGetInfoNoAsk.Caption=Non pedir un método de importación de portadas; usar a opción de enriba
+PicImportScripting.grp.Caption=Para o Scripting na internet
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Notas: Se outro filme xa está a usar ese nome de portada, xerarase un nome aleatorio. Cando non exista nome orixinal (ex. ao converter dun formato de ficheiro amc a un xml), entón usarase o título do filme.
+
+LvCat.Items.Item[11].Text=Busca na internet
+LHSearch.Caption=Busca na internet
+LSearchEdit.Caption=Editar a liña seleccionada:
+btnSearchAdd.Hint=Engadir|Engade un novo elemento por riba do elemento seleccionado
+btnSearchDel.Hint=Eliminar|Elimina o elemento seleccionado
+btnSearchUp.Hint=Subir|Sube o elemento seleccionado
+btnSearchDown.Hint=Baixar|Baixa o elemento seleccionado
+LSearchNotes.Caption=Notas:
+LSearchNote1.Caption=- O nome ten que ser exclusivo
+LSearchNote2.Caption=- No enderezo, poñer %s onde o programa teña que introducir o título
+LSearchNote3.Caption=- Para poñer un separador na lista, antepoñer ao nome (exclusivo) un guión "-"
+
+LvCat.Items.Item[12].Text=Scripting
+LHScript.Caption=Configuración dos Scripts
+CBAutorunScript.Caption=Executar automaticamente o último script usado con "Obter información desde script"
+LScriptPicImport.Caption=Para preferencias de importación de portadas, ir ao apartado <LINK>Importación de portadas</LINK>
+LHConnection.Caption=Conexión á internet
+CBProxy.Caption=Usar un proxy para acceder á internet:
+LProxyServer.Caption=Servidor:
+LProxyPort.Caption=Porto:
+LProxyUsername.Caption=Nome usuario:
+LProxyPassword.Caption=Contrasinal:
+CBKeepConnection.Caption=Manter a conexión activa
+CBHTTP10.Caption=Restrict to HTTP 1.0 (needed by some proxy servers)
+
+LvCat.Items.Item[13].Text=Exportar
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Recargar automaticamente o último modelo usado
+LLineBreaks.Caption=As quebras de liña substituiranse pola seguinte etiqueta:
+ELineBreaks.Hint=|Deixe este campo baleiro se non quere substituír as quebras de liña
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Déixeo baleiro se non quere forzar o largo
+EForcePicSizeH.Hint=|Déixeo baleiro se non quere forzar o alto
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Formato de data (poñer caracteres especiais entre comiñas):
+ESQLDate.Hint=|Deixar baleiro para usar o predefinido de Windows
+LHExportFileNames.Caption=Nomes de ficheiro
+CBLastFileName.Caption=Recordar o último nome de ficheiro exportado
+CBOpenExportedFile.Caption=Abrir o ficheiro exportado cando remate a exportación
+ExpFileNamingFrame.grp.Caption=Estilo das páxinas individuais e dos nomes de ficheiro das portadas
+LExpFileExt.Caption=Extensión:
+EExpFileExt.Hint=|Deixar baleiro para usar a misma extensión que o ficheiro exportado principal
+LHPictures.Caption=Portadas
+CBCopyPictures.Caption=Copiar as portadas ao mesmo cartafol que o ficheiro exportado
+  CBCopyPicturesInPicDir.Caption=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Copiar só se o ficheiro de destino non existe
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Cartafoles
+LHFoldersDialogs.Caption=Caixas de diálogo
+LFolderToUse.Caption=Cartafol a usar para
+cbxWindow.Items.String[0]=Cargar/gardar os catálogos
+cbxWindow.Items.String[1]=Cargar a portada do filme
+cbxWindow.Items.String[2]=Exportar
+cbxWindow.Items.String[3]=Cargar/gardar os modelos
+cbxWindow.Items.String[4]=Importar
+cbxWindow.Items.String[5]=Obter información dos ficheiros
+cbxWindow.Items.String[6]=Gardar a gráfica
+cbxWindow.Items.String[7]=Cargar/gardar scripts
+  cbxWindow.Items.String[8]=Load/save custom fields
+  cbxWindow.Items.String[9]=Load/save filters
+RBFolderDefault.Caption=Predefinido de Windows (o resultado depende da versión de Windows)
+RBFolderRemember.Caption=Recordar o último cartafol usado
+RBFolderSpecified.Caption=Usar este cartafol:
+EFolderSpecified.ButtonHint=Explorar...|Seleccione un cartafol
+CBSameForAll.Caption=As mesmas opcións para todas as ventás
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Editar os valores predefinidos dos filmes
+Btn3.Caption=Predefinido
+Btn3.Hint=|Restaurar os valores predefinidos
+Btn2.Caption=Aceptar
+Btn1.Caption=Cancelar
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Predefinido
+Btn3.Hint=|Restaurar os valores predefinidos
+Btn2.Caption=Aceptar
+Btn1.Caption=Cancelar
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Seleccione un idioma
+Btn2.Caption=Aceptar
+Btn1.Caption=Cancelar
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Nome
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Nome Local
+LanguageFrame.lblVersion.Caption=Versión:
+LanguageFrame.lblMadeBy.Caption=Feito por:
+LanguageFrame.lblComments.Caption=Comentarios:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Opcións avanzadas de ordenación
+Fields.LSelected.Caption=Campos a incluír na ordenación:
+  BtnSortOrder.Hint=Invert sort order|Invert sort order of selected field
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Estatísticas
+btn1.Caption=Pechar
+ActionSaveAs.Caption=Gardar como...
+ActionSaveAs.Hint=Gardar como...|Garda a portada nun ficheiro
+ActionCopy.Caption=Copiar
+ActionCopy.Hint=Copiar|Copia a portada no portapapeis
+ActionCopyWMF.Caption=Como Metaficheiro
+ActionCopyWMF.Hint=Copiar como Metaficheiro|Copia a portada no portapapeis como metaficheiro (redimensionable)
+ActionCopyBMP.Caption=Como Mapa de bits
+ActionCopyBMP.Hint=Copiar como Mapa de bits|Copia a portada no portapapeis como mapa de bits
+ActionOptions.Caption=Opcións
+ActionOptions.Hint=Opcións|Cambia algunas opcións da gráfica
+ActionOptionsLegend.Caption=Lenda
+ActionOptionsLegend.Hint=Mostrar a lenda|Mostra a lenda á dereita da gráfica
+ActionOptionsLabels.Caption=Etiquetas
+ActionOptionsLabels.Hint=Mostrar etiquetas|Mostra as etiquetas na gráfica
+ActionOptionsEmpty.Caption=Meses baleiros
+ActionOptionsEmpty.Hint=Mostrar os meses baleiros|Mostra os meses onde o total é cero na gráfica
+ActionOptionsGroup.Caption=Agrupar valores
+ActionOptionsGroup.Hint=Agrupar valores|Gráfica: Agrupa os valores usando intervalos; Sector: Agrupa os valores máis pequenos xuntos
+Messages.Strings.String[0]=%.1f minutos
+Messages.Strings.String[1]=< ningunha >
+Messages.Strings.String[2]=Gardar a gráfica
+Messages.Strings.String[3]=%d días %d horas %d minutos
+  Messages.Strings.String[4]=< others >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+  Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Número total de filmes
+lstGeneral.Items.Item[1].Caption=Duración media dos filmes
+lstGeneral.Items.Item[2].Caption=Duración total dos filmes
+lstGeneral.Items.Item[3].Caption=Tamaño total dos ficheiros dos filmes
+lstGeneral.Items.Item[4].Caption=Número total de discos
+lstCategories.Items.String[0]=Información xeral
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Scripting
+btn2.Caption=&Pechar
+btn1.Caption=&Axuda
+ActionFileNew.Caption=Novo
+ActionFileNew.Hint=Novo|Crea un novo script
+ActionFileOpen.Caption=Abrir...
+ActionFileOpen.Hint=Abrir...|Abre un ficheiro script
+ActionFileNoRecent.Caption=Ningún ficheiro recente
+ActionFileSave.Caption=Gardar
+ActionFileSave.Hint=Gardar|Garda o script actual
+ActionFileSaveAs.Caption=Gardar como...
+ActionFileSaveAs.Hint=Gardar como...|Garda o script actual cun novo nome
+ActionFileProperties.Caption=Propiedades...
+ActionFileProperties.Hint=Propiedades e opcións...|Edita as propiedades e opcións dos scripts
+ActionDebugRun.Caption=Executar
+ActionDebugRun.Hint=Executar o script|Executa o script
+ActionDebugStop.Caption=Deter
+ActionDebugStop.Hint=Deter o script|Detén a execución do script
+ActionDebugBreakpoint.Caption=Punto de quebra
+ActionDebugBreakpoint.Hint=Alternar o punto de quebra|Activa ou desactiva o punto de quebra na liña actual
+ActionDebugBreakpointClear.Caption=Borrar os puntos de quebra
+ActionDebugBreakpointClear.Hint=Borrar os puntos de quebra|Quita todos os puntos de quebra
+ActionDebugStep.Caption=Pasar á seguinte
+ActionDebugStep.Hint=Pasar á seguinte|Executa a seguinte liña de código fonte
+ActionDebugRunToCursor.Caption=Executar ata o cursor
+ActionDebugRunToCursor.Hint=Executar ata o cursor|Executa o programa ata que alcanza a posición actual de cursor
+ActionDebugEval.Caption=Avaliar...
+ActionDebugEval.Hint=Avaliar a variable...|Mostra o contido da variable seleccionada
+ActionDebugWatchAdd.Caption=Engadir monitorización
+ActionDebugWatchAdd.Hint=Engadir monitorización da variable|Engade a variable seleccionada á lista de monitorización
+ActionDebugWatchRemove.Caption=Quitar
+ActionDebugWatchRemove.Hint=Quitar monitorización de variable|Quita a variable seleccionada da lista de monitorización
+ActionDebugWatchClear.Caption=Borrar a lista
+ActionDebugWatchClear.Hint=Borrar a lista de monitorización de variables|Quita todas as variables da lista de monitorización
+ActionListCheck.Caption=&Marcar o seleccionado
+ActionListCheck.Hint=Marcar o seleccionado|Marca os elementos seleccionados
+ActionListUncheck.Caption=&Desmarcar o seleccionado
+ActionListUncheck.Hint=Desmarcar o seleccionado|Desmarca os elementos seleccionados
+ActionListAll.Caption=Marca &todo
+ActionListAll.Hint=Marcar todo|Marca todos os elementos
+ActionListNone.Caption=Non marcar &ningún
+ActionListNone.Hint=Desmarcar todo|Desmarca todos os elementos
+ActionDisplayScripts.Caption=Scripts
+ActionDisplayScripts.Hint=Seleccionar script|Mostrar os scripts dispoñibles
+ActionDisplayEditor.Caption=Editor
+ActionDisplayEditor.Hint=Editor de Scripts|Mostra o editor de scripts
+ActionViewFilter.Caption=Filtro de &idioma
+ActionViewFilter.Hint=Filtro de idioma|O filtro permítelle ocultar scripts obtendo información só nos idiomas especificados
+ActionViewList.Caption=Lista
+ActionViewList.Hint=Vista de lista|Mostra os scripts como unha lista
+ActionViewDetailed.Caption=Detallada
+ActionViewDetailed.Hint=Vista detallada|Mostra os scripts en dúas columnas (coa súa descrición)
+ActionOptionsEdit.Caption=Cambiar...
+ActionOptionsEdit.Hint=Cambiar o valor...|Cambia o valor da opción seleccionada
+ActionOptionsDefault.Caption=Valores predefinidos
+ActionOptionsDefault.Hint=Valores predefinidos|Volve as opcións aos seus valores predefinidos
+lstScripts.Hint=|Seleccione un script e logo prema "Executar"; ou faga dobre clic no nome do script; ou prema F9 ou Intro.
+lstScripts.Columns.Item[0].Caption=Título
+lstScripts.Columns.Item[1].Caption=Descrición
+ActionEditUndo.Caption=&Desfacer
+ActionEditCut.Caption=Cor&tar
+ActionEditCopy.Caption=&Copiar
+ActionEditPaste.Caption=&Pegar
+ActionEditDelete.Caption=&Eliminar
+ActionEditSelectAll.Caption=Seleccionar &Todos
+ActionEditFind.Caption=Buscar...
+ActionEditfind.Hint=Buscar|Busca unha cadea no texto
+ActionEditFindNext.Caption=Buscar o seguinte
+ActionEditFindNext.Hint=Buscar o seguinte|Busca a seguinte cadea coincidente no texto
+DockpanelExec.Caption=Opcións de execución
+CBShowResults.Caption=Mostrar a ventá de &resultados
+CBShowResults.Hint=Mostra os valores dos campos antigo e novo de cada filme para seleccionar manualmente o campo que se quere manter
+CBCloseThis.Caption=Pechar esta ventá ao &remate
+CBCloseThis.Hint=Pecha esta ventá cando a execución do script remata con éxito
+CBAllowClear.Caption=&Permitir borrar campos
+CBAllowClear.Hint=Permite ao script substituír os valores por outros baleiros se o script o especifica
+DockpanelOptions.Caption=Opcións de script
+DockpanelOptions.Hint=|Faga dobre clic nunha opción para cambiala. Nota: As opcións só se gardarán cando se execute o script.
+  DockpanelParameters.Caption=Script parameters
+  DockpanelParameters.Hint=|Double-click on a parameter to change it. Note: parameters are saved only when executing the script.
+DockpanelLimitations.Caption=Limitacións de script
+grpLimitFields.Caption=Campos modificables
+lstLimitFields.Hint=|Nota: A selección de campos só se gardará cando se execute o script.
+grpScriptInfo.Caption=Información
+tabScriptInfo.Tabs.String[0]=Xeral
+tabScriptInfo.Tabs.String[1]=Comentarios
+tabScriptInfo.Tabs.String[2]=Licenza
+DockpanelWatch.Caption=Lista de monitorización
+
+Messages.Strings.String[0]=Erro de script en "%s": %s na lña %d
+Messages.Strings.String[1]=Modificouse o script actual. Quere gardalo?
+Messages.Strings.String[2]=descoñecido
+Messages.Strings.String[3]=Estou de acordo
+Messages.Strings.String[4]=Non se atopou ningún filme para a actual configuración limitada de script (%s: %s)
+Messages.Strings.String[5]=Quere abortar proceso por lotes do script?
+Messages.Strings.String[6]=Modificado
+Messages.Strings.String[7]=Valor para a opción "%s"
+  Messages.Strings.String[8]=Value for parameter "%s"
+Messages.Strings.String[9]=Buscar
+Messages.Strings.String[10]=Introduza o texto a buscar:
+Messages.Strings.String[11]=Non se atoparon máis coincidencias para "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Selección do filme
+btnView.Caption=&Ver a páxina
+btnView.Hint=Iniciar o navegador web|
+btn3.Caption=Aceptar
+btn2.Caption=Buscar &máis
+btn1.Caption=Cancelar
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Selección da descrición
+btn2.Caption=Aceptar
+btn1.Caption=Cancelar
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+  Caption=Script properties, options and parameters
+btn3.Caption=&Gardar
+btn2.Caption=&Cancelar
+btn1.Caption=&Axuda
+lstProperties.TitleCaptions.String[0]=Propiedade
+lstProperties.TitleCaptions.String[1]=Valor
+grpOptions.Caption=Opcións
+btnOptionAdd.Hint=Engadir|Engade unha nova opción
+btnOptionDel.Hint=Eliminar|Elimina a opción seleccionada
+  btnOptionUp.Hint=Move up|Move up selected option
+  btnOptionDown.Hint=Move down|Move down selected option
+grpValues.Caption=Valores dispoñibles para a opción seleccionada
+lblValueDefault.Caption=Predefinido:
+  btnValueAdd.Hint=Add|Add a new value
+  btnValueDel.Hint=Delete|Delete selected value
+  btnValueUp.Hint=Move up|Move up selected value
+  btnValueDown.Hint=Move down|Move down selected value
+  grpParameters.Caption=Parameters
+  btnParameterAdd.Hint=Add|Add a new parameter
+  btnParameterDel.Hint=Delete|Delete selected parameter
+  btnParameterUp.Hint=Move up|Move up selected parameter
+  btnParameterDown.Hint=Move down|Move down selected parameter
+
+Messages.Strings.String[0]=Autores do script:
+Messages.Strings.String[1]=Título do script:
+Messages.Strings.String[2]=Descrición:
+Messages.Strings.String[3]=Enderezo do sitio:
+Messages.Strings.String[4]=Idioma do sitio:
+Messages.Strings.String[5]=Versión do script:
+Messages.Strings.String[6]=Require polo menos:
+Messages.Strings.String[7]=Comentarios:
+Messages.Strings.String[8]=Licenza do script:
+Messages.Strings.String[9]=Obter información da web:
+  Messages.Strings.String[10]=Requires movies:
+Messages.Strings.String[11]=Valor
+Messages.Strings.String[12]=Descrición
+Messages.Strings.String[13]=Eliminarase a opción "%s"
+Messages.Strings.String[14]=Nome da opción:
+  Messages.Strings.String[15]=Rename the option "%s"
+  Messages.Strings.String[16]=An option with the name "%s" already exist!
+  Messages.Strings.String[17]=Name
+  Messages.Strings.String[18]=Default value
+  Messages.Strings.String[19]=Description
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Resultados da execución do script
+btn4.Caption=&Gardar
+btn4.Hint=|Garda a información para este filme
+btn3.Caption=Gardar t&odos
+btn3.Hint=|Garda este filme e todos os seguintes
+btn2.Caption=Sa&ltar
+btn2.Hint=|Sáltase só este filme
+btn1.Caption=&Abortar
+btn1.Hint=|Aborta o proceso do script
+listValues.HeaderSections.Item[0].Text=Campo
+listValues.HeaderSections.Item[1].Text=Valor anterior
+listValues.HeaderSections.Item[2].Text=Novo valor
+ActionListCheck.Caption=&Marcar os seleccionados
+ActionListCheck.Hint=Marcar os seleccionados|Marca os elementos seleccionados
+ActionListUncheck.Caption=&Desmarcar os seleccionados
+ActionListUncheck.Hint=Desmarcar os seleccionados|Desmarca os elementos seleccionados
+ActionListAll.Caption=Marcar &todos
+ActionListAll.Hint=Marcar todos|Marca todos os elementos
+ActionListNone.Caption=Non marcar &ningún
+ActionListNone.Hint=Desmarcar todo|Desmarca todos os elementos
+
+Messages.Strings.String[0]=Resultados para o script "%s" para o filme %d
+Messages.Strings.String[1]=Tamaño: %.0n KB, prema aquí para visualizar
+Messages.Strings.String[2]=Quere recordar que campos manter para os seguintes filmes cando execute este script? (se responde Non, usaranse todos os campos modificados polo script)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Renumerar os filmes
+SortBy.grp.Caption=Antes de renumerar, ordenar por:
+btn2.Caption=Aceptar
+btn1.Caption=Cancelar
+
+Messages.Strings.String[0]=Renumerando filmes...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=&Imprimir...
+btn2.Caption=Pechar
+btn1.Caption=&Axuda
+ActionFileLoad.Caption=Cargar modelo...
+ActionFileLoad.Hint=Cargar modelo|Carga outro modelo
+ActionFileDesigner.Caption=&Deseñador
+ActionFileDesigner.Hint=Abrir o deseñador|Abre o deseñador de informes
+ActionPrint.Caption=Imprimir...
+ActionPrint.Hint=Imprimir|Imprime o informe actual
+ActionPreviewRefresh.Caption=&Actualizar
+ActionPreviewRefresh.Hint=Actualizar a previsualización|Actualiza a previsualición
+ActionPreviewPageFirst.Caption=Primeira páxina
+ActionPreviewPageFirst.Hint=Primeira páxina|Vai a primeira páxina
+ActionPreviewPagePrevious.Caption=Págxina anterior
+ActionPreviewPagePrevious.Hint=Páxina anterior|Vai a páxina anterior
+ActionPreviewPageNext.Caption=Páxina seguinte
+ActionPreviewPageNext.Hint=Páxina seguinte|Vai a páxina seguinte
+ActionPreviewPageLast.Caption=Última páxina
+ActionPreviewPageLast.Hint=Última páxina|Vai a última páxina
+ActionPreviewPageFull.Caption=Páxina completa
+ActionPreviewPageFull.Hint=Páxina completa|Axusta o zoom á páxina completa
+ActionPreviewPageTwo.Caption=Dúas páxinas
+ActionPreviewPageTwo.Hint=Dúas páxinas|Axusta o zoom a dúas páxinas
+ActionPreviewPageWidth.Caption=Largura de páxina
+ActionPreviewPageWidth.Hint=Axustar á largura de páxina|Axusta o zoom á largura de páxina
+ActionPreviewZoomOut.Caption=Diminuír o zoom
+ActionPreviewZoomOut.Hint=Diminuír o zoom|Diminúe o factor de zoom
+ActionPreviewZoomIn.Caption=Aumentar o zoom
+ActionPreviewZoomIn.Hint=Aumentar o zoom|Aumenta o factor de zoom
+LvScripts.Columns.Item[0].Caption=Modelos dispoñibles
+Messages.Strings.String[0]=Imprimir - %s
+Messages.Strings.String[1]=<ningún ficheiro seleccionado>
+Messages.Strings.String[2]=Imposible cargar o modelo para a previsualización: %s
+Messages.Strings.String[3]=Non se pode atopar o Deseñador de Informes. %s debe estar no mesmo cartafol que Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Importar unha portada
+Btn3.Caption=Aceptar
+Btn2.Caption=Cancelar
+Btn1.Caption=&Axuda
+CBDoNotAsk.Caption=Non preguntar de novo, recordar a miña selección para futuras importacións
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+  Caption=Custom fields manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  btnDel.Hint=Delete field|Delete custom field
+  btnClearAll.Hint=Clear all fields|Clear all custom fields
+  btnImport.Hint=Import fields|Import custom fields
+  btnExport.Hint=Export fields|Export custom fields
+  LField.Caption=Field:
+  LTag.Caption=Tag:
+  LName.Caption=Name:
+  LExt.Caption=Extension:
+  LType.Caption=Type:
+  LDefaultValue.Caption=Default value:
+  LTemplate.Caption=Template:
+  btnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+  LMediaInfo.Caption=Import media info:
+  LMultiValues.Caption=Multiple values:
+  EMultiValues.Hint=|Make groups with multiple field values
+  LMultiValuesSep.Caption=Separator:
+  LMultiValuesRmp.Caption=Del. Parentheses:
+  EMultiValuesRmp.Hint=|Delete values between parentheses
+  LMultiValuesPatch.Caption=Patch:
+  EMultiValuesPatch.Hint=|Apply path to ignore some parentheses
+  LListValues.Caption=List values:
+  EListSort.Caption=Auto-sort items
+  EListAutoComplete.Caption=Auto-complete while typing
+  EListCatalogValues.Caption=Use values of current catalog instead of predefined list
+  EListAutoAdd.Caption=Automatically add values that are not in list
+  Messages.Strings.String[0]=Import custom fields
+  Messages.Strings.String[1]=Export custom fields
+  Messages.Strings.String[2]=Add field|Add custom field
+  Messages.Strings.String[3]=Change tag|Change custom field tag
+  Messages.Strings.String[4]=--- New Field ---
+  Messages.Strings.String[5]=String
+  Messages.Strings.String[6]=Integer
+  Messages.Strings.String[7]=Real (1 decimal)
+  Messages.Strings.String[8]=Real (2 decimals)
+  Messages.Strings.String[9]=Real (3 decimals)
+  Messages.Strings.String[10]=Boolean
+  Messages.Strings.String[11]=List
+  Messages.Strings.String[12]=Date
+  Messages.Strings.String[13]=Text
+  Messages.Strings.String[14]=URL
+  Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+  Caption=Filter
+  LNote1.Caption=Notes: This filter replaces each expression string by associated replace string in list order.
+  LNote2.Caption=You can use regular expression if you start expression with string '::>'.
+  LNote3.Caption=To see an example with regular expressions, press button 'Default'.
+  LNote4.Caption=For more details on regular expressions syntax, see help on website regexpstudio.com
+  LExprString.Caption=Expression string
+  LReplaceString.Caption=Replace string
+  btn1.Caption=Cancel
+  btn2.Caption=OK
+  btn3.Caption=Default
+  btn3.Hint=Default|Restore default filter
+  btnClearAll.Hint=Clear all|Clear all expressions
+  btnImport.Hint=Import|Import filter
+  btnExport.Hint=Export|Export filter
+  btnAdd.Hint=Add|Add a new expression below selected expression
+  btnDel.Hint=Delete|Delete selected expression
+  btnUp.Hint=Move up|Move up selected expression
+  btnDown.Hint=Move down|Move down selected expression
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+  Caption=Pictures manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+
+  Messages.Strings.String[0]=Applying changes on movie pictures...
+  Messages.Strings.String[1]=Unable to apply changes on picture of movie "%0:s": %1:s
+  Messages.Strings.String[2]=After applying this changes, the current catalog must be saved to remain consistent! Do you want to save catalog automatically after applying this changes?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+  Caption=HTML templates editor
+  Btn2.Caption=&Close
+  Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Etiqu. do soporte:
+LMediaType.Caption=Tipo de Soporte:
+LSource.Caption=Fonte:
+LDate.Caption=Data de Adición:
+LBorrower.Caption=Prestameiro:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Cualificación:
+LOriginalTitle.Caption=Título &Orixinal:
+LTranslatedTitle.Caption=Título T&raducido:
+LDirector.Caption=Director:
+LProducer.Caption=Produtor:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=País:
+LCategory.Caption=Categoría:
+  LCertification.Caption=Certification:
+LYear.Caption=Ano:
+LLength.Caption=Duración:
+LLengthMin.Caption=min.
+LActors.Caption=Intérpretes:
+LURL.Caption=URL:
+LDescription.Caption=Descrición:
+LComments.Caption=Comentarios:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Formato de Vídeo:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Formato de Son:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Resolución:
+LFramerate.Caption=Taxa de fotogr.:
+LFramerateFPS.Caption=fps
+LSize.Caption=Tamaño fich.:
+LDisks.Caption=Nº de Discos:
+LLanguages.Caption=Idiomas:
+LSubtitles.Caption=Subtitulos:
+
+EMedia.Hint=|Etiqueta, número ou código de barras do soporte
+EMediaType.Hint=|Tipo de soporte
+ESource.Hint=|Fonte (onde/como obtivo o filme)
+EDate.Hint=|Data de cando o filme se engadiu á lista
+EBorrower.Hint=|Prestameiro
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Cualificación, de 0 a 10
+EOriginalTitle.Hint=|&Título orixinal
+ETranslatedTitle.Hint=|Título t&raducido
+EDirector.Hint=|Director
+EProducer.Hint=|Produtor
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|País
+ECategory.Hint=|Categoría
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Ano
+ELength.Hint=|Duración (en minutos)
+EActors.Hint=|Reparto
+EURL.Hint=|Sitio web
+EDescription.Hint=|Descrición
+EComments.Hint=|Comentarios
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Formato de vídeo/códec
+EVideoBitrate.Hint=|Taxa de bits de vídeo
+EAudioFormat.Hint=|Formato de son/códec
+EAudioBitrate.Hint=|Taxa de bits de son
+EResolution.Hint=|Resolución de vídeo
+EFramerate.Hint=|Taxa de fotogramas de vídeo
+ESize.Hint=|Tamaño dos Ficheiros
+EDisks.Hint=|Número de discos ou cintas
+ELanguages.Hint=|Idiomas
+ESubtitles.Hint=|Subtítulos
+
+[TMovieFrameCustom]
+  ActionAddCustomField.Caption=Add a custom field
+  ActionAddCustomField.Hint=|Add a custom field
+  ActionModifyCustomField.Caption=Modify custom field
+  ActionModifyCustomField.Hint=|Modify custom field
+  ActionDeleteCustomField.Caption=Delete custom field
+  ActionDeleteCustomField.Hint=|Delete custom field
+  ActionMoveResizeCustomFields.Caption=Move custom fields
+  ActionMoveResizeCustomFields.Hint=|Move and resize custom fields
+  ActionDefaultPositioning.Caption=Default positioning
+  ActionDefaultPositioning.Hint=|Retore default positioning of custom fields
+  ActionAutoStretchWidth.Caption=Auto stretch width
+  ActionAutoStretchWidth.Hint=Auto stretch field width on resize
+  ActionAutoStretchHeight.Caption=Auto stretch height
+  ActionAutoStretchHeight.Hint=Auto stretch field height on resize
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Campos dispoñibles:
+LSelected.Caption=Campos seleccionados:
+BtnAdd.Hint=Engadir|Engade o campo seleccionado
+BtnRem.Hint=Eliminar|Elimina o campo seleccionado
+BtnAddAll.Hint=Engadir todos|Engade todos os campos
+BtnRemAll.Hint=Eliminar todos|Elimina todos os campos
+BtnUp.Hint=Subir|Sube o elemento seleccionado
+BtnDown.Hint=Baixar|Baixa o elemento seleccionado
+
+[TSortByFrame]
+grp.Caption=Ordenar por
+BtnAdvSort.Caption=Avanzado...
+EOrderBy.Items.String[4]=Opcións avanzadas de ordenación...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=Filmes a incluír
+rbtAll.Caption=Todos
+rbtSelected.Caption=Seleccionados
+rbtChecked.Caption=Marcados
+rbtVisible.Caption=Visible
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Método de importación de portadas
+rbtStorePic.Caption=&Almacenar a portada no catálogo
+  rbtCopyPicInCatDir.Caption=Copy picture to &catalog folder, and link it to catalog
+  rbtCopyPicInPicDir.Caption=Copy picture to &pictures folder of catalog, and link it to catalog
+rbtLinkPic.Caption=Só &ligar a portada
+chkLinkRelative.Caption=Crear unha ruta &relativa se é posible
+
+[TPictureOperationFrame]
+  grp.Caption=Pictures operation
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInCatDirIfCopied.Caption=Copy picture to catalog folder only if picture is copied in pictures folder
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtCopyInPicDirIfCopied.Caption=Copy picture to pictures folder only if picture is copied in catalog folder
+  rbtRenameIfCopied.Caption=Rename picture if it is copied in catalog or pictures folder
+  rbtAbsToRelLink.Caption=Transform absolute link to relative link if possible if picture is only linked
+  rbtRelToAbsLink.Caption=Transform relative link to absolute link if picture is only linked
+  rbtDelete.Caption=Delete picture (and picture file if it is copied in catalog or pictures folder)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+  grp.Caption=Pictures exportation method
+  rbtNoChangeAMC.Caption=Same as current catalog
+  rbtNoChangeXML.Caption=Same as current catalog (stored pictures will be lost)
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtDelete.Caption=Delete picture
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Novo
+ActionHTMLNew.Hint=Novo modelo|Crea un novo modelo
+ActionHTMLOpen.Caption=Cargar
+ActionHTMLOpen.Hint=Cargar...|Carga un modelo existente
+ActionHTMLNoRecent.Caption=Ningún ficheiro recente
+ActionHTMLSave.Caption=Gardar
+ActionHTMLSave.Hint=Gardar|Garda o modelo actual
+ActionHTMLSaveAs.Caption=Gardar como...
+ActionHTMLSaveAs.Hint=Gardar como...|Garda o modelo actual cun novo nome
+ActionInsertTag.Caption=&Inserir unha Etiqueta Especial
+ActionInsertTag.Hint=|Insire un valor especial que será substituído por información do catálogo ou filme
+ActionEditUndo.Caption=&Desfacer
+ActionEditCut.Caption=Cor&tar
+ActionEditCopy.Caption=&Copiar
+ActionEditPaste.Caption=&Pegar
+ActionEditDelete.Caption=&Eliminar
+ActionEditSelectAll.Caption=Seleccionar &Todo
+ActionExportBoth.Caption=Exportar ambos
+ActionExportBoth.Hint=|Exporta os modelos "completo" e "individual"
+ActionExportSelected.Caption=Exportar o seleccionado
+ActionExportSelected.Hint=|Exporta só a modelo seleccionado
+ActionDisplayFull.Caption=Completo
+ActionDisplayFull.Hint=Mostrar o modelo de lista completa|Mostra a páxina HTML que se usará para a lista de filme completo
+ActionDisplayIndividual.Caption=Individual
+ActionDisplayIndividual.Hint=Mostrar o modelo de lista individual|Mostra a páxina HTML que se usará para as páxinas de filme individual
+
+MnuGen.Caption=&Xeral
+MnuGenDte.Caption=Data actual
+MnuGenTme.Caption=Hora actual
+MnuCat.Caption=&Catálogo
+MnuCatNme.Caption=Nome de Ficheiro
+MnuCatPth.Caption=Nome de Ficheiro coa ruta completa
+MnuCatNbr.Caption=Número de filmes
+MnuCatDsk.Caption=Número de discos
+MnuOwnNam.Caption=Nome do propietario
+MnuOwnEml.Caption=Correo-e do Propietario
+MnuOwnWeb.Caption=Sitio web do propietario
+MnuCatDsc.Caption=Descrición
+MnuMovBeg.Caption=Comezar a Lista
+MnuMovEnd.Caption=Rematar a Lista
+MnuMovRec.Caption=Número de rexistro
+MnuMovInd.Caption=Nome do fichero da páxina de filme individual
+
+  MnuMov.Caption=&Movie fields
+  MnuMovCF.Caption=&Custom fields
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Portada
+MnuMovPfn.Caption=Nome de ficheiro da portada
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+  MnuMovR04.Caption=Rating (0 to 4 without decimal)
+  MnuMovR10.Caption=Rating (0 to 10 without decimal)
+  MnuMovApp.Caption=Appreciation (0 to 4 stars)
+  MnuMovA10.Caption=Appreciation (0 to 10 stars)
+  MnuMovFT1.Caption=Formatted Title: Original (Translated)
+  MnuMovFT2.Caption=Formatted Title: Translated (Original)
+  MnuMovHtm.Caption=Color Tag (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+  MnuLab.Caption=&Labels movie fields
+  MnuLabCF.Caption=&Labels custom fields
+  MnuLabExtras.Caption=&Labels extra fields
+  MnuLabPic.Caption=Picture
+  MnuLabUAF.Caption=Unit audio bitrate
+  MnuLabUVF.Caption=Unit video bitrate
+  MnuLabUFS.Caption=Unit file size
+  MnuLabUFP.Caption=Unit framerate
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Imposible gardar o ficheiro "%s": %s
+Messages.Strings.String[1]=Imposible cargar o ficheiro "%s": %s
+  Messages.Strings.String[2]=HTML template has been modified. Do you want to save it?
+Messages.Strings.String[3]=O modelo HTML para lista completa modificouse. Quere gardarlo?
+Messages.Strings.String[4]=O modelo HTML para lista individual modificouse. Quere gardarlo?

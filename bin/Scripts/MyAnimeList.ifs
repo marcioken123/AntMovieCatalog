@@ -1,0 +1,550 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=FinderX
+Title=MyAnimeList-v1.6
+Description=Script for anime information in MyAnimeList.net
+Site=http://myanimelist.net/
+Language=Anime
+Version=1.6 @ 2010-12-01
+Requires=3.5.1
+Comments=In EDITOR MODE there're more options||DEFAULT_PERCENT            USER_CHAR_SEPARATOR      USER_SEPARATOR_LENGTH|ALT_TITLE_SEPARATOR     INFO_START_TAG                  INFO_END_TAG
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Batch Mode=0|0|0=No : Normal Mode|1=Yes : Batch Mode
+Set % Once=0|0|0=No : Percent Default Value |1=Yes : Set Percent for one batch session
+At Least One=0|0|0=No : No result if none comes to Percent|1=Yes : If none comes to Percent, then the best rate
+Reviews=2|0|0=First two|1=All of them
+Picture=1|0|0=Small : Thumbnail from Details Page|1=Large : Fullsize picture, if exists or else thumbnail
+
+***************************************************)
+
+program MyAnimeList;
+
+uses MyAnimeListUtils;
+
+const
+    DEFAULT_PERCENT = 100;              // BatchMode Percentage Title, 100 = title perfect match
+    USER_CHAR_SEPARATOR = '_';          // Char separator between users in Comments
+    USER_SEPARATOR_LENGTH = 120;        // Separator length between users in Comments
+    ALT_TITLE_SEPARATOR = ', ';         // Here set your alternative titles separator
+    INFO_START_TAG = '[';               // Additional Info start tag title section
+    INFO_END_TAG = ']';                 // Additional Info end tag title section
+
+    BLANK_FOR_QUERY =                   // More accurate results without these characters
+        ':;-·†_"–%—''/|\`´~.,?';
+
+    URL = fieldURL;                     // These consts are for an ease way to change where
+    TITLE = fieldOriginalTitle;         // the values will stored
+    ALT_TITLES = fieldTranslatedTitle;  //
+    TYPE_ = fieldDirector;              // As you can see, the sintax is simple:
+    EPISODIES = fieldDisks;             //
+    YEAR = fieldYear;                   // <parsedData> = <fieldToSave>
+    STUDIO = fieldProducer;             //
+    GENRES = fieldSource;               // For example, if you don't like where I put Genres,
+    SYNOPSIS = fieldDescription;        // Episodies or URL, with this consts you can change
+    ADD_INFO = fieldActors;             // in what field you like save the parsed data from
+    REVIEWS = fieldComments;            // MyAnimeList site
+
+    MY_ANIME_LIST_QUERY = 'http://myanimelist.net/anime.php?q=';
+    MY_ANIME_LIST_ADDRESS = 'http://myanimelist.net/anime/';
+    NO_REVIEWS = 'There have been no reviews submitted for this anime yet.';
+
+
+var
+    NumResults, BM_Percent:Integer;
+    BM_BestResultPercent: Integer;
+    MovieName, BM_BestResultAddress: string;
+    BM_MatchFind, BM_SetedPercentOnce: Boolean;
+    ExitNormalMode, SetPercent: Boolean;
+    BatchMode, LargePicture: Boolean;
+    CancelBatch, AtLeastOne: Boolean;
+    AllReviews: Boolean;
+
+
+//------------------------------------------------
+
+function GetMovieName(Separator:string) : string;
+begin
+    result := GetField(TITLE);
+
+    if (result = '') then begin
+        result := GetField(ALT_TITLES);
+
+        if (Separator <> '') and (Pos(Separator,result) > 0 ) then
+        result := TextBefore(result,Separator,'');
+    end;
+end;
+
+//------------------------------------------------
+
+procedure SettingPercentOnce;
+var
+    acceptValue: Boolean;
+    inputPercent: string;
+
+begin
+    if BM_SetedPercentOnce then EXIT;
+
+    BM_SetedPercentOnce := TRUE;
+    BM_Percent := DEFAULT_PERCENT;
+    inputPercent := IntToStr(BM_Percent);
+
+    repeat
+        if (Input('Setting Percent','Percent [0 to 100]:',inputPercent) = FALSE) then begin
+            CancelBatch := TRUE;
+            EXIT;
+        end;
+
+        acceptValue := ValidatePercent(inputPercent);
+
+        if not acceptValue then
+            ShowError('The value "' + inputPercent + '" is not valid');
+    until acceptValue;
+
+end;
+
+//------------------------------------------------
+
+procedure ExecutePickTree(var Selected:string);
+begin
+    if BatchMode then EXIT;
+
+    if (NumResults > 0) then begin
+
+        if PickTreeExec(Selected) then begin
+
+            if (Selected <> 'NULL') then begin // Find More Button
+                AnalyzeMoviePage(Selected);
+                ExitNormalMode := TRUE;
+            end;
+
+        end else begin
+
+            Selected := 'CANCEL'; // Cancel Button
+
+        end;
+
+    end else
+
+        ShowInformation('No results found for "' + MovieName +
+                        '"' + #13#10 + 'Try another title');
+end;
+
+//------------------------------------------------
+
+procedure AnalyzeForVariuosPages(Address:string);
+var
+    strPage, titleTag, selected: string;
+    page: Integer;
+    nextPage: Boolean;
+
+begin
+    titleTag := '<title>Anime - MyAnimeList.net</title>';
+    Address := MY_ANIME_LIST_QUERY + UrlEncode(BlankAndCompact(Address,BLANK_FOR_QUERY));
+    strPage := GetPage(Address);
+    nextPage := Pos('"> Next &raquo;</a>',strPage) > 0;
+    selected := 'NULL';
+    page := 0;
+    PickTreeClear;
+
+    if nextPage then begin
+
+        while nextPage do begin
+        
+            nextPage := Pos('"> Next &raquo;</a>',strPage) > 0;
+            
+            if nextPage then begin
+                Address := MY_ANIME_LIST_QUERY + TextBefore(strPage,'"> Next &raquo;</a>','<a href="?q=');
+                PickTreeMoreLink(selected);
+            end;
+            
+            page := page + 1;
+            PickTreeAdd('MyAnimeList - Page ' + IntToStr(page),'');
+            AnalyzePage(strPage);
+            ExecutePickTree(selected);
+            PickTreeClear;
+
+            if BM_MatchFind or (selected = 'CANCEL')
+                then Break;
+
+            if nextPage
+                then strPage := GetPage(UrlEncode(Address));
+        end;
+
+    end else begin
+
+        if (Pos(titleTag,strPage) > 0) then begin
+            PickTreeAdd('MyAnimeList','');
+            AnalyzePage(strPage);
+            ExecutePickTree(Address);
+        end else begin
+            AnalyzeMoviePage(strPage);
+            ExitNormalMode := TRUE;
+            BM_MatchFind := TRUE;
+        end;
+    end;
+
+    if BatchMode and AtLeastOne then
+        if (BM_MatchFind = FALSE) and (BM_BestResultAddress <> '') then
+            AnalyzeMoviePage(BM_BestResultAddress);
+
+    PickTreeClear;
+end;
+
+//------------------------------------------------
+
+procedure AnalyzePage(PageStr:string);
+var
+    movieAddr, movieTitle, movieID: string;
+    titleTag, titleStr, compTitle, compName: string;
+    titleLine, compare: Integer;
+    strPage: TStringList;
+
+begin
+    strPage := TStringList.Create;
+    strPage.Text := PageStr;
+    titleTag := '<a href="' + MY_ANIME_LIST_ADDRESS;
+
+    titleLine := FindLine(titleTag,strPage,0);
+
+    while (titleLine > -1) do begin
+        titleStr := strPage.GetString(titleLine);
+
+            if (Pos('<strong>',titleStr) > 0) then begin
+                movieId := TextBetween(titleStr,titleTag,'/');
+                movieAddr := MY_ANIME_LIST_ADDRESS + MovieId;
+                movieTitle := TextDecode(titleStr,'<strong>','</strong>');
+
+                if BatchMode then begin
+                    compTitle := BlankAndCompact(movieTitle,BLANK_FOR_QUERY);
+                    compName := BlankAndCompact(MovieName,BLANK_FOR_QUERY);
+                    compare := CompareText(AnsiLowerCase(compName),AnsiLowerCase(compTitle));
+
+                    if (compare > BM_BestResultPercent) then begin
+                        BM_BestResultPercent := compare;
+                        BM_BestResultAddress := movieAddr;
+                    end;
+                end;
+
+                PickTreeAdd(movieTitle,movieAddr);
+                NumResults := NumResults + 1;
+            end;
+
+        titleLine := FindLine(titleTag,strPage,titleLine + 1);
+    end;
+
+    if BatchMode then begin
+
+        if (BM_Percent <= BM_BestResultPercent) then begin
+            AnalyzeMoviePage(BM_BestResultAddress);
+            BM_MatchFind := TRUE;
+        end;
+    end;
+
+    strPage.Free;
+end;
+
+//------------------------------------------------
+
+procedure AnalyzeMoviePage(Address:string);
+var
+    lineNr, lineAux, revLine: Integer;
+    separator, index, fansub, user: string;
+    reviewsAddress: string;
+    item, info: string;
+    page: TStringList;
+    moreReviews: Boolean;
+
+begin
+    index := '<a  href="' + MY_ANIME_LIST_ADDRESS; // the doble space is important
+    fansub := '<a href="http://myanimelist.net/fansub-groups.php?id=';
+    user := '<a href="http://myanimelist.net/profile/';
+    page := TStringList.Create;
+
+
+    // URL
+    item := Copy(Address,1,Length('http://'));
+    if (Pos('http://',item) = 1) then begin
+        page.Text := GetPage(Address);
+        SetField(URL,Address);
+    end else begin
+        page.Text := Address;
+        lineNr := FindLine(MY_ANIME_LIST_ADDRESS,page,0);
+        item := MY_ANIME_LIST_ADDRESS + TextBetween(page.GetString(lineNr),MY_ANIME_LIST_ADDRESS,'/');
+        SetField(URL,item);
+    end;
+
+    Address := 'http://cdn.myanimelist.net/images/anime/'; // Picture Address
+
+    // Original Title - Title
+    lineNr := FindLine('<title>',page,0);
+    SetField(TITLE,TextDecode(page.GetString(lineNr),'<title>',' - MyAnimeList.net</title>'));
+
+
+    // Picture
+    if CanSetPicture then begin
+        lineNr := FindLine(Address,page,lineNr);
+        Address := Address + TextBetween(page.GetString(lineNr),Address,'" alt="');
+
+        if LargePicture and (Pos('pic&pid',page.GetString(lineNr)) > 0) then
+            Address := StringReplace(Address,'.jpg','l.jpg');
+
+        GetPicture(Address);
+    end; // at this point lineNr is used consecutive for better performance
+
+
+    // TranslatedTitle - Alternative Title(s)
+    lineNr := FindLine('Alternative Titles',page,lineNr);
+    info := TextDecode(page.GetString(lineNr),'English:','</div>');
+    item := TextDecode(page.GetString(lineNr),'Synonyms:','</div>');
+    if (item <> '') then begin
+        item := StringReplace(item,', ',ALT_TITLE_SEPARATOR);
+        if (info <> '') then info := info + ALT_TITLE_SEPARATOR;
+        info := info + item;
+    end;
+    item := TextDecode(page.GetString(lineNr),'Japanese:','</div>');
+    if (item <> '') then begin
+        item := StringReplace(item,', ',ALT_TITLE_SEPARATOR);
+        if (info <> '') then info := info + ALT_TITLE_SEPARATOR;
+        info := info + item;
+    end;
+
+    SetField(ALT_TITLES,info);
+
+
+    // Director - Type
+    lineNr := FindLine('Type:',page,lineNr);
+    SetField(TYPE_,TextDecode(page.GetString(lineNr),'Type:','</div>'));
+
+
+    // Disks - Episodies
+    lineNr := FindLine('Episodes:',page,lineNr);
+    item := page.GetString(lineNr) + #2;
+    SetField(EPISODIES,TextDecode(item,'Episodes:',#2));
+
+
+    // Year - Year of start aired only
+    lineNr := FindLine('Aired:',page,lineNr);
+    item := Copy(TextAfter(page.GetString(lineNr),', '),1,4);
+    SetField(YEAR,item);
+
+
+    // Productor - Studio
+    lineNr := FindLine('Producers:',page,lineNr);
+    item := page.GetString(lineNr) + page.GetString(lineNr + 1);
+    if (Pos('None found',item) = 0)
+        then item := TextDecode(item,'Producers:','</div>')
+        else item := '';
+    SetField(STUDIO,item);
+
+
+    // Source - Genres
+    lineNr := FindLine('Genres:',page,lineNr);
+    item := page.GetString(lineNr) + page.GetString(lineNr + 1);
+    item := AnsiMixedCase(TextDecode(item,'Genres:','</div>'),' ,-');
+    SetField(GENRES,StringReplace(item,' Of ',' of '));
+
+
+    // Description - Synopsis
+    lineNr := FindLine('<h2>Synopsis</h2>',page,lineNr);
+    item := page.GetString(lineNr);
+    while (Pos('</td>',item) = 0) do begin
+        lineNr := lineNr + 1;
+        item := item + page.GetString(lineNr);
+    end;
+
+    item := StringReplace(item,'<br />',#13#10);
+    SetField(SYNOPSIS,TextDecode(item,'<h2>Synopsis</h2>','</td>'));
+
+
+    // Actors - Additional information - Related Anime
+    lineAux := FindLine('Related Anime',page,lineNr);
+    info := '';
+    if (lineAux > -1) then begin
+        info := INFO_START_TAG + 'Related Anime' + INFO_END_TAG + #13#10;
+        item := page.GetString(lineAux) + #2;
+        item := StringReplace(item,'<br>',#13#10);
+        info := info + TextDecode(item,'Related Anime',#2) + #13#10 + #13#10;
+        lineNr := lineAux;
+    end;
+
+
+    // Address of Reviews
+    lineNr := FindLine('">More reviews</a>',page,lineNr);
+    Address := TextBefore(page.GetString(lineNr),'">More reviews</a>','<a href="');
+    lineAux := lineNr; // lineAux is used later in Comments
+
+
+    // Actors - Additional information - Opening Theme
+    lineNr := FindLine('Opening Theme',page,lineNr);
+    item := page.GetString(lineNr) + #2;
+    if (Pos('No opening themes found',item) = 0) then begin
+        info := info + INFO_START_TAG + 'Opening Theme' + INFO_END_TAG + #13#10;
+        item := TextDecode(item,'Opening Theme',#2);
+        item := StringReplace(item,'#',#13#10 + '#');
+        info := info + FullTrim(item) + #13#10 + #13#10;
+    end;
+
+    // Actors - Additional information - Ending Theme
+    lineNr := FindLine('Ending Theme',page,lineNr);
+    item := page.GetString(lineNr) + #2;
+    if (Pos('No ending themes found',item) = 0) then begin
+        info := info + INFO_START_TAG + 'Ending Theme' + INFO_END_TAG + #13#10;
+        item := TextDecode(item,'Ending Theme',#2);
+        item := StringReplace(item,'#',#13#10 + '#');
+        info := info + FullTrim(item) + #13#10 + #13#10;
+    end;
+
+    // Actors - Additional information - Fansubs
+    lineNr := FindLine(fansub,page,lineNr);  // last use for consecutive lineNr
+    if (lineNr > -1) then
+        info := info + INFO_START_TAG + 'Fansubbing Groups' + INFO_END_TAG + #13#10;
+
+    while (lineNr > -1) do begin // Fansubbing Groups list
+        item := TextBefore(page.GetString(lineNr),'</a>','') + #2; // Fansub Name
+        info := info + BlankAndCompact(TextDecode(item,'>',#2),#9#13#10);
+        item := TextDecode(page.GetString(lineNr),'<small>[',']</small>'); // Fansub Tag
+        if (item <> '') then
+            info := info + ' - [' + BlankAndCompact(item,#9#13#10) + ']';
+        item := TextDecode(page.GetString(lineNr),'<small>(',')</small>'); // Fansub Language
+        if (item <> '') then
+            info := info + ' - (' + BlankAndCompact(item,#9#13#10) + ')';
+        info := info + #13#10;
+        lineNr := FindLine(fansub,page,lineNr + 1);
+    end;
+
+    SetField(ADD_INFO,FullTrim(info));
+
+
+    // User Separator for Comments
+    if (USER_CHAR_SEPARATOR <> '') then begin
+        separator := StringOfChar(USER_CHAR_SEPARATOR,USER_SEPARATOR_LENGTH);
+        if (separator = '') or (USER_CHAR_SEPARATOR = '_')
+            then separator := separator + #13#10
+            else separator := #13#10 + separator + #13#10;
+    end else
+        separator := #13#10;
+
+
+    // Comments - Reviews
+    if CanSetField(REVIEWS) then begin
+        info := ''; // Reviews buffer
+        moreReviews := TRUE; // Always there is a page of 'More Reviews'
+        lineNr := lineAux; // use lineAux before mentioned
+        reviewsAddress := Address;
+
+        if (FindLine(NO_REVIEWS,page,lineNr) = -1) then begin; // Checks if there are reviews
+
+            repeat
+                if AllReviews and moreReviews then begin
+
+                    // Destroy Details or Reviews Page
+                    page.Free;
+
+                    // Create New Reviews Page
+                    page := TStringList.Create;
+                    page.Text := GetPage(Address);
+
+                    lineNr := FindLine('">More Reviews</a>',page,0);
+                    if (lineNr > -1) // Next Reviews Address
+                        then Address := reviewsAddress +
+                            TextBefore(page.GetString(lineNr),'">More Reviews</a>','<a href="reviews')
+                        else moreReviews := FALSE;
+                    lineAux := lineNr;
+
+                end else begin
+                    lineNr := lineAux;
+                    moreReviews := FALSE;     // exit loop
+                end;
+
+                lineNr := FindLine(user,page,lineNr);
+
+                while (lineNr > -1) do begin
+                    item := page.GetString(lineNr);
+
+                    if (Pos('<br />',item) > 0) then begin // User Review found
+                        item := TextDecode(item,'">','</a>'); // User Name
+                        info := info + item + ':' + #13#10 + #13#10;
+                        revLine := FindLine('</table>',page,lineNr);
+
+                        while (Pos(#9#9 + '</div>',page.GetString(revLine + 1)) <> 1) do
+                            revLine := FindLine('</table>',page,revLine + 1);
+
+                        item := page.GetString(revLine); // User Review start
+
+                        while (Pos('<div>',item) = 0) do begin
+                            revLine := revLine + 1;
+                            item := item + page.GetString(revLine);
+                        end; // User Review end
+
+                        item := StringReplace(item,'<br />',#13#10);
+                        item := StringReplace(item,'read more</a>',' ');
+                        item := TextDecode(item,'</table>','<div>');
+                        item := BlankAndCompact(item,''); // compact spaces only
+                        info := info + item + #13#10 + separator + #13#10;
+                        lineNr := revLine;
+                    end;
+
+                    lineNr := FindLine(user,page,lineNr + 1);
+                end;
+            until not AllReviews or not moreReviews;
+
+        end else info := ''; // No Reviews
+
+        SetField(REVIEWS,FullTrim(info));
+    end;
+
+    // Destroy Details or Reviews Page
+    page.Free;
+end;
+
+//----------------------MAIN-PROGRAM-------------------------
+
+begin
+    if (CheckVersion(3,5,1)=FALSE) then begin
+        ShowWarning('Required Ant Movie Catalog version 3.5.1 or higher');
+        EXIT;
+    end;
+
+    if CancelBatch then EXIT;  // For remaining batch
+
+    AllReviews := GetOption('Reviews') = 1;
+    LargePicture := GetOption('Picture') = 1;
+    BatchMode := GetOption('Batch Mode') = 1;
+    SetPercent := GetOption('Set % Once') = 1;
+    AtLeastOne := GetOption('At Least One') = 1;
+    BM_MatchFind := FALSE;
+    BM_BestResultPercent := -1;  // 0 is also an option
+    BM_BestResultAddress := '';
+    ExitNormalMode := FALSE;
+    NumResults := 0;
+    MovieName := GetMovieName(ALT_TITLE_SEPARATOR);
+
+    if BatchMode then begin
+
+        if SetPercent
+            then SettingPercentOnce
+            else BM_Percent := DEFAULT_PERCENT;
+
+        if CancelBatch then EXIT;  // For Cancel in SettingPercentOnce window
+
+        AnalyzeForVariuosPages(MovieName);
+
+    end else begin  // NormalMode
+
+        repeat
+
+            if Input('MyAnimeList', 'Search:', MovieName)
+                then AnalyzeForVariuosPages(MovieName)
+                else ExitNormalMode := TRUE;
+
+        until ExitNormalMode;
+
+    end;
+end.

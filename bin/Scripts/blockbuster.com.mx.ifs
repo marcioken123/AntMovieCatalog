@@ -1,0 +1,281 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=blockbuster
+Description=
+Site=www.blockbuster.com.mx
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program blockbuster;
+var
+  MovieName: string;
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('<TD CLASS="TituloPeliculas">', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('HREF="BBFILMDesc.asp?Page=8001&nParam1=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('">', strPage);
+          MovieId := Copy(strPage,+39, EndPos-39);
+          MovieAddr := 'http://www.blockbuster.com.mx/BBFILMDesc.asp?Page=8001&nParam1=' + MovieId;
+          BeginPoss := Pos('">',strPage);
+          EndPoss := Pos('</TD>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss+2, EndPoss);
+          MovieTitle  := StringReplace(MovieTitle ,#13#10, '');
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('HREF="BBFILMDesc.asp?Page=8001&nParam1=', strPage);
+          if(Pos('<!-- Termina Footer -->', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeSort;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('"TituloPeliculas">', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '"TituloPeliculas">', '</FONT>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('">Título Original: ', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '">Título Original: ', '<BR>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldOriginalTitle, Trim (Item));
+
+  // Productor
+  LineNr := FindLine('">Estudio: </FONT>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '">Estudio: </FONT>', '<BR>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldProducer, Trim (Item));
+ 
+    // Año
+  LineNr := FindLine('">Año de Producción: </FONT>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '">Año de Producción: </FONT>', '<BR>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldYear, Trim (Item));
+ 
+  // Duración
+  LineNr := FindLine('">Duración: </FONT>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '">Duración: </FONT>', 'MIN');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldLength, Trim (Item));
+ 
+   // director
+  LineNr := FindLine('">Director: </FONT>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('Director: </FONT>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '">', '</A>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+
+    // Reparto
+  LineNr := FindLine('Con:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('Con:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '">', '</A><BR><FONT ');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+  // Nacionalidad
+  LineNr := FindLine('"TextoNegritas">Producción: </FONT>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '"TextoNegritas">Producción: </FONT>', '<BR>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldCountry, Trim (Item));
+ 
+  // Categoria
+  LineNr := FindLine('">Categoría: </FONT>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '">Categoría: </FONT>', '<BR>');
+  DeleteTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldCategory, Trim (Item));
+ 
+  // Sinopsis
+  LineNr := FindLine('">Sinopsis</P>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('">Sinopsis</P>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'size="1">', '</FONT></TD>');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+
+  // Caratula
+  LineNr := FindLine('<IMG SRC="covers/', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<IMG SRC="covers/', '" WIDTH');
+  GetPicture ('http://www.blockbuster.com.mx/covers/'+Item);
+
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('blockbuster', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('blockbuster', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.blockbuster.com.mx/bbListing.asp?nParam2=1&Cursor=1&stParam2=' + UrlEncode(MovieName)+'&Page=8');
+end.

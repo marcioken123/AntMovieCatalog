@@ -1,0 +1,35 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=RemoveBadChars.ifs
+Description=Remove invalid characters
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=?
+Version=1.2 (29/07/2012)
+Requires=4.1.0
+Comments=
+License=
+GetInfo=0
+
+[Options]
+
+***************************************************)
+
+program RemoveBadChars;
+uses
+  FieldsUtils;
+
+var
+  i: Integer;
+
+begin
+  RegExprSet('[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]');
+  for i:=0 to GetFieldCount+GetCustomFieldCount-1 do
+  begin
+    SetFieldOrCustomField(i, RegExprReplace(GetFieldOrCustomField(i), '', false));
+  end;
+end.

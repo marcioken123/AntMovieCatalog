@@ -1,0 +1,478 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fulvio53s03
+Title=FilmUP
+Description=Get movie info from Leonardo.FilmUP.it and shows years in picklist (Fulvio53s03)
+Site=http://filmup.leonardo.it
+Language=IT
+Version=2.1.2 - Nuova struttura
+Requires=4.2.2
+Comments=27.08.2018 Commenti, recensioni, voti estratti
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Poster=1|1|1=Download full-res Poster|0=Download tiny Poster
+
+[Parameters]
+
+***************************************************)
+
+program LeonardoFilmUP;
+uses
+  StringUtils7552;
+const
+  debug_search = false;                          // debug mode on/off
+  Apice       = #39;
+  folder = 'c:\prova\';                                   // directory where to save files
+
+var
+  MovieName, MovieToSearch, MovieTitle, Protagonisti, Cast: string;
+  Pagina_Ricerca, TheMovieAddress, Pagestr, Line: string;
+  SaveComm, comm, save_translated, Save_original, save_line: String;
+  blocco, startchar, endchar: string;
+  Line_comm, NomeHtml, voto: string;
+  lista_dati, cumulo_lista: string;
+  str_opinioni, str_recensione, str_recensione_opinioni: string;
+  lgth_title, ctr_giri, line9: integer;
+
+function DecodePage(s: string): string;
+begin                                             //aprire con Notepad++ Encoding Encode in Ansi
+  s := StringReplace(s, #194#150, '-');
+  s := StringReplace(s, #194#147, '"');
+  s := StringReplace(s, #194#148, '"');
+  s := StringReplace(s, #194#146, #226#128#153);
+  s := StringReplace(s, 'l?', ('l' + apice));
+  s := UTF8Decode(s);
+  Result := s;
+end;
+
+procedure Analyze_search_Page(Address: string);
+var
+  BeginPos: integer;
+  campo_ricerca: string;
+begin
+  Pagestr := GetPage(Address);
+  Pagestr := DecodePage(Pagestr);                //2018.04.30fs      qui da correggere ?  in apostrofi
+  if debug_search then
+     DumpPage(folder + 'FilmUP_page.txt', pagestr);                //2018.04.30fs
+  SetField(fieldURL, Address);
+  beginPos := pos('Nessun documento contiene', Pagestr);
+  if beginPos > 0  then
+     begin
+     ShowError('Spiacente, nessun film trovato');
+     end
+  else
+  begin
+  if pos('Ordina risultati per', Pagestr) < 1 then
+    begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage;            //2018.05.09
+  end
+  else
+  begin
+    PickTreeClear;
+    campo_ricerca := getfield(fieldFilePath);
+    if  campo_ricerca = '' then
+        campo_ricerca := getfield(fieldFormattedTitle);
+    PickTreeAdd('Risultati ricerca per "' + campo_ricerca + '":', '');
+    AddMoviesTitles;
+    if TheMovieAddress='' then
+      begin
+       if PickTreeExec(Address) then
+	        Analyze_search_Page(Address);
+       end
+    else
+      begin
+        SetField(fieldURL, TheMovieAddress);
+        Pagestr := GetPage(TheMovieAddress);
+        pagestr := DecodePage(pagestr);
+        AnalyzeMoviePage;
+      end;
+  end;
+  end;
+end;
+
+procedure AnalyzeMoviePage;                            //2018.05.09
+var
+  AddrImage: string;
+  BeginPos, EndPos, Field, se_poster: Integer;
+begin
+  SetField(fieldDate, DateToStr(Date));
+  estrai_dati_generali;
+  estrai_schede_aggiuntive;
+
+//Picture
+    startchar := '<img src="locand/';
+    endchar   := '"';
+    line := Textbetween(Pagestr, startchar, endchar);
+    if line = '' then
+       begin
+       startchar := '<img src="locandvd/';
+       endchar   := '"';
+       line := Textbetween(Pagestr, startchar, endchar);
+       AddrImage := 'http://filmup.leonardo.it/locandvd/' + line;
+       end
+       else begin
+       AddrImage := 'http://filmup.leonardo.it/locand/' + line;
+    end;
+    GetPicture(AddrImage);             //'http://filmup.leonardo.it/locand/undollarodonore.jpg'
+
+    se_poster := GetOption('Poster');
+    if se_poster = 1 then
+       begin
+       startchar := 'href="posters/locp/';             //cerca Poster grande
+       AddrImage := TextBetween(pagestr, startchar, endchar);
+       if AddrImage <> '' then
+          begin
+          AddrImage := 'http://filmup.leonardo.it/posters/loc/500/' + AddrImage;
+          AddrImage := StringReplace(AddrImage, '.htm', '.jpg');
+          GetPicture(AddrImage);
+          end;
+       end;
+end;
+
+procedure estrai_schede_aggiuntive;
+var
+  sk_link, sk_trailers, sk_opinioni, sk_speciale, sk_recensione, sk_soundtrack: string;
+begin
+  str_opinioni := '';
+  str_recensione := '';
+  str_recensione_opinioni := '';
+  sk_link := '';
+  sk_trailers := '';
+  sk_opinioni := '';
+  sk_speciale := '';
+  sk_recensione := '';
+  sk_soundtrack := '';
+  
+  endchar    := '</font>';
+  lista_dati := textbetween(pagestr, '<img src="img/logo_50.gif"', endchar) + endchar;
+  lista_dati := stringreplace(lista_dati, ' class="filmup"', '');
+  lista_dati := fulltrim(textbetween(lista_dati, '</table>', endchar));
+  startchar := '<a href="';
+  endchar   := '"';
+
+//------------------------------ inizio loop --------------------------------------
+  repeat
+    sk_link   := startchar + textbetween(lista_dati, startchar, endchar) + endchar;
+    if pos('/trailers/', sk_link) > 0 then          //non implementato
+       begin
+       sk_trailers := sk_link;
+       sk_trailers := textbetween(sk_trailers, '<a href="', '"');
+       lista_dati := stringreplace(lista_dati, sk_link, '');
+       end
+    else
+    if (pos('/opinioni/', sk_link) > 0) or (pos('op_', sk_link) > 0) then
+       begin
+       sk_opinioni := sk_link;
+       sk_opinioni := textbetween(sk_opinioni, '<a href="', '"');
+       lista_dati := stringreplace(lista_dati, sk_link, '');
+       if pos('/', sk_opinioni) = 0 then
+             sk_opinioni := '/' + sk_opinioni;
+       NomeHtml := 'http://filmup.leonardo.it' + sk_opinioni;
+       if  sk_opinioni <> ''  then
+//           estrae_opinioni;
+             estrae_opinioni_multiple;			//2018.05.23
+       end
+    else
+    if pos('/speciale/', sk_link) > 0 then          //non implementato
+       begin
+       sk_speciale := sk_link;
+       sk_speciale := textbetween(sk_speciale, '<a href="', '"');
+       lista_dati := stringreplace(lista_dati, sk_link, '');
+       end
+    else
+    if pos('/soundtrack/', sk_link) > 0 then        //non implementato
+       begin
+       sk_soundtrack := sk_link;
+       sk_soundtrack := textbetween(sk_soundtrack, '<a href="', '"');
+       lista_dati := stringreplace(lista_dati, sk_link, '');
+       end
+    else
+    if length(sk_link) > length(startchar) + length(endchar) then
+       begin
+       sk_recensione := sk_link;
+       sk_recensione := textbetween(sk_recensione, '<a href="', '"');
+       lista_dati := stringreplace(lista_dati, sk_link, '');
+       if sk_recensione <> ''  then
+          begin
+          if pos('/', sk_recensione) = 0 then
+             sk_recensione := '/' + sk_recensione;
+          end
+       NomeHtml := 'http://filmup.leonardo.it' + sk_recensione;
+       estrae_recensione;
+       end;
+    lista_dati := stringreplace(lista_dati, sk_link, '');
+  until sk_link = (startchar + endchar);
+//------------------------------ fine loop --------------------------------------
+  str_recensione := fulltrim(str_recensione);
+  str_opinioni   := fulltrim(str_opinioni);
+  if str_recensione <> '' then
+     begin
+     if str_opinioni <> '' then
+        str_recensione_opinioni := str_recensione + CRLF + CRLF + 'OPINIONI' + CRLF + str_opinioni;
+     if str_opinioni  = '' then
+        str_recensione_opinioni := str_recensione;
+     end
+  else
+  str_recensione_opinioni := str_opinioni;
+//  end;
+  setfield (fieldcomments, str_recensione_opinioni);
+end;
+
+procedure estrae_recensione;
+begin
+  SaveComm := GetPage(NomeHtml);
+//  SaveComm := decodePage(Savecomm);                //2018.05.25
+//  if debug_search then
+//     DumpPage(folder + 'recensione.txt', SaveComm);
+  str_recensione := textbetween(SaveComm,'<td width="100%" valign="top" align="LEFT">','<a class="filmup" href="opinioni.htm">');         //nuovo formato
+  if length(str_recensione) < 1 then
+     str_recensione := textbetween(SaveComm,'<td width="100%" valign="top"><font size="3"><b>','<a class="filmup" href="opinioni.htm">');
+  if length(str_recensione) < 1 then
+     str_recensione := textbetween(SaveComm,'<td width="100%" valign="top"><font size="2"><b>','<a class="filmup" href="opinioni.htm">');
+  if length(str_recensione) < 1 then
+     str_recensione := textbetween(SaveComm,'<div class="testo-articolo">','</div>');
+
+  if debug_search then
+     DumpPage(folder + 'recensione_orig.txt', str_recensione);
+  str_recensione := decodePage(str_recensione);                //2018.07.29  if debug_search then
+  if debug_search then
+     DumpPage(folder + 'recensione.txt', str_recensione);
+  str_recensione := stringreplace(str_recensione, '>NEWS', '>');
+  str_recensione := RemoveHtmlClean(str_recensione);
+  str_recensione := stringreplace(str_recensione, (CRLF + CRLF + 'La frase'), (CRLF + 'La frase'));
+end;
+
+procedure estrae_opinioni_multiple;
+var
+  cumulo_lista : string;
+begin
+  SaveComm := GetPage(NomeHtml);
+  SaveComm := DecodePage(SaveComm);
+  if debug_search then
+     DumpPage(folder + 'opinioni.txt', SaveComm);
+  comm := fulltrim(textbetween(SaveComm,'<!-- JuiceADVStartCrawler -->','<!-- JuiceADVStopCrawler -->'));    //Magnolia
+  cumulo_lista := '';
+  if debug_search then
+     DumpPage(folder + 'opinioni_multiple.txt', Comm);
+  startchar := '<table';
+  endchar   := '</table>';
+  lista_dati := textbetween(comm, startchar, endchar);
+  ctr_giri:= 0;
+  repeat
+     lista_dati := startchar + lista_dati + endchar;
+     comm := stringreplace(comm, lista_dati, '');
+     lista_dati := FullTrim(RemoveHtmlClean(lista_dati));
+     lista_dati := '--- ' + lista_dati;
+     lista_dati := stringreplace(lista_dati, (CRLF + '(' ), '  (' );
+     lista_dati := stringreplace(lista_dati, ')', ')*****' );
+     lista_dati := stringreplace(lista_dati, '*****.', '    ');
+     lista_dati := stringreplace(lista_dati, '*****', '    ');
+     lista_dati := stringreplace(lista_dati, CRLF, '');
+     ctr_giri := ctr_giri + 1;
+     if debug_search then
+        DumpPage(folder + 'opinioni_multipl' + IntToStr(ctr_giri) + '.txt', lista_dati);
+     cumulo_lista := cumulo_lista + CRLF + lista_dati;
+     lista_dati := textbetween(comm, startchar, endchar);
+  until lista_dati = '';
+  str_opinioni := cumulo_lista;
+  
+  startchar := '<h2 itemprop="rating"';
+  endchar   := '</h2>';
+  voto := startchar + textbetween(savecomm, startchar, endchar) + endchar;     //alt="Media Voto:
+  voto := FullTrim(RemoveHtmlClean(voto));
+  voto := fulltrim(textafter(voto, 'Media Voto:'));
+  voto := textbetween(voto, '(', '/');
+  setfield(fieldRating, voto);
+end;
+
+procedure estrai_dati_generali;
+begin
+    //Translated Title
+    startchar := '<font face="arial, helvetica" size="3"><b>';
+    endchar   := '</b>';
+    Line := textbetween(Pagestr, startchar, endchar);
+    if length(line) = 0 then
+       begin
+       startchar := '<font face="arial, helvetica" size="2"><b>';
+       Line := textbetween(Pagestr, startchar, endchar);
+       end;
+    HTMLRemoveTags(Line);
+//fs    SetField(fieldTranslatedTitle, Line);
+    save_translated := AnsiMixedCase(AnsiLowerCase(Line), ' ');
+    Save_translated := RemoveHtmlClean(Save_translated);
+    HTMLDecode(Save_translated);                      //2018.05.09fs
+    SetField(fieldTranslatedTitle, save_translated);
+
+    startchar := 'Trama:<br>';
+    endchar   := '</font>';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+
+    line := fulltrim(line);
+    SetField(fielddescription,Line)                  //estratto dalla scheda principale
+
+    startchar := '>Titolo originale:&nbsp;';
+    endchar   := '</tr>';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    SetField(fieldoriginalTitle, Line);
+    
+    startchar := '>Regia:&nbsp;';
+    endchar   := '</tr>';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    line := fulltrim(line);
+    SetField(fielddirector, Line);
+
+    startchar := 'Produzione:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    SetField(fieldproducer, Line);
+
+    startchar := 'Nazione:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    SetField(fieldcountry, Line);
+
+    startchar := 'Genere:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    SetField(fieldcategory, Line);
+
+    startchar := 'Anno:';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+    Line := fullTrim(Line);
+    SetField(fieldyear, Line);
+
+    startchar := 'Durata:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    HTMLdecode(line);
+//    Line := stringreplace(Line, apice, '');
+    Line := FullTrim(textbefore(Line, apice, ''));
+    SetField(fieldlength, Line);
+
+    startchar := 'Attori protagonisti:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    Protagonisti := FullTrim(Line);
+
+    startchar := 'Cast:&nbsp;';
+    line := textbetween(pagestr, startchar, endchar);
+    HTMLremovetags(line);
+    Cast := Line;                         //2018.05.18
+    if Cast <> '' then
+       Cast := CRLF + FullTrim(Line);
+    if Protagonisti = '' then
+       begin
+       Protagonisti := FullTrim(Line);
+       end
+       else
+       begin
+       Protagonisti := protagonisti + Cast;
+       end
+    SetField(fieldactors, Protagonisti);
+end;
+
+function RemoveHtmlClean(str1: string) :string;
+begin
+  HTMLRemoveTags(str1);
+  HTMLDecode(str1);
+  result := str1;                    //2018.05.08
+end;
+
+function RemoveTabs(Pattern: string): string;
+begin
+  repeat
+  Delete(Pattern, 1, 1);
+  until ord(copy(Pattern, 1, 1)) <> 9;
+  result := Pattern;
+end;
+
+procedure AddMoviesTitles;
+var
+  CharToDelete: Integer;
+  MovieAddress, MovieAnno: string;
+  BeginPos, EndPos: Integer;
+  begin
+  ctr_giri := 0;
+  Pagestr := '<DL>' + Textbetween(Pagestr, '<DL>', 'Risultati della ricerca:<br>');     //estrae tabella dei risultati
+  Blocco := Textbetween(Pagestr, '<DL>', '</DL>');         //estrae elemento della tabella
+  if debug_search then
+     DumpPage(folder + 'FilmUP_line' + IntToStr(ctr_giri) + '.txt', Blocco);                // debug
+  CharToDelete := Length(Blocco) + 9;    //lgth dati estratti + lgth delimiters estrazione
+  while CharToDelete > 9 do
+    begin
+    MovieAddress := TextBetween(Blocco, '<a class="filmup" href="', '" TARGET="_blank">');
+    MovieTitle := TextBetween(Blocco, 'TARGET="_blank">', '</a>');              //2018.04.27
+    MovieTitle := stringReplace (MovieTitle,+ 'FilmUP - Scheda: ', '');         //2018.04.27
+    MovieAnno := TextBetween(Blocco, 'Anno: ', ' Genere');
+    MovieTitle := MovieTitle + ' [' + MovieAnno + ']';
+    HTMLRemoveTags(MovieTitle);
+    HTMLDecode(MovieTitle);
+    MovieTitle := StringReplace(MovieTitle, ' - FilmUP.com ', '');
+    MovieTitle := stringReplace (MovieTitle,+ 'FilmUP - Scheda: ', '');         //2018.04.27
+    lgth_title := length(MovieTitle);
+//2018.04.27    If (lgth_title > 3) and (pos(MovieAddress, '/soundtrack/') > 0) then
+    If (lgth_title > 3) and (pos('/soundtrack/', MovieAddress) = 0) then
+       PickTreeAdd(MovieTitle, MovieAddress);
+    if TheMovieAddress='*' then
+       TheMovieAddress := MovieAddress
+    else
+       TheMovieAddress := '';
+
+    delete(Pagestr, 1, CharTodelete)
+    Blocco := Textbetween(Pagestr, '<DL>', '</DL>');
+    ctr_giri := ctr_giri + 1;
+    if debug_search then
+       DumpPage(folder + 'FilmUP_line' + IntToStr(ctr_giri) + '.txt', Blocco);                // debug
+
+    CharToDelete := Length(Blocco) + 9;    //lgth dati estratti + lgth delimiters estrazione
+//    delete(Pagestr, 1, CharTodelete)
+//  end;
+  end;
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(4,2,2) then
+   begin
+    TheMovieAddress := '*';
+    MovieName := StringReplace(GetField(fieldTranslatedTitle), '.', ' ');
+    if MovieName = '' then
+      MovieName := StringReplace(GetField(fieldOriginalTitle), '.', ' ');
+While pos ('[', MovieName) > 0 Do begin
+  MovieName := TextBefore(MovieName, '[', '') + TextAfter(MovieName, ']');
+end;
+    if Input('FilmUP Import', 'Digita il titolo del film:', MovieName) then
+    begin
+    MovieToSearch:=StringReplace(MovieName, ' ', '+');
+//Fulvio  ricerca per 'Termini contenuti':
+// &ul=%25%2Fsc_%25&x=60&y=11&m=all&wf=0020&wm=sub&sy=0
+    Pagina_Ricerca := 'http://filmup.leonardo.it/cgi-bin/search.cgi?ps=100&fmt=long&q='+MovieToSearch+'&ul=%25%2Fsc_%25&x=60&y=11&m=all&wf=0020&wm=sub&sy=0';
+    Analyze_search_Page(Pagina_Ricerca);
+//Fulvio  ricerca per 'Termini esatti':
+//    AnalyzePage('http://filmup.leonardo.it/cgi-bin/search.cgi?ps=100&fmt=long&q='+MovieToSearch+'&ul=%25%2Fsc_%25&x=31&y=12&m=all&wf=0020&wm=wrd&sy=0');
+    end;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 3.5.0)');
+end.

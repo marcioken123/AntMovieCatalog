@@ -1,0 +1,706 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Goster
+Title=film.pl
+Description=film.pl info & picture
+Site=http://film.pl/
+Language=PL
+Version=
+Requires=3.5.0
+Comments= Movie information & picture importation
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program FilmPL;
+var
+  MovieName, fid: string;
+  Link: string;
+  pozycja, pozycja2, pozycja3: integer;
+  cover, nocover: boolean;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+  var
+  i: Integer;
+  begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+      begin
+      result := i;
+      Break;
+      end;
+  end;
+
+procedure DecodeHTML(var Value: String);
+  var
+  FullValue, CharCode: String;
+  Counter: Integer;
+  begin
+  if Value <> '' then begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+        CharCode := copy(Value, Counter, 1);
+        case CharCode of
+          '±': CharCode := '¹';
+          '¶': CharCode := 'œ';
+          '¡': CharCode := '¥';
+          '¼': CharCode := 'Ÿ';
+          '¦': CharCode := 'Œ';
+          '¬': CharCode := '';
+          end;
+        FullValue := FullValue + CharCode;
+        Counter := Counter + 1;
+        end
+      else
+        begin
+        CharCode := copy(Value, Counter, 7);
+        case CharCode of
+          '&#x105;': FullValue := FullValue + '¹';
+          '&#x107;': FullValue := FullValue + 'æ';
+          '&#x119;': FullValue := FullValue + 'ê';
+          '&#x142;': FullValue := FullValue + '³';
+          '&#x144;': FullValue := FullValue + 'ñ';
+          '&#x0f3;': FullValue := FullValue + 'ó';
+          '&#x15b;': FullValue := FullValue + 'œ';
+          '&#x17a;': FullValue := FullValue + 'Ÿ';
+          '&#x17c;': FullValue := FullValue + '¿';
+          '&#x104;': FullValue := FullValue + '¥';
+          '&#x106;': FullValue := FullValue + 'Æ';
+          '&#x118;': FullValue := FullValue + 'Ê';
+          '&#x141;': FullValue := FullValue + '£';
+          '&#x143;': FullValue := FullValue + 'Ñ';
+          '&#x0d3;': FullValue := FullValue + 'Ó';
+          '&#x15a;': FullValue := FullValue + 'Œ';
+          '&#x179;': FullValue := FullValue + '';
+          '&#x17b;': FullValue := FullValue + '¯';
+          '&#x160;': FullValue := FullValue + ' ';
+          '&#x161;': FullValue := FullValue + '¡';
+          '&#x162;': FullValue := FullValue + '¡';
+          '&#x163;': FullValue := FullValue + '£';
+          '&#x164;': FullValue := FullValue + '¤';
+          '&#x165;': FullValue := FullValue + '¥';
+          '&#x166;': FullValue := FullValue + 'Œ';
+          '&#x167;': FullValue := FullValue + '§';
+          '&#x168;': FullValue := FullValue + '¨';
+          '&#x169;': FullValue := FullValue + '©';
+          '&#x170;': FullValue := FullValue + 'ª';
+          '&#x171;': FullValue := FullValue + '«';
+          '&#x172;': FullValue := FullValue + '¬';
+          '&#x173;': FullValue := FullValue + '­';
+          '&#x174;': FullValue := FullValue + '®';
+          '&#x175;': FullValue := FullValue + '¯';
+          '&#x176;': FullValue := FullValue + '°';
+          '&#x177;': FullValue := FullValue + '±';
+          '&#x178;': FullValue := FullValue + '²';
+          '&#x180;': FullValue := FullValue + '´';
+          '&#x181;': FullValue := FullValue + 'µ';
+          '&#x182;': FullValue := FullValue + '¶';
+          '&#x183;': FullValue := FullValue + '·';
+          '&#x184;': FullValue := FullValue + '¸';
+          '&#x185;': FullValue := FullValue + '¹';
+          '&#x186;': FullValue := FullValue + 'º';
+          '&#x187;': FullValue := FullValue + '»';
+          '&#x188;': FullValue := FullValue + '¼';
+          '&#x189;': FullValue := FullValue + '½';
+          '&#x190;': FullValue := FullValue + '¾';
+          '&#x191;': FullValue := FullValue + '¿';
+          '&#x192;': FullValue := FullValue + 'À';
+          '&#x193;': FullValue := FullValue + 'Á';
+          '&#x194;': FullValue := FullValue + 'Â';
+          '&#x195;': FullValue := FullValue + 'Ã';
+          '&#x196;': FullValue := FullValue + 'Ä';
+          '&#x197;': FullValue := FullValue + 'Å';
+          '&#x198;': FullValue := FullValue + 'Æ';
+          '&#x199;': FullValue := FullValue + 'Ç';
+          '&#x200;': FullValue := FullValue + 'È';
+          '&#x201;': FullValue := FullValue + 'É';
+          '&#x202;': FullValue := FullValue + 'Ê';
+          '&#x203;': FullValue := FullValue + 'Ë';
+          '&#x204;': FullValue := FullValue + 'Ì';
+          '&#x205;': FullValue := FullValue + 'Í';
+          '&#x206;': FullValue := FullValue + 'Î';
+          '&#x207;': FullValue := FullValue + 'Ï';
+          '&#x208;': FullValue := FullValue + 'Ð';
+          '&#x209;': FullValue := FullValue + 'Ñ';
+          '&#x210;': FullValue := FullValue + 'Ò';
+          '&#x211;': FullValue := FullValue + 'Ó';
+          '&#x212;': FullValue := FullValue + 'Ô';
+          '&#x213;': FullValue := FullValue + 'Õ';
+          '&#x214;': FullValue := FullValue + 'Ö';
+          '&#x215;': FullValue := FullValue + '×';
+          '&#x216;': FullValue := FullValue + 'Ø';
+          '&#x217;': FullValue := FullValue + 'Ù';
+          '&#x218;': FullValue := FullValue + 'Ú';
+          '&#x219;': FullValue := FullValue + 'Û';
+          '&#x220;': FullValue := FullValue + 'Ü';
+          '&#x221;': FullValue := FullValue + 'Ý';
+          '&#x222;': FullValue := FullValue + 'Þ';
+          '&#x223;': FullValue := FullValue + 'ß';
+          '&#x224;': FullValue := FullValue + 'à';
+          '&#x225;': FullValue := FullValue + 'á';
+          '&#x226;': FullValue := FullValue + 'â';
+          '&#x227;': FullValue := FullValue + 'ã';
+          '&#x228;': FullValue := FullValue + 'ä';
+          '&#x229;': FullValue := FullValue + 'å';
+          '&#x230;': FullValue := FullValue + 'æ';
+          '&#x231;': FullValue := FullValue + 'ç';
+          '&#x232;': FullValue := FullValue + 'è';
+          '&#x233;': FullValue := FullValue + 'é';
+          '&#x234;': FullValue := FullValue + 'ê';
+          '&#x235;': FullValue := FullValue + 'ë';
+          '&#x236;': FullValue := FullValue + 'ì';
+          '&#x237;': FullValue := FullValue + 'í';
+          '&#x238;': FullValue := FullValue + 'î';
+          '&#x239;': FullValue := FullValue + 'ï';
+          '&#x240;': FullValue := FullValue + 'ð';
+          '&#x241;': FullValue := FullValue + 'ñ';
+          '&#x242;': FullValue := FullValue + 'ò';
+          '&#x243;': FullValue := FullValue + 'ó';
+          '&#x244;': FullValue := FullValue + 'ô';
+          '&#x245;': FullValue := FullValue + 'õ';
+          '&#x246;': FullValue := FullValue + 'ö';
+          '&#x247;': FullValue := FullValue + '÷';
+          '&#x248;': FullValue := FullValue + 'ø';
+          '&#x249;': FullValue := FullValue + 'ù';
+          '&#x250;': FullValue := FullValue + 'ú';
+          '&#x251;': FullValue := FullValue + 'û';
+          '&#x252;': FullValue := FullValue + 'ü';
+          '&#x253;': FullValue := FullValue + 'ý';
+          '&#x254;': FullValue := FullValue + 'þ';
+          '&#x255;': FullValue := FullValue + 'ÿ';
+          '&#x%DF;': FullValue := FullValue + 'ß';
+          '&#x34;': FullValue := FullValue + '"';
+          '&#8211;': FullValue := FullValue + '-';
+          '&#8216;': FullValue := FullValue + '"';
+          '&#8217;': FullValue := FullValue + '"';
+          '&#8220;': FullValue := FullValue + '"';
+          '&#8221;': FullValue := FullValue + '"';
+          '&#8222;': FullValue := FullValue + '"';
+          else
+            FullValue := FullValue + CharCode;
+          end;
+        Counter := Counter + 7;
+      end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+    end
+  end;
+ 
+procedure AnalyzePage();
+  var
+  Page: TStringList;
+  pozycja, startPos, endPos: integer;
+  linia, adres, tytul: string;
+  
+  begin
+  Page := TStringList.Create;
+  PickTreeClear;
+  link := URLEncode('http://film.pl/modules.php?op=reviews&name=FilmPl_Recenzje&litera=' + MovieName);
+  Page.Text := GetPage(link);
+  pozycja := FindLine('0 recenzji', Page, 0);
+  if pozycja > 0 then
+   begin
+   DecodeHTML(MovieName);
+   ShowMessage('Nie znaleziono ¿adnego filmu spe³niaj¹cego kryteria: "'+MovieName+'".');
+   end
+  else 
+   begin;
+   pozycja := FindLine('recenzji', Page, 0);
+   repeat
+    begin
+    pozycja := FindLine('<a href="modules.php?name=FilmPl_Recenzje&amp;rop=showcontent&amp;id=', Page, pozycja + 1);
+    if (pozycja > -1) then
+     begin
+     linia := Page.GetString(pozycja);
+     startPos := pos('id=', Linia);
+     endPos := pos('">', Linia);
+     link := 'http://film.pl/modules.php?name=FilmPl_Recenzje&rop=showcontent&id=' + copy(linia, startPos + 3, endPos - startPos -3); 
+     adres := URLEncode(link);
+     linia := Page.GetString(pozycja + 1);
+     linia := copy(linia, pos('&#187; ', linia) + 6, length(linia));
+     HTMLRemoveTags(linia);
+     DecodeHTML(linia);  
+     tytul := linia;
+     linia := Page.GetString(pozycja + 2);
+     HTMLRemoveTags(linia);
+     DecodeHTML(linia);
+     tytul := tytul +' ' + linia; 
+     linia := Page.GetString(pozycja + 3);
+     HTMLRemoveTags(linia);
+     DecodeHTML(linia);
+     tytul := tytul +' ' + linia;  
+     linia := Page.GetString(pozycja + 4);
+     HTMLRemoveTags(linia);
+     DecodeHTML(linia);
+     tytul := tytul +' ' + linia;  
+     linia := Page.GetString(pozycja + 5);
+     HTMLRemoveTags(linia);
+     DecodeHTML(linia);
+     tytul := tytul +' ' + linia;       
+     while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+     while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1); 
+     PickTreeAdd(tytul, adres);
+     end;
+    end;
+   until (pozycja = -1);     
+   end;   
+   if PickTreeExec(adres) then
+   begin
+    Page.Text := GetPage(adres);
+    link := adres;
+    AnalyzeMoviePage(page);
+    end;
+  Page.Free;
+  end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+  var
+  Linia, tytul, line, Obsada, OrgLine, adres: string;
+  LineNr, licznik: Integer;
+  StartPos, EndPos, i: Integer;
+  begin
+
+  if cover = false then
+  begin 
+  
+  //recenzja i ocena
+  pozycja := FindLine('Ocena filmu:', Page, 0);
+  linia := Page.GetString(pozycja);  
+  startPos := pos('alt="', linia);
+  if startPos > 0 then
+   begin
+   delete(linia, 1, startPos + 4);
+   endPos := pos('">', linia);
+   tytul :=  copy(linia, 1, endPos - 1);
+   setField(fieldRating, tytul);
+   end;
+  pozycja := pozycja + 1;
+  tytul := '';
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   DecodeHTML(linia);
+   if (linia = '') then pozycja := pozycja +1;
+   end;
+  until (linia <> ''); 
+  pozycja2 := FindLine('rednia ocena recenzji', Page, 0);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   if linia <> '' then 
+    begin
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1); 
+    while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia,  length(linia), 1) = ' ')) do delete(linia, length(linia), 1);   
+    end;
+   if (linia = '') then
+    begin
+    pozycja := pozycja + 1;
+    linia := Page.GetString(pozycja);
+    end;
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1); 
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia,  length(linia), 1) = ' ')) do delete(linia, length(linia), 1);
+   tytul := tytul + ' ' + linia;
+   pozycja := pozycja + 1;
+   end;
+  until (pozycja >= pozycja2);
+  while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ') or (copy(tytul,  length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+  while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+  if (tytul <> '') then setField(fieldComments, tytul);  
+  
+   //pobranie strony z opisem
+  pozycja := FindLine('>Opis<', Page, 0);
+  linia := Page.GetString(pozycja);
+  startPos := pos('fid=', linia);
+  delete(linia, 1, startPos + 3);
+  endPos := pos('">Opis', linia);
+  fid := copy(linia, 1, endPos - 1);
+  link := URLEncode('http://film.pl/modules.php?name=AboutFilm&file=credits&fid=' + fid);
+  Page.Text := GetPage(link);
+  
+  // Tytu³ polski i oryginalny
+  pozycja := FindLine('<!-- menu gorne -->', Page, 0);
+  pozycja := FindLine('<!-- menu gorne -->', Page, pozycja + 1);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   setField(fieldDescription, linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   if (linia = '') then pozycja := pozycja +1;
+   end;
+  until (linia <> ''); 
+  startPos := pos('(', linia);
+  endPos := pos(')', linia);
+  if ((startPos = 0) and (endPos = 0)) then
+   begin
+   tytul := copy(linia, 1, length(linia));
+   if pos(', The ', tytul) > 0 then tytul := StringReplace(tytul, ', The', '');   
+   if pos('The ', tytul) > 0 then tytul := StringReplace(tytul, 'The', '');
+   while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+   while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+   setField(fieldTranslatedTitle, tytul);
+   setField(fieldOriginalTitle, tytul);
+   end
+  else
+   begin  
+   tytul := copy(linia, 1, startPos - 1);
+   if pos(', The ', tytul) > 0 then tytul := StringReplace(tytul, ', The', '');
+   if pos('The ', tytul) > 0 then tytul := StringReplace(tytul, 'The', '');
+   while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+   while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+   setField(fieldTranslatedTitle, tytul);
+   tytul := copy(linia, startPos + 1, endPos - startPos - 1);
+   if pos(', The ', tytul) > 0 then tytul := StringReplace(tytul, ', The', '');
+   if pos('The ', tytul) > 0 then tytul := StringReplace(tytul, 'The', '');
+   while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+   while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+   setField(fieldOriginalTitle, tytul);
+   end;
+  
+  // Opis filmu
+  tytul := '';
+  pozycja := pozycja + 1;
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   if (linia = '') then pozycja := pozycja +1;
+   end;
+  until (linia <> ''); 
+  pozycja2 := FindLine('Gatunek', Page, 0);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   tytul := tytul + linia;
+   pozycja := pozycja + 1;
+   end;
+  until (pozycja >= pozycja2);
+  while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+  while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+  setField(fieldDescription, tytul);
+
+  // Gatunek
+  pozycja := FindLine('Gatunek', Page, 0);
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1);    
+   setField(fieldCategory, linia);   
+   end;  
+  
+  //Re¿yser
+  pozycja := FindLine('Re¿yseria', Page, 0);
+  tytul := '';
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+  pozycja2 := FindLine('Scenariusz', Page, 0);
+  if pozycja2 = -1 then pozycja2 := FindLine('Obsada', Page, 0);
+  if pozycja2 = -1 then pozycja2 := FindLine('Zdjêcia', Page, 0);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   if linia <> '' then 
+    begin
+    if tytul = '' then tytul := linia
+    else tytul := tytul + ', ' + linia;
+    end;
+   pozycja := pozycja + 1;
+   end;
+  until (pozycja >= pozycja2);
+  while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+  while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+  setField(fieldDirector, tytul);   
+   end;
+  
+    //Obsada
+  tytul := '';    
+  pozycja := FindLine('Obsada', Page, 0);
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+  pozycja2 := FindLine('Zdjêcia', Page, 0);
+  if pozycja2 = -1 then pozycja2 := FindLine('Muzyka', Page, 0);
+  if pozycja2 = -1 then pozycja2 := FindLine('Scenografia', Page, 0);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   if linia <> '' then 
+    begin
+    if tytul = '' then tytul := linia
+    else tytul := tytul + ', ' + linia;
+    end;
+   pozycja := pozycja + 1;
+   end;
+  until (pozycja >= pozycja2);
+  while ((copy(tytul, 1, 1) = '    ') or (copy(tytul, 1, 1) = ' ')) do delete(tytul, 1, 1);
+  while ((copy(tytul, length(tytul), 1) = '    ') or (copy(tytul, length(tytul), 1) = ' ')) do delete(tytul, length(tytul), 1);
+  if (pos(', wiêcej :', tytul) > 0) then delete(tytul,  pos(', wiêcej :', tytul), length(tytul) - pos(', wiêcej :', tytul) + 1);
+  tytul := StringReplace(tytul, ', jako, ', ' jako ');
+  setField(fieldActors, tytul);   
+  end;  
+   
+   //Producent i kraj
+  pozycja := -1;
+  pozycja := FindLine('Producent', Page, 0);
+  if pozycja = -1 then pozycja := FindLine('Dystrybutor', Page, 0);
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   startPos := pos('(' , linia);
+   if  startPos >0 then 
+    begin
+    endPos := pos(')' , linia); 
+    tytul := copy(linia, startPos + 1, endPos - startPos - 1);
+    delete(linia, startPos, endPos - startPos + 1);
+    setField(fieldCountry, tytul);  
+    end;
+   setField(fieldProducer, linia);
+   end;  
+   
+  // Rok produkcji
+  pozycja := FindLine('Rok', Page, 0);
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   startPos := pos('(' , linia);
+   setField(fieldYear, linia);
+   end;  
+
+  // Czas trwania
+  pozycja := -1;
+  pozycja := FindLine('Czas', Page, 0);
+  if pozycja > -1 then
+   begin
+   pozycja := pozycja + 1;
+   repeat
+    begin
+    linia := Page.GetString(pozycja);
+    HTMLRemoveTags(linia);
+    DecodeHTML(linia);
+    while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+    if (linia = '') then pozycja := pozycja +1;
+    end;
+   until (linia <> ''); 
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   startPos := pos(' min' , linia);
+   if  startPos >0 then 
+    begin
+    endPos := pos(' min', linia); 
+    linia := copy(linia, 1, endPos - 1);
+    end;
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   while ((copy(linia, length(linia), 1) = '    ') or (copy(linia, length(linia), 1) = ' ') or (copy(linia, length(linia), 1) = ' ')) do delete(linia, length(linia), 1); 
+   setField(FieldLength, linia);
+   end;  
+
+  //URL
+  setField(fieldURL, link); 
+
+  end; //koniec do bez foto
+ 
+  //Foto 
+  if (nocover = false) then
+   begin 
+   
+  //pobranie strony z galeri¹
+  link := URLEncode('http://film.pl/modules.php?name=FilmPl_Galerie&op=galeria&fid=' + fid + '&plakat=1');
+  Page.Text := GetPage(link);
+
+  PickTreeClear;
+  PickTreeAdd('Wybierz Zdjêcie','');
+  licznik := 0;
+  pozycja := FindLine('Galeria', Page, 0);
+  pozycja := pozycja + 1;
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   HTMLRemoveTags(linia);
+   DecodeHTML(linia);
+   while ((copy(linia, 1, 1) = '    ') or (copy(linia, 1, 1) = ' ') or (copy(linia, 1, 1) = ' ')) do delete(linia, 1, 1);
+   if (linia = '') then pozycja := pozycja +1;
+   end;
+  until (linia <> ''); 
+  pozycja2 := FindLine('Otwarty Katalog Internetowy', Page, pozycja + 1);
+  repeat
+   begin
+   linia := Page.GetString(pozycja);
+   startPos := pos(';id=', linia);
+   endPos := pos('name=FilmPl_Galerie', linia);
+   if ((startPos <> 0)  and (endPos <> 0)) then
+    begin
+    delete(linia, 1, startPos + 3);
+    endPos := pos('&amp;fid=', linia);
+    tytul := copy(linia, 1, endPos - 1); 
+    licznik := licznik + 1;
+    adres := 'http://film.pl/modules.php?name=FilmPl_Galerie&op=zdjecie&id=' + tytul + '&fid=' + fid + '&plakat=1';
+    PickTreeAdd(IntToStr(licznik), adres);
+    end;
+   pozycja := pozycja + 1;
+   end;
+  until (pozycja >= pozycja2);
+  if licznik > 1 then
+   begin
+   if PickTreeExec(adres) then
+    Page.text := GetPage(adres);
+   end;
+  if licznik = 1 then 
+   Page.Text := GetPage(adres); 
+ 
+  pozycja := FindLine('<img src="./images/galeria/', Page, 0); 
+  linia := Page.GetString(pozycja);
+  startPos := pos('/images/galeria/', linia);
+  delete(linia, 1, startPos - 1);
+  endPos := pos('.jpg', linia);
+  tytul := copy(linia, 1, endPos + 3);
+  adres := 'http://film.pl/' + tytul;
+  GetPicture(adres); 
+   end;   
+  
+  //DisplayResults;
+  end;
+
+begin
+  if CheckVersion(3,5,0) then
+    begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then MovieName := GetField(fieldOriginalTitle);
+    if Input('FilmPL Import', 'Podaj tytu³ filmu:', MovieName) then
+      begin
+      // Zamiana na ISO-8859-2
+      MovieName:=StringReplace(MovieName, '¹', chr(177));
+      MovieName:=StringReplace(MovieName, 'æ', chr(230));
+      MovieName:=StringReplace(MovieName, 'ê', chr(234));
+      MovieName:=StringReplace(MovieName, '³', chr(179));
+      MovieName:=StringReplace(MovieName, 'ñ', chr(241));
+      MovieName:=StringReplace(MovieName, 'ó', chr(243));
+      MovieName:=StringReplace(MovieName, 'œ', chr(182));
+      MovieName:=StringReplace(MovieName, 'Ÿ', chr(188));
+      MovieName:=StringReplace(MovieName, '¿', chr(191));
+      MovieName:=StringReplace(MovieName, '¥', chr(161));
+      MovieName:=StringReplace(MovieName, 'Æ', chr(198));
+      MovieName:=StringReplace(MovieName, 'Ê', chr(202));
+      MovieName:=StringReplace(MovieName, '£', chr(163));
+      MovieName:=StringReplace(MovieName, 'Ñ', chr(209));
+      MovieName:=StringReplace(MovieName, 'Ó', chr(211));
+      MovieName:=StringReplace(MovieName, 'Œ', chr(166));
+      MovieName:=StringReplace(MovieName, '', chr(172));
+      MovieName:=StringReplace(MovieName, '¯', chr(175));
+      pozycja := pos('/cover/', MovieName); 
+      if pozycja > 0 then
+       begin
+       MovieName := StringReplace(MovieName, '/cover/' , '');
+       cover := true;
+       end    
+      else cover := false;
+      pozycja := pos('/nocover/', MovieName); 
+      if pozycja > 0 then
+       begin
+       MovieName := StringReplace(MovieName, '/nocover/' , '');
+       nocover := true;
+       end    
+      else nocover := false;      
+      while (copy(MovieName, length(MovieName), 1) = ' ') do delete(MovieName, length(MovieName), 1); 
+      while (copy(MovieName, 1, 1) = ' ') do delete(MovieName, 1, 1); 
+      AnalyzePage();
+      end;
+    end
+  else
+    ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.0 lub nowszej');
+end.

@@ -1,0 +1,544 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=Cinemovies.fr
+Description=Le magazine du cinéma international
+Site=http://www.cinemovies.fr
+Language=FR
+Version=04 du 23/05/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web
+Casse Choisie=3|3|0=Titre et Nom en minuscule|1=Titre et Nom en majuscule|2=Première lettre en majuscule|3=Première lettre de chaque mot en majuscule
+Titre en double=0|0|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Choix Image=1|1|0=Petite affiche|1=Grande affiche
+Fichier de log=1|1|0=Oui|1=Non
+
+***************************************************)
+
+program Cinemovies_FR;
+uses
+  ScorEpioNCommonScript;
+
+const
+     VersionScript = '04 du 23/05/2005';
+     NomScript = 'CINEMOVIES';
+     urlDomain = 'cinemovies.fr';
+     cinemovies = 'http://www.cinemovies.fr/';
+     cinemoviesSearch = cinemovies+'resultat_recherche.php?cherche=';
+     cinemoviesSubmit = '&x=0&y=0';
+     cinemoviesFiche = 'fiche_film.php?IDfilm=';
+     cinemoviesPhoto = 'fiche_photos.php?IDfilm=';
+     cinemoviesAffiche = 'fiche_affiches.php?IDfilm=';
+     timeSleep = 500;
+var
+  MovieName, Address, ID : string;
+  i, premiereExecution : Integer;
+  listeResultat: TStringList;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES RESULTATS CINEMOVIES.FR
+//------------------------------------------------------------------------------
+
+procedure recherche(title : String);
+var
+  adresseRecherche, Line, annee, complement, titre, adresse : String;
+  StartPos, EndPos : Integer;
+begin
+  adresseRecherche := cinemoviesSearch+UrlEncode(title)+cinemoviesSubmit;
+  Line := GetPage(adresseRecherche);
+  if pos('Films</td>', Line) > 0 then
+  begin
+    listeResultat := TStringList.Create;
+    StartPos := pos('Films</td>', Line);
+    delete(Line, 1, StartPos+length('Films</td>')-1);
+// Films déjà sortis
+    if pos('Films déjà sortis:', Line) > 0 then
+    begin
+      StartPos := pos('Films déjà sortis:', Line);
+      delete(Line, 1, StartPos+length('Films déjà sortis:')-1);
+      StartPos := pos('<a href="', Line);
+      delete(Line, 1, StartPos-1);
+      repeat
+       StartPos := pos('<a href="', Line);
+       delete(Line, 1, StartPos-1);
+       adresse := cinemovies+findInfo('<a href="', '"', Line,'0');
+       titre := findInfo('arial12black3">', '<font color="#000080">', Line,'0');
+       annee := findInfo('<font color="#000080">', '</font>', Line,'0');
+       annee := StringReplace(annee, '(', '');
+       annee := StringReplace(annee, ')', '');
+       annee := Trim(annee);
+       complement := findInfo('</font><br>', '<br>', Line,'0');
+       complement := StringReplace(complement, '&nbsp;', '');
+// Ajoute les films
+       listeResultat.Add(annee+'|'+titre+'|'+adresse+'|'+complement);
+       delete(Line, 1, length('<a href="'));
+       EndPos := pos('nav_arrow231.gif', Line);
+       StartPos := pos('<a href="', Line);
+      until (StartPos > EndPos);
+    end;
+
+// Films bientôt en salles
+    if pos('Films bientôt en salles:', Line) > 0 then
+    begin
+      StartPos := pos('Films bientôt en salles:', Line);
+      delete(Line, 1, StartPos+length('Films bientôt en salles:')-1);
+      StartPos := pos('<a href="', Line);
+      delete(Line, 1, StartPos-1);
+      repeat
+       StartPos := pos('<a href="', Line);
+       delete(Line, 1, StartPos-1);
+       adresse := cinemovies+findInfo('<a href="', '"', Line,'0');
+       titre := findInfo('arial12black3">', '<font color="#000080">', Line,'0');
+       annee := findInfo('<font color="#000080">', '</font>', Line,'0');
+       annee := StringReplace(annee, '(', '');
+       annee := StringReplace(annee, ')', '');
+       annee := Trim(annee);
+       complement := findInfo('</font><br>', '<br>', Line,'0');
+       complement := StringReplace(complement, '&nbsp;', '');
+// Ajoute les films
+       listeResultat.Add(annee+'|'+titre+'|'+adresse+'|'+complement);
+       delete(Line, 1, length('<a href="'));
+       EndPos := pos('nav_arrow231.gif', Line);
+       StartPos := pos('<a href="', Line);
+      until (StartPos > EndPos);
+    end;
+
+// Création de la liste de résultats
+    afficheResultat(title);
+  end else
+  begin
+    SetField(fieldChecked, '');
+    exit;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+procedure afficheResultat(title : String);
+var
+   StartPos: Integer;
+   couple, annee, complement, titre, adresse : String;
+begin
+
+  if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) then
+  begin
+   PickTreeClear;
+   PickTreeAdd('Films trouvés pour ' + title + ' :', '');
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(adresse)+1);
+     complement := copy(couple,0,length(couple));
+     delete(couple, 1, length(complement)+1);
+     PickTreeAdd('['+annee+'] '+titre+' '+complement, adresse);
+   end;
+
+   if listeResultat.Count = 1 then
+   begin
+     recupInfo(adresse);
+     exit;
+   end;
+
+    begin
+      if PickTreeExec(Address)=true then
+      begin
+          recupInfo(Address);
+      end;
+    end;
+  end else if (GetOption('Type de Lancement') = 2) then
+  begin
+   if listeResultat.Count = 1 then
+   begin
+     couple := listeResultat.GetString(0);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,pos('|',couple)-1);
+     recupInfo(adresse);
+     exit;
+   end else
+   begin
+     trouveTitle(title);
+   end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS
+//------------------------------------------------------------------------------
+
+procedure recupInfo(Adresse : String);
+var
+   Value, Value2, Line: String;
+   StartPos : Integer;
+begin
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     beforeUpdate();
+// Début du script de récupération
+   ID := StringReplace(Adresse, cinemovies+cinemoviesFiche, '');
+   Line := GetPage(Adresse);
+// Jaquette DVD
+   if CanSetPicture then
+     recupImage(Line);
+// Titre Traduit
+   if CanSetField(fieldTranslatedTitle) then
+     MonSetField(fieldTranslatedTitle, formatTitre(findInfo('<TD class="arial12blacknews">', ' :</TD>', Line,'0'),GetOption('Casse Choisie')));
+// Année
+   if CanSetField(fieldYear) then
+      MonSetField(fieldYear, nettoieAnnee(findInfo('<b>Sortie(s)</b>:', '</b>', Line,'0')));
+// Genre
+   if CanSetField(fieldCategory) then
+   begin
+      Value := formatTitre(findInfo('Genre:', '<img', Line,'0'),GetOption('Casse Choisie'));
+      Value := StringReplace(Value, ',', ', ');
+      MonSetField(fieldCategory, deleteEnd(Value, ', '));
+   end;
+// Durée
+   if CanSetField(fieldLength) then
+      MonSetField(fieldLength, DureeEnMinutes(findInfo('Durée: ', '</td>', Line,'0')));
+// Réalisateur
+   if CanSetField(fieldDirector) then
+   begin
+      Value := formatTitre(findInfo('Réalisé par:</b></td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      Value := StringReplace(Value, ',', ', ');
+      MonSetField(fieldDirector, deleteEnd(Value, ', '));
+   end;
+// Acteurs
+   if CanSetField(fieldActors) then
+   begin
+      Value := formatTitre(findInfo('Avec:</b></td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      Value := StringReplace(Value, ',', ', ');
+      MonSetField(fieldActors, deleteEnd(Value, ', ')+'.');
+   end;
+// L'histoire
+   if CanSetField(fieldDescription) then
+         MonSetField(fieldDescription,findInfo('arial11blacknews">L''histoire</font></td>', '</td>', Line,'0'));
+// Pays
+   if CanSetField(fieldCountry) then
+      MonSetField(fieldCountry, findInfo('Pays</b></td>', '</td>', Line,'0'));
+// Scénario
+   if CanSetField(fieldProducer) then
+      begin
+      Value := formatTitre(findInfo('Scénario</b></td>', '</td>', Line,'0'),GetOption('Casse Choisie'));
+      Value := StringReplace(Value, ',', ', ');
+      MonSetField(fieldProducer, deleteEnd(Value, ', '));
+   end;
+// Titre Original
+   if CanSetField(fieldOriginalTitle) then
+      MonSetField(fieldOriginalTitle, formatTitre(findInfo('Titre original</b></td>', '</td>', Line,'0'),GetOption('Casse Choisie')));
+// Note Moyenne
+   if CanSetField(fieldRating) then
+   begin
+      Value := findInfo('<font size="5">', '/5', Line,'0');
+      delete(Line, 1, pos('/5',Line));
+      Value2 := findInfo('<font size="5">', '/5', Line,'0');
+      MonSetField(fieldRating, moyenne(Value, Value2));
+   end;
+// Adresse Web
+  if CanSetField(fieldURL) then
+      SetField(fieldURL, Adresse);
+
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    afterUpdate();
+
+// Affichage des titres si original et traduit identique
+  titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE L'AFFICHE
+//------------------------------------------------------------------------------
+
+procedure recupImage(Line : String);
+var
+   adresse, adresseAutre : String;
+begin
+     if (pos(cinemoviesPhoto+ID,Line) <> 0) then
+     begin
+       Sleep(timeSleep);
+       Line := GetPage(cinemovies+cinemoviesPhoto+ID);
+       if (pos(cinemoviesAffiche+ID,Line) <> 0) then
+       begin
+         Sleep(timeSleep);
+         Line := GetPage(cinemovies+cinemoviesAffiche+ID);
+         adresse := cinemovies+'images/data/affiches/'+findInfo('images/data/affiches/', '"', Line,'0');
+         delete(Line,1,pos('images/data/affiches/',Line)+length('images/data/affiches/'));
+         if pos('images/data/affiches/', Line) <> 0 then
+         begin
+           adresseAutre := cinemovies+'images/data/affiches/'+findInfo('images/data/affiches/', '"', Line,'0');
+           adresse := adresseAutre;
+         end;
+         if (GetOption('Choix Image') = 1) then
+         begin
+           adresse := StringReplace(adresse, 'Paff', 'Gaff');
+           adresse := StringReplace(adresse, 'AFFP', 'AFFG');
+         end;
+         GetPicture(adresse);
+       end;
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION DE CONVERSION DE LA DUREE
+//------------------------------------------------------------------------------
+
+function DureeEnMinutes(s : string) : String;
+var
+     Heures, Minutes : Integer;
+     H,m : string;
+begin
+  Heures := 0;
+  Minutes := 0;
+  H := copy(s,1,pos('h',s)-1);
+  Heures := StrToInt(H,1);
+  Heures := Heures*60;
+  m := copy(s,pos('h',s)+1,length(s));
+  if m <> '' then
+  begin
+      Minutes := StrToInt(m,2);
+      Minutes := Heures+Minutes;
+      m := IntToStr(Minutes);
+      result := m;
+  end else
+  begin
+      H := IntToStr(Heures);
+      result := H;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION MOYENNE SUR DIX
+//------------------------------------------------------------------------------
+
+function moyenne(Note1, Note2 : string) : String;  // Calcul la moyenne des notes
+var
+     unite1, decimale1, unite2, decimale2 : Integer;
+begin
+  if (Note1 = '--') and (Note2 = '--') then // Si pas de notes
+  begin
+    result := '';
+    exit;
+  end;
+  if (Note1 <> '--') then
+  begin
+    unite1 := uniteValue(Note1);
+    decimale1 := decimaleValue(Note1);
+  end else
+  begin
+    unite1 := uniteValue(Note2);
+    decimale1 := decimaleValue(Note2);
+  end;
+  if (Note2 <> '--') then
+  begin
+    unite2 := uniteValue(Note2);
+    decimale2 := decimaleValue(Note2);
+  end else
+  begin
+    unite2 := unite1;
+    decimale2 := decimale1;
+  end;
+  unite1 := unite1+unite2; // Somme des deux moyennes
+  decimale1 := decimale2+decimale1;
+  if decimale1 = 10 then
+  begin
+    decimale1 := 0;
+    unite1 := unite1+1;
+  end else if decimale1 > 10 then
+  begin
+    decimale1 := decimale1-10;
+    unite1 := unite1+1;
+  end;
+  result := IntToStr(unite1)+','+IntToStr(decimale1);
+end;
+
+function uniteValue(Note : string) : Integer;  // retourne la valeur des chiffre avant la virgule
+var
+     unite : Integer;
+begin
+  unite := 0;
+  if pos('.',Note) <> 0 then
+    Note := copy(Note,1,pos('.',Note)-1);
+  unite := StrToInt(Note,1);
+  result := unite;
+end;
+
+function decimaleValue(Note : string) : Integer;  // retourne la valeur des chiffre après la virgule
+var
+     decimale : Integer;
+begin
+  decimale := 0;
+  if pos('.',Note) <> 0 then
+  begin
+    Note := copy(Note,pos('.',Note)+1,length(Note));
+    decimale := StrToInt(Note,1);
+  end;
+  result := decimale;
+end;
+
+//------------------------------------------------------------------------------
+// NETTOIE ANNEE
+//------------------------------------------------------------------------------
+
+function nettoieAnnee(annee : String) : string;
+begin
+  if pos(' 19',annee) <> 0 then
+  begin
+    annee := copy(annee,pos(' 19',annee),length(annee));
+    annee := Trim(annee);
+  end else
+  if pos(' 20',annee) <> 0 then
+  begin
+    annee := copy(annee,pos(' 20',annee),length(annee));
+    annee := Trim(annee);
+  end;
+  result := annee;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME LES ACCENTS
+//------------------------------------------------------------------------------
+
+function supprimeAccents(NomFilm : String) : String;
+begin
+// les accents
+     NomFilm := supprimeLesAccents(NomFilm);
+// Pour n'avoir que le titre
+     delete(NomFilm, pos(' - ',NomFilm), length(NomFilm));
+     if (pos(', ',NomFilm) > 0) then
+        delete(NomFilm, 1, pos(', ',NomFilm)+1);
+     if (pos('(',NomFilm) > 0) then
+        delete(NomFilm, pos('(',NomFilm), length(NomFilm));
+     if (pos(':',NomFilm) > 0) then
+        delete(NomFilm, pos(':',NomFilm), length(NomFilm));
+     result := trim(NomFilm);
+end;
+
+//------------------------------------------------------------------------------
+// COMPARE LE TITRE PASSE ET LE TITRE TROUVE
+//------------------------------------------------------------------------------
+
+function compareTitle(titleAllo, title : String) : String;
+begin
+     title := supprimeAccents(trim(AnsiLowerCase(title)));
+     titleAllo := supprimeAccents(trim(AnsiLowerCase(titleAllo)));
+     if (title = titleAllo) then
+     begin
+       result := 'OK';
+     end else
+     begin
+       result := 'KO';
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// TROUVE LE BON TITRE SI LE PREMIER N'EST PAS LE BON
+//------------------------------------------------------------------------------
+
+procedure trouveTitle(title : String);
+var
+   oK, couple, annee, titre, adresse : String;
+begin
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,pos('|',couple)-1);
+     oK := compareTitle(title,titre);
+     if oK = 'OK' then
+     begin
+       recupInfo(adresse);
+       exit;
+     end;
+   end;
+   listeResultat.Free;
+
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    MovieName := conversionNR(MovieName, 'RvN');
+    Sleep(timeSleep*2);
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      batch(NomScript);
+      AddToLog('Les films ayant été mis à jour sont maintenant cochés');
+    end;
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre du film :', MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+        begin
+          recupInfo(MovieName);
+        end else
+          recherche(MovieName);
+      end;
+    end else
+    if (GetOption('Type de Lancement') = 3) then
+    begin
+      if (premiereExecution = 0) then
+      begin
+        premiereExecution := -1;
+        if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = False) then
+           exit;
+      end;
+      MovieName := GetField(fieldURL);
+      if Pos(urlDomain, MovieName) > 0 then
+         recupInfo(MovieName);
+    end else
+    begin
+      if (premiereExecution = 0) then
+      begin
+          premiereExecution := -1;
+	      if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = True) then
+          begin
+            recherche(MovieName);
+          end else
+            exit;
+      end else
+      begin
+          recherche(MovieName);
+      end;
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

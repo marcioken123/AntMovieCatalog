@@ -1,0 +1,287 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Doomer
+Title=Darktown.com
+Description=Darktown.com (module de recherche toute catégories)
+Site=http://www.darktown.com
+Language=FR
+Version=2004-06-10
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DARKTOWN_SEARCH;
+
+//Paramètres du script
+const
+
+  TempsPause = 1500;      // 1000 = 1 Seconde (permet d'éviter les timeout en cas de saturation serveur)
+  UrlStart = 'http://www.darktown.com/view.php?uid=';
+  UrlEnd = '"';
+
+
+
+var
+  MovieName: string;
+  Page: TStringList;
+  Categorie : string;
+
+{*
+Remplace le codage HTML par les caractères bizarres de la langue Allemande
+*}
+function HTMLReplace(Title: string): string;
+var
+  i: Integer;
+begin
+        Title := StringReplace(Title,'%20',' ');
+        Title := StringReplace(Title,'%26','&');
+        Title := StringReplace(Title,'%2F','/');
+        Title := StringReplace(Title,'%FC','ü');
+        Title := StringReplace(Title,'%F6','ö');
+        Title := StringReplace(Title,'%22','"');
+        Title := StringReplace(Title,'%E4','ä');
+        Title := StringReplace(Title,'%2C',',');
+        Title := StringReplace(Title,'%21','!');
+        Title := StringReplace(Title,'%2B','+');
+        Title := StringReplace(Title,'%B4','''');
+        Title := StringReplace(Title,'%D6','Ö');
+        Title := StringReplace(Title,'%DF','ß');
+        Title := StringReplace(Title,'%C4','Ä');
+
+        result := Title;
+end;
+
+{*
+Cherche un ligne dans un tableau TStringList et retourne son indice
+*}
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+{*
+Compte les pages HTML à balayer pour lister toutes les réponses
+*}
+function PageCounter(address: string): Integer;
+var
+counter: Integer;
+BeginPos: Integer;
+EndPos: Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  Address := GetPage(Address);
+  BeginPos := Pos('/search.php?',Address);
+  delete(Address,1,BeginPos-1);
+  EndPos := Pos('"',Address);
+  Page.SetString(0,Copy(Address,1,EndPos-1));
+  delete(Address,1,9);
+  if (BeginPos > 0) then
+  begin
+    repeat
+      begin
+        counter := counter + 1;
+        BeginPos := Pos('/search.php?',Address);
+        Delete(Address,1,BeginPos-1);
+        EndPos := Pos('"',Address);
+        Page.SetString(counter,Copy(Address,1,EndPos-1));
+        delete(Address,1,9);
+      end;
+    until(BeginPos <= 0);
+  end
+    counter := (counter div 2);
+    result := counter;
+end;
+
+{*
+m'a servi jadis au débogage
+*}
+procedure testcounter(compteur: Integer);
+var
+i: Integer;
+begin
+  for i:=0 to compteur-1 do
+  ShowMessage(IntToStr(compteur) + Page.GetString(i));
+end;
+
+{*
+Analyse le code HTML de la page pour remplir le PickTree
+*}
+procedure AnalyzePage(Address: string);
+var
+  LineNr: Integer;
+  BeginPos: Integer;
+  EndPos: Integer;
+  Element1: string;
+  Element2: string;
+  Element3: string;
+  Element4: string;
+  Title: string;
+  TitleAddr: string;
+  i: Integer;
+  BeginType: Integer;
+  BeginCat: Integer;
+  BeginName: Integer;
+  EndName: Integer;
+  stype: string;
+  sname: string;
+
+begin
+  Sleep(TempsPause); // Attente X seconde : Evite les timeout sur le serveur
+  Element1 := 'href="';
+  Element2 := 'http://www.amazon.de/exec/obidos/external-search?tag=darktown0d-21&keyword=';
+  Element3 := 'index';
+  Element4 := '">';
+  LineNr := PageCounter(Address);
+//  testcounter(LineNr);
+  Address := GetPage(Address);
+  BeginPos := Pos(UrlStart,Address);
+  if BeginPos > 0 then
+  begin
+  PickTreeClear;
+ for i:=0 to LineNr do
+  begin
+  repeat
+    begin
+         delete(Address,1,BeginPos-1);
+        EndPos := Pos(UrlEnd,Address);
+        TitleAddr := Copy(Address,1,EndPos-1);
+         BeginName := Pos(Element1 + Element2,Address) + length(Element1 + Element2) - 1;
+         EndName := Pos('index=',Address);
+         sname := Copy(Address,BeginName+1,EndName-BeginName-2);
+         BeginType := Pos('type=',Address);
+         BeginCat := Pos('category=', Address);
+         stype := Copy(Address,Begintype+5,BeginCat-BeginType-6);
+        Title := sname + ' - ' + stype;
+        HTMLDecode(Title);
+        Title := HTMLReplace(Title);
+        delete(Address,1,length(UrlStart));
+        EndPos := Pos(Element4,Address);
+        PickTreeAdd(Title,TitleAddr);
+        BeginPos := Pos(UrlStart,Address);
+    end;
+  until (BeginPos <= 0);
+  if Pos('<html>', Page.GetString(i)) <=0 then
+     Address := GetPage(Page.GetString(i));
+  end
+if PickTreeExec(Address) then
+begin
+  Address := GetPage(Address);
+  BeginPos := Pos('<img src="http://img.darktown.com',Address);
+  delete(Address,1,BeginPos + 9);
+  EndPos := Pos('"',Address);
+  TitleAddr := Copy(Address,1,EndPos-1);
+  GetPicture(TitleAddr);
+end
+end;
+Page.Free;
+end;
+
+{*
+retourne la catégorie de recherche pour le site Darktown
+*}
+function WhatCategorie(): string;
+var
+thecat : string;
+begin
+    PickTreeClear;
+    PickTreeAdd('Logiciels','anwender'); // ligne sélectionnée par défaut
+    PickTreeAdd('Jeux','spiele');
+    PickTreeAdd('Audio','audio');
+    PickTreeAdd('PSX','psx');
+    PickTreeAdd('PS2','psx2');
+    PickTreeAdd('Dreamcast','dreamcast');
+    PickTreeAdd('XBox','xbox');
+    PickTreeAdd('GameCube','gamecube');
+    PickTreeAdd('DVD','dvd');
+    PickTreeAdd('VCD','vcd');
+    PickTreeAdd('VHS','vhs');
+    if PickTreeExec(thecat) then
+    begin
+      result := thecat
+    end
+end;
+
+{*
+ne sert plus à rien, elle servait juste à remplir le champs pattern de la requête php
+*}
+function FindPage():string;
+var
+   CharCode : string;
+begin
+          CharCode := copy(MovieName,1,1);
+          case AnsiUpperCase(CharCode) of
+            'A': CharCode := 'A';
+            'B': CharCode := 'B';
+            'C': CharCode := 'C';
+            'D': CharCode := 'D';
+            'E': CharCode := 'E';
+            'F': CharCode := 'F';
+            'G': CharCode := 'G';
+            'H': CharCode := 'H';
+            'I': CharCode := 'I';
+            'J': CharCode := 'J';
+            'K': CharCode := 'K';
+            'L': CharCode := 'L';
+            'M': CharCode := 'M';
+            'N': CharCode := 'N';
+            'O': CharCode := 'O';
+            'P': CharCode := 'P';
+            'Q': CharCode := 'Q';
+            'R': CharCode := 'R';
+            'S': CharCode := 'S';
+            'T': CharCode := 'T';
+            'U': CharCode := 'U';
+            'V': CharCode := 'V';
+            'W': CharCode := 'W';
+            'X': CharCode := 'X';
+            'Y': CharCode := 'Y';
+            'Z': CharCode := 'Z';
+       else CharCode := '0-9';
+          end;
+      result := CharCode;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+
+    begin
+     if Input('Darktown.com Import', 'Elément de recherche :', MovieName) then
+      begin
+       // dans la requête de recherche les espaces sont remplacés par des +
+       MovieName := StringReplace(MovieName,' ','+');
+       // l'utilisateur doit sélectionner une catégorie de recherche
+       Categorie := WhatCategorie();
+       // on analyse le code des pages HTML pour remplir le PickTree
+       AnalyzePage('http://www.darktown.com/search.php?action=search&what=' + MovieName + '&&category='+Categorie+'&&submit=++SUCHE++');
+       // on affiche le résultat
+       //DisplayResults;
+      end;
+    end
+  end else
+   ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+end.

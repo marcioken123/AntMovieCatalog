@@ -1,0 +1,381 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Serguei Tarassov
+Title=Animator.ru
+Description=Imports info from Animator.ru
+Site=http://www.arbinada.com
+Language=RU
+Version=25.10.2004
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program AnimatorRu;
+
+const
+  STR_WIN = 'јаЅб¬в√гƒд≈е∆ж«з»и…й кЋлћмЌнќоѕп–р—с“т”у‘ф’х÷ц„чЎшўщЏъџы№ьЁэёюя€';
+  STR_KOI = 'юёајбЅц÷дƒе≈ф‘г√х’и»й…к лЋмћнЌоќпѕ€яр–с—т“у”ж∆в¬ь№ыџз«шЎэЁщўч„ъЏ';
+  STR_ISO = '–р—с“т”у‘ф’х÷ц„чЎшўщЏъџы№ьЁэёюя€аєбЄвРгГдЇеЊж≥зњиЉйЪкЬлЮмЭнІоҐпЯ';
+  STR_DOS = 'А Б°ВҐГ£Д§Е•Ж¶ЗІИ®Й©К™Л"МђН≠ОЃПѓРа''б''вУгФдХеЦжЧзШиЩйЪкЫлЬмЭнЮоЯп';
+
+const
+  DEBUG_MODE = false;
+  DEBUG_FOUND_FILMS_FILENAME = 'Animator_found_results.htm';
+  DEBUG_FILM_FILENAME        = 'Animator_film.htm';
+  
+const
+  BaseAddress = 'http://www.animator.ru/';
+  BaseAddressFilm = BaseAddress + 'db/';
+  
+var
+  MovieName: string;
+
+{ Some utils functions }
+function KOIToWin(Source: string): string;
+var
+  i: integer;
+  s: string;
+  c: char;
+  chars: array of char;
+begin
+  Result := '';
+  SetArrayLength(chars, 256);
+  for i := 0 to 255 do
+    chars[i] := chr(i);
+  for i := 1 to length(STR_WIN) do
+    chars[ord(copy(STR_WIN, i, 1))] := copy(STR_KOI, i, 1);
+  for i := 1 to Length(Source) do
+    Result := Result + chars[ord(copy(Source, i, 1))];
+end;
+
+function WinToKOI(Source: string): string;
+var
+  i: integer;
+  s: string;
+  c: char;
+  chars: array of char;
+begin
+  Result := '';
+  SetArrayLength(chars, 256);
+  for i := 0 to 255 do
+    chars[i] := chr(i);
+  for i := 1 to length(STR_WIN) do
+    chars[ord(copy(STR_KOI, i, 1))] := copy(STR_WIN, i, 1);
+  for i := 1 to Length(Source) do
+    Result := Result + chars[ord(copy(Source, i, 1))];
+end;
+
+
+procedure DebugOutput(Value: string);
+begin
+  if DEBUG_MODE then
+    Input('Watch', 'Value', Value);
+end;
+
+procedure DebugOutputFile(FileName: string; FileText: string);
+var
+  Log: TStringList;
+begin
+  if DEBUG_MODE then begin
+    Log := TStringList.Create;
+    Log.Text := FileText;
+    Log.SaveToFile(FileName);
+    Log.Free;
+  end;
+end;
+
+procedure ClearString(var Value: string);
+begin
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  Value := StringReplace(Value, #13, '');
+  Value := StringReplace(Value, #10, '');
+  Value := trim(Value);
+end;
+
+procedure ClearText(var Value: string);
+var
+  s: string;
+begin
+  if length(Value) < 2 then exit;
+  Value := trim(Value);
+  s := copy(Value, 2, length(Value));
+  s := StringReplace(s, '<br>', #13#10);
+  s := StringReplace(s, '<BR>', #13#10);
+  s := StringReplace(s, '<p>', #13#10#13#10);
+  s := StringReplace(s, '<p>', #13#10#13#10);
+  Value := copy(Value, 1, 1) + s;
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  Value := trim(Value);
+end;
+
+procedure RemoveLastDot(var Value: string);
+begin
+  if length(Value) > 1 then
+    if copy(Value, length(Value), 1) = '.' then begin
+      Value := copy(Value, 1, length(Value) - 1);
+    end;
+end;
+
+procedure TrimQuotes(var Value: string);
+var
+  c: char;
+begin
+  Value := trim(Value);
+  c := copy(Value, 1, 1);
+  if (c = '''') or (c = '"') or (c = 'Ђ') or (c = '<') then
+    Value := copy(Value, 2, length(Value));
+  c := copy(Value, length(Value), 1);
+  if (c = '''') or (c = '"') or (c = 'ї') or (c = '>') then
+    Value := copy(Value, 1, length(Value) - 1);
+end;
+
+
+
+{ Pages parsing }
+
+const
+  FoundLabel = 'Ќайдено ';
+  NothingFoundLabel = 'Ќичего не найдено';
+  FoundMovieTitleRef = 'href="index.phtml?p=show_film&fid=';
+  FoundMovieYearLabel = '<td';
+
+//procedure AnalyzeFoundFilmsPage(URL: string; Params: string);
+procedure AnalyzeFoundFilmsPage(URL: string);
+var
+  Page: TStringList;
+    FoundTable, SelectedURL: string;
+    pos1, pos2: integer;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+//  Page.Text := PostPage(URL, Params);
+  Page.Text := KOIToWin(GetPage(URL));
+  DebugOutputFile(DEBUG_FOUND_FILMS_FILENAME, Page.Text);
+  if pos(NothingFoundLabel, Page.Text) = 0 then begin
+    pos1 := pos(FoundLabel, Page.Text);
+    if pos1 <> 0 then begin
+      FoundTable := copy(Page.Text, pos1, length(Page.Text));
+      //DebugOutput(FoundTable);
+      FoundTable := copy(FoundTable, 1, pos('</td', FoundTable) - 1);
+      if pos(FoundMovieTitleRef, FoundTable) > 0 then
+        AddFoundMoviesTitles(FoundTable);
+    end;
+  end;
+  Page.Free;
+    if PickTreeExec(SelectedURL) then
+    AnalyzeFilmPage(SelectedURL);
+end;
+
+
+procedure AddFoundMoviesTitles(Table: string);
+var
+    CurName, CurURL, s: string;
+    pos2, len: integer;
+begin
+     PickTreeAdd('Cartoons', '');
+  len := length(Table);
+  while pos(FoundMovieTitleRef, Table) > 0 do begin
+    Table := copy(Table, pos(FoundMovieTitleRef, Table) + length('href="'), len);
+    pos2 := pos('"', Table);
+    CurURL := copy(Table, 1, pos2 - 1);
+    //DebugOutput(CurURL);
+    Table := copy(Table, pos('>', Table) + 1, len);
+    pos2 := pos('<', Table);
+    CurName := copy(Table, 1, pos2 - 1);
+    ClearString(CurName);
+    Table := copy(Table, pos2 + 1, len);
+    //DebugOutput(CurName);
+    PickTreeAdd(CurName, BaseAddressFilm + CurURL);
+  end;
+end;
+
+
+const
+  FilmImageAnchor = 'src="../film_img';
+  FilmTitleAnchor = 'class="FilmName">';
+  FilmStudioAnchor = '<span';
+  FilmActorsAnchor = 'озвучивали';
+  FilmDirectorAnchor = 'режиссер';
+  FilmContentAnchor = 'FilmComments';
+
+procedure AnalyzeFilmPage(SelectedURL: string);
+var
+  Page: TStringList;
+    Content, Year, Value, FilmType, Actors, Creators: string;
+    pos1, pos2, len: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := KOIToWin(GetPage(SelectedURL));
+  DebugOutputFile(DEBUG_FILM_FILENAME, Page.Text);
+  
+  SetField(fieldURL, SelectedURL)
+
+  len := length(Page.Text);
+  Content := Page.Text;
+  
+  // Picture
+  pos1 := pos(FilmImageAnchor, Content);
+  if pos1 > 0 then begin
+    Content := copy(Content, pos1 + length('src="../'), len);
+    pos2 := pos('"', Content);
+    Value := BaseAddress + copy(Content, 1, pos2 - 1);
+    if Input('Ќайдена картинка к фильму', '«агрузить картинку ?'#13#10'URL:', Value) then
+      GetPicture(Value); // False = do not store picture externally
+  end;
+
+  // Film title
+  pos1 := pos(FilmTitleAnchor, Content);
+  Content := copy(Content, pos1 + length(FilmTitleAnchor), len);
+  pos2 := pos('<', Content);
+  Value := copy(Content, 1, pos2 - 1);
+  ClearString(Value);
+  TrimQuotes(Value);
+  Value := AnsiMixedCase(AnsiLowerCase(Value), ' -.');
+  SetField(fieldOriginalTitle, Value);
+  SetField(fieldTranslatedTitle, Value);
+  Content := copy(Content, pos2, len);
+
+  // Type and length
+  FilmType := '–исованный';
+  // skip 2 <td>
+  Content := copy(Content, pos('<td', Content) + 1, len);
+  Content := copy(Content, pos('>', Content) + 1, len);
+  Content := copy(Content, pos('<td', Content) + 1, len);
+  Content := copy(Content, pos('>', Content) + 1, len);
+  pos2 := pos('<td', Content);
+  if pos2 < pos(FilmStudioAnchor, Content) then begin
+    Content := copy(Content, pos2, len);
+    pos2 := pos('</td', Content);
+    Value := copy(Content, 1, pos2 - 1);
+    HTMLRemoveTags(Value);
+    pos1 := pos(',', Value);
+    if pos1 > 0 then begin
+      FilmType := copy(Value, 1, pos1 - 1);
+      ClearString(FilmType);
+      Value := copy(Value, pos1 + 1, length(Value));
+      if pos('.', Value) > 0 then
+        Value := copy(Value, 1, pos('.', Value) - 1);
+      ClearString(Value);
+      SetField(fieldLength, Value);
+    end;
+    Content := copy(Content, pos2, len);
+    Content := copy(Content, pos('>', Content) + 1, len);
+  end;
+
+  // Studio
+  Content := copy(Content, pos(FilmStudioAnchor, Content), len);
+  Content := copy(Content, pos('>', Content) + 1, len);
+  pos2 := pos('<', Content);
+  Value := copy(Content, 1, pos2 - 1);
+  ClearString(Value);
+  SetField(fieldSource, Value);
+  Content := copy(Content, pos2, len);
+  Content := copy(Content, pos('>', Content) + 1, len);
+
+  // Year
+  Content := copy(Content, pos(',', Content) + 1, len);
+  pos2 := pos('г.', Content);
+  if pos2 = 0 then
+    pos2 := pos('<', Content);
+  Value := copy(Content, 1, pos2 - 1);
+  ClearString(Value);
+  SetField(fieldYear, Value);
+  Year := Value;
+  Content := copy(Content, pos2, len);
+  Content := copy(Content, pos('>', Content) + 1, len);
+  
+  // Country
+  Value := '———–';
+  if Year <> '' then
+    if StrToInt(Year, 0) >= 1992 then
+      Value := '–осси€';
+  SetField(fieldCountry, Value);
+
+  // Category
+  SetField(fieldCategory, 'јнимационный');
+  
+  // Content
+  pos2 := pos(FilmContentAnchor, Content);
+  if pos2 > 0 then begin
+    Content := copy(Content, pos2, len);
+    Content := copy(Content, pos('>', Content) + 1, len);
+    pos2 := pos('</table', Content);
+    Value := copy(Content, 1, pos2 - 1);
+    ClearText(Value);
+    Value := StringReplace(Value, #13#10#13#10, #13#10);
+    SetField(fieldDescription, Value);
+    Content := copy(Content, pos2, len);
+  end;
+
+  // Director
+  pos2 := pos(FilmDirectorAnchor, Content);
+  if pos2 > 0 then begin
+    Content := copy(Content, pos2, len);
+    Content := copy(Content, pos('>', Content) + 1, len);
+    pos2 := pos('</span', Content);
+    Value := copy(Content, 1, pos2 - 1);
+    ClearString(Value);
+    SetField(fieldDirector, Value);
+    Content := copy(Content, pos2, len);
+  end;
+  
+  // Creators and actors
+  pos2 := pos('</table', Content);
+  Creators := copy(Content, 1, pos2 - 1);
+  Content := copy(Content, pos2, len);
+  Actors := Creators;
+  pos2 := pos(FilmActorsAnchor, Actors);
+  if pos2 > 0 then begin
+    Actors := copy(Actors, pos2, len);
+    Actors := copy(Actors, pos('>', Actors) + 1, len);
+    pos2 := pos('</tr', Actors);
+    Actors := copy(Actors, 1, pos2 - 1);
+    ClearText(Actors);
+    Value := Actors;
+    ClearString(Value);
+    SetField(fieldActors, Value);
+  end;
+  Creators := StringReplace(Creators,
+                            '</td><td class="PersonsList',
+                            ': </td><td class="PersonsList');
+  ClearText(Creators);
+  Creators := StringReplace(Creators, Actors, '');
+  Creators := StringReplace(Creators, 'роли озвучивали: ', '');
+  Creators := FilmType + #13#10 + Creators;
+  Creators := StringReplace(Creators, #13#10#13#10, #13#10);
+  SetField(fieldComments, Creators);
+  
+  Page.Free;
+  //DisplayResults;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+    if Input('Import from Animator',
+             'Enter the title of the movie:', MovieName) then
+    begin
+      MovieName := WinToKOI(MovieName);
+      AnalyzeFoundFilmsPage(BaseAddress +
+        'db/index.phtml?cPage=&p=search&SearchMask=1&text=' +
+        UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

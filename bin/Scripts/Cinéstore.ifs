@@ -1,0 +1,204 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten
+Title=Cinéstore
+Description=Cinéstore (FR) import avec image
+Site=http://www.cinestore.com
+Language=FR
+Version=2.0 (25/06/2005)
+Requires=3.5.0
+Comments=Refait le 25/06/2005 par Antoine Potten|Anciennes versions par nono.1|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+AudioType=1|1|1=Audio -> Format audio|2=Audio -> Langues
+GrandeImage=0|1|0=Toujours la petite image|1=Grande image si dispo
+
+***************************************************)
+
+program Cinestore;
+
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  PageText: string;
+  s1, Title: string;
+  Count: Integer;
+begin
+  PageText := GetPage(Address);
+  if Pos('<h1 style="color: #D20000"><b>Recherche</b></h1>', PageText) = 0 then
+    AnalyzeMoviePage(PageText)
+  else
+  begin
+    PickTreeClear;
+    if Pos('<h4><b>Pas de résultats</b></h4>', PageText) = 0 then
+    begin
+      Count := 0;
+      PickTreeAdd('Résultats de la recherche de "' + TextBetween(PageText, '<h2 style="color: #000000"><b>', '</b></h2>') + '"', '');
+      PageText := TextBetween(PageText, '<h3 style="color: #ffffff">', '</table><br />');
+      while Pos('<h4><img', PageText) > 0 do
+      begin
+        s1 := TextBetween(PageText, '<h4><img', '</tr>');
+        PageText := RemainingText;
+        Address := 'http://www.cinestore.com' + TextBetween(s1, '<a href="', '"');
+        Title := Trim(TextBetween(s1, 'class="link1">', '</a>'));
+        Title := StringReplace(Title + ' (' + TextBetween(s1, '<h4> ', '</td>'), #13#10, '') + ')';
+        HTMLRemoveTags(Title);
+        HTMLDecode(Title);
+        PickTreeAdd(Title, Address);
+        Count := Count + 1;
+      end;
+    end;
+    if Count = 1 then
+      AnalyzePage(Address)
+    else
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+end;
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value: string;
+begin
+  if CanSetField(fieldUrl) then
+  begin
+    Value := TextBetween(PageText, '?idproduit=', '&amp');
+    SetField(fieldUrl, 'http://www.cinestore.com/fiche_produit_film_gen_idproduit=' + Value + '.html');
+  end;
+  if CanSetField(fieldOriginalTitle) then
+  begin
+    Value := TextBetween(PageText, '<h1 style="color: #D20000"><b>', '</b></h1>');
+    HTMLDecode(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Réalisé par : </b>', '</h4>');
+    if Value <> '' then
+    begin
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldDirector, Value);
+    end;
+  end;
+  if CanSetField(fieldActors) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Avec : </b>', '</h4>');
+    if Value <> '' then
+    begin
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldActors, Value);
+    end;
+  end;
+  if CanSetField(fieldMediaType) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>DVD Zone', '</b>');
+    if Value <> '' then
+      SetField(fieldMediaType, 'DVD Zone' + Value);
+  end;
+  if CanSetField(fieldComments) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Bonus : </b></h4><h5 style="color: #000000;">', '</h5>');
+    if Value <> '' then
+    begin
+      Value := StringReplace(Value, '<br />', #13#10);
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldComments, 'Bonus : ' + #13#10 + Value);
+    end;
+  end;
+  if CanSetField(fieldDescription) then
+  begin
+    Value := TextBetween(PageText, '<h2>Synopsis</h2>', '</h4>');
+    if Value <> '' then
+    begin
+      Value := TextAfter(Value, '<h4>');
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldDescription, Value);
+    end;
+  end;
+  if CanSetField(fieldVideoFormat) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Vidéo : </b>', '</div>');
+    if Value <> '' then
+    begin
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldVideoFormat, Value);
+    end;
+  end;
+  if CanSetField(fieldAudioFormat) or CanSetField(fieldLanguages) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Audio : </b>', '</div>');
+    if Value <> '' then
+    begin
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      case GetOption('AudioType') of
+        1:  SetField(fieldAudioFormat, Value);
+        2:  SetField(fieldLanguages, Value);
+      end;
+    end;
+  end;
+  if CanSetField(fieldSubtitles) then
+  begin
+    Value := TextBetween(PageText, '<h4><b>Sous-titre : </b>', '</div>');
+    if Value <> '' then
+    begin
+      HTMLRemoveTags(Value);
+      HTMLDecode(Value);
+      SetField(fieldSubtitles, Value);
+    end;
+  end;
+  if CanSetPicture then
+  begin
+    Value := TextBetween(PageText, '<td bgcolor="#FFFFFF"><a href="javascript:Fenetre', '" border');
+    if Value <> '' then
+    begin
+      Value := TextAfter(Value, '<img src="');
+      if Value <> '' then
+      begin
+        if GetOption('GrandeImage') = 1 then
+          Value := StringReplace(Value, '.jpg', '_zoom.jpg');
+        GetPicture(Value);
+      end;
+    end
+    else
+    begin
+      Value := TextBetween(PageText, '<td bgcolor="#FFFFFF"><img src="', '"');
+      if Value <> '' then
+        GetPicture(Value);
+    end;
+  end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('Importation de Cinéstore.com', 'Entrer le titre du film ou son adresse:', MovieName) then
+    begin
+      if Pos('cinestore.com', MovieName) > 0 then
+        AnalyzePage(MovieName)
+      else
+        AnalyzePage('http://www.cinestore.com/recherche/?motcle=' + UrlEncode(MovieName) + '&rub=1');
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

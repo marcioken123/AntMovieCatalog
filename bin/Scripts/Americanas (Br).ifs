@@ -1,0 +1,150 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com/forum/viewtopic.php?t=688</link>
+Title=Americanas
+Description=Movie importation script for Americanas
+Site=www.americanas.com.br
+Language=BR
+Version=1.1 (07 Setembro 2008)
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.americanas.com.br"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=688</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Americanas;
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+
+procedure AnalyzeFilmPage(Address: string);
+var
+  Page: TStringList;
+  value, valor: string;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Address := 'http://www.americanas.com.br' + Address;
+  Page.Text := UTF8Decode(GetPage(Address));
+
+  SetField(fieldURL, Address);
+  LineNr := FindLine('T&iacute;tulo Original:', Page, 0) + 1;
+  valor := Page.GetString(LineNr);
+  HTMLRemoveTags(valor);
+  SetField(fieldOriginalTitle, trim(valor));
+
+  LineNr := FindLine('T&iacute;tulo:</font>', Page, 0) + 1;
+  valor := Page.GetString(LineNr);
+  HTMLRemoveTags(valor);
+  SetField(fieldTranslatedTitle, trim(valor));
+
+  LineNr := FindLine('Pa&iacute;s(es) de Origem:', Page, 0) + 1;
+  valor := Page.GetString(LineNr);
+  HTMLRemoveTags(valor);
+  SetField(fieldCountry, trim(valor));
+
+  LineNr := FindLine('Ano de Produ&ccedil;&atilde;o:', Page, 0) + 1;
+  valor := Page.GetString(LineNr);
+  HTMLRemoveTags(valor);
+  SetField(fieldYear, valor);
+  LineNr := 0;
+
+  valor := '';
+  repeat
+    LineNr := FindLine('<font class="texto_sinopse">', Page, LineNr + 1);
+    if LineNr > -1 then
+    begin
+      repeat
+        value := Page.GetString(LineNr);
+        HTMLRemoveTags(value);
+        valor := trim(valor + ' ' + value);
+        LineNr := LineNr + 1;
+
+      until (pos('</font>', Page.GetString(LineNr)) > 0);
+    end;
+  until LineNr = -1;
+
+  SetField(fieldDescription, valor);
+  LineNr := FindLine('imgMain', Page, 0);
+  valor := Page.GetString(LineNr);
+  valor := TextBetween(valor, 'src="', '"');
+  GetPicture(valor);
+  valor := TextBetween(Page.Text, '<b>Elenco</b>:<BR></td>', '</td>');
+  valor := StringReplace(valor, '</a>', ', ');
+  HTMLRemoveTags(valor);
+
+  valor := trim(StringReplace(valor, #13#10, ''));
+  if copy(valor, length(valor), 1) = ',' then
+  begin
+    valor := copy(valor, 1, length(valor) - 1);
+    valor := valor + '.';
+  end;
+  SetField(fieldActors, valor);
+
+  LineNr := FindLine('Dura&ccedil;&atilde;o:', Page, 0) + 1;
+  valor := Page.GetString(LineNr);
+  HTMLRemoveTags(valor);
+  valor := trim(StringReplace(valor, 'minutos', ''));
+  SetField(fieldLength, valor);
+
+  valor := TextBetween(Page.Text, 'Legenda: </font>', '</font>');
+  HTMLRemoveTags(valor);
+  SetField(fieldSubtitles, trim(valor));
+
+  valor := TextBetween(Page.Text, 'Audio Original: </font>', '</font>');
+  HTMLRemoveTags(valor);
+  SetField(fieldLanguages, trim(valor));
+end;
+
+procedure AnalyzePage;
+var
+  Page: TStringList;
+  LineNr: Integer;
+  url, encontrar, nome, Address: string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage('http://www.americanas.com.br/home/begin.search?home=acomSearch&departmentId=589&queryName=' + UrlEncode(MovieName));
+
+  LineNr := 0;
+  if pos('Não encontrou nenhum resultado.', Page.Text) = 0 then
+  begin
+    encontrar := 'namePriceLink';
+    repeat
+      LineNr := FindLine(encontrar, Page, LineNr + 1);
+      if LineNr = -1 then
+        break;
+      nome := UTF8Decode(Page.GetString(LineNr));
+      if pos('</a></h3>', nome) > 0 then
+      begin
+        url := Page.GetString(LineNr);
+        HTMLRemoveTags(nome);
+        url := TextBetween(url, 'a href="', '"');
+        if length(url) > 0 then
+          PickTreeAdd(nome, url);
+      end;
+    until (LineNr = -1);
+    if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+    Page.Free;
+  end
+  else
+    showmessage('O filme não foi encontrado');
+end;
+begin
+  PickListClear;
+  MovieName := GetField(fieldTranslatedTitle);
+  if (length(MovieName)=0) then
+    MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do Americanas', 'Escreva o nome do filme:', MovieName) then
+    AnalyzePage;
+end.

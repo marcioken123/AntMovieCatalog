@@ -1,0 +1,164 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com</link>
+Title=InfoFilmes
+Description=Movie importation script for InfoFilmes
+Site=http://www.infofilmes.com/
+Language=BR
+Version=1.0
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.infofilmes.com"|Caso detectem erros coloquem-nos no meu site: <link>http://www.guardiao.com/forum/viewtopic.php?t=817</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program infofilmes;
+uses
+  StringUtils1;
+var
+  MovieName: String;
+
+procedure AnalyzeFilmPage(Address: String);
+var Page: TStringList;
+    i: Integer;
+    valor: String;
+begin
+  Page := TStringList.Create;
+  Page.text:=URLDecode(GetPage(Address));
+  i:=FindLine('<div id="detalhes_filme">',Page,0);
+  if i>-1 then
+  begin
+      valor:=Page.GetString(i+1);
+      HTMLRemoveTags(valor);
+      valor:=trim(valor);
+      SetField(fieldTranslatedTitle, valor);
+
+      valor:=Page.GetString(i+2);
+      HTMLRemoveTags(valor);
+      valor:=trim(valor);
+      valor:=trim(Copy(valor,2,length(valor)-2));
+      SetField(fieldOriginalTitle, valor);
+
+      valor:=Page.GetString(i+3);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'Diretor:',''));
+      SetField(fieldDirector, valor);
+
+      valor:=Page.GetString(i+4);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'Produtor:',''));
+      SetField(fieldProducer, valor);
+
+      valor:=Page.GetString(i+5);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'Pa&iacute;s:',''));
+      SetField(fieldCountry, valor);
+      
+      valor:=Page.GetString(i+6);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'G&ecirc;nero:',''));
+      case valor of
+        '2':valor:='Ação';
+        '3':valor:='Adulto';
+        '10':valor:='Animação';
+        '7':valor:='Aventura';
+        '9':valor:='Comédia';
+        '12':valor:='Comédia Romântica';
+        '20':valor:='Copa 2006';
+        '18':valor:='Documentário';
+        '5':valor:='Drama';
+        '13':valor:='Faroeste';
+        '8':valor:='Ficção';
+        '14':valor:='Guerra';
+        '16':valor:='Infantil';
+        '19':valor:='Musical';
+        '11':valor:='Policial';
+        '15':valor:='Romance';
+        '6':valor:='Séries de TV';
+        '17':valor:='Show/Espetáculo';
+        '1':valor:='Suspense';
+        '4':valor:='Terror';
+       end;
+      SetField(fieldCategory, valor);
+
+      valor:=Page.GetString(i+7);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'Ano:',''));
+      SetField(fieldYear, valor);
+
+      valor:=Page.GetString(i+8);
+      HTMLRemoveTags(valor);
+      valor:=trim(StringReplace(valor,'Atores:',''));
+      SetField(fieldActors, valor);
+
+      valor:=Page.GetString(i+9);
+      HTMLRemoveTags(valor);
+      valor:=trim(TextBetween(valor,'Dura&ccedil;&atilde;o:','min'));
+      SetField(fieldLength, valor);
+      
+      valor:=Page.GetString(i+11);
+      HTMLRemoveTags(valor);
+      valor:=trim(valor);
+      SetField(fieldDescription, valor);
+      
+      valor:=TextBetween(Page.Text,'/img/capas/','"');
+      GetPicture('http://www.infofilmes.com/infofilmes.com/img/capas/'+valor);
+      
+      SetField(fieldURL,Address);
+  end;
+  
+  
+  
+  Page.Free;
+end;
+
+procedure AnalyzePage(Address, Param: String);
+var Page: TStringList;
+    x, repete: Integer;
+    linha, nome, url: String;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := URLDecode(PostPage(Address,Param));
+  if pos('tabela_conteudo',Page.Text)=0 then
+    showmessage('Filme não encontrado')
+  else
+  begin
+   for x:=0 to Page.Count-1 do
+   begin
+    linha := Page.GetString(x);
+    if pos('tabela_conteudo', linha)>0 then
+    begin
+      repete:=0;
+      repeat
+        linha:=Page.GetString(x+1+repete);
+        if repete=0 then
+          url:=TextBetween(linha,'<a href="','"');
+        nome:=TextBetween(linha,'class="filmeingles">','</span>');
+        repete:=repete+1;
+      until (nome<>'') or (repete=2);
+      if (nome<>'') and (url<>'') then
+        PickTreeAdd(nome, 'http://www.infofilmes.com' + url);
+    end;
+   end;
+    if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  end;
+  Page.Free;
+end;
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do www.infofilmes.com', 'Escreva o nome do filme:', MovieName) then
+  begin
+      AnalyzePage('http://www.infofilmes.com/busca.html','data%5BFilme%5D%5BTRANSLATEDTITLE%5D='+MovieName);
+  end;
+end.

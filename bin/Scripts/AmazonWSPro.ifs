@@ -1,0 +1,478 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=bad4u
+Title=AmazonWSPro
+Description=Finds and imports information about movies from Amazon.com/.de/.fr/.co.uk/.ca/.co.jp
+Site=www.amazon.com/.de/.fr/.co.uk/.ca/.co.jp
+Language=EN,DE,FR
+Version=1.1.0
+Requires=3.5.0
+Comments=This script is based on AmazonWS script by Michael Jervis. |It is configurable to source your details from any localised version of Amazon and does so over their E-Commerce web services interface. Thus it's not screen scraping and won't be broken by every change that Amazon make.
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ActorsLayout=0|0|0=Import actors list separated by commas (default)|1=Import actors list separated by slashes|2=Import actors list separated by linebreaks
+AmazonVersion=2|0|0=Amazon.com (default)|1=Amazon.co.uk|2=Amazon.de|3=Amazon.co.jp|4=Amazon.ca|5=Amazon.fr
+AspectRatio=0|0|0=Import aspect ratio to resolution field (default)|1=Import aspect ratio to video format field
+BatchMode=0|0|0=BatchMode OFF. Always prompt for title. Always show results list (default)|1=BatchMode ON. Only prompt for title if no title on database. Take first result from results list (not recommended)|2=BatchMode ON. Only prompt for title if no title on database. Take first exact title match if found (recommended, best for updating old database)
+ExtendedResultsList=1|1|0=Show movie titles only|1=Show movie title, studio, release date and length (default)
+ImageSize=1|1|0=Small|1=Medium (default)|2=Large
+ImportEditorialReviews=1|1|0=Do not import editorial reviews and/or summary|1=Import editorial reviews and/or summary to description field(default)|2=Import editorial reviews and/or summary to comments field
+ImportCustomerComments=1|1|0=Do not import customer reviews to comments field|1=Import latest five customer reviews to comments field (default)
+ImportPicturesOnly=0|0|0=Import all data (default)|1=Import only cover pictures
+ReleaseDate=0|0|0=Media Release Date (default)|1=Theatrical Release Date
+
+***************************************************)
+
+// AmazonWSPro script version 1.1.0 by bad4u
+// This script is an adaption of the AmazonBooks.ifs script, both scripts based on AmazonWS script by Michael Jervis
+//
+// v.1.1.0 - 29/06/2008 - fixed: builds item URL from ASIN instead parsing Amazon's item URL
+// v.1.0.0 - 16/03/2008 - added: 'find more' button on results list for next results page(s)
+//                      - added: total results and counter on results list
+//                      - fixed: minor bug on batchmode 2 when there was only one result
+//                      - fixed: extended results list layout
+// v.0.9.2 - 09/03/2008 - added: 'import picture only' option
+//                      - added: CanSetField function on all imports
+//                      - added: aspect ratio import
+//                      - added: support for amc version 3.5.0.x
+// v.0.9.0 - 08/03/2008 - first public release
+//
+// Please report problems and bugs on Ant Movie Catalog forum at http://forum.antp.be/ - thanks !
+
+program AmazonWSPro;
+
+uses
+  StringUtils1;
+
+var
+  SearchValue, AmazonTLD: string;
+
+const
+  AMAZON_API_KEY    = '1YNQR72EVH3JZTVH84G2';
+
+procedure SetAmazonTLD;
+  begin
+    case GetOption('AmazonVersion') of
+      0: AmazonTLD := '.com';
+      1: AmazonTLD := '.co.uk';
+      2: AmazonTLD := '.de';
+      3: AmazonTLD := '.jp';
+      4: AmazonTLD := '.ca';
+      5: AmazonTLD := '.fr';
+    end;
+  end;
+
+procedure AnalyzeIndexPage(URL: string);
+  var
+    oXml: TJvSimpleXml;
+    Page: TStringList;
+    LineNr, ItemStart, ItemPage, TotalPages, Counter1, Counter2, TotalResults: integer;
+    Title, TitleURL, TitleASIN, ReleaseDate, Publisher, RunningTime, MediaType, Temp: string;
+  begin
+    oXml := TJvSimpleXml.Create(nil);
+    oXml.LoadFromString(GetPage(URL));
+    Page := TStringList.Create;
+    Page.Text := UTF8Decode(oXml.SaveToString);
+    // Page.SaveToFile('searchpage.txt'); // debug
+    // Only one result on batch mode
+    if (FindLine('<IsValid>True</IsValid>', Page, 0) > -1) and (FindLine('<TotalResults>1</TotalResults>', Page, 0) > -1) and (GetOption('BatchMode') > 0) then
+      begin
+        LineNr := FindLine('<DetailPageURL>', Page, LineNr);
+        TitleASIN := TextBetween(Page.GetString(LineNr), '<ASIN>', '</ASIN>');
+        AnalyzeDetailsPage('http://www.amazon' + AmazonTLD + '/gp/product/' + TitleASIN);
+        oXml.Free;
+        Page.Free;
+        Exit;
+      end;
+    // Build results list
+    if (FindLine('<IsValid>True</IsValid>', Page, 0) > -1) and (FindLine('<Code>AWS.ECommerceService.NoExactMatches</Code>', Page, 0) = -1) then
+      begin
+        if FindLine('<ItemPage>', Page, 0) > -1 then
+          begin
+            LineNr := FindLine('<ItemPage>', Page, 0);
+            ItemPage := StrToInt(TextBetween(Page.GetString(LineNr), '<ItemPage>', '</ItemPage>'), 0);
+          end
+        else
+          ItemPage := 1;
+        if FindLine('<TotalPages>', Page, 0) > -1 then
+          begin
+            LineNr := FindLine('<TotalPages>', Page, 0);
+            TotalPages := StrToInt(TextBetween(Page.GetString(LineNr), '<TotalPages>', '</TotalPages>'), 0);
+          end
+        else
+          TotalPages := 1;
+        if FindLine('<TotalResults>', Page, 0) > -1 then
+          begin
+            LineNr := FindLine('<TotalResults>', Page, 0);
+            TotalResults := StrToInt(TextBetween(Page.GetString(LineNr), '<TotalResults>', '</TotalResults>'), 0);
+          end
+        else
+          TotalResults := 1;
+        // Pagecounter on results list
+        Temp := '';
+        Counter1 := 1;
+        Counter2 := 1;
+        Temp := IntToStr(ItemPage) + '0';
+        Counter2 := StrToInt(Temp, 0);
+        Counter1 := Counter2 - 9;
+        if Counter2 > TotalResults then
+          Counter2 := TotalResults;
+        if Counter1 < 1 then
+          Counter1 := 1;
+        LineNr := 0;
+        PickTreeClear();
+        PickTreeAdd('Search results ' + IntToStr(Counter1) + ' to ' + IntToStr(Counter2) + ' (of ' + IntToStr(TotalResults) + ') on amazon' + AmazonTLD + ' :', '');
+        while FindLine('<ASIN>', Page, LineNr) > -1 do
+          begin
+            ReleaseDate := '';
+            Publisher := '';
+            RunningTime := '';
+            LineNr := FindLine('<ASIN>', Page, LineNr);
+            TitleASIN := TextBetween(Page.GetString(LineNr), '<ASIN>', '</ASIN>');
+			      ItemStart := LineNr;
+            if (FindLine('<Binding>', Page, ItemStart) < FindLine('<Title>', Page, ItemStart)) and (FindLine('<Binding>', Page, ItemStart) > ItemStart) then
+              begin
+                LineNr := FindLine('<Binding>', Page, ItemStart);
+                MediaType := TextBetween(Page.GetString(LineNr), '<Binding>', '</Binding>');
+              end;
+            if (FindLine('<ReleaseDate>', Page, ItemStart) < FindLine('<Title>', Page, ItemStart)) and (FindLine('<ReleaseDate>', Page, ItemStart) > ItemStart) then
+              begin
+                LineNr := FindLine('<ReleaseDate>', Page, ItemStart);
+                ReleaseDate := TextBetween(Page.GetString(LineNr), '<ReleaseDate>', '</ReleaseDate>');
+              end;
+            if (FindLine('</RunningTime>', Page, ItemStart) < FindLine('<Title>', Page, ItemStart)) and (FindLine('</RunningTime>', Page, ItemStart) > ItemStart) then
+              begin
+                LineNr := FindLine('</RunningTime>', Page, ItemStart);
+                RunningTime := TextBetween(Page.GetString(LineNr), '">', '</RunningTime>') + ' ' + TextBetween(Page.GetString(LineNr), '<RunningTime Units="', '">');
+              end;
+            if (FindLine('<Studio>', Page, ItemStart) < FindLine('<Title>', Page, ItemStart)) and (FindLine('<Studio>', Page, ItemStart) > ItemStart) then
+              begin
+                LineNr := FindLine('<Studio>', Page, ItemStart);
+                Publisher := TextBetween(Page.GetString(LineNr), '<Studio>', '</Studio>');
+              end;
+            LineNr := FindLine('<Title>', Page, ItemStart);
+            Title := TextBetween(Page.GetString(LineNr), '<Title>', '</Title>');
+            if Pos(' [', Title) > 0 then
+              Title := TextBefore(Title, ' [', '');
+            HTMLDecode(Title);
+            HTMLRemoveTags(Title);
+            // BatchMode 1 -> take first movie
+            if GetOption('BatchMode') = 1 then
+              begin
+                AnalyzeDetailsPage('http://www.amazon' + AmazonTLD + '/gp/product/' + TitleASIN);
+                Exit;
+              end;
+            // BatchMode 2 -> take movie if title matches exactly
+            if (GetOption('BatchMode') = 2) and (Title = SearchValue) then
+              begin
+                AnalyzeDetailsPage('http://www.amazon' + AmazonTLD + '/gp/product/' + TitleASIN);
+                Exit;
+              end;
+            if MediaType <> '' then
+              Title := Title + ' | ' + MediaType;
+            // Extended results list
+            if GetOption('ExtendedResultsList') = 1 then
+              begin
+                if ReleaseDate <> '' then
+                  Title := Title + ' | ' + ReleaseDate;
+                if Publisher <> '' then
+                  Title := Title + ' | ' + Publisher;
+                if RunningTime <> '' then
+                  Title := Title + ' | ' + RunningTime;
+              end;
+            HTMLDecode(Title);
+            HTMLRemoveTags(Title);
+            PickTreeAdd(Title, 'http://www.amazon' + AmazonTLD + '/gp/product/' + TitleASIN);
+            LineNr := LineNr + 1;
+          end;
+      end;
+    // No titles found
+    if (FindLine('<IsValid>True</IsValid>', Page, 0) > -1) and (FindLine('<Code>AWS.ECommerceService.NoExactMatches</Code>', Page, 0) > -1) then
+      begin
+        ShowWarning('No titles matched your query.');
+        Exit;
+      end;
+    // Invalid result
+    if FindLine('<IsValid>False</IsValid>', Page, 0) > -1 then
+      begin
+        ShowMessage('Invalid result from amazon.');
+        Exit;
+      end;
+    // Show results list
+    oXml.Free;
+    Page.Free;
+    if ItemPage < TotalPages then
+      begin
+        ItemPage := ItemPage + 1;
+        PickTreeMoreLink('http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemSearch&SearchIndex=Video&ResponseGroup=ItemAttributes&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&ItemPage=' + IntToStr(ItemPage) + '&Keywords=' + UrlEncode(SearchValue));
+      end;
+    if PickTreeExec(TitleURL) then
+      begin
+        if TitleURL <> 'http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemSearch&SearchIndex=Video&ResponseGroup=ItemAttributes&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&ItemPage=' + IntToStr(ItemPage) + '&Keywords=' + UrlEncode(SearchValue) then
+          AnalyzeDetailsPage(TitleURL);
+        if TitleURL = 'http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemSearch&SearchIndex=Video&ResponseGroup=ItemAttributes&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&ItemPage=' + IntToStr(ItemPage) + '&Keywords=' + UrlEncode(SearchValue) then
+          AnalyzeIndexPage('http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemSearch&SearchIndex=Video&ResponseGroup=ItemAttributes&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&ItemPage=' + IntToStr(ItemPage) + '&Keywords=' + UrlEncode(SearchValue));
+        Exit;
+      end
+    else
+      Exit;
+  end;
+
+procedure AnalyzeDetailsPage(URL: string);
+  var
+    oXml: TJvSimpleXml;
+    Page: TStringList;
+    LineNr: integer;
+    ASIN, FullValue, Value, Temp: string;
+  begin
+    ASIN := '';
+    ASIN := TextAfter(URL, 'http://www.amazon' + AmazonTLD + '/gp/product/');
+    oXml := TJvSimpleXml.Create(nil);
+    oXml.LoadFromString(GetPage('http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemLookup&ResponseGroup=Large&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&ItemId=' + ASIN));
+    Page := TStringList.Create;
+    Page.Text := UTF8Decode(oXml.SaveToString);
+    // Page.SaveToFile('detailspage.txt'); // debug
+    if (FindLine('<IsValid>True</IsValid>', Page, 0) > -1) and (GetOption('ImportPicturesOnly') = 0) then
+      begin
+        // Original Title
+        Value := '';
+        LineNr := FindLine('<Title>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<Title>', '</Title>');
+        if Pos(' [', Value) > 0 then
+          Value := TextBefore(Value, ' [', '');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldOriginalTitle) then
+          SetField(fieldOriginalTitle, Value);
+        // URL
+        Value := '';
+        Value := 'http://www.amazon' + AmazonTLD + '/o/ASIN/' + ASIN + '/';
+        if CanSetField(fieldURL) then
+          SetField(fieldURL, Value);
+        // Media Type
+        Value := '';
+        LineNr := FindLine('<Binding>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<Binding>', '</Binding>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldMediaType) then
+          SetField(fieldMediaType, Value);
+        // Number of discs
+        Value := '';
+        LineNr := FindLine('<NumberOfItems>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<NumberOfItems>', '</NumberOfItems>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldDisks) then
+          SetField(fieldDisks, Value);
+        // Director
+        Value := '';
+        LineNr := FindLine('<Director>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<Director>', '</Director>');
+        while FindLine('<Director>', Page, LineNr+1) > -1 do
+          begin
+            LineNr := LineNr + 1;
+            LineNr := FindLine('<Director>', Page, LineNr);
+            Value := Value + ', ' + TextBetween(Page.GetString(LineNr), '<Director>', '</Director>');
+          end;
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldDirector) then
+          SetField(fieldDirector, Value);
+        // Studio
+        Value := '';
+        LineNr := FindLine('<Studio>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<Studio>', '</Studio>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldProducer) then
+          SetField(fieldProducer, Value);
+        // Length
+        Value := '';
+        LineNr := FindLine('</RunningTime>', Page, 0);
+        Value := Page.GetString(LineNr);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldLength) then
+          SetField(fieldLength, Value);
+        // Year
+        Value := '';
+        LineNr := FindLine('<ReleaseDate>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<ReleaseDate>', '</ReleaseDate>');
+        if (GetOption('ReleaseDate') = 1) and (FindLine('<TheatricalReleaseDate>', Page, 0) > -1) then
+          begin
+            LineNr := FindLine('<TheatricalReleaseDate>', Page, 0);
+            Value := TextBetween(Page.GetString(LineNr), '<TheatricalReleaseDate>', '</TheatricalReleaseDate>');
+          end;
+        Value := Copy(Value, 0, 4);
+        if CanSetField(fieldYear) then
+          SetField(fieldYear, Value);
+        // Rating
+        Value := '';
+        LineNr := FindLine('<AverageRating>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<AverageRating>', '</AverageRating>');
+        Value := FloatToStr(StrToFloat(Value)*2);
+        if CanSetField(fieldRating) then
+          SetField(fieldRating, Value);
+        // Actors
+        Value := '';
+        LineNr := FindLine('<Actor>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<Actor>', '</Actor>');
+        while FindLine('<Actor>', Page, LineNr+1) > -1 do
+          begin
+            LineNr := LineNr + 1;
+            LineNr := FindLine('<Actor>', Page, LineNr);
+            if GetOption('ActorsLayout') = 0 then
+              Value := Value + ', ' + TextBetween(Page.GetString(LineNr), '<Actor>', '</Actor>');
+            if GetOption('ActorsLayout') = 1 then
+              Value := Value + ' / ' + TextBetween(Page.GetString(LineNr), '<Actor>', '</Actor>');
+            if GetOption('ActorsLayout') = 2 then
+              Value := Value + #13#10 + TextBetween(Page.GetString(LineNr), '<Actor>', '</Actor>');
+          end;
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldActors) then
+          SetField(fieldActors, Value);
+        // Aspect Ratio
+        Value := '';
+        LineNr := FindLine('<AspectRatio>', Page, 0);
+        Value := TextBetween(Page.GetString(LineNr), '<AspectRatio>', '</AspectRatio>');
+        if (CanSetField(fieldResolution)) and (GetOption('AspectRatio') = 0) then
+          SetField(fieldResolution, Value);
+        if (CanSetField(fieldVideoFormat)) and (GetOption('AspectRatio') = 1) then
+          SetField(fieldVideoFormat, Value);
+        // Languages
+        Value := '';
+        LineNr := FindLine('<Type>Original Language</Type>', Page, 0);
+        if FindLine('<Type>Original Language</Type>', Page, 0) > -1 then
+          Value := TextBetween(Page.GetString(LineNr-1), '<Name>', '</Name>');
+        while FindLine('<Type>Original Language</Type>', Page, LineNr+1) > -1 do
+          begin
+            LineNr := FindLine('<Type>Original Language</Type>', Page, LineNr+1);
+            Value := Value + ', ' + TextBetween(Page.GetString(LineNr-1), '<Name>', '</Name>');
+          end;
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldLanguages) then
+          SetField(fieldLanguages, Value);
+        // Subtitles
+        Value := '';
+        LineNr := FindLine('<Type>Subtitled</Type>', Page, 0);
+        if FindLine('<Type>Subtitled</Type>', Page, 0) > -1 then
+          Value := TextBetween(Page.GetString(LineNr-1), '<Name>', '</Name>');
+        while FindLine('<Type>Subtitled</Type>', Page, LineNr+1) > -1 do
+          begin
+            LineNr := FindLine('<Type>Subtitled</Type>', Page, LineNr+1);
+            Value := Value + ', ' + TextBetween(Page.GetString(LineNr-1), '<Name>', '</Name>');
+          end;
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        if CanSetField(fieldSubtitles) then
+          SetField(fieldSubtitles, Value);
+        // Editorial Reviews
+        if GetOption('ImportEditorialReviews') > 0 then
+          begin
+            FullValue := '';
+            Value := '';
+            Temp := Page.Text;
+            if FindLine('<EditorialReviews>', Page, 0) > -1 then
+              begin
+                while Pos('<EditorialReview>', Temp) > 0 do
+                  begin
+                    Value := TextBetween(Temp, '<EditorialReview>', '</EditorialReview>');
+                    Temp := RemainingText;
+                    FullValue := FullValue + '[ ' + TextBetween(Value, '<Source>', '</Source>') + ' ]' + #13#10 + #13#10;
+                    FullValue := FullValue + TextBetween(Value, '<Content>', '</Content>') + #13#10;
+                    if Pos('&#60;span class', FullValue) > 0 then
+                      FullValue := TextBefore(FullValue, '&#60;span class', '') + #13#10;
+                    FullValue := FullValue + #13#10 + '-------------------------------------------------------------------------------' + #13#10 + #13#10;
+                  end;
+              end;
+            FullValue := StringReplace(FullValue, #9, ' ');
+            FullValue := StringReplace(FullValue, '&#60;li&#62; ', #13#10);
+            FullValue := StringReplace(FullValue, #13#10+#13#10+#13#10, #13#10+#13#10);
+            HTMLDecode(FullValue);
+            HTMLRemoveTags(FullValue);
+            if (GetOption('ImportEditorialReviews') = 1) and (CanSetField(fieldDescription)) then
+              SetField(fieldDescription, FullValue);
+            if (GetOption('ImportEditorialReviews') = 2) and (CanSetField(fieldComments)) then
+              SetField(fieldComments, FullValue);
+          end;
+        // Customer Reviews
+        if GetOption('ImportCustomerComments') > 0 then
+          begin
+            FullValue := '';
+            Value := '';
+            Temp := Page.Text;
+            if FindLine('<CustomerReviews>', Page, 0) > -1 then
+              begin
+                while Pos('<Review>', Temp) > 0 do
+                  begin
+                    Value := TextBetween(Temp, '<Review>', '</Review>');
+                    Temp := RemainingText;
+                    FullValue := FullValue + '[ ' + TextBetween(Value, '<Name>', '</Name>');
+                    if Pos('<Nickname>', Value) > 0 then
+                      FullValue := FullValue + ' "' + TextBetween(Value, '<Nickname>', '</Nickname>') + '"';
+                    if (TextBetween(Value, '<Name>', '</Name>') = '') and (TextBetween(Value, '<Nickname>', '</Nickname>') = '') then
+                      FullValue := FullValue + 'Anonymous';
+                    if Pos('<Location>', Value) > 0 then
+                      FullValue := FullValue + ' (' + TextBetween(Value, '<Location>', '</Location>') + ')';
+                    FullValue := FullValue + ' : ' + TextBetween(Value, '<Summary>', '</Summary>') + ' ]' + #13#10 + #13#10;
+                    FullValue := FullValue + TextBetween(Value, '<Content>', '</Content>') + #13#10;
+                    FullValue := FullValue + #13#10 + '-------------------------------------------------------------------------------' + #13#10 + #13#10;
+                  end;
+              end;
+            FullValue := StringReplace(FullValue, #9, ' ');
+            FullValue := StringReplace(FullValue, '&#60;li&#62; ', #13#10);
+            FullValue := StringReplace(FullValue, #13#10+#13#10+#13#10, #13#10+#13#10);
+            HTMLDecode(FullValue);
+            HTMLRemoveTags(FullValue);
+            if (GetOption('ImportCustomerComments') = 1) and (GetOption('ImportEditorialReviews') = 2) then
+              FullValue := GetField(fieldComments) + FullValue;
+            if CanSetField(fieldComments) then
+              SetField(fieldComments, FullValue);
+          end;
+      end;
+    // Image
+    Value := '';
+    if GetOption('ImageSize') = 0 then
+      LineNr := FindLine('<SmallImage>', Page, 0);
+    if GetOption('ImageSize') = 1 then
+      LineNr := FindLine('<MediumImage>', Page, 0);
+    if (GetOption('ImageSize') = 1) and (LineNr = -1) then
+      LineNr := FindLine('<SmallImage>', Page, 0);
+    if GetOption('ImageSize') = 2 then
+      LineNr := FindLine('<LargeImage>', Page, 0);
+    if (GetOption('ImageSize') = 2) and (LineNr = -1) then
+      LineNr := FindLine('<MediumImage>', Page, 0);
+    if (GetOption('ImageSize') = 2) and (LineNr = -1) then
+      LineNr := FindLine('<SmallImage>', Page, 0);
+    if LineNr > -1 then
+      Value := TextBetween(Page.GetString(LineNr+1), '<URL>', '</URL>');
+    if (CanSetPicture()) and (Value <> '') then
+      GetPicture(Value);
+    oXml.Free;
+    Page.Free;
+  end;
+  
+begin
+  if CheckVersion(3,5,0) then
+    begin
+      SearchValue := '';
+      SetAmazonTLD;
+      SearchValue := GetField(fieldOriginalTitle);
+      if SearchValue = '' then
+        SearchValue := GetField(fieldTranslatedTitle);
+      if (GetOption('BatchMode') = 0) or (SearchValue = '') then
+        if not Input('Amazon' + AmazonTLD + ' Movie Search', 'Please enter a movie title:', SearchValue) then
+          Exit;
+      AnalyzeIndexPage('http://ecs.amazonaws' + AmazonTLD + '/onca/xml?Service=AWSECommerceService&Operation=ItemSearch&SearchIndex=Video&ResponseGroup=ItemAttributes&Version=2007-10-29&AWSAccessKeyId=' + AMAZON_API_KEY + '&Keywords=' + UrlEncode(SearchValue));
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least version 3.5.0)');
+end.

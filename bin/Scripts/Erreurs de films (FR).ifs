@@ -1,0 +1,242 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=ErreursDeFilms.com
+Description=Recherche d'erreurs dans des films
+Site=http://www.erreursdefilms.com
+Language=FR
+Version=19 du 23/05/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script
+Format du Titre=3|3|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule
+Titre en double=0|0|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Recherche sur le titre=0|0|0=Traduit|1=Original
+
+***************************************************)
+
+program ErreurDeFilm_SEARCH;
+uses
+  ScorEpioNCommonScript;
+
+const
+  VersionScript = '19 du 23/05/2005';
+  NomScript = 'ERREURS DE FILMS';
+  urlDomain = 'erreursdefilms.com';
+
+var
+  MovieName, NomFilm, Adresse, Parametre, Reponse : string;
+  premiereExecution : Integer;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DES FILMS
+//------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address, Params: string);
+var
+  Line, aucun_film,page_film,titre_film, la_page : string;
+  BeginPos, EndPos, compteur: Integer;
+  
+  begin
+//vide la liste des films
+  PickTreeClear;
+
+//charge la page
+  Address := URLEncode(Address);
+  Params := URLEncode(Params);
+  Line := PostPage(Address,Params);
+  aucun_film := Line;
+  
+//teste si il y a des films trouvés
+  BeginPos := Pos('<tr><td colspan="3" align="center"><b>Résultats sur les titres</b><br><br></td></tr>', aucun_film);
+  if BeginPos <> 0 then 
+  begin
+  Delete(aucun_film, 1, BeginPos);
+  BeginPos := Pos('<tr><td colspan=3 align=center>Aucun résultat à votre recherche</td></tr>', aucun_film);
+  if BeginPos <> 0 then  
+  begin
+    titre_film := MovieName;
+    titre_film := Trim(titre_film);
+    titre_film := AnsiLowerCase(titre_film);
+    titre_film := AnsiUpFirstLetter(titre_film);  
+    showmessage('Aucune erreur trouvée pour : ' + titre_film);
+    exit;
+  end;
+  end;
+
+//introduction résultats  
+  titre_film := MovieName;
+  titre_film := AnsiUpFirstLetter(titre_film);
+  PickTreeAdd('Erreurs trouvées pour le film ' + titre_film + ' :', '');  
+  
+//compte les résultats
+  compteur := 0;
+  
+  BeginPos := Pos('<td>Titre</td>', Line);
+  Delete(Line, 1, BeginPos+14);
+  
+//cherche le lien de la page du film
+  BeginPos := Pos('<td><a href=', Line);
+  
+  repeat
+    Delete(Line, 1, BeginPos+12);
+    EndPos := Pos('>', Line);
+    page_film := 'http://www.erreursdefilms.com/' + Copy(Line, 1, EndPos-2 );
+    page_film := URLEncode(page_film);
+  //cherche le nom du film
+    BeginPos := Pos('>',Line);
+    Delete(Line, 1, BeginPos);
+    EndPos := Pos('</a></td>',Line);
+    titre_film := Copy(Line, 1, EndPos-1 );
+    HTMLdecode(titre_film);
+    HTMLremovetags(titre_film);
+    titre_film := Trim(titre_film);
+    titre_film := AnsiLowerCase(titre_film);
+    titre_film := AnsiUpFirstLetter(titre_film);
+    if titre_film <> '' then
+    begin
+  //ajoute les films
+      PickTreeAdd(titre_film , page_film);
+      la_page := page_film;
+      compteur := compteur+1;
+    end;
+  //cherche le lien de la page du film
+    BeginPos := Pos('<td><a href=', Line);
+  until BeginPos = 0;
+  
+  if compteur = 1 then
+  begin
+    AnalysePageFilm(la_page);
+    exit;
+  end;
+
+  PickTreeExec(Address);
+  if pos(urlDomain,Address) <> 0 then
+     AnalysePageFilm(Address);
+
+
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalysePageFilm(Address: string);
+var
+  Line,les_erreurs, erreur, detail_erreur : string;
+  BeginPos, EndPos: Integer;
+  
+begin
+//charge la page
+  Address := URLEncode(Address);
+  Line := GetPage(Address);
+  
+  les_erreurs := 'Liste des erreurs :';
+
+//cherche les erreurs 
+  BeginPos := Pos('<td width=''*'' valign=''top''>', Line);
+  if BeginPos <> 0 then
+  begin
+    repeat 
+      Delete(Line, 1, BeginPos+26);
+      BeginPos := Pos('<b>', Line);
+      Delete(Line, 1, BeginPos+2);
+      EndPos := Pos('</b><br>', Line);
+//type d'erreur 
+      erreur := copy(Line,1,EndPos-1);
+      erreur := StringReplace(erreur , '<br>', '');
+      HTMLremovetags(erreur);
+      erreur := StringReplace(erreur , #13#10, '');
+      //showmessage(erreur);
+      Delete(Line, 1, EndPos+7);
+      EndPos := Pos('</td>', Line);
+//l'erreur en détail
+      detail_erreur := copy(Line,1,EndPos-1);
+      detail_erreur := StringReplace(detail_erreur , '<br>', ' ');
+      HTMLremovetags(detail_erreur);
+      detail_erreur := StringReplace(detail_erreur , #13#10, '');
+      detail_erreur := Trim(detail_erreur);
+      //showmessage(detail_erreur);
+      erreur := #13#10#13#10+erreur+#13#10+ detail_erreur;
+      erreur := Trim(erreur);
+      erreur := StringReplace(erreur , '          ', '');
+      erreur := StringReplace(erreur , '&nbsp;', '');
+      les_erreurs := les_erreurs + erreur;
+      BeginPos := Pos('<td width=''*'' valign=''top''>', Line);
+    until BeginPos = 0;
+  end;
+  
+ les_erreurs := les_erreurs + #13#10#13#10 + 'Informations provenant du site www.erreursdefilms.com';
+
+//charge les résultats dans la fenêtre
+  SetField( fieldOriginalTitle,formatTitre(GetField(fieldOriginalTitle),GetOption('Format du Titre')));
+  SetField( fieldTranslatedTitle,formatTitre(GetField(fieldTranslatedTitle),GetOption('Format du Titre')));
+  if (GetField(fieldComments) <> '') then
+  begin
+    les_erreurs := GetField(fieldComments)+ #13#10#13#10 + les_erreurs;
+    SetField( fieldComments,les_erreurs);
+  end else
+  begin
+    SetField( fieldComments,les_erreurs);  	
+  end;
+
+// Affichage des titres si original et traduit identique
+  titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+    if Input(NomScript+' by ScorEpioN', 'Entrez le titre du film :', MovieName) then
+    begin
+      //remplace les caractères accentués
+      NomFilm := MovieName;
+      NomFilm := supprimeLesAccents(NomFilm);
+      Adresse := URLEncode('http://www.erreursdefilms.com/resrech.php');
+      Parametre := URLEncode('rechtxt='+NomFilm+'&typerech=tous');
+      AnalyzePage(Adresse, Parametre);
+    end;
+    end else
+    begin
+      NomFilm := MovieName;
+      NomFilm := supprimeLesAccents(NomFilm);
+      Adresse := URLEncode('http://www.erreursdefilms.com/resrech.php');
+      Parametre := URLEncode('rechtxt='+NomFilm+'&typerech=tous');
+      if (premiereExecution = 0) then
+      begin
+          premiereExecution := -1;
+          if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = True) then
+          begin
+            AnalyzePage(Adresse, Parametre);
+          end else
+            exit;
+      end else
+      begin
+        AnalyzePage(Adresse, Parametre);
+      end;
+    end;
+  end else
+    ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+end. 

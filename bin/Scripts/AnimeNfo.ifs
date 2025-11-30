@@ -1,0 +1,252 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Mrknife
+Title=AnimeNfo
+Description=AnimeNfo (US)
+Site=http://www.animenfo.com
+Language=EN
+Version=
+Requires=3.5.0
+Comments= This was slapped together from the script IMDB that was included with version 3.4.3| !!  Country and Language are always set to Japan/Japanese| !!  Only the First Category will be used| !!  You will always have to select a title, even when the list is only 1 option
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program AnimeNfo;
+
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  MovieURL: string;
+  MovieNumber: string;
+
+// ***** analyzes the results page that asks to select a movie from a list *****
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  PageText: string;
+  Value: string;
+begin
+  PageText := GetPage(Address);
+  if pos('<font color=''#FFFFFF''><b>&nbsp;Search Result', PageText) = 0 then
+  begin
+    AnalyzeMoviePage(PageText)
+  end else
+  begin
+
+    PickTreeClear;
+    repeat
+      Value := 'results:';
+      if Value <> '' then
+      begin
+        HTMLRemoveTags(Value);
+        HTMLDecode(Value);
+        PickTreeAdd(Value, '');
+      end;
+      Value := TextBetween(PageText, 'Search Result', 'End Contents');
+      PageText := RemainingText;
+    until not AddMovieTitles(Value);
+    Value := TextBefore(PageText, '"><b>more titles</b></a>', '<a href="');
+    if Value <> '' then
+      PickTreeMoreLink('http://www.animenfo.com/animetitle' + Value );
+    if PickTreeExec(Address) then
+      AnalyzeResultsPage(Address);
+  end;
+end;
+
+// ***** adds the titles contained in <ol>'s items *****
+
+function AddMovieTitles(List: string): Boolean;
+var
+  Value: string;
+  Name: String;
+  Address: string;
+begin
+  Result := False;
+  Value := TextBetween(List, 'href=''animetitle', 'html''>');
+  Name := TextBetween(List, 'html''>', '</a>');
+  List := RemainingText;
+  while Value <> '' do
+  begin
+    Address := Value+'html';
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    PickTreeAdd(Name, 'http://www.animenfo.com/animetitle' + Address);
+    Result := True;
+    Value := TextBetween(List, 'href=''animetitle', 'html''>');
+    Name := TextBetween(List, 'html''>', '</a>');
+    List := RemainingText;
+  end;
+end;
+
+// ***** analyzes the page containing movie information *****
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value, Value2, Value3, FullValue, MovieT, MovieTitle_Html,CHar11 ,SEiyu : string;
+begin
+  MovieNumber := TextBetween(PageText, '/anime/episode/display.php?id=', '&n=');
+  MovieT := TextBetween(PageText, '&n=', '&t=');
+  MovieTitle_Html := TextBetween(PageText, '&t=', '''>');
+
+  MovieURL := 'http://www.animenfo.com/animetitle,' + MovieNumber + ',' + MovieT + ',' + MovieTitle_Html + '.html';
+  // URL
+  if CanSetField(fieldURL) then
+    SetField(fieldURL, MovieURL);
+
+  // Original Title & Year
+  if CanSetField(fieldOriginalTitle) or CanSetField(fieldYear) then
+  begin
+    Value := TextBetween(PageText, '<title>AnimeNfo.Com : Anime : ', '</title>');
+  //  Value2 := TextBefore(Value, ' (', '');
+//    Value := RemainingText;
+ //   HTMLDecode(Value2);
+    if CanSetField(fieldOriginalTitle) then
+      SetField(fieldOriginalTitle, Value);
+    Value2 := TextBetween(PageText, 'animebyyear.php?year=', '''>');
+    if CanSetField(fieldYear) then
+      SetField(fieldYear, Value2);
+  end;
+  // Rating
+  if CanSetField(fieldRating) then
+  begin
+    Value := TextBetween(PageText, 'User Rating</font></td><td valign=''top'' bgcolor=''#F0F0F0''><font class=''DefaultFont''', '/10.0');
+    Value2 := TextBetween(Value, '>', '.');
+    if StrToInt(Copy(RemainingText, 1, 1), 0) >= 5 then
+      Value2 := IntToStr(StrToInt(Value2, 0) + 1);
+    SetField(fieldRating, Value2);
+  end;
+  // Picture     NOT WORKING RIGHT NOW
+ ImportSmallPicture(PageText);
+ 
+  // Director
+  if CanSetField(fieldProducer) then
+  begin
+    Value := TextBetween(PageText, 'Studio</font></td>', '<br></font></td></tr>');
+    Value2 := TextBefore(Value, '</a>','</script>');
+    SetField(fieldProducer, Value2);
+  end;
+ 
+  // Actors            working
+  if CanSetField(fieldActors) then
+  begin
+    SEiyu := 'garbage';
+    Value := TextBetween(PageText, 'Seiyuu (Voice Talent)</font>', 'Explanation');
+    //SetField(fieldActors, Value);
+    if Value <> '' then
+    begin
+      FullValue := '';
+          while Value <> '' do
+          begin
+            CHar11 := TextBetween(Value, 'href=''/anime/character/display', '</a></td><td valign')+'***';
+            Value := RemainingText;
+            CHar11 := TextBetween(CHar11, '>', '***');
+            if CHar11 = '' then
+              Break;
+            SEiyu := TextBetween(Value, '</script>', '</a></td><td valign');
+            Value := RemainingText;
+            FullValue := FullValue + SEiyu + ' (as ' + CHar11 + ')' + #13#10;
+          end;
+
+      HTMLRemoveTags(FullValue);
+      HTMLDecode(FullValue);
+
+      SetField(fieldActors, FullValue);
+    end;
+  end;
+ 
+  //Country       Set to Japan
+  if CanSetField(fieldCountry) then
+  begin
+    SetField(fieldCountry, 'Japan');
+  end;
+ 
+  //Category      Can only get the First Catagory
+  if CanSetField(fieldCategory) then
+  begin
+    Value := TextBetween(PageText, '<font class=''DefaultFont''>Genres', ', <a');
+    Value2 := TextBefore(Value, '</a>','>');
+
+    SetField(fieldCategory, Value2);
+  end;
+ 
+  // Language      Set to Japanese
+  if CanSetField(fieldLanguages) then
+  begin
+    SetField(fieldLanguages, 'Japanese');
+  end;
+ 
+  //Description
+  if CanSetField(fieldDescription) then
+  begin
+     Value := TextBetween(PageText, 'Description&nbsp;</b></font>', '</font></td></tr></table><br><table border=');
+     Value2 := TextAfter(Value, '<font class=''DefaultFont''>');
+     HTMLRemoveTags(Value2);
+     HTMLDecode(Value2);
+     SetField(fieldDescription, Value2);
+  end;
+ 
+  // Comments
+  if CanSetField(fieldComments) then
+  begin
+    Value := TextBetween(PageText, 'Total Episodes</font></td><td valign=''top'' bgcolor=''#F0F0F0''><font class=''DefaultFont''>', '</font>');
+     HTMLRemoveTags(Value);
+     HTMLDecode(Value);
+    SetField(fieldComments, 'Total Episodes: '+Value);
+
+  end;
+end;
+
+// ***** functions to import the different pictures kinds, depending of the option selected by user *****
+
+function ImportSmallPicture(PageText: string): Boolean;
+
+var
+  Value: string;
+begin
+  Result := False;
+  Value := TextBetween(PageText, '<img border=''0'' ', 'font class=''DefaultFont''>Title');
+  Value := TextBetween(Value, 'Src=''', ''' width');
+
+  if Value <> '' then
+  begin
+    GetPicture(Value);
+    Result := True;
+  end;
+end;
+
+
+// ***** beginning of the program *****
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if not Input('AnimeNfo Import', 'Enter the name of the anime Series :', MovieName) then
+      Exit;
+    if MovieName <> '' then
+    begin
+      if Pos('AnimeNfo.com', MovieName) > 0 then
+        AnalyzeResultsPage(MovieName)
+      else
+      begin
+        MovieName := StringReplace(MovieName, '&', 'and');
+          AnalyzeResultsPage('http://www.animenfo.com/search.php?query='+UrlEncode(MovieName)+'&action=Go&queryin=anime_titles&option=keywords')
+       end;
+      //DisplayResults;
+    end;
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

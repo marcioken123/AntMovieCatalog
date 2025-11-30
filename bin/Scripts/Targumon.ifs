@@ -1,0 +1,263 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=tzvika
+Title=targumon.com
+Description=targumon.com import script
+Site=www.targumon.com
+Language=HE
+Version=1.0
+Requires=3.5.0
+Comments=MovieMeter.nl script by Antoine Potten and IMDB script by Antoine Potten and KaraGarga served as an example for this script
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program ADE;
+
+uses
+  StringUtils1;
+
+const
+  ImportSynopsis = True;  {into "Description" field}
+  ImportADEReview = False; {into "Comments" field}
+  ImportCustomerComment = False; {into "Comments" field}
+  ImportBigCover = True;
+  ImportSmallCover = False;
+  ImportRunTime = True;
+  ImportDVDDetails = TRUE; {into "Description" field}
+  {True = imports related data
+  False = NOT import related data}
+
+var
+  MovieName: string;
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+      Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+      HTMLDecode(Result);
+  end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line, Value: String;
+  BeginPos, EndPos: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  if pos('חיפושים נכשלים',Page.Text) =0 then
+  begin
+    if pos('מתוך', Page.Text) = 0 then
+      begin
+        //SetField(fieldURL, Address);
+        AnalyzeMoviePage(Page)
+      end else
+      begin
+        PickTreeClear;
+        LineNr := 0;
+        if FindLine('מתוך',Page,0)>-1 then
+        begin
+          PickTreeAdd('Targumon Title Search:', '');
+          repeat // loop for processing all result pages
+            repeat // loop for processing all results in a given page
+              LineNr := FindLine('table border="0"><tr><td><a href="title_', Page, LineNr+1);
+              if LineNr > -1 then
+              begin
+                Line := Page.GetString(LineNr);
+                repeat
+                  BeginPos := AddMoviesTitles(Line);
+                  Delete(Line, 1, BeginPos);
+                until BeginPos = 0 ;
+              end;
+            until LineNr = -1;
+          // Check for the link of 'Next Page'
+            LineNr := FindLine('><nobr><a href=', Page, LineNr+1);
+            if LineNr > -1 then
+            begin
+              Line := Page.GetString(LineNr);
+              BeginPos := pos('<table border="0"><tr><td><a href=', Line)+35;
+              Delete(Line, 1, BeginPos);
+              EndPos := pos('''>', Line);
+              Value := copy(Line, 1, EndPos - 1);
+              Page.Text := GetPage('http://www.targumon.co.il/' + Value);
+              //SavePage('http://adult.dvdempire.com/' + Value, 'c:\page.html');
+            end;
+            until LineNr = -1;
+        end;
+      if PickTreeExec(Address) then
+        AnalyzePage(Address);
+    end;
+    Page.Free;
+  end;
+end;
+
+function AddMoviesTitles(Line: string): Integer;
+var
+  StartPos, EndPos: Integer;
+  HebMovieTitle, EngMovieTitle, MovieAddress, NewLine,movieLine: string;
+begin
+
+    NewLine := Line;
+    movieLine := Line;
+    Result := 0;
+    StartPos := pos('<a href="title_', NewLine);
+    if StartPos > 0 then
+    begin
+      Result := StartPos + 24;
+      Delete(NewLine, 1, StartPos);
+      StartPos := pos('">', NewLine) + 2;
+      EndPos := pos('</a>', NewLine);
+      HebMovieTitle := copy(NewLine, StartPos, EndPos - StartPos);
+      HTMLDecode(HebMovietitle);
+      
+      StartPos := pos('class="g" dir="ltr">', NewLine);
+      Delete(NewLine, 1, StartPos);
+      StartPos := pos('ltr">', NewLine) + 5;
+      EndPos := pos('</span', NewLine);
+      EngMovieTitle := copy(NewLine, StartPos, EndPos - StartPos);
+      HTMLDecode(EngMovietitle);
+
+      
+      StartPos := pos('title_', movieLine);
+      Delete(movieLine, 1, pos('title_', movieLine) - 1);
+      StartPos := 1;
+      EndPos := pos('">', movieLine);
+      MovieAddress := copy(movieLine, StartPos, pos('">', movieLine) - StartPos);
+
+
+      setField(fieldURL, 'http://www.targumon.co.il/' + MovieAddress);
+      PickTreeAdd(EngMovieTitle + ' - ' + HebMovieTitle, 'http://www.targumon.co.il/' + MovieAddress);
+      
+    end;
+
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr, ValueInt, DetailLineNr: Integer;
+  BeginPos, EndPos, DirectorPos, BrPos: Integer;
+begin
+
+  DetailLineNr := FindLine('Detail:',Page,0);
+
+//--------------------------------------
+//Hebrew Name
+//--------------------------------------
+
+  LineNr := FindLine('<tr><td colspan="2" align="center"><h2>',Page,0);
+  if LineNr >-1 then
+  begin
+    LineNr := FindLine('<tr><td colspan="2" align="center"><h2>',Page,LineNr+1);
+      if LineNr >-1 then
+        begin
+          Line := Page.GetString(LineNr);
+          BeginPos := pos('<h2>', Line) + 3;
+          Delete(Line, 1, BeginPos);
+          EndPos := pos('</h2>', Line) ;
+          Value := copy(Line, 1, EndPos - 1);
+          setField(fieldTranslatedTitle,Value);
+        end;
+  end;
+
+  //DisplayResults;
+end;
+
+// They've inserted some crap to make it harder to parse - like
+// a white 'i' instead of spaces.
+function RemoveHTMLCrap(htmlstring: string): string;
+begin
+  result := StringReplace(htmlstring, '&nbsp;',' ');
+  result := StringReplace(result, '<font color="white">i</font>',' ');
+  result := StringReplace(result, '<font color=''white''>i</font>',' ');
+  result := StringReplace(result, '<font face="verdana, arial, sans-serif" size="-1" color="#ffffff">i</font>',' ');
+  // Also remove italics, bold and underline tags
+  result := StringReplace(result, '…','...');
+  result := StringReplace(result, '“','"');
+  result := StringReplace(result, '”','"');
+  result := StringReplace(result, '<i>','');
+  result := StringReplace(result, '</i>','');
+  result := StringReplace(result, '<u>','');
+  result := StringReplace(result, '</u>','');
+  result := StringReplace(result, '<b>','');
+  result := StringReplace(result, '</b>','');
+  result := StringReplace(result, '</B>','');
+  result := StringReplace(result, '<B>','');
+  result := StringReplace(result, '<BR>','');
+  result := StringReplace(result, '</BR>','');
+  result := StringReplace(result, '</I>','');
+  result := StringReplace(result, '<I>','');
+  result := StringReplace(result, '–','-');
+  result := StringReplace(result, '“','');
+  result := StringReplace(result, '”','');
+  result := StringReplace(result, '<br>',#13#10);
+  result := StringReplace(result, '      ','');
+  result := StringReplace(result, #9,' ');  // Tab
+end;
+
+
+begin
+if CheckVersion(3,5,0) then
+  begin
+    MovieName := '';
+    if GetOption('BatchMode') = 2 then
+    begin
+      MovieName := GetField(fieldURL);
+      if Pos('imdb.com', MovieName) = 0 then
+        MovieName := '';
+    end;
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if GetOption('BatchMode') = 0 then
+    begin
+      if not Input('Targumon Import', 'Enter the title or the IMDB URL of the movie:', MovieName) then
+        Exit;
+    end
+    else
+      Sleep(500);
+    if MovieName <> '' then
+    begin
+      if Pos('imdb.com', MovieName) > 0 then
+        AnalyzeResultsPage(MovieName)
+      else
+      begin
+        MovieName := StringReplace(MovieName, '&', 'and');
+        AnalyzePage('http://www.targumon.co.il/titlelist.asp?kw='+UrlEncode(MovieName));
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

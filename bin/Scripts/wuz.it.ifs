@@ -1,0 +1,267 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Gigibop (luca.marcato@gmail.com) & fulvio53s03
+Title=Wuz
+Description=Get movie info from http://www.wuz.it
+Site=http://www.wuz.it
+Language=IT
+Version=1.1.1 - 13.09.2010
+Requires=3.5.1
+Comments=Changes|20.01.2008 v. 1.0.1: First Version (Gigibop)|08.09.2008 v. 1.0.2: Fix random "Out of Range" in RemoveTabs (Gigibop)|12.07.2010 v. 1.1: Update (baffab)
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Wuz;
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  TheMovieAddress: string;
+  comm: String;
+
+
+function RemoveTabs(Value : string) : String;
+begin
+  repeat
+      Value:= StringReplace(Value, '   ', '');
+  until (pos('   ',Value) = 0);
+  result := Value;
+end;
+
+function TranslateSpecial(str1: string) :string;
+begin
+
+   str1 := StringReplace(str1, '&amp;', '&');
+   HTMLDecode(str1);   
+   result := Trim(str1);
+end;
+
+function RemoveHtmlClean(str1: string) :string;
+begin
+
+  HTMLRemoveTags(str1);
+  HTMLDecode(str1);
+  str1 := RemoveTabs(str1);
+  result := FullTrim(str1);
+ 
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: integer;
+  BeginPos: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  Page.Text := UTF8Decode(Page.Text);
+  LineNr := FindLine('<td valign="bottom"><span id="ThisPage_mod_CERCAV_lblRisultati" class="ricCampo">Trovat', Page, 0);
+  if LineNr = -1 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page);
+  end
+  else
+  begin
+    PickTreeClear;
+    AddMoviesTitles(Page);
+    if TheMovieAddress='' then
+    begin
+      if PickTreeExec(Address) then AnalyzePage(Address);
+    end
+    else
+    begin
+      SetField(fieldURL, TheMovieAddress);
+      Page.Text := GetPage(TheMovieAddress);
+      Page.Text := UTF8Decode(Page.Text);
+      AnalyzeMoviePage(Page);
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, sTemp: string;
+  LineNr: Integer;
+begin
+  sTemp := '';
+
+  //Titolo tradotto
+  LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblTitolo" class="schTitolo">', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := RemoveHtmlClean(Page.GetString(LineNr));
+      SetField(fieldTranslatedTitle, Line);
+      end;
+     
+   //Titolo originale
+   LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblTitoloOriginale" class="schTitoloOriginale">', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := RemoveHtmlClean(Page.GetString(LineNr));
+      SetField(fieldOriginalTitle, Line);   
+    end;   
+
+  // Regia
+  LineNr := FindLine('class="schRegia"', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := RemoveHtmlClean(Page.GetString(LineNr));
+      SetField(fieldDirector,Line);
+    end;
+   
+  //attori
+    LineNr :=   FindLine('class="schAttori"', Page, 0);
+    If LineNr > -1 Then
+      begin
+      Line := RemoveHtmlClean(Page.GetString(LineNr));
+      Line := StringReplace(Line, ';', ',');
+        SetField(fieldActors,Line);
+    end;
+
+  //  casa produttrice (u c'è... :) )
+  //  genere
+  LineNr :=   FindLine('<span id="ThisPage_mod_VIDEO_lblGenere" class="schGenere">', Page, 0);
+    If LineNr > -1 Then
+      begin     
+      Line := RemoveHtmlClean(Page.GetString(LineNr));
+      SetField(fieldCategory,Line);     
+    end;
+ 
+  // paese e anno
+  LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblPaeseAnno" class="schPaeseAnno">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := RemoveHtmlClean(Page.GetString(LineNr));
+    SetField(fieldYear,TextAfter(Line, ','));
+      SetField(fieldCountry,TextBefore(Line, ',',''));
+  end;
+
+  //  durata
+  LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblDatiTecnici" class="schDatiTecnici">', Page, 0);     
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := TextBefore(Line, 'min.','');
+    Line := RemoveHtmlClean(Line);
+    SetField(fieldLength,Line);
+  end;
+
+  // numero di dischi
+  LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblNumeroDischi" class="schNumeroDischi">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := RemoveHtmlClean(Page.GetString(LineNr));
+    SetField(fieldDisks,Line);
+  end;
+
+   // formato video e risoluzione
+   LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblDatiTecnici" class="schDatiTecnici">', Page, 0);     
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := ' ' + TextBetween(Line, 'min.<br>','<br>');
+    sTemp := RemoveHtmlClean(Line);
+
+    Line := 'Dvd ' + Trim(TextBefore(sTemp, '(',''));
+    SetField(fieldVideoFormat,Line);
+   
+    Line := Trim(TextBetween(sTemp, 'schermo',')'));
+    SetField(fieldResolution,Line);
+  end;
+   
+   // audio
+   LineNr :=   FindLine('<span id="ThisPage_mod_VIDEO_lblAudio" class="schAudio"><SPAN class=schAudioSup>', Page, 0);
+  If LineNr > -1 Then
+    begin
+    Line := RemoveHtmlClean(Page.GetString(LineNr));
+    SetField(fieldLanguages,Line);
+  end;
+   
+  //sottotitoli
+  LineNr :=   FindLine('<span id="ThisPage_mod_VIDEO_lblSottotitoli" class="schSottotitoli">', Page, 0);
+  If LineNr > -1 Then
+    begin
+    Line := RemoveHtmlClean(Page.GetString(LineNr));
+    SetField(fieldSubtitles,Line);
+  end;
+
+  // descrizione
+  LineNr := FindLine('<span id="ThisPage_mod_VIDEO_lblDescrizione" class="schTesto">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := RemoveHtmlClean(Page.GetString(LineNr));
+    SetField(fieldDescription,Line);
+  end;
+
+  //  locandina del film
+  LineNr := FindLine('<img id="ThisPage_mod_VIDEO_imgCopertina"', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := TextBetween(Line, 'src="','"');
+    HTMLRemoveTags(Line);
+    Line := TranslateSpecial(Line);
+    GetPicture(Line);
+  end;
+
+end;
+
+procedure AddMoviesTitles(Page: TStringList);
+var
+  LineNr: Integer;
+  Line: string;
+  MovieTitle, MovieAddress : string;
+  BeginPos, EndPos: Integer;
+  begin
+  LineNr := 0;
+  LineNr := FindLine('RisultatoRicerca_hlTitolo" class="ricTitolo" href=',Page,LineNr);
+while LineNr > -1 do
+  begin
+    MovieAddress := TextBetween((Page.GetString(LineNr)), 'class="ricTitolo" href="', '">') ;
+    Line := Page.GetString(LineNr);
+   
+    MovieTitle := RemoveHtmlClean(Page.GetString(LineNr));
+
+    LineNr := FindLine('RisultatoRicerca_hlTitolo" class="ricTitolo" href=',Page,LineNr+1);
+    PickTreeAdd(MovieTitle, MovieAddress);
+    if TheMovieAddress='*' then
+      TheMovieAddress := MovieAddress
+    else
+      TheMovieAddress := '';
+  end;
+
+  if TheMovieAddress='*' then TheMovieAddress := '';
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(3,5,1) then
+   begin
+    TheMovieAddress := '*';
+    MovieName := StringReplace(GetField(fieldTranslatedTitle), '.', ' ');
+    if MovieName = '' then
+      MovieName := StringReplace(GetField(fieldOriginalTitle), '.', ' ');
+While pos ('[', MovieName) > 0 Do begin
+  MovieName := TextBefore(MovieName, '[', '') + TextAfter(MovieName, ']');
+end;
+    if Input('Wuz Importazione Film', 'Digitare il titolo del film:', MovieName) then
+    begin
+      AnalyzePage('http://www.wuz.it/catalogo/video/cerca.aspx?ty=KW&x='+UrlEncode(MovieName));
+    end;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 3.5.1)');
+end.

@@ -1,0 +1,27 @@
+<html><head>
+<style TYPE="text/css">
+  text,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+  A:link { COLOR: #003399; background: white; text-decoration: none; }
+  A:visited { COLOR: #003399; background: white; text-decoration: none; }
+  A:hover { COLOR: #CC0000; background: white; text-decoration: underline; }
+  A:active { COLOR: #CC0000; background: white; text-decoration: underline; }
+  td.blk { color: white; background: black; border: solid; border-color: black; }
+  table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+  table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+</style></head><body>
+<p>Catalog created on $$DATE with <a href="http://www.antp.be/software/moviecatalog/" target="_blank">Ant Movie Catalog</a>.</p>
+<table class="blk" border="1" cellspacing="0" cellpadding="0" width="100%"><tr>
+<td class="blk" width="300" valign="top">
+  <table border="0" cellspacing="0" cellpadding="5"><tr>
+  <td class="blk" nowrap width="50">Number</td>
+  <td class="blk" nowrap>Title</td>
+  </tr>$$ITEM_BEGIN<tr>
+  <td class="lgt"><strong>$$ITEM_NUMBER</strong></td>
+  <td class="lgt"><a href="$$ITEM_FILEINDIV" target="rightfr">$$ITEM_FORMATTEDTITLE1</a></td>
+  </tr>$$ITEM_END
+  </table>
+</td>
+<td valign="top" height="100%"><iframe height="100%" width="100%" src="" name="rightfr" frameborder="no" borderwidth="0"></iframe>
+</td></tr>
+</table><p><strong>Total: $$TOTALMOVIES movies</strong></p></body></html>

@@ -1,0 +1,46 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=soulsnake
+Title=ColorTagDesc
+Description=Add description of color tag in a custom field
+Site=
+Language=EN,FR
+Version=1.0
+Requires=4.1.2
+Comments=Add description of color tag in a custom field.|Ajout de la description de l'étiquette couleur dans un champ personnalisé.
+License=
+GetInfo=0
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+FieldTag=ColorTagDesc|ColorTagDesc|Custom field tag to store description of color tag / Tag du champ personnalisé pour stocker la description de l'étiquette couleur
+Color0=0|0|Description Color 0 (White) / Couleur 0 (Blanc)
+Color1=1|1|Description Color 1 (Red) / Couleur 1 (Rouge)
+Color2=2|2|Description Color 2 (Orange) / Couleur 2 (Orange)
+Color3=3|3|Description Color 3 (Yellow) / Couleur 3 (Jaune)
+Color4=4|4|Description Color 4 (Green) / Couleur 4 (Vert)
+Color5=5|5|Description Color 5 (Dark green) / Couleur 5 (Vert foncée)
+Color6=6|6|Description Color 6 (Sky blue) / Couleur 6 (Bleu ciel)
+Color7=7|7|Description Color 7 (Blue) / Couleur 7 (Bleu)
+Color8=8|8|Description Color 8 (Purple) / Couleur 8 (Violet)
+Color9=9|9|Description Color 9 (Pink) / Couleur 9 (Rose)
+Color10=10|10|Description Color 10 (Magenta) / Couleur 10 (Magenta)
+Color11=11|11|Description Color 11 (Brown) / Couleur 11 (Marron)
+Color12=12|12|Description Color 12 (Gray) / Couleur 12 (Gris)
+
+***************************************************)
+
+program UpdateColorTagDesc;
+var
+  FieldTag, ColorDesc: string;
+begin
+  FieldTag := GetParam('FieldTag');
+  ColorDesc := GetParam('Color' + GetField(fieldColorTag));
+  SetCustomField(FieldTag, ColorDesc);
+end.

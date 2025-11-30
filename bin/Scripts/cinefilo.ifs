@@ -1,0 +1,352 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=cinefilo
+Description=Detalles de cine, con cartel de calidad
+Site=www.cinefilo.es
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Cinefilo;
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------------------------------------
+function Acentos(str1: string) :string;
+begin
+          str1  := AnsiLowerCase(str1);
+          str1  := AnsiUpFirstLetter(str1);
+          str1 := StringReplace(str1, '„°' , '·');
+          str1 := StringReplace(str1, '„©' , 'È');
+          str1 := StringReplace(str1, '„≠', 'Ì');
+          str1 := StringReplace(str1, 'i„≥' , '·');
+          str1 := StringReplace(str1, '√Å' , '·');
+          Str1 := StringReplace(Str1, '„±', 'Ò');
+          Str1 := StringReplace(Str1, '„≥', 'Û');
+          Str1 := StringReplace(Str1, '„™', 'È');
+          Str1 := StringReplace(Str1, '„', '·');
+          Str1 := StringReplace(Str1, '¬', '');
+          Str1 := StringReplace(Str1, '(cine) - cinefilo.es: cartelera de estrenos', '');
+          Str1 := StringReplace(Str1, '...', '');
+          Str1 := StringReplace(Str1, '(cine) - cinefilo.es: cartelera de', '');
+          Str1 := StringReplace(Str1, '(cine) - cinefilo.es: cartelera', '');
+          Str1 := StringReplace(Str1, '‚Äô', '');
+result := str1;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.cinefilo.es', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.cinefilo.es/cine-', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+34, EndPos-34);
+          MovieAddr := 'http://www.cinefilo.es/cine-' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle := TextBetween (MovieTitle, '>', '</a>');
+          DeleteTags(MovieTitle);
+          MovieTitle := Acentos(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://www.cinefilo.es/cine-', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('&nbsp;&nbsp;<b>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '&nbsp;&nbsp;<b>', '</b>');
+  Item  := AnsiLowerCase(Item);
+  Item  := AnsiUpFirstLetter(Item );
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('en IMDb', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '><b>', '</b>');
+    DeleteTags (Item);
+    Item  := AnsiLowerCase(Item);
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+  // AÒo
+  LineNr := FindLine('en IMDb', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '(', ')');
+    DeleteTags (Item);
+    Item  := AnsiLowerCase(Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+   // Director
+  LineNr := FindLine('en IMDb', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'busqueda.php?busqueda=', 'title');
+    Item := BorraComillas(Item);
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // Nacionalidad
+  LineNr := FindLine('Nacionalidad: <font color=', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '#9A9A9A', '</font>');
+    Item := BorraComillas(Item);
+    DeleteTags (Item);
+    Item  := StringReplace(Item , '>', '');
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+  // Duracion
+  LineNr := FindLine('color / ', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'color / ', 'minutos');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+
+// Categoria
+  LineNr := FindLine(' minutos / <font color=', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, ' minutos / <font color=', '</font><br>');
+    Item := BorraComillas(Item);
+    Item  := StringReplace(Item , '>', '');
+    Item  := StringReplace(Item , '#9A9A9A', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+ 
+  // Reparto
+  LineNr := FindLine(' minutos / <font color=', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '</font><br></span><br />', '<br><br><span class=');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+  // productor
+  LineNr := FindLine('Produce:</font>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'Produce:</font>', '</span></td>');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+ 
+  // sinopsis
+ LineNr := FindLine('Sinopsis</td></tr><tr>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '#000000', '</table>');
+    DeleteTags (Item);
+    Item := BorraComillas(Item);
+    Item  := StringReplace(Item , '>', '');
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+// Caratula
+  LineNr := FindLine('html][img]http://www.index-dvd.com/covers/300/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, 'html][img]http://www.index-dvd.com/covers/300/', '[/img][/url]');
+     Item:= BorraComillas(Item);
+     Item  := StringReplace(Item , '300a', '600a');
+     GetPicture ('http://www.index-dvd.com/covers/600/'+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Cinefilo', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('Cinefilo', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=%22' + UrlEncode(MovieName)+'%22+site%3Awww.cinefilo.es&btnG=B%C3%BAsqueda&meta=');
+end.

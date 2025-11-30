@@ -1,0 +1,587 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Draco31.fr
+Title=HKcinemagic
+Description=
+Site=http://www.hkcinemagic.com/
+Language=EN,FR
+Version=0.2 du 27/07/2010
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Type de Lancement / Type of Launching=0|0|0=Demande le titre avant de lancer le script / Ask the title before launching script|1=Ne demande pas le titre avant de lancer le script / Do not ask the title before launching script|2=Lancement automatique sur l'adresse web / Automatic launching on the web url
+Format du Titre / Format of the Title=3|3|0=Titre en minuscule / Title in tiny letters|1=Titre en majuscule / Title in capital letter|2=Première lettre du titre en majuscule / First letter of the title in capital letter|3=Première lettre de chaque mot du titre en majuscule / First letter of each word of the title in capital letter|4=Formatage identique au site d'origine / Formatting identical to the site of origin
+Recherche sur le titre / Seek on the title=1|1|0=Traduit / Translated|1=Original
+Affiche / Cover=0|0|0=Prend la petite Affiche / Get the small cover|1=Prend la grande affiche / Get the big cover
+Langue / Language=1|1|0=English (Anglais)|1=Français (French)
+Producteur / Producer=1|1|0=Producteur / Producer|1=Studio
+Critique / Review=0|0|0=Aperçu / Preview|1=Complète / Full
+
+***************************************************)
+
+program HKcinemagic;
+uses
+  ScorEpioNCommonScript;
+
+const
+  VersionScript = '0.2 du 27/07/2010';
+  NomScript = 'HKcinemagic';
+  urlHKCMSearchGo = '&searchtype=1&gosearch=go';
+  timetosleep = 500;
+
+var
+  Page : TStringList;
+  urlDomain, urlHKCMSearch, lang, MovieName, Titre, urlTitre, Line2, Resume, APage, CPage, Comments, NoResult, Result, ShortCast, Realisateur, Producteur, Pays, Studio, Genre, Duree, Review, Full_Review, Critique, Notes, Haut, Note1, Note2, WebError, EnterTitle : string;
+  PageOK, CxNote, compteur, premiereExecution, numTemp, lien_URL : Integer;
+  NoteC, NoteM, Note, NumPage: real;
+  listeResultat : TStringList;
+
+
+//--OK--------------------------------------------------------------------------
+// TROUVE LE N° DE LIGNE D'UNE INFO
+//------------------------------------------------------------------------------
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// ANALYSE RESULTAT DE RECHERCHE
+//------------------------------------------------------------------------------
+
+procedure AnalyzeSearchPage(urlSearch: string);
+var
+  Line, temp, params : string;
+  LineNr, choix : integer;
+begin
+  Page.Text := GetPage(urlSearch);
+  choix := 0;
+  LineNr := 0;
+  PickTreeClear;
+  urlTitre := '';
+  Titre := '';
+ // Verif si redirection vers la fiche d'un film directement
+  if FindLine('images/site/icon_search.gif',Page,0) < 0 Then
+  begin
+    PageOK := 1;
+    AnalyzeMoviePage(urlSearch);
+  end
+  else
+   // Vérif qu'il y a bien un résultat
+    if (FindLine('Désolé votre recherche n''a retourné aucun résultat.',Page,0) > -1) or (FindLine('Sorry your search didn''t return any matches.',Page,0) > -1) Then
+    begin
+//      MonDebug('Page',Page.Text);
+      ShowInformation(NoResult+MovieName+'"');
+    end
+    else
+    begin
+      PickTreeAdd(Result+MovieName+'"','');
+      While FindLine('movie.asp?id=',Page,LineNr) > -1 Do
+      begin
+        LineNr := FindLine('movie.asp?id=',Page,LineNr);
+        Line := Page.GetString(LineNr);
+        TraiteInfo(Line);
+        PickTreeAdd(Titre,urlTitre);
+        LineNr := LineNr+1;
+      end;
+      if (PickTreeExec(urlTitre)) then
+     // Analyse la page du film selectionné
+        AnalyzeMoviePage(urlTitre);
+    end;
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// TRAITE L'INFO : SEPARE L'URL DU TITRE
+//------------------------------------------------------------------------------
+
+procedure TraiteInfo(infos: string);
+var
+  temp1, temp2 : string;
+begin
+  urlTitre := '';
+  Titre := '';
+  urlTitre := urlDomain+lang+'/movie.asp?id='+FindInfo('<a href="movie.asp?id=','"',infos,'4')+'&showmovfullcast=1';
+  Titre := infos;
+  NoHTML(Titre);
+  Titre := StringReplace(Titre,RC,'');
+  Titre := StringReplace(Titre,#9,'');
+  While Pos(' ',Titre) = 1 do
+    Titre := copy(Titre,2,length(Titre)-1);
+end;
+
+
+//------------------------------------------------------------------------------
+// ANALYSE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(url : string);
+var
+  PageTemp : TStringList;
+  t1, t2, t3, temp, Line, Comments : string;
+  LineNr, LineNr2, LineNr3, BeginPos, EndPos, i, j : integer;
+begin
+  temp := '';
+  Comments := '';
+// Ne reprend pas la page si déjà DL lors de la recherche
+  if PageOK <> 1 Then
+  begin
+    Sleep(timetosleep);
+    Page.Text := GetPage(url);
+  end;
+
+// Stoque l'url ==> à voir pour PageOK = 1 (url de recherche)
+//  MonDebug('Page.Text',Page.Text);
+  LineNr := FindLine(ShortCast,Page,0);
+  if LineNr > -1 Then
+  begin
+    Line := Page.GetString(LineNr);
+    temp := urldomain+lang+'/movie.asp?id='+FindInfo('<a href="movie.asp?id=',ShortCast,Line,'4')+'&showmovfullcast=1';
+    SetField(FieldURL,temp);
+    Page.Free
+    Page := TStringList.Create;
+    Page.Text := GetPage(temp);
+    Line := '';
+    temp := '';
+  end
+  else
+    Setfield(fieldURL,url);
+
+// Titre + Année
+//  MonDebug('Page.Text',Page.Text);
+  LineNr := FindLine('<td rowspan="3" class="titre_orange_straight_dark" valign="top" NOWRAP>',Page,0);
+  Line := Page.GetString(LineNr);
+  HTMLDecode(Line);
+  HTMLRemoveTags(Line);
+  t1 := FindInfo('(',')',Line,'4');
+  if length(t1) = 4 Then
+  begin
+    SetField(Fieldyear,t1);
+    HTMLDecode(Line);
+    Delete(Line,length(Line)-5,6);
+    Line := StringReplace(Line,RC,'');
+    Line := StringReplace(Line,#9,'');
+    Line := StringReplace(Line,'  ','');
+    Format(Line);
+    if GetOption('Recherche sur le titre / Seek on the title') = 0 Then
+      SetField(FieldTranslatedTitle,Line)
+    else
+      SetField(FieldOriginalTitle,Line);
+    t1 := '';
+  end
+  else
+  begin
+    t2 := Line;
+    Repeat
+      BeginPos := Pos('(',t2);
+      if BeginPos <> 0 Then
+      begin
+        t1 := FindInfo('(',')',t2,'4');
+        Delete(t2,BeginPos,length(t2)-BeginPos);
+      end
+      else
+      t2 := '';
+    until (length(t1) = 4) or (length(t2) = 0);
+    if t2 = '' Then
+    begin
+      Format(Line);
+      SetField(fieldOriginalTitle,Line);
+    end
+    else
+    begin
+      SetField(fieldyear,t1);
+      Format(Line);
+      Setfield(fieldOriginalTitle,StringReplace(Line,'('+t1+')','');
+    end;
+    t2 := '';
+    t1 := '';
+  end;
+  
+// Stoque l'image si necessaire
+  if CanSetPicture then
+  begin
+    LineNr2 := FindLine('<img src="images/movie/header/',Page,LineNr);
+    if LineNr2 > -1 Then
+    begin
+      LineNr := LineNr2;
+      Line := Page.GetString(LineNr);
+      temp := urlDomain+lang+'/images/movie/header/'+FindInfo('<img src="images/movie/header/','" border="0" width="150">',Line,'4');
+      if GetOption('Affiche / Cover') = 0 Then
+        GetPicture(temp)
+      else
+      begin
+        temp := urlDomain+lang+'/gallery.asp?fid='+FindInfo('<a href="gallery.asp?fid=','">',Line,'4');
+        t1 := GetPage(temp);
+//        MonDebug('t1',t1);
+        t2 := urlDomain+lang+'/images/movie/large/'+FindInfo('<img src="images/movie/large/','" border="0"',t1,'4');
+        GetPicture(t2);
+        t1 := '';
+        t2 := '';
+      end;
+    end;
+    temp := '';
+  end;
+
+// Prend le réalisateur
+  LineNr2 := FindLine(Realisateur,Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    LineNr := LineNr2;
+    Line := Page.GetString(LineNr);
+    temp := FindInfo('<br />','<br /><br />',Line,'4');
+    HTMLDecode(temp);
+    HTMLRemoveTags(temp);
+    Setfield(fielddirector,temp);
+    temp := '';
+  end;
+
+// Prend le producteur
+  if GetOption('Producteur / Producer') = 0 Then
+  begin
+    LineNr2 := FindLine(Producteur,Page,LineNr);
+    if LineNr2 > -1 Then
+    begin
+      LineNr := LineNr2;
+      Line := Page.GetString(LineNr);
+      temp := FindInfo('<br />','<br /><br />',Line,'4');
+      HTMLDecode(temp);
+      HTMLRemoveTags(temp);
+      Setfield(fieldproducer,temp);
+      temp := '';
+    end;
+  end;
+
+// Prend le pays
+  LineNr2 := FindLine(Pays,Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    LineNr := LineNr2+1;
+    Line := Page.GetString(LineNr);
+    temp := FindInfo('<td>','</td>',Line,'4');
+    HTMLDecode(temp);
+    HTMLRemoveTags(temp);
+    Setfield(fieldcountry,temp);
+    temp := '';
+  end;
+
+// Prend le studio
+  if GetOption('Producteur / Producer') = 1 Then
+  begin
+    LineNr2 := FindLine(Studio,Page,LineNr);
+    if LineNr2 > -1 Then
+    begin
+      LineNr := LineNr2+1;
+      Line := Page.GetString(LineNr);
+      temp := FindInfo('<td>','</td>',Line,'4');
+      HTMLDecode(temp);
+      HTMLRemoveTags(temp);
+      Setfield(fieldproducer,temp);
+      temp := '';
+    end;
+  end;
+
+// Prend le genre
+  LineNr2 := FindLine('<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Genre :</td>',Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    LineNr := LineNr2+1;
+    Line := Page.GetString(LineNr);
+    temp := FindInfo('<td>','</td>',Line,'4');
+    HTMLDecode(temp);
+    HTMLRemoveTags(temp);
+    temp := StringReplace(temp,' / ',', ');
+    Setfield(fieldcategory,temp);
+    temp := '';
+  end;
+
+// Prend la durée
+  LineNr2 := FindLine(Duree,Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    LineNr := LineNr2+1;
+    Line := Page.GetString(LineNr);
+    temp := FindInfo('<td>','</td>',Line,'4');
+    HTMLDecode(temp);
+    HTMLRemoveTags(temp);
+    temp := StringReplace(temp,' min.','');
+    Setfield(fieldlength,temp);
+    temp := '';
+  end;
+
+// Prend la liste des acteurs
+  LineNr2 := FindLine('<img alt="" src="images/site/castbar.gif" width="20" height="8" align="top">&nbsp;Cast',Page,LineNr);
+  LineNr3 := FindLine('<td width="2%">&nbsp;</td>',Page,LineNr2);
+  if (LineNr2 > -1) and (LineNr3 > -1) Then
+  begin
+    Line := '';
+    temp := '';
+    for i := LineNr2 to LineNr3-1 do
+    begin
+      Line := Page.GetString(i);
+      if Pos('<a href="people.asp?id=',Line) > 0 Then
+        temp := temp+', '+FindInfo('">','</a>',Line,'2');
+    end;
+    Delete(temp,1,2);
+    SetField(fieldActors,temp);
+    LineNr := LineNr3;
+    temp := '';
+    Line := '';
+  end;
+
+// Prend le résumé
+  LineNr2 := FindLine(Resume,Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    LineNr3 := FindLine('<td colspan=''3'' class=''moyen_txt_blanc_j''>',Page,LineNr2);
+    Line := Page.GetString(LineNr3);
+    temp := FindInfo('<br />','<br />&nbsp;</td>',Line,'0');
+    SetField(FieldDescription,temp);
+    LineNr := LineNr3;
+    Line := '';
+    temp := '';
+  end;
+  
+// Prend la critique
+  LineNr2 := FindLine(Review,Page,LineNr);
+  if LineNr2 > -1 Then
+    if GetOption('Critique / Review') = 0 Then
+    begin
+      LineNr3 := FindLine('<td colspan=''3'' class=''moyen_txt_blanc_j''>',Page,LineNr2);
+      LineNr2 := FindLine(Full_Review,Page,LineNr3);
+      Line := '';
+      for i := LineNr3 to LineNr2-1 do
+        Line := Line+Page.GetString(i)+#13#10;
+      temp := FindInfo('<br />','<br />&nbsp;</td>',Line,'-1');
+      if Comments = '' Then
+        Comments := Critique+#13#10+#9+temp+#13#10#13#10
+      else
+        Comments := Comments+#13#10#13#10+Critique+#13#10+#9+temp+#13#10#13#10;
+      SetField(FieldComments,Comments);
+      LineNr := LineNr2;
+      Line := '';
+      temp := '';
+    end
+    else
+    begin
+      LineNr3 := FindLine(Full_Review,Page,LineNr2);
+      Line := Page.GetString(LineNr3);
+      temp := urlDomain+lang+'/express.asp?fid='+FindInfo('<a href=''express.asp?fid=',Full_Review,Line,'4');
+      PageTemp := TStringList.Create;
+      PageTemp.Text := GetPage(temp);
+      LineNr := Findline('<td class="moyen_txt_blanc_j" colspan="3">',PageTemp,0);
+      temp := '';
+      repeat
+      begin
+        Line := PageTemp.GetString(LineNr+1);
+        Line := StringReplace(Line,'<br>',#13#10);
+        Line := StringReplace(Line,#9,'');
+        While Pos(' ',Line) = 1 do
+          Delete(Line,1,1);
+        HTMLDecode(Line);
+        HTMLRemoveTags(Line);
+        t1 := PageTemp.GetString(FindLine('<td class="orange_dark" align="right">',PageTemp,LineNr));
+        BeginPos := Pos('&nbsp;-&nbsp;<a href="#top"',t1);
+        Delete(t1,BeginPos,length(t1)+1-BeginPos);
+        HTMLDecode(t1);
+        HTMLRemoveTags(t1);
+        t1 := StringReplace(t1,#9,'');
+        While Pos(' ',t1) = 1 do
+          Delete(t1,1,1);
+        temp := temp+t1+#13#10#13#10+#9+Line+#13#10#13#10;
+        LineNr := Findline('<td class="moyen_txt_blanc_j" colspan="3">',PageTemp,LineNr+1);
+      end;
+      until LineNr = -1;
+      if Comments = '' Then
+        Comments := CRITIQUE+#13#10#13#10+temp
+      else
+        Comments := Comments+#13#10#13#10+CRITIQUE+#13#10#13#10+temp;
+      SetField(FieldComments,Comments);
+      PageTemp.Free;
+      Line := '';
+      temp := '';
+      LineNr := LineNr3;
+    end;
+
+// Prend les "notes"
+  LineNr2 := FindLine(Notes,Page,LineNr);
+  if LineNr2 > -1 Then
+  begin
+    j := 0;
+    LineNr3 := FindLine(Haut,Page,LineNr2);
+    for i := LineNr2 to LineNr3-1 do
+    begin
+      Line := Page.GetString(i);
+      if Pos('<td class=''moyen_txt_blanc_j''>&nbsp;',Line) > 0 Then
+      begin
+        HTMLDecode(Line);
+        HTMLRemoveTags(Line);
+        Trim(Line);
+        temp := temp+#13#10+#09+Line;
+        j := j+1;
+      end;
+    end;
+    if Comments = '' Then
+      Comments := NOTE1+temp
+    else
+      Comments := Comments+NOTE1+temp;
+    SetField(fieldComments,Comments);
+    LineNr := LineNr3;
+    temp := '';
+    Line := '';
+  end;
+  
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Supprimme les balises HTML
+//------------------------------------------------------------------------------
+
+procedure NoHTML(var page2: string);
+begin
+  page2 := StringReplace(page2,'<br>',#13#10);
+  page2 := StringReplace(page2,'<br />','');
+  HTMLDecode(page2);
+  HTMLRemoveTags(page2);
+  page2 := StringReplace(page2,'<b>','');
+  page2 := StringReplace(page2,'</b>','');
+  page2 := StringReplace(page2,'<i>','');
+  page2 := StringReplace(page2,'</i>','');
+  page2 := StringReplace(page2,'<u>','');
+  page2 := StringReplace(page2,'</u>','');
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Formatte les textes (Merci ScorEpioN)
+//------------------------------------------------------------------------------
+
+procedure Format(name : string);
+var
+  option: integer;
+begin
+  option := GetOption('Format du Titre / Format of the Title');
+  name := formatTitre(name,option);
+end;
+
+
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+// A VOIR pour intégration Langue FR/EN !!!!!!!!!!
+//------------------------------------------------------------------------------
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    PageOK := 0;
+    Page := TStringList.Create;
+    NumPage := 1;
+    Comments := '';
+    Line2 := GetPage('http://www.hkcinemagic.com/fr/main.asp');
+    Line2 := '';
+    if GetOption('Langue / Language') = 0 Then
+    begin
+      lang := '';
+      NoResult := 'Sorry your search didn''t return any matches for the title "';
+      Result := 'Result found for "';
+      ShortCast := '&showmovfullcast=1">(full cast & crew)</a>';
+      Realisateur := '<span class=moyen_txt_orange>Director</span>';
+      Producteur := '<span class=moyen_txt_orange>Producer</span>';
+      Pays := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Country :</td>';
+      Studio := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Film Company :</td>';
+//      Genre := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Genre :</td>';
+      Duree := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Runtime :</td>';
+      Resume := '<td class="titre_orange_dark" valign="top" NOWRAP width="100%">Plot</td>';
+      Review := '<td class="titre_orange_dark" nowrap="nowrap" valign="top" width="100%"><a name="review"></a>Review</td>';
+      Critique := 'REVIEW(S):';
+      Full_Review := ''' class=''orange''>read the full length review</a>';
+      Notes := '<td class="titre_orange_dark" valign="top" NOWRAP width="100%">Notes</td>';
+      Haut := '<td class="dark" align="right"><a href="#top">Top</a>&nbsp;</td>';
+      NOTE1 := 'BRIEF(S):';
+      NOTE2 := 'BRIEFS:';
+      WebError := 'The Web address does not correspond to a Web page of HKCineMagic (EN)'+#13#10+'Check the "Language" option.';
+      EnterTitle := 'Enter the title of the movie :';
+      urlDomain := 'http://www.hkcinemagic.com/en';
+
+    end
+    else
+    begin
+      lang := '';
+      NoResult := 'Désolé votre recherche n''a retourné aucun résultat pour le titre "';
+      Result := 'Résultat trouvé pour "';
+      ShortCast := '&showmovfullcast=1">(équipe et casting complet)</a>';
+      Realisateur := '<span class=moyen_txt_orange>Réalisateur</span>';
+      Producteur := '<span class=moyen_txt_orange>Producteur</span>';
+      Pays := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Pays :</td>';
+      Studio := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Studio :</td>';
+//      Genre := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Genre :</td>';
+      Duree := '<td width="10%" valign="top" class="moyen_txt_orange" NOWRAP>Durée :</td>';
+      Resume := '<td class="titre_orange_dark" valign="top" NOWRAP width="100%">Résumé</td>';
+      Review := '<td class="titre_orange_dark" nowrap="nowrap" valign="top" width="100%"><a name="review"></a>Critique</td>';
+      Critique := 'CRITIQUE(S):';
+//      Full_Review := ''' class=''orange''>lire la critique complète</a>';
+      Full_Review := ''' class=''orange''>lire l';
+      Notes := '<td class="titre_orange_dark" nowrap="nowrap" valign="top" width="100%"><a name="note"></a>Notes</td>';
+      Haut := '<td class="dark" align="right"><a href="#top">Haut</a>&nbsp;</td>';
+      NOTE1 := 'NOTE(S):';
+      NOTE2 := 'NOTES:';
+      WebError := 'L''adresse web ne correspond pas à une page web de HKCineMagic (FR)'+#13#10+'Verifiez l''option "Langue".';
+      EnterTitle := 'Entrez le titre du film :';
+      urlDomain := 'http://www.hkcinemagic.com/fr';
+    end
+    urlHKCMSearch := urldomain+lang+'/search.asp?searchstr=';
+//      urlHKCMSearch := urldomain+lang+'/search.asp';
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre / Seek on the title'));
+   // Choix du lancement
+   // Demande du titre
+    if (GetOption('Type de Lancement / Type of Launching') = 0) then
+    begin
+      if Input(NomScript+' par draco31.fr',EnterTitle,MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+        AnalyzeMoviePage(MovieName)
+        else
+          AnalyzeSearchPage(urlHKCMSearch+urlEncode(MovieName)+urlHKCMSearchGo);
+      end
+    end
+    else
+    begin
+     // Ne demande pas le titre
+      if (GetOption('Type de Lancement / Type of Launching') = 1) then
+      AnalyzeSearchPage(urlHKCMSearch+urlEncode(MovieName)+urlHKCMSearchGo)
+      else
+      begin
+       // Directement sur l'adresse web
+        if (GetOption('Type de Lancement / Type of Launching') = 2) then
+        begin
+          urlTitre := GetField(fieldURL);
+          if Pos(urlDomain,urlTitre) > 0 Then
+          AnalyzeMoviePage(urlTitre)
+          else
+          ShowError(WebError);
+        end
+      end
+    end
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

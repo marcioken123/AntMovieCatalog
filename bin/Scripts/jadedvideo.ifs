@@ -1,0 +1,223 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=OldBoy
+Title=jadedvideo
+Description=Get info for adult films
+Site=http://www.jadedvideo.com
+Language=EN
+Version=0.1
+Requires=3.5.0
+Comments=
+License=GPL
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program JDV;
+
+var
+  MovieName: string;
+
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line, Value: String;
+  BeginPos, EndPos: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+// Check for multiple results
+if pos('Search Results', Page.Text) = 0 then
+  begin
+    AnalyzeMoviePage(Page)
+  end else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    if FindLine('<big><strong><font color="#000FF">',Page,0)>-1 then
+    // Check for titles
+    begin
+      PickTreeAdd('Jaded Video Title Search:', '');
+      repeat
+        repeat
+          LineNr := FindLine('<big><strong><font color="#000FF">', Page, LineNr);
+          if LineNr > -1 then
+          // We found the line
+          begin
+            AddMoviesTitles(Page, LineNr);
+          end;
+          LineNr := FindLine('<big><strong><font color="#000FF">', Page, LineNr+1);
+        until LineNr = -1 ;
+        // Check for the link of 'Next Page'
+        LineNr := FindLine('><nobr><a href=', Page, LineNr+1);
+        if LineNr > -1 then
+        begin
+          Line := Page.GetString(LineNr);
+          BeginPos := pos('><nobr><a href=', Line)+16;
+          Delete(Line, 1, BeginPos);
+          EndPos := pos('''>', Line);
+          Value := copy(Line, 1, EndPos - 1);
+          Page.Text := GetPage('http://www.adultdvdempire.com/' + Value);
+        end;
+      until LineNr = -1;
+    end;
+
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line, Line1: string;
+  MovieTitle, MovieAddress, MovieID: string;
+  StartPos, EndPos, StartPos1, EndPos1: Integer;
+begin
+
+    Line := Page.GetString(LineNr);
+    StartPos := pos('">',Line)+2;
+    //Get rid of '(DVD)'
+    EndPos := pos('</',Line)-5;
+    Line1 := Page.GetString(LineNr+13);
+    StartPos1 := pos('PRODUCT_ID=',Line1)+11;
+    EndPos1:= pos('&Quantity', Line1);
+    if StartPos > 0 then
+    begin
+      MovieTitle := copy(Line, StartPos,  EndPos - StartPos);
+      MovieID := copy (Line1, StartPos1, EndPos1 - StartPos1);
+      MovieAddress := 'http://jadedvideo.com/search_result.asp?PRODUCT_ID='+MovieID;
+      setField(fieldURL, MovieAddress);
+      PickTreeAdd(MovieTitle, MovieAddress);
+    end;
+
+end;
+
+
+
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Path, ProductID, Image, Value2, FullValue: string;
+  LineNr, ValueInt: Integer;
+  BeginPos, EndPos, DirectorPos, BrPos: Integer;
+begin
+
+
+//--------------------------------------
+//URL
+//--------------------------------------
+
+  LineNr := FindLine('href="y_result.asp?PRODUCT_ID=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('PRODUCT_ID=', Line)+10;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('">large', Line);
+    ProductID := copy(Line, 1, EndPos - 1);
+    setField(fieldURL,'http://jadedvideo.com/search_result.asp?PRODUCT_ID='+ProductID);
+  end
+
+//---------------------
+//Original Title
+//---------------------
+
+  LineNr := FindLine('<font color="#000FF">',Page,0);
+  if LineNr >-1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('">', Line)+1;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('(DVD)', Line);
+    Value := copy(Line, 1, EndPos - 1);
+    setField(fieldOriginalTitle,Value);
+  end;
+
+
+
+
+//------------------------------------
+// Big Cover
+//--------------------------------------
+
+
+  LineNr := FindLine('href="y_result.asp?PRODUCT_ID=', Page, 0);
+  if LineNr > -1 then
+  begin
+    ValueInt := Length(ProductID);
+    Path := copy (ProductID,1,ValueInt-3);
+    Image := 'http://jadedvideo.com/images/'+Path+'/front/'+ProductID+'.jpg';
+    GetPicture(Image);
+    // False = do not store picture externally ; store it in the catalog file
+  end
+  else ShowMessage('Sorry Cover not available!');
+
+
+//-----------------------------------------------
+//Actors & Studio
+//-----------------------------------------------
+
+  LineNr := FindLine('<font color="#000FF">',Page,0);
+  //ShowMessage(Page.Text)
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    BeginPos := pos('Manufacturer=', Line);
+    Delete(Line, 1, BeginPos+12);
+    EndPos := pos('>', Line);
+    Value := copy(Line, 1, EndPos - 1);
+    SetField(fieldProducer,Value);
+    BeginPos:= pos('00000>', Line);
+    Delete(Line, 1, BeginPos+5);
+    EndPos := pos('<br>',Line);
+    Value := copy(Line,1,EndPos-1);
+    SetField(fieldActors,Value);
+  end;
+
+
+
+
+end;
+
+
+
+
+begin
+if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('JadedVideo Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://jadedvideo.com/search_result.asp?Image_Path=dvd&DESCRIPTION='+UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

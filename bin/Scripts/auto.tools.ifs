@@ -1,0 +1,827 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=HappyTalk/ScorEpioN
+Title=Auto.Tools (ENG)
+Description=Tools to manipulate fields
+Site=http://
+Language=EN
+Version=2007.03.22
+Requires=3.5
+Comments=Script requires ScorEpioNCommonScript.pas and autoutils.pas|Modified by HappyTalk from original script by ScorEpioN|Translated into English + modified & added functions||ConcatFiles merges Source Field entries to ; seperated and sets Disks to|number of files in the field. |ConcatMode: Simple appends all selected in order. Advanced orders them|as may not be in order in Ant + can do multiple different groups. |Afterwards manually delete all entries with lower counts to clean up.||GetImage you may choose to input a URL OR give a name to issue an amazon |search. Option to prompt for each entry OR to use first one the same |for all following records (useful for series having same cover)||Renumber Files, will renumber all selected files. Best applied to all records|OR you may get duplicates which is a bad idea.|
+License=
+GetInfo=1
+
+[Options]
+Update Fields=1|1|0=Yes|1=No
+Choose Case=3|3|0=All LowerCase|1=All UpperCase|2=First Letter UpperCase|3=Proper Case (First letter each word is UpperCase)
+Duplicate Picture=1|1|0=Prompt For New Picture For Every Record|1=Same Picture For All Records
+ConcatMode=0|0|0=Simple: Append of all items in order they come|1=Advanced: Use Title.01 format for proper sorting & multiple groups
+
+***************************************************)
+
+program Auto_Tools;
+uses
+  ScorEpioNCommonScript, AutoUtils;
+ 
+
+const
+  VersionScript = '2007.03.22';
+  NomScript = 'Auto.Tools (ENG)';
+
+var
+  Update, NewField, NewValue, Abort, FirstExec : String;
+  Field1, Field2 : Integer;
+  PicUrl : String;
+  BaseTitle, FileList: string; // used by ConcatFiles
+  arrayFiles : array of string;
+  RecordCnt : Integer; // holds current record count
+ 
+//------------------------------------------------------------------------------
+// Confirm Dialog
+//------------------------------------------------------------------------------
+function confirm(leMessage : String): Boolean;
+begin
+  if (FirstExec <> 'N') then
+  begin
+    if (ShowConfirmation(leMessage) = True) then
+    begin
+      result := True;
+    end else
+      result := False;
+  end else
+    result := True;
+end;
+
+//------------------------------------------------------------------------------
+// Give fields the desired case?
+//------------------------------------------------------------------------------
+
+function GetCase(titre : String; option : Integer) : string;
+begin
+  if (option = 0) then
+  begin
+     titre := AnsiLowerCase(titre);
+  end else if (option = 1) then
+  begin
+     titre := AnsiUpperCase(titre);
+  end else if (option = 2) then
+  begin
+     titre := AnsiUpFirstLetter(titre);
+  end else if (option = 3) then
+  begin
+     titre := AnsiMixedCase(titre,' -');
+  end;
+  result := titre;
+end;
+
+//------------------------------------------------------------------------------
+// Duplicate Fields
+//------------------------------------------------------------------------------
+procedure duplicateFields();
+begin
+  if (confirm('Are you sure you want to duplicate the field : '+GetField(fieldTranslatedTitle)+' ('+GetField(fieldOriginalTitle)+'). '+'Are you sure you have correctly selected the target ?') = True) then
+  begin
+     if (FirstExec <> 'N') then
+     begin
+      SetStatic('Titretraduit',GetField(fieldTranslatedTitle));  // Titre traduit
+      SetStatic('Titreoriginal', GetField(fieldOriginalTitle));  // Titre original
+      SetStatic('Description', GetField(fieldDescription));      // Description
+      SetStatic('Media', GetField(fieldMedia));                  // Media
+      SetStatic('Typedemedia', GetField(fieldMediaType));        // Type de media
+      SetStatic('Source', GetField(fieldSource));                // Source
+      SetStatic('Ladate', GetField(fieldDate));                  // Date
+      SetStatic('Lemprunteur', GetField(fieldBorrower));         // Emprunteur
+      SetStatic('Note', GetField(fieldRating));                  // Note
+      SetStatic('Directeur', GetField(fieldDirector));           // Directeur
+      SetStatic('Producteur', GetField(fieldProducer));          // Producteur
+      SetStatic('Pays', GetField(fieldCountry));                 // Pays
+      SetStatic('Categorie', GetField(fieldCategory));           // Categorie
+      SetStatic('Annee', GetField(fieldYear));                   // Annee
+      SetStatic('Duree', GetField(fieldLength));                 // Duree
+      SetStatic('Acteurs', GetField(fieldActors));               // Acteurs
+      SetStatic('URL', GetField(fieldURL));                      // URL
+      SetStatic('Commentaires', GetField(fieldComments));        // Commentaires
+      SetStatic('Formatvideo', GetField(fieldVideoFormat));      // Format video
+      SetStatic('Formataudio', GetField(fieldAudioBitrate));     // Format audio
+      SetStatic('Bitratevideo', GetField(fieldVideoBitrate));    // Bitrate video
+      SetStatic('Bitrateaudio', GetField(fieldAudioBitrate));    // Bitrate audio
+      SetStatic('Resolution', GetField(fieldResolution));        // Resolution
+      SetStatic('Nbframe', GetField(fieldFrameRate));            // Nbframe
+      SetStatic('Langue', GetField(fieldLanguages));             // Langue
+      SetStatic('Soustitre', GetField(fieldSubtitles));          // Sous-titre
+      SetStatic('Taille', GetField(fieldSize));                  // Taille
+      SetStatic('Nbdisque', GetField(fieldDisks));               // Nb de disque
+     end else
+     begin
+      if CanSetField(fieldTranslatedTitle) then SetField(fieldTranslatedTitle, GetStatic('Titretraduit'));
+      if CanSetField(fieldOriginalTitle) then SetField(fieldOriginalTitle, GetStatic('Titreoriginal'));
+      if CanSetField(fieldDescription) then SetField(fieldDescription, GetStatic('Description'));
+      if CanSetField(fieldMedia) then SetField(fieldMedia, GetStatic('Media'));
+      if CanSetField(fieldMediaType) then SetField(fieldMediaType, GetStatic('Typedemedia'));
+      if CanSetField(fieldSource) then SetField(fieldSource, GetStatic('Source'));
+      if CanSetField(fieldDate) then SetField(fieldDate, GetStatic('Ladate'));
+      if CanSetField(fieldBorrower) then SetField(fieldBorrower, GetStatic('Lemprunteur'));
+      if CanSetField(fieldRating) then SetField(fieldRating, GetStatic('Note'));
+      if CanSetField(fieldDirector) then SetField(fieldDirector, GetStatic('Directeur'));
+      if CanSetField(fieldProducer) then SetField(fieldProducer, GetStatic('Producteur'));
+      if CanSetField(fieldCountry) then SetField(fieldCountry, GetStatic('Pays'));
+      if CanSetField(fieldCategory) then SetField(fieldCategory, GetStatic('Categorie'));
+      if CanSetField(fieldYear) then SetField(fieldYear, GetStatic('Annee'));
+      if CanSetField(fieldLength) then SetField(fieldLength, GetStatic('Duree'));
+      if CanSetField(fieldActors) then SetField(fieldActors, GetStatic('Acteurs'));
+      if CanSetField(fieldURL) then SetField(fieldURL, GetStatic('URL'));
+      if CanSetField(fieldComments) then SetField(fieldComments, GetStatic('Commentaires'));
+      if CanSetField(fieldVideoFormat) then SetField(fieldVideoFormat, GetStatic('Formatvideo'));
+      if CanSetField(fieldAudioBitrate) then SetField(fieldAudioBitrate, GetStatic('Formataudio'));
+      if CanSetField(fieldVideoBitrate) then SetField(fieldVideoBitrate, GetStatic('Bitratevideo'));
+      if CanSetField(fieldAudioBitrate) then SetField(fieldAudioBitrate, GetStatic('Bitrateaudio'));
+      if CanSetField(fieldResolution) then SetField(fieldResolution, GetStatic('Resolution'));
+      if CanSetField(fieldFrameRate) then SetField(fieldFrameRate, GetStatic('Nbframe'));
+      if CanSetField(fieldLanguages) then SetField(fieldLanguages, GetStatic('Langue'));
+      if CanSetField(fieldSubtitles) then SetField(fieldSubtitles, GetStatic('Soustitre'));
+      if CanSetField(fieldSize) then SetField(fieldSize, GetStatic('Taille'));
+      if CanSetField(fieldDisks) then SetField(fieldDisks, GetStatic('Nbdisque'));
+     end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FUNCTION to append the comments field to the description field
+//------------------------------------------------------------------------------
+procedure moveComment();
+begin
+  if (confirm('You will append the comments field to the description field.') = True) then
+  begin
+   if (CanSetField(fieldDescription) and CanSetField(fieldComments))  then
+   begin
+     moveComments();
+   end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FUNCTION to append Field1 to Field2
+//------------------------------------------------------------------------------
+procedure appendField(Fld1, Fld2 : Integer);
+begin
+//  if (confirm('You will append the " + Field1 + " field to the " + Field2 + " field.') = True) then
+  if (confirm('You will append value of Field1 to end of Field2') = True) then
+  begin
+    if (CanSetField(Fld2)) then
+         SetField(Fld2, GetField(Fld2) + GetField(Fld1));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FUNCTION to renumber records
+//------------------------------------------------------------------------------
+procedure RenumberRecords();
+begin
+//  if (confirm('You will append the " + Field1 + " field to the " + Field2 + " field.') = True) then
+  if (confirm('You will renumber ALL chosen records starting from 1') = True) then
+  begin
+    if (CanSetField(fieldNumber)) then
+         SetField(fieldNumber, IntToStr(RecordCnt));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// UPDATED FUNCTION OF The CASE OF The TITLES AND The NAMES
+//------------------------------------------------------------------------------
+procedure UpdateCase();
+begin
+  if (confirm('You will modify the case of the fields ''''Title'''', and ''''Names'''', the ''''Country'''' and the ''''Genres'''', according to the modifiable fields and selected option.') = True) then
+  begin
+// Original Title
+    if (CanSetField(fieldOriginalTitle)) then
+      SetField(fieldOriginalTitle, GetCase(GetField(fieldOriginalTitle),GetOption('Choose Case')));
+// Translated Title
+    if (CanSetField(fieldTranslatedTitle)) then
+      SetField(fieldTranslatedTitle, GetCase(GetField(fieldTranslatedTitle),GetOption('Choose Case')));
+// Director
+    if (CanSetField(fieldDirector)) then
+      SetField(fieldDirector, GetCase(GetField(fieldDirector),GetOption('Choose Case')));
+//Producer
+  if (CanSetField(fieldProducer)) then
+      SetField(fieldProducer, GetCase(GetField(fieldProducer),GetOption('Choose Case')));
+// Actors
+  if (CanSetField(fieldActors)) then
+      SetField(fieldActors, GetCase(GetField(fieldActors),GetOption('Choose Case')));
+// Category
+  if (CanSetField(fieldCategory)) then
+      SetField(fieldCategory, GetCase(GetField(fieldCategory),GetOption('Choose Case')));
+// Country
+  if (CanSetField(fieldCountry)) then
+      SetField(fieldCountry, GetCase(GetField(fieldCountry),GetOption('Choose Case')));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Copy Title
+//------------------------------------------------------------------------------
+procedure CopyTitle();
+begin
+  if (confirm('You will duplicate the titles (if empty), with selected case.') = True) then
+  begin
+    if GetField(fieldTranslatedTitle) = '' then
+    begin
+      if (CanSetField(fieldTranslatedTitle)) then
+        SetField(fieldTranslatedTitle, GetCase(GetField(fieldOriginalTitle),GetOption('Choose Case')));
+    end else
+    if GetField(fieldOriginalTitle) = '' then
+    begin
+      if (CanSetField(fieldOriginalTitle)) then
+        SetField(fieldOriginalTitle, GetCase(GetField(fieldTranslatedTitle),GetOption('Choose Case')));
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Delete titles
+//------------------------------------------------------------------------------
+procedure delTitle(Title : Integer);
+begin
+  if (confirm('You will delete the title fields') = True) then
+  begin
+      DeleteTitle(Title);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FUNCTION WHICH prompts to choose title to be removed
+//------------------------------------------------------------------------------
+procedure menuTitle();
+var
+   Field: String;
+begin
+  if (FirstExec <> 'N') then
+  begin
+    PickTreeClear;
+    PickTreeAdd('To choose the fields which you wish to remove :', '');
+    PickTreeAdd('Original Title', IntToStr(fieldOriginalTitle));
+    PickTreeAdd('Translated Title', IntToStr(fieldTranslatedTitle));
+    PickTreeExec(Field);
+    Field1 := StrToInt(Field,0)
+  end;
+
+  delTitle(Field1);
+
+end;
+
+//------------------------------------------------------------------------------
+// DELETE A WORD
+//------------------------------------------------------------------------------
+
+procedure deleteWord(Champs : Integer);
+begin
+  if (NewField = '') then
+    Input('Delete a Word', 'Enter the word to delete :', NewField);
+  SetField(Champs, posReplaceString(NewField, '', '', GetField(Champs), 1));
+end;
+
+
+
+//------------------------------------------------------------------------------
+// Replace a word
+//------------------------------------------------------------------------------
+
+procedure replaceWord(Champs : Integer);
+begin
+  if (NewField = '') then
+    Input('Replace a Word','Enter the word to find :', NewField);
+  if (NewValue = '') then
+    Input('Replace a Word','Enter the word to replace it with :', NewValue);
+  SetField(Champs, posReplaceString(NewField, '', NewValue, GetField(Champs), 1));
+end;
+
+procedure replaceWord2(Champs : Integer);
+begin
+  if (NewField = '') then
+    Input('Replace a Word after 2nd instance','Enter the word to find :', NewField);
+  if (NewValue = '') then
+    Input('Replace a Word after 2nd instance','Enter the word to replace it with :', NewValue);
+  SetField(Champs, nposReplaceString(NewField, NewValue, GetField(Champs), 2));
+end;
+
+// convert first space after last dot to a dot
+procedure ReplaceSpaceDot(Champs : Integer);
+var
+  p : integer;
+  s : string;
+begin
+  s := GetField(Champs);
+  p := nposrev('.', s, 1);
+  if (p > 0) then
+  begin
+    p := ppos(' ', s, p);
+    if (p > 0) then s := StrLeft(s, p-1) + '.' + StrMid(s, p+1, 0);
+  end;
+  SetField(Champs, s);
+end;
+
+
+//------------------------------------------------------------------------------
+// Replace a field
+//------------------------------------------------------------------------------
+
+procedure replaceField(Champs : Integer);
+begin
+  if (NewField = '') then
+    Input('Replace a Field', 'Enter the new value for the field :', NewField);
+  SetField(Champs, NewField);
+end;
+
+//------------------------------------------------------------------------------
+// Insert Text at start of field
+//------------------------------------------------------------------------------
+
+procedure InsertText(Champs : Integer);
+begin
+  if (NewField = '') then
+    Input('Insert Text', 'Enter the text to insert :', NewField);
+  SetField(Champs, NewField+GetField(Champs));
+end;
+
+
+//------------------------------------------------------------------------------
+// Delete a field
+//------------------------------------------------------------------------------
+
+procedure deleteField(Champs : Integer);
+begin
+  if (confirm('Are you sure you wish to delete the value for this field?') = True) then
+  begin
+    SetField(Champs, '');
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Set checkmark against empty fields, clear for non empty
+//------------------------------------------------------------------------------
+procedure checkEmptyField(Champs : Integer);
+begin
+ if (GetField(Champs) = '') then
+    SetField(fieldChecked, 'x')
+  else
+    SetField(fieldChecked, '');
+end;
+
+//------------------------------------------------------------------------------
+// Import an image from a given URL
+//------------------------------------------------------------------------------
+
+procedure NewImage();
+begin
+  if (NewField = '') then
+    Input('Import Image by URL', 'Enter the URL for the image :', NewField);
+  GetPicture(NewField);
+end;
+
+// prompts to get amazon picture and uses same url for rest of pics
+procedure GetPictures();
+var
+MovieName: string;
+begin
+  if CanSetPicture then
+  begin
+    if (FirstExec <> 'N') or (GetOption('Duplicate Picture') = 0) then
+    begin
+      picUrl := '';
+      MovieName := ConvertAlphaSpace(GetField(fieldOriginalTitle));
+      if not (Input('URL/Amazon.com Pic Import', 'Enter URL Or Amazon Title', MovieName)) then exit; //SeName := '';
+      if MovieName = '' then exit;
+      if StrLeft(MovieName,4) = 'http' then
+        PicUrl := MovieName
+      else
+        PicUrl := GetAmazonPicUrl(MovieName, true); //get pic show picker
+    end;
+
+    if PicUrl <> '' then
+      GetPicture(PicUrl); // use last value as will be same (for 2 part movies that use same image)
+  end;
+end;
+
+
+//------------------------------------------------------------------------------
+// Change country
+//------------------------------------------------------------------------------
+
+procedure transCountry();
+begin
+  if (confirm('You are about to transform the country field') = True) then
+  begin
+    if CanSetField(fieldCountry) then
+      SetField(fieldCountry, transformCountry(GetField(fieldCountry)));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Proc to set the total size of the files
+//------------------------------------------------------------------------------
+procedure TotalFileSize();
+var
+  i, Total: Integer;
+  s: string;
+begin
+  i := 1;
+  Total := 0;
+  s := GetField(fieldSize);
+  while i <= Length(s) do
+  begin
+    if (StrGet(s, i) >= '0') and (StrGet(s, i) <= '9') then
+      i := i + 1
+    else
+    begin
+      if i > 1 then
+        Total := Total + StrToInt(Copy(s, 1, i - 1), 0);
+      Delete(s, 1, i);
+      i := 1;
+    end;
+  end;
+  if i > 1 then
+  begin
+    Total := Total + StrToInt(Copy(s, 1, i - 1), 0);
+    SetField(fieldSize, IntToStr(Total));
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Translate Synopsis
+//------------------------------------------------------------------------------
+procedure translateSynopsis();
+var
+   Adresse, Parametre, Description, Resultat, Line : String;
+   BeginPos, EndPos : Integer;
+begin
+  if (confirm('You will translate the fields''''Description''''.') = True) then
+  begin
+     if (NewField = '') then
+     begin
+            PickTreeClear;
+            PickTreeAdd('Sélectionner les langues source et cible :', '');
+            PickTreeAdd('From Chinese (simple) To English', 'zh_en');
+            PickTreeAdd('From Chinese (trad) To English', 'zt_en');
+            PickTreeAdd('From English to Chinese simpl.', 'en_zh');
+            PickTreeAdd('From English to Chinese trad.', 'en_zt');
+            PickTreeAdd('From English to Dutch', 'en_nl');
+            PickTreeAdd('From English to French', 'en_fr');
+            PickTreeAdd('From English to German', 'en_de');
+            PickTreeAdd('From English to Greek', 'en_el');
+            PickTreeAdd('From English to Italian', 'en_it');
+            PickTreeAdd('From English to Japanese', 'en_ja');
+            PickTreeAdd('From English to Korean', 'en_ko');
+            PickTreeAdd('From English to Portuguese', 'en_pt');
+            PickTreeAdd('From English to Russian', 'en_ru');
+            PickTreeAdd('From English to Spanish', 'en_es');
+            PickTreeAdd('From Dutch to English', 'nl_en');
+            PickTreeAdd('From Dutch to French', 'nl_fr');
+            PickTreeAdd('From French to Dutch', 'fr_nl');
+            PickTreeAdd('From French to English', 'fr_en');
+            PickTreeAdd('From French to German', 'fr_de');
+            PickTreeAdd('From French to Greek', 'fr_el');
+            PickTreeAdd('From French to Italian', 'fr_it');
+            PickTreeAdd('From French to Portuguese', 'fr_pt');
+            PickTreeAdd('From French to Spanish', 'fr_es');
+            PickTreeAdd('From German To English', 'de_en');
+            PickTreeAdd('From German To French', 'de_fr');
+            PickTreeAdd('From Greek To English', 'el_en');
+            PickTreeAdd('From Greek To French', 'el_fr');
+            PickTreeAdd('From Italian To English', 'it_en');
+            PickTreeAdd('From Italian To French', 'it_fr');
+            PickTreeAdd('From Japanese To English', 'ja_en');
+            PickTreeAdd('From Korean To English', 'ko_en');
+            PickTreeAdd('From Portuguese To English', 'pt_en');
+            PickTreeAdd('From Portuguese To French', ' pt_fr');
+            PickTreeAdd('From Russian To English', 'ru_en');
+            PickTreeAdd('From Spanish To English', 'es_en');
+            PickTreeAdd('From Spanish To French', 'es_fr');
+            PickTreeExec(NewField);
+      end;
+    Description := GetField(fieldDescription);
+    Description := StringReplace(Description , #13#10, ' ');
+    Description := UTF8Encode(Description);
+      Adresse := URLEncode('http://babelfish.altavista.com/tr');
+      Parametre := 'do it =done&intl=1&tt=urltext&trtext='+Description+'&lp='+NewField;
+    Line := PostPage(Adresse,Parametre);
+    BeginPos := Pos('<td bgcolor=white class=s><div style=padding:10px;>', Line);
+    Delete(Line, 1, BeginPos+50);
+      EndPos := Pos('</div></td>', Line);
+      Resultat := Copy(Line, 1, EndPos-1 );
+      Resultat := StringReplace(Resultat, #13#10, ' ');
+      Resultat := UTF8Decode(Resultat);
+      HTMLDecode(Resultat);
+      HTMLRemoveTags(Resultat);
+    SetField(fieldDescription, Resultat);
+  end else
+  begin
+    abort := 'O';
+  end;   
+end;
+
+//------------------------------------------------------------------------------
+// Concat Filenames
+//------------------------------------------------------------------------------
+procedure ConcatFiles();
+var
+  Title, FileName: string;
+  CurBaseTitle: string;
+  i, cnt: integer;
+begin
+   if (GetOption('ConcatMode') = 0) then //simple concat all files in given order
+   begin
+      Filename := GetField(fieldSource);
+
+      if FileList <> '' then FileList := FileList + ';';
+      FileList := FileList + FileName;
+
+      SetField(fieldSource, FileList);
+      SetField(fieldChecked, 'x')
+      SetField(fieldDisks, IntToStr(RecordCnt));
+   end   else
+   begin
+      Title := GetField(fieldOriginalTitle);
+      Filename := GetField(fieldSource);
+
+      CurBaseTitle := nposLeft('.', Title, 1, true);  // Lost.1x01.Pilot.01 = Lost.1x01.Pilot
+      if (CurBaseTitle <> BaseTitle) then
+      begin
+         BaseTitle := CurBaseTitle; //store new base title
+         for i := 0 to 15 do
+            arrayFiles[i] := '';
+      end;
+      i := StrToInt(StrLeft(nposRight('.', Title, 1, true),2),0);
+      arrayFiles[i] := Filename;
+
+      cnt := 0;
+      Filename := '';
+      for i := 0 to 15 do
+      begin
+         if (arrayFiles[i] <> '') then
+         begin
+            if Filename <> '' then Filename := Filename + ';';
+            Filename := Filename + arrayFiles[i];
+            cnt := cnt + 1;
+         end;
+      end;
+
+      SetField(fieldOriginalTitle, CurBaseTitle + ' (' + IntToStr(cnt) + ')');
+      SetField(fieldSource, Filename);
+      SetField(fieldChecked, 'x')
+      SetField(fieldDisks, IntToStr(cnt));
+   end;   
+end;
+
+
+   
+
+
+//--------------- MAIN FUNCS ---------------------------------------------------
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+// Main menu function
+//------------------------------------------------------------------------------
+function menu() : String;
+begin
+    PickTreeClear;
+    PickTreeAdd('Import Image by URL Or Amazon', 'GetPictures');
+    PickTreeAdd('Duplicate record', 'Duplicate');
+    PickTreeAdd('Move Comments -> Description', 'Move');
+    PickTreeAdd('Change letter format with option', 'GetCase');
+    PickTreeAdd('Check Empty Field', 'checkEmptyField');
+    PickTreeAdd('Remove title tags', 'Tags');
+    PickTreeAdd('Copy Title If Empty Title', 'Copier');
+    PickTreeAdd('Delete Double Title', 'DeleteDouble');
+    PickTreeAdd('Delete a field', 'deleteF');
+    PickTreeAdd('Replace a field', 'replaceF');
+    PickTreeAdd('Delete Text', 'deleteW');
+    PickTreeAdd('Replace text', 'replaceW');
+    PickTreeAdd('Replace text after 2nd instance', 'replaceW2');
+    PickTreeAdd('Insert Text At Start', 'insertT');
+    PickTreeAdd('Transform Nationality to Country', 'transCountry');
+    PickTreeAdd('Sum Format to Size Field', 'TotalFileSize');
+    PickTreeAdd('Translate Synopsis with Altavista', 'Translate');
+    PickTreeAdd('Append Field1 to end of Field2', 'appendField');
+    PickTreeAdd('Concat Filenames', 'ConcatFiles');
+    PickTreeAdd('Renumber Records', 'RenumberRecords');
+    PickTreeExec(Update);
+   result := Update;
+end;
+
+//------------------------------------------------------------------------------
+// Function to call selected task
+//------------------------------------------------------------------------------
+procedure executeTask();
+begin
+   if (Update = 'GetPictures') then
+   begin
+     GetPictures();
+   end else if (Update = 'checkEmptyField') then
+   begin
+     menuFields('checkEmptyField');
+   end else if (Update = 'transCountry') then
+   begin
+     transCountry();
+   end else if (Update = 'Move') then
+   begin
+     moveComment();
+   end else if (Update = 'Tags') then
+   begin
+     SetField(fieldTranslatedTitle, GetCase(cleanTitle(GetField(fieldTranslatedTitle)),GetOption('Choose Case')));
+     SetField(fieldOriginalTitle, GetCase(cleanTitle(GetField(fieldOriginalTitle)),GetOption('Choose Case')));
+   end else if (Update = 'GetCase') then
+   begin
+     UpdateCase();
+   end else if (Update = 'TotalFileSize') then
+   begin
+     TotalFileSize();
+   end else if (Update = 'DeleteDouble') then
+   begin
+     menuTitle();
+   end else if (Update = 'Copier') then
+   begin
+     CopyTitle();
+   end else if (Update = 'deleteW') then
+   begin
+     menuFields('deleteW');
+   end else if (Update = 'deleteF') then
+   begin
+     menuFields('deleteF');
+   end else if (Update = 'insertT') then
+   begin
+     menuFields('insertT');
+   end else if (Update = 'replaceW') then
+   begin
+     menuFields('replaceW');
+   end else if (Update = 'replaceW2') then
+   begin
+     menuFields('replaceW2');
+   end else if (Update = 'appendField') then
+   begin
+     menuFields('appendField');
+   end else if (Update = 'replaceF') then
+   begin
+     menuFields('replaceF');
+   end else if (Update = 'Translate') then
+   begin
+     translateSynopsis();
+   end else if (Update = 'ConcatFiles') then
+   begin
+     ConcatFiles();
+   end else if (Update = 'RenumberRecords') then
+   begin
+     RenumberRecords();
+   end else if (Update = 'Duplicate') then
+   begin
+     duplicateFields();
+   end;
+end;
+
+//------------------------------------------------------------------------------
+// Prompt field
+//------------------------------------------------------------------------------
+function promptField() : Integer;
+var
+   Field: String;
+begin
+   PickTreeClear;
+   PickTreeAdd('Actors',IntToStr(fieldActors));
+   PickTreeAdd('Borrower',IntToStr(fieldBorrower));
+   PickTreeAdd('Category',IntToStr(fieldCategory));
+   PickTreeAdd('Comments',IntToStr(fieldComments));
+   PickTreeAdd('Country',IntToStr(fieldCountry));
+   PickTreeAdd('Description',IntToStr(fieldDescription));
+   PickTreeAdd('Director',IntToStr(fieldDirector));
+   PickTreeAdd('Languages',IntToStr(fieldLanguages));
+   PickTreeAdd('Media Label', IntToStr(fieldMedia));
+   PickTreeAdd('Media Type', IntToStr(fieldMediaType));
+   PickTreeAdd('Number', IntToStr(fieldNumber));
+   PickTreeAdd('Original Title', IntToStr(fieldOriginalTitle));
+   PickTreeAdd('Producer',IntToStr(fieldProducer));
+   PickTreeAdd('Source', IntToStr(fieldSource));
+   PickTreeAdd('Subtitles',IntToStr(fieldSubtitles));
+   PickTreeAdd('Translated Title', IntToStr(fieldTranslatedTitle));
+   PickTreeAdd('URL',IntToStr(fieldURL));
+   PickTreeExec(Field);
+  Result := StrToInt(Field,0)
+end;
+
+
+//------------------------------------------------------------------------------
+// Select field menu
+//------------------------------------------------------------------------------
+procedure menuFields(lAction : String);
+begin
+   
+  if (FirstExec <> 'N') then
+  begin
+    Field1 := promptField();
+  end;
+ 
+  if (lAction = 'checkEmptyField') then
+  begin
+    checkEmptyField(Field1);
+  end else
+  if (lAction = 'deleteW') then
+  begin
+    deleteWord(Field1);
+  end else
+  if (lAction = 'deleteF') then
+  begin
+    deleteField(Field1);
+  end else
+  if (lAction = 'insertT') then
+  begin
+    InsertText(Field1);
+  end else
+  if (lAction = 'replaceW') then
+  begin
+    replaceWord(Field1);
+  end else
+  if (lAction = 'replaceW2') then
+  begin
+    replaceWord2(Field1);
+  end else
+  if (lAction = 'appendField') then
+  begin
+    if (FirstExec <> 'N') then
+     begin
+       Field2 := promptField();
+     end;
+    appendField(Field1, Field2);
+  end else
+  if (lAction = 'replaceF') then
+  begin
+    replaceField(Field1);
+  end;
+end;
+
+
+//------------------------------------------------------------------------------
+// Main
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Update Fields') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+   
+    if FirstExec <> 'N' then
+    begin
+       RecordCnt := 1;
+      SetArrayLength(arrayFiles, 16);
+    end else 
+    begin
+       RecordCnt := RecordCnt + 1;
+    end;
+   
+    if (Abort <> 'O') then
+    begin
+      if (Update = '') then
+        Update := menu();
+      executeTask();
+      FirstExec := 'N';
+    end else
+    begin
+      exit;
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+    exit;
+end. 

@@ -1,0 +1,407 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Cine5x
+Description=
+Site=www.cine5x.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Cine5x;
+
+var
+  MovieName: string;
+  MovieURL: string;
+  //---------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     // quitamos las comillas
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------------------------------------
+function Acentos(str1: string) :string;
+begin
+          str1 := StringReplace(str1, '√ñ' , '÷');
+          str1 := StringReplace(str1, '√∂' , 'ˆ');
+          str1 := StringReplace(str1, '√Å' , '¿');
+          str1 := StringReplace(str1, '√â' , '…');
+          str1 := StringReplace(str1, '√©' , 'È');
+          str1 := StringReplace(str1, '√ç', 'Õ');
+          str1 := StringReplace(str1, '√ì' , '”');
+          str1 := StringReplace(str1, '√ë' , '—');
+          str1 := StringReplace(str1, '√°' , '‡');
+          Str1 := StringReplace(Str1, ''', '');
+          Str1 := StringReplace(Str1, '—©', 'È');
+          Str1 := StringReplace(Str1, '&amp;', '&');
+          Str1 := StringReplace(Str1, '√≥', 'Û');
+          Str1 := StringReplace(Str1, '√ö', '˙');
+          Str1 := StringReplace(Str1, '√´', 'Î');
+          Str1 := StringReplace(Str1, '-', ' ');
+          Str1 := StringReplace(Str1, '()', '');
+          Str1 :=UpFirstLetterWord(Str1);
+result := str1;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.cine5x.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.cine5x.com/pelicula/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" clas', strPage);
+          MovieId := Copy(strPage,+37, EndPos-37);
+          MovieAddr := 'http://www.cine5x.com/pelicula/' + MovieId;
+          BeginPoss := Pos(')">',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          DeleteTags(MovieTitle);
+          MovieTitle := TextBetween (MovieTitle, 'Cine5X:', '</a>');
+          MovieTitle := Acentos(MovieTitle);
+          PickTreeAdd(MovieTitle,  MovieAddr);
+          BeginPos := Pos('href="http://www.cine5x.com/pelicula/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeSort;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo Traducido
+  LineNr := FindLine('<title>Cine5X:', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<title>Cine5X:', '(');
+  Item :=UpFirstLetterWord(Item);
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('Titulo Original', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<b>', '</b>');
+    Item :=UpFirstLetterWord(Item);
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+
+  // AÒo
+  LineNr := FindLine('</b><br>A', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('</b><br>A',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '... <b>', '><');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    SetField(fieldYear, Trim (Item));
+  end;
+  // Duracion
+  LineNr := FindLine('<br>DuraciÛn .......................... <b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<br>DuraciÛn .......................... <b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<br>DuraciÛn .......................... <b>', 'minutos');
+    Item  := Trim(Item );
+    SetField(fieldLength, Trim (Item));
+  end;
+  // Nacionalidad
+  LineNr := FindLine('s ................................ <b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('s ................................ <b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 's ................................ <b>', '><');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    SetField(fieldCountry, Trim (Item));
+  end;
+  // GÈnero
+  LineNr := FindLine('nero ............................ <b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('nero ............................ <b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'nero ............................ <b>', '><');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    SetField(fieldCategory, Trim (Item));
+  end;
+  // Director
+  LineNr := FindLine('>Director ................. <b>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '>Director ................. <b>', '><');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // Reparto
+  LineNr := FindLine('<p>IntÈrpretes', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'html">', '</a></b><p>');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+
+  // Sinopsis
+  LineNr := FindLine('">Sinopsis</h2>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('">Sinopsis</h2>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '">Sinopsis</h2>', '</div>');
+    Item := StringReplace(Item ,#13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    SetField(fieldDescription, Trim (Item));
+  end;
+ 
+   // GuiÛn
+   LineNr := FindLine('<br>Gui', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<br>Gui',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<b>', '><');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'GuiÛn: ' + Item +#13#10;
+  end;
+  // FotografÌa
+   LineNr := FindLine('<br>Fotograf', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<br>Fotograf',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<b>', '><');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'FotografÌa: ' + Item +#13#10;
+  end;
+ 
+  // Musica
+   LineNr := FindLine('sica ...', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('sica ...',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<b>', '><');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'M˙sica: ' + Item +#13#10;
+  end;
+ 
+  // fecha de estreno
+   LineNr := FindLine('<p>Fecha de estreno: <b>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<p>Fecha de estreno: <b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<p>Fecha de estreno: <b>', '</b>');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Fecha de estreno: ' + Item +#13#10;
+  end;
+ 
+  // web oficial
+   LineNr := FindLine('<a title="web oficial de ', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<a title="web oficial de ',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'href="', '">');
+    DeleteTags (Item);
+    Item  := Trim(Item);
+    HTMLDecode(Item);
+    Comments := Comments + 'Web oficial: ' + Item +#13#10;
+  end;
+ 
+
+// Picture
+  LineNr := FindLine('src="/carteles/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, 'src="/carteles/', '"');
+     GetPicture ('http://www.cine5x.com/carteles/'+Item);
+  end;
+  HTMLDecode(Comments);
+  SetField(fieldComments, Comments);
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Cine5x', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('Cine5x', 'Buscar', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=' + UrlEncode(MovieName)+'+site%3Awww.cine5x.com&btnG=B%C3%BAsqueda&meta=');
+end.

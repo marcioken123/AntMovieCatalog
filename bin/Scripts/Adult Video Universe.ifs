@@ -1,0 +1,193 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=J
+Title=Adult Video Universe
+Description=Script for adult movie information of www.cduniverse.com
+Site=www.cduniverse.com
+Language=EN
+Version=1.0.2 - 04/08/2009
+Requires=3.5.0
+Comments=V 1.0.0|First Release|V 1.0.1|Added warning page handling
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+// Adult Video Universe.com - Script Version 1.0.1 (20090227/J)
+//
+// v.1.0.1 - 27/02/2002
+
+program ADULTVU;
+
+uses
+  StringUtils1;
+var
+  MovieName, Value, Value1: string;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  RealAddress, TextEnd, TextBody: string;
+  Counter: Integer;
+ 
+begin
+  Page := TStringList.Create;
+  Value := '';
+  Value1 := '';
+  TextBody := '';
+  Counter := 0;
+ 
+// ***** Find movie(s)
+  begin
+    Page.Text := GetPage(Address);
+   PickTreeClear;
+    Value := Page.Text;
+   
+// ***** Warning Page (appears sometimes for the first movie)
+  If Pos('Warning Page', Page.Text) > 0 then
+   begin
+     Value := 'http://www.cduniverse.com/warning' + TextBetween(Page.Text, 'href="warning', '"');
+     Page.Text := GetPage(Value);
+     Page.Text := GetPage(Address);
+   end;
+
+// ***** Collect all search result and choose a title
+// Looking for search result(s)
+    If (Pos('No Title Matches Found', Page.Text) = 0) and (Pos('We could not find', Page.Text) = 0) then
+      begin
+        TextBody := TextBetween(Page.Text, 'add to cart', '</table><br>');
+        Value := TextBetween(TextBody, 'a  href=', '/a></b>');
+// More than one result?
+        while Value <> '' do
+        begin
+// Name & real movie URL
+          RealAddress := 'http://www.cduniverse.com' + TextBetween(Value, '"', '"');
+        Value := TextBetween(Value, '>', '<');
+// if same title exists from different studios then put studionames after title in brackets
+        Value1 := TextBetween(TextBody, '">&nbsp;', '</');
+        if Value1 <> '' then Value := Value + ' (' + Value1 + ')';
+        PickTreeAdd(Value, RealAddress);
+          Counter := Counter + 1;
+          Delete (TextBody, 1 , Pos('img src', TextBody));
+          Value := TextBetween(TextBody, 'a  href=', '/a></b>');
+        end;
+// Choose movie from list if more than one
+        If counter > 1 then PickTreeExec(RealAddress);
+        Page.Text := GetPage(RealAddress);
+      end
+    else
+// No movie found
+      begin
+        ShowMessage('No Title Matches Found.');
+        Exit;
+      end;
+  end;
+
+// ***************** Here we go now with the movie content page
+// ***** Title
+  Value := '';
+  begin
+      Value := TextBetween(Page.Text, '<title>', '</title>');
+     Value := StringReplace(Value, ' DVD', '');
+     Value := StringReplace(Value, ' DVDs', '');
+     Value := StringReplace(Value, ' Blu-Ray', '');
+     setField (fieldOriginalTitle, Value);    
+  end;
+
+// ***** Producer (Studio)
+  Value := '';
+  begin
+      Value := TextBetween(Page.Text, 'categorylink', '<');
+      Delete (Value, 1, 2);     
+     setField(fieldProducer, Value);
+  end;
+ 
+// ***** Picture (Large front cover)
+  Value := '';
+  begin
+      Value := TextBetween(Page.Text, 'cover7', '"');
+      Value := StringReplace(Value, 'Medium', 'Large');
+     GetPicture('http://cover7' + Value);
+  end;
+
+// ***** Year (Release date)
+  Value := '';
+  begin
+      Value := TextBetween(Page.Text, 'Release Date </nobr></td><td>', '<');
+      Delete (Value, 1, 8);     
+      setField(fieldYear, Value);
+  end;
+
+// ***** URL *****
+  setField(fieldURL, RealAddress);
+
+// ***** Director
+  Value := '';
+  Value1 := '';
+  If Pos('<nobr>Director', Page.Text) > 0 then
+  begin
+    Value := TextBetween(Page.Text, 'Search_Name=', '/');
+    Value1 := TextBetween(Value, '>', '<');
+    setfield (fieldDirector, Value1);
+  end;
+ 
+// ***** Actors (Starring)
+  Value := '';
+  Value1 := '';
+  Textbody := '';
+  begin
+      Textbody := TextBetween(Page.Text, '<nobr>Starring', '!---- trimable');
+      while Pos('Name', TextBody) > 0 do
+            begin
+            Value := TextBetween(Textbody, '">', '<');
+         Value1 := Value1 + Value + ', ';
+         TextBody := RemainingText;               
+         end
+     Delete (Value1, Length(Value1) - 1, 2);
+     setField (fieldActors , Value1);
+  end; 
+
+// ***** Description
+  Value := '';
+  Value1 := '';
+  Textbody := '';
+  begin
+      Value := TextBetween(Page.Text, 'trimable --->', '<!---- trimable');
+// Change <br> to CR
+      Value := StringReplace(Value, '<br>', #13#10);
+// Delete all <> and text between
+     while Pos('<', Value) > 0 do
+         Delete (Value, Pos('<', Value), Length(TextBetween(Value, '<', '>')) + 2);
+// Delete remaining unwanted stuff
+      Delete (Value, Pos('...&', Value), Length(TextBetween(Value, '...&', 'Description'))+ 15);
+     Delete (Value, Pos('&nbsp', Value), Length(TextBetween(Value, '&nbsp', 'Description'))+ 16);
+     setField (fieldDescription, Value);
+  end;
+end;
+
+
+// ******************* Start of program
+begin
+  if AcceptLicense(1) = False then
+    Exit;
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+      if Input('adult video Universe.com Import', 'Enter the title of the movie:', MovieName) then
+      begin
+// Use internal search function to get working title-URL
+// style=ice means searching in the the adult content area; style=gay means searching in the the gay section
+      AnalyzePage('http://www.cduniverse.com/sresult.asp?psychicsearch=on&HT_Search=TITLE&HT_Search_Info='+UrlEncode(MovieName)+'&style=ice&altsearch=yes');
+      end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

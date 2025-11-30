@@ -1,0 +1,180 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Claudio Rinaldi ( rinaldiclaudio@gmail.com )
+Title=IBS
+Description=Get movie info from ibs.it
+Site=www.ibs.it
+Language=IT
+Version=1.2
+Requires=3.5.1
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program InternetBookShop;
+
+uses
+  LibSeraph; // Seraphico's functions library
+
+const
+  UrlBase = 'http://www.ibs.it';
+  QueryBase = UrlBase + '/dvd/ser/serpge.asp?ty=kw&x=';
+  QueryFilm = UrlBase + '/dvd/';
+  ImagePath = UrlBase + '/locandine/';
+
+  cStartNumRis = 'Titoli 1-'; // Result Number start Marker
+  cEndNumRis = ' di ';               // Result Number end Marker
+  cStartId = '<a href=http://www.ibs.it/dvd/'; // ID start marker
+  cEndId = '>'; // ID end marker
+  cStartTitleList = '<b>';            // Title list start marker
+  cEndTitleList = '</b>';            // Title list end marker
+  cStartTitle = '<b>Titolo</b></td><td'; // Title start marker
+  cEndTitle = '</td>';              // Title end marker
+  cStartTranslTitle = '<b>Titolo originale</b></td><td';        // Translated title start marker
+  cEndTranslTitle = '</td>';         // Translated title end marker
+  cStartImg = 'href="javascript:Jackopen(';               // Image start marker
+  cEndImg = ')">';             // Image end marker
+  cStartCast = '<b>Principali interpreti</b></td><td';              // Actor start marker
+  cEndCast = '</td>'; // Actor end marker
+  cStartCategory = '<b>Genere</b></td><td';       // Catogory start marker
+  cEndCategory = '</td>';            // Category end marker
+  cStartDuration = '<b>Dati tecnici</b></td><td';       // Duration start marker
+  cEndDuration = '</td>';          // Duration end marker
+  cStartCountry = '<b>Paese, Anno</b></td><td';     // Country start Marker
+  cEndCountry = '</td>';               // Country end marker
+  cStartYear = ''; // Year start marker
+  cEndYear = '';                 // Year end marker
+  cStartDesc = '<b>Descrizione</b>';         // Description start marker
+  cEndDesc = '</span>';                 // Description end marker
+  cStartProducer = '<b>Produzione</b></td><td'; // Production start marker
+  cEndProducer = '</td>'; // Production end marker
+var
+  MovieUrl, MovieName, TranslatedStr:  string;
+
+// -----------------------
+// ANALYZE MOVIE DATA PAGE
+// IN:  none
+// OUT: set Ant fields
+// -----------------------
+procedure AnalyzeMoviePage;
+var
+  cField,cValue : string;
+  iPos : integer;
+begin
+  // Get packed title main page
+  GetCleanPage(MovieUrl);
+ 
+  // FILM IMAGE
+  cField := StringReplace(GetValue(cStartImg, cEndImg, true, false),'''','');
+  if cField <> '' then
+    GetPicture(cField);
+ 
+  // TRANSLATED TITLE
+  cValue := GetValue(cStartTitle, cEndTitle, true, true);
+  SetField(fieldTranslatedTitle, AnsiUpFirstLetter(AnsiLowerCase(cValue)));
+
+  // ORIGINAL TITLE
+  cValue := GetValue(cStartTranslTitle, cEndTranslTitle,true,true);
+  SetField(fieldOriginalTitle, AnsiUpFirstLetter(AnsiLowerCase(cValue)));
+
+  cValue := GetValue(cStartCountry, cEndCountry, true, true);
+  iPos := pos(',',cValue);
+  if ( iPos > 0 ) then begin
+    cField := Copy(cValue,1,iPos-1);
+    SetField(fieldCountry,cField);
+    cField := Copy(cValue,iPos+2,Length(cValue));
+    SetField(fieldYear, cField);
+  end;
+ 
+  SetField(fieldActors, GetValue(cStartCast, cEndCast, true, true));
+  SetField(fieldCategory, GetValue(cStartCategory, cEndCategory, true, true));
+  SetField(fieldProducer, GetValue(cStartProducer, cEndProducer, true, true));
+  SetField(fieldLength, GetValue(cStartDuration, cEndDuration, true, false));
+  SetField(fieldDescription, GetValue(cStartDesc, cEndDesc, true, false));
+  SetField(fieldURL, MovieUrl);
+end;
+
+
+// ------------------------------------------------------------------
+// FILL PICKTREE CONTROL WITH LINKS & TITLES
+// IN: 
+// OUT:
+// ------------------------------------------------------------------
+procedure PickTreeFill;
+var
+  cFilmId,cFilmTitle: string;
+  StartPos,EndPos: integer;
+begin
+  PickTreeClear;
+  repeat
+    StartPos := pos(cStartId, Page);
+    if StartPos > 0 then begin
+      cFilmId := GetValue(cStartId,cEndId,true,false); // Get ID
+      cFilmTitle := GetValue(cStartTitleList,cEndTitleList,true,false); // Get Title
+      PickTreeAdd(cFilmTitle, QueryFilm + cFilmId);
+    end;
+  until(StartPos = 0);
+end;
+
+// ---------------------------------
+// ANALYZE FIRST SEARCH RESULT PAGE:
+// IN:  page Url (string)
+// OUT: none
+// ---------------------------------
+procedure AnalyzeSearchPage;
+var
+  NumRisultati : string;
+begin
+  GetCleanPage(MovieUrl);
+  NumRisultati := GetValue(cStartNumRis, cEndNumRis, true, false);
+ 
+  if (NumRisultati = '0') or (pos('Nessun titolo trovato', Page) > 0) then
+    begin
+      MovieURL := '';
+      ShowMessage('Title not found / Nessun film trovato.');
+      exit;
+    end
+
+  if (NumRisultati = '1') or (pos('Un solo titolo trovato', Page) > 0) then
+    MovieUrl := QueryFilm + GetValue(cStartId,cEndId,false,false)
+  else
+    begin
+      PickTreeFill;
+      if not PickTreeExec(MovieUrl) then // ..select one
+        exit;
+    end
+end;
+
+// ----------
+// MAIN:
+// IN:  none
+// OUT: none
+// ----------
+begin
+  if not CheckVersion(3,5,0) then
+  begin
+   ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+   exit;
+  end;
+   
+  TranslatedStr := GetField(fieldTranslatedTitle);
+  MovieName := GetField(fieldOriginalTitle);
+  if (TranslatedStr <> '') then
+    MovieName := TranslatedStr;
+
+  if(Input('IBS.it', 'Enter the title of the movie', MovieName)) then
+  begin
+    MovieUrl := QueryBase + URLEncode(MovieName);
+    AnalyzeSearchPage;
+    if MovieURL <> '' then
+      AnalyzeMoviePage;
+  end;
+end.

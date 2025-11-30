@@ -1,0 +1,241 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad modded by: juliojs
+Title=IndexDVD caratula (ES)
+Description=
+Site=www.index-dvd.com
+Language=ES
+Version=1.2.1
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+ program IndexDVD;
+var
+  MovieName: string;
+  MovieURL: string;
+
+//------------------------------------------------------------------------------------
+function Comillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//-------------------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+
+//---------------------------------------------------------------------
+function Caracter(str1: string) :string;
+begin
+          str1 := StringReplace(str1, 'Ã¡' , 'à');
+          str1 := StringReplace(str1, 'Ã©' , 'é');
+          str1 := StringReplace(str1, 'Ã­',  'í');
+          Str1 := StringReplace(Str1, 'Ã³', 'ó');
+          str1 := StringReplace(str1, 'Ãº' , 'ú');
+          str1 := StringReplace(str1, 'Ã±' , 'ñ');
+          str1 := StringReplace(str1, 'Ã', 'Á');
+          str1 := StringReplace(str1, 'Ã‰', 'É');
+          str1 := StringReplace(str1, 'Ã', 'Í');
+          str1 := StringReplace(str1, 'Ã“', 'Ó');
+          str1 := StringReplace(str1, 'Ãš', 'Ú');
+          str1 := StringReplace(str1, 'Ã‘', 'Ñ');
+          str1 := StringReplace(str1, 'Â', '');
+
+result := str1;
+end;//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('ficha(s) encontrada(s)', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('class=''texto3''>&nbsp;<a href=''http://www.index-dvd.com/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('html', strPage);
+          MovieId := Copy(strPage,+54, EndPos-54);
+
+          MovieAddr := 'http://www.index-dvd.com/' + MovieId+'html';
+          BeginPoss := Pos('title=',strPage);
+          EndPoss := Pos('</td>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle , '"', '" class');
+          MovieTitle  := StringReplace(MovieTitle , 'DVD Video', ' (DVD)');
+          MovieTitle  := StringReplace(MovieTitle , 'Cine', ' (CINE)');
+          MovieTitle  := StringReplace(MovieTitle , 'Blu-Ray', ' (BLU-RAY)');
+          MovieTitle  := StringReplace(MovieTitle , 'Alquiler', ' (ALQUILER)');
+          DeleteTags(MovieTitle);
+          MovieTitle := Caracter(MovieTitle);
+          PickTreeAdd(MovieTitle,MovieAddr);
+          PickTreeSort;
+          BeginPos := Pos('class=''texto3''>&nbsp;<a href=''http://www.index-dvd.com/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  dir: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  //SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Caratula
+  LineNr := FindLine('http://www.index-dvd.com/covers/300/', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('http://www.index-dvd.com/covers/300/',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'http://www.index-dvd.com/covers/300/', '.jpg') + '.jpg';
+    Item := StringReplace(Item, '300', '600');
+    Item  := Trim(Item );
+    GetPicture ('http://www.index-dvd.com/covers/600/'+Item);
+     end;
+  end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('IndexDVD', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('IndexDVD', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.index-dvd.com/calendar_ult.php?tema=&order=tit&busqueda=' + UrlEncode(MovieName)+'&Submit.x=0&Submit.y=0');
+end.

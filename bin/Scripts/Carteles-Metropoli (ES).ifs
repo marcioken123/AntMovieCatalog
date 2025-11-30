@@ -1,0 +1,476 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=micmic (micmic@dieznet.com). Update: enriquevagu
+Title=Carteles-Metropoli
+Description=Picture importation script for carteles-metropoli
+Site=carteles.metropoliglobal.com
+Language=ES
+Version=2.0
+Requires=3.5.0
+Comments=La imagen grande a veces no entra en AMC, así que será automáticamente reducida. Esto puede hacer que se pixele y pierda calidad
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.|
+GetInfo=1
+
+[Options]
+TitleMixedCase=0|0|0=Each letter of each word of title begins with Uppercase|1=Titles in lowercase except first letter of first word
+ObtenerImagen=0|0|0=Permite seleccionar la imagen a tomar|1=Toma automáticamente la primera imagen, pequeña|2=Toma automáticamente la primera imagen, grande
+ObtenerComentarios=1|1|0=No obtiene los comentarios de los usuarios sobre la película|1=Sí obtiene los comentarios de los usuarios sobre la película
+
+***************************************************)
+
+ 
+
+program micmic;
+var
+  MovieName: string;
+const
+  Base = 'http://carteles.metropoliglobal.com/';
+  BaseURL = 'http://carteles.metropoliglobal.com/paginas/ficha.php?qbtitulo=';
+  BaseURL2 = '&qbbuscar=titulo&Submit=Buscar&qsec=buscar';
+  BaseURL3 = 'paginas/ficha.php?qsec=peli&qid=';
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function AnalizaBigImagePage(ImagenURL: string): string;
+var
+  Page: TStringList;
+  LineNr: Integer;
+  PosIni, PosFin: Integer;
+  Line, SubLine: string;
+  txtTemp: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(ImagenURL);
+ 
+  txtTemp := 'img src="';
+  LineNr := FindLine(txtTemp, Page, 0);
+  if LineNr > 0 then
+  begin
+    Line := Page.GetString(LineNr);
+    //Busca el comienzo de la URL
+    PosIni := pos(txtTemp, Line);
+    SubLine := Copy(Line, PosIni + Length(txtTemp), Length(Line));
+    //chequea si la imagen comienza por ../, y lo quita
+    txtTemp := '../';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni>0 then SubLine := Copy(SubLine, PosIni + Length(txtTemp), Length(Line));
+    //busca el final de la URL
+    txtTemp := '" hspace="2" ';
+    PosFin := pos(txtTemp, SubLine);
+    txtTemp := Copy(SubLine, 1, PosFin - 1);
+  end else
+    txtTemp := '';
+   
+  Page.Free;
+
+  result := txtTemp;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, Encontrado: Integer;
+  PosIni, PosFin: Integer;
+  Line, SubLine: string;
+  Title, DirURL: string;
+  txtTemp: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  //Si no encuentra ningún resultado, finaliza
+  if Pos('Se han encontrado 0 resultados para', Page.Text) > 0 then
+  begin
+    ShowMessage('No se ha encontrado la película en carteles-metrópoli.');
+  end else
+  //si encuentra sólo un resultado, lo analiza directamente
+  if Pos('Se han encontrado 1 resultados para', Page.Text) > 0 then
+  begin
+    Encontrado :=0;
+    while (LineNr < Page.Count) and (Encontrado = 0) do
+    begin
+      SubLine := Page.GetString(LineNr);
+      txtTemp := '<td><a href="ficha.php?qsec=peli&qid=';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni > 0 then
+      begin
+        SubLine := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+        txtTemp := '">';
+        PosFin := pos(txtTemp, SubLine);
+        DirURL := Base + BaseURL3 + Copy(SubLine, 1, PosFin - 1);
+        Encontrado := 1;
+      end;
+      LineNr := LineNr+1;
+    end;
+    AnalyzeMoviePage(DirURL);
+  end else  //Si encuentra varios resultados, deja seleccionar
+  begin
+    PickTreeClear;
+    PickTreeAdd('Resultados para "' + MovieName + '" en ' + Base + ':', '');
+   
+    // buscamos los resultados
+    LineNr := 0;
+
+    while LineNr < Page.Count do
+    begin
+      SubLine := Page.GetString(LineNr);
+      txtTemp := '<td><a href="ficha.php?qsec=peli&qid=';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni > 0 then
+      begin
+        SubLine := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+       
+        txtTemp := '">';
+        PosFin := pos(txtTemp, SubLine);
+        DirURL := Base + BaseURL3 + Copy(SubLine, 1, PosFin - 1);
+       
+        SubLine := Copy(SubLine, PosFin + Length(txtTemp), Length(SubLine));
+        txtTemp := '</a>';
+        PosFin := pos(txtTemp, SubLine);
+        Title := Copy(SubLine, 1, PosFin - 1);
+
+        //ShowMessage(Title + '-->' + DirURL);
+        PickTreeAdd(Title, DirURL);
+      end;
+      LineNr := LineNr + 1;
+    end;
+
+    Page.Free;
+    if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+  end;
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  PosIni, PosFin, PosFin2, dist: Integer;
+  dirBase: string;
+  txtTemp: string;
+  txtAux: string;
+  campo, valor, campoAux: string;
+  LineNr: Integer;
+  Line, SubLine: string;
+  ImagenPeqSRC, ImagenURL, ImagenGrandeSRC: string;
+  Comentarios: string;
+  Encontrado_descripcion: Integer;
+  NumeroImagen, NumeroImagenBig: Integer;
+  Encontrado_imagen : Integer;
+begin
+  //ShowMessage(Address);
+ 
+  SetField(fieldURL, Address);
+ 
+  Page := TStringList.Create;
+  Page.Text := StringReplace(GetPage(Address), '<br>', #13#10);
+ 
+  // buscamos los campos
+  Encontrado_descripcion := 0;
+  Comentarios := '';
+  ImagenPeqSRC := '';
+  ImagenURL := '';
+  ImagenGrandeSRC := '';
+  LineNr := 0;
+  NumeroImagen := 0;
+  NumeroImagenBig := 0;
+  Encontrado_imagen := 0;
+  while LineNr < Page.Count do
+  begin
+    SubLine := Page.GetString(LineNr);
+   
+    //txtTemp := '<title>';
+    txtTemp := '</span> <img src="imagenes/rating';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then
+    begin
+      txtAux := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+      PosFin := pos('.', txtAux);
+      campo := Copy(txtAux, 1, PosFin - 1);
+      if campo <> '' then SetField(fieldRating, campo);
+    end;
+   
+    txtTemp := 'td colspan="2" valign="top"><span class="title">';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then
+    begin
+      txtAux := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+      PosFin := pos('</span> <img', txtAux);
+      campo := Copy(txtAux, 1, PosFin - 1);
+      if campo <> '' then
+      begin
+        //miramos si el título traducido tiene el año, y lo quitamos
+        dist := pos(')',campo);
+        dist := pos(')',campo)-pos('(',campo);
+        if dist=5 then  //entonces el título incorpora el año
+        begin
+          campoAux := Copy(campo,1,pos('(',campo)-2);
+          SetField(fieldTranslatedTitle, campoAux);
+          PosIni :=pos('(',campo)+1;
+          PosFin := pos(')',campo)-1;
+          campoAux := Copy(campo,PosIni,PosFin);
+          campoAux := Copy(campoAux,1,4);
+          SetField(fieldYear, campoAux);
+        end
+        else
+          SetField(fieldTranslatedTitle, campo);
+        //Buscamos en la siguiente línea el título original, nacionalidad y duracion.
+        LineNr := LineNr + 1;
+        SubLine := Page.GetString(LineNr);
+        while SubLine = '' do
+        begin
+          LineNr := LineNr + 1;
+          SubLine := Page.GetString(LineNr);
+        end;
+        //Buscamos el comienzo. txtTemp marca la diferencia entre el título y el país
+        txtTemp := ',';
+        PosIni := pos(txtTemp, SubLine);
+        if PosIni > 0 then
+        begin
+          campo := Copy(SubLine, 21, PosIni - 21);
+          if campo <> '' then SetField(fieldOriginalTitle, campo);
+        end;
+        //Buscamos el país. txtAux contiene país y duración
+        txtAux := Copy(SubLine, PosIni + 2, Length(SubLine));
+        PosFin := pos(txtTemp, txtAux);
+        if PosFin > 0 then
+        begin
+          campo := Copy(txtAux, 1, PosFin - 1);
+          if campo <> '' then SetField(fieldCountry, campo);
+          //Buscamos los minutos.
+          txtTemp := ' Min. </td>';
+          PosFin2 := pos(txtTemp, txtAux);
+          if PosFin2 > 0 then
+          begin
+            campo := Copy(txtAux, PosFin +2, PosFin2 - 6);
+            if campo <> '' then SetField(fieldLength, campo);
+          end;
+        end;
+      end;
+    end;
+   
+    txtTemp := '<span class="setperpageselect">';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then
+    begin
+      txtAux := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+      PosFin := pos(':', txtAux);
+      campo := Copy(txtAux, 1, PosFin - 1);
+      LineNr := LineNr + 1;
+      SubLine := Page.GetString(LineNr);
+      txtTemp := 'valign="top">';
+      PosIni := pos(txtTemp, SubLine);
+      txtAux := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+      PosFin := pos('</td>', txtAux);
+      valor := Copy(txtAux, 1, PosFin - 1);
+      if (valor <> '') then
+      begin
+        if campo = 'A&Ntilde;O' then SetField(fieldYear, valor);
+        if campo = 'NACIONALIDAD' then SetField(fieldCountry, valor);
+        if campo = 'Director' then SetField(fieldDirector, valor);
+        if campo = 'Int&eacute;rpretes' then SetField(fieldActors, valor);
+
+        if campo = 'DURACION' then Comentarios := Comentarios + 'Duración: ' + valor + #13#10;
+        if campo = 'Gui&oacute;n' then Comentarios := Comentarios + 'Guión: ' + valor + #13#10;
+        if campo = 'Fotograf&iacute;a' then Comentarios := Comentarios + 'Fotografía: ' + valor + #13#10;
+        if campo = 'M&uacute;sica' then Comentarios := Comentarios + 'Música: ' + valor + #13#10;
+      end;
+      //ShowMessage(campo + '-->' + valor);
+    end;
+
+//Busca la imagen pequeña
+    txtTemp := '/cpp/albums/userpics/';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then NumeroImagen := NumeroImagen+1;
+    txtTemp := '/c/';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then NumeroImagen := NumeroImagen+1;
+    txtTemp := '/archivo/pelis/';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then NumeroImagen := NumeroImagen+1;
+    txtTemp := '/cartel/albums/';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then NumeroImagen := NumeroImagen+1;
+    txtTemp := '/galeria/data/';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then NumeroImagen := NumeroImagen+1;
+//descripcion y comentarios
+    txtTemp := '<td colspan="2" valign="top">';
+    PosIni := pos(txtTemp, SubLine);
+    if PosIni > 0 then
+    begin
+      txtAux := Copy(SubLine, PosIni + Length(txtTemp), Length(SubLine));
+      PosFin := pos('</td>', txtAux);
+      if PosFin = 0 then PosFin := Length(txtAux); //Por si no se encuentra
+      campo := Copy(txtAux, 1, PosFin - 1);
+      if campo <> '' then
+      begin
+        if Encontrado_descripcion >0 then
+        begin
+          If (GetOption('ObtenerComentarios') >0) then Comentarios := Comentarios + #13#10#13#10 + campo + #13#10;
+        end else
+        begin
+          SetField(fieldDescription, campo);
+          Encontrado_descripcion :=1;
+        end;
+      end;
+    end;
+    LineNr := LineNr + 1;
+  end;
+  HTMLDecode(Comentarios);
+  HTMLRemoveTags(Comentarios);
+
+  if Comentarios <> '' then SetField(fieldComments, Comentarios);
+
+  //Busqueda de imágenes
+  If ((NumeroImagen > 0) and CanSetPicture) then
+  If (GetOption('ObtenerImagen') = 0) then  //permite seleccionar la imagen a traer
+  begin
+    PickTreeClear;
+    PickTreeAdd('Imagenes para  "' + MovieName + '":', '');
+    If (NumeroImagen > 1) then PickTreeAdd('Página de referencia (Para "Ver página", no seleccionar)', Address);
+    LineNr := 0;
+    while (LineNr < Page.Count) do
+    begin
+      SubLine := Page.GetString(LineNr);
+      //Busca una imagen pequeña
+      txtTemp := '/cpp/albums/userpics/';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni = 0 then
+      begin
+        txtTemp := '/c/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni = 0 then
+      begin
+        txtTemp := '/archivo/pelis/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      begin
+        txtTemp := '/cartel/albums/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni = 0 then
+      begin
+        txtTemp := '/galeria/data/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni > 0 then
+      begin
+        txtAux := Copy(SubLine, PosIni, Length(SubLine));
+        PosFin := pos('" width="', txtAux);
+        campo := Copy(txtAux, 1, PosFin - 1);
+        PickTreeAdd('Pequeña', Base + campo);
+      end;
+      //Busca una imagen grande
+      txtTemp := 'pgrande.php?image_id=';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni > 0 then
+      begin
+        txtAux := Copy(SubLine, PosIni, Length(SubLine));
+        PosFin := pos('" target=', txtAux);
+        campo := Copy(txtAux, 1, PosFin - 1);
+        ImagenURL := Base + 'paginas/' + campo;
+        PickTreeAdd('Grande', Base + AnalizaBigImagePage(ImagenURL));
+      end;
+      LineNr := LineNr +1;
+    end;
+    if PickTreeExec(Address) then GetPicture(Address);
+  end else
+  if (GetOption('ObtenerImagen') = 1) then
+  //selecciona automáticamente la primera imagen pequeña
+  begin
+    LineNr := 0;
+    while (LineNr < Page.Count) and (Encontrado_imagen = 0) do
+    begin
+      SubLine := Page.GetString(LineNr);
+      //Busca una imagen pequeña
+      txtTemp := '/cpp/albums/userpics/';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni = 0 then
+      begin
+        txtTemp := '/c/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni = 0 then
+      begin
+        txtTemp := '/archivo/pelis/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni = 0 then
+      begin
+        txtTemp := '/cartel/albums/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni = 0 then
+      begin
+        txtTemp := '/galeria/data/';
+        PosIni := pos(txtTemp, SubLine);
+      end;
+      if PosIni > 0 then
+      begin
+        txtAux := Copy(SubLine, PosIni, Length(SubLine));
+        PosFin := pos('" width="', txtAux);
+        campo := Copy(txtAux, 1, PosFin - 1);
+        GetPicture(UrlEncode(Base + campo));
+        Encontrado_imagen := 1;
+      end;
+      LineNr := LineNr +1;
+    end;
+  end else
+  if (GetOption('ObtenerImagen') = 2) then
+  //selecciona automáticamente la primera imagen grande
+  begin
+    LineNr := 0;
+    while (LineNr < Page.Count) and (Encontrado_imagen = 0) do
+    begin
+      SubLine := Page.GetString(LineNr);
+      //Busca una imagen pequeña
+      txtTemp := 'pgrande.php?image_id=';
+      PosIni := pos(txtTemp, SubLine);
+      if PosIni > 0 then
+      begin
+        txtAux := Copy(SubLine, PosIni, Length(SubLine));
+        PosFin := pos('" target=', txtAux);
+        campo := Copy(txtAux, 1, PosFin - 1);
+        ImagenURL := Base + 'paginas/' + campo;
+        GetPicture(Base + AnalizaBigImagePage(ImagenURL));
+        Encontrado_imagen := 1;
+      end;
+      LineNr := LineNr +1;
+    end;
+  end
+ 
+  Page.Free;
+end;
+
+
+
+// bmicmic: Bucle Principal
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    Input('Importar de ' + Base, 'Introduce el Titulo de la Pelicula:', MovieName);
+    AnalyzePage(BaseURL + UrlEncode(MovieName) + BaseURL2);
+   
+  end else
+       ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

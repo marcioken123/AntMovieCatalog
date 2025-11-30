@@ -1,0 +1,463 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=luis (modificado por Raulsara)
+Title=Hispashare
+Description=
+Site=www.hispashare.com
+Language=ES
+Version=1.2
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+ program Hispashare;
+ 
+ // Modificado por Raulsara
+ 
+var
+  MovieName: string;
+  MovieURL: string;
+
+//------------------------------------------------------------------------------------
+function Comillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+// Funcion para cambiar acentos, dieresis, acento circumflejo en nombres
+
+function Acentos(var ite: string): string;
+
+   begin
+     Ite := StringReplace (Ite, '%26aacute%3B' , 'á');
+     Ite := StringReplace (Ite, '%26eacute%3B' , 'é');
+     Ite := StringReplace (Ite, '%26iacute%3B' , 'í');
+     Ite := StringReplace (Ite, '%26oacute%3B' , 'ó');
+     Ite := StringReplace (Ite, '%26uacute%3B' , 'ú');
+     Ite := StringReplace (Ite, '%26Aacute%3B' , 'Á');
+     Ite := StringReplace (Ite, '%26Eacute%3B' , 'É');
+     Ite := StringReplace (Ite, '%26Iacute%3B' , 'Í');
+     Ite := StringReplace (Ite, '%26Oacute%3B' , 'Ó');
+     Ite := StringReplace (Ite, '%26Uacute%3B' , 'Ú');
+     Ite := StringReplace (Ite, '%26agrave%3B' , 'à');
+     Ite := StringReplace (Ite, '%26egrave%3B' , 'è');
+     Ite := StringReplace (Ite, '%26igrave%3B' , 'ì');
+     Ite := StringReplace (Ite, '%26ograve%3B' , 'ò');
+     Ite := StringReplace (Ite, '%26ugrave%3B' , 'ù');
+     Ite := StringReplace (Ite, '%26Agrave%3B' , 'À');
+     Ite := StringReplace (Ite, '%26Egrave%3B' , 'È');
+     Ite := StringReplace (Ite, '%26Igrave%3B' , 'Ì');
+     Ite := StringReplace (Ite, '%26Ograve%3B' , 'Ò');
+     Ite := StringReplace (Ite, '%26Ugrave%3B' , 'Ù');
+     Ite := StringReplace (Ite, '%27' , '''');
+     Ite := StringReplace (Ite, '%26ntilde%3B' , 'ñ');
+     Ite := StringReplace (Ite, '%26Ntilde%3B' , 'Ñ');
+     Ite := StringReplace (Ite, '%26ccedil%3B' , 'ç');
+     Ite := StringReplace (Ite, '%26auml%3B' , 'ä');
+     Ite := StringReplace (Ite, '%26euml%3B' , 'ë');
+     Ite := StringReplace (Ite, '%26iuml%3B' , 'ï');
+     Ite := StringReplace (Ite, '%26ouml%3B' , 'ö');
+     Ite := StringReplace (Ite, '%26uuml%3B' , 'ü');
+     Ite := StringReplace (Ite, '%26acirc%3B' , 'â');
+     Ite := StringReplace (Ite, '%26ecirc%3B' , 'ê');
+     Ite := StringReplace (Ite, '%26icirc%3B' , 'ï');
+     Ite := StringReplace (Ite, '%26ocirc%3B' , 'ö');
+     Ite := StringReplace (Ite, '%26ucirc%3B' , 'ü');
+     Ite := StringReplace (Ite, '%26Auml%3B' , 'Ä');
+     Ite := StringReplace (Ite, '%26Euml%3B' , 'Ë');
+     Ite := StringReplace (Ite, '%26Iuml%3B' , 'Ï');
+     Ite := StringReplace (Ite, '%26Ouml%3B' , 'Ö');
+     Ite := StringReplace (Ite, '%26Uuml%3B' , 'U');
+     Ite := StringReplace (Ite, '%26Acirc%3B' , 'Â');
+     Ite := StringReplace (Ite, '%26Ecirc%3B' , 'Ê');
+     Ite := StringReplace (Ite, '%26Icirc%3B' , 'Î');
+     Ite := StringReplace (Ite, '%26Ocirc%3B' , 'Ô');
+     Ite := StringReplace (Ite, '%26Ucirc%3B' , 'Û');
+     result:= Ite;
+   end;
+//-------------------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, decPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+//  Page: TStringList;
+begin
+  strPage := GetPage(Address);
+  decPage := UTF8Decode(strPage);
+  if decPage <> '' then
+  begin
+    strPage := decPage;
+  end;
+  BeginPos := Pos('<strong>Resultados:</strong> ', strPage);
+  if(BeginPos > -1)then
+    begin
+      BeginPos := BeginPos + 28;
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos :=0;
+//      Page := TStringList.Create;
+//      Page.Text := strPage;
+//      Page.SaveToFile('9999999.html');
+        if Copy(strPage,BeginPos, BeginPos+1) = '0' then
+        BeginPos :=0
+      else
+        begin
+          BeginPos := Pos('<h1><a ', strPage);
+        end;
+        EndPos := 1;
+
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('">', strPage);
+          MovieId := Copy(strPage,+13, EndPos-13);
+          MovieId   := Comillas(MovieId );
+          MovieId  := StringReplace(MovieId , 'amp;', '');
+          MovieAddr := 'http://www.hispashare.com/' + MovieId;
+          Delete(strPage, 1, EndPos);
+          Movietitle := TextBetween (strpage , '>' , '</small>');
+          MovieTitle  := Comillas(MovieTitle);
+          DeleteTags(MovieTitle);
+          MovieTitle:= StringReplace(MovieTitle ,#13#10, '');
+          MovieTitle:= StringReplace(MovieTitle ,'   ', '');
+          PickTreeAdd(MovieTitle, MovieAddr);
+          PickTreeSort;
+          BeginPos := Pos('<h1><a ', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+    end;
+//    Page.Free;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, LineAc, LineTmp: Integer;
+  Line: string;
+  Item: string;
+  Ite: string;
+  Ite2: string;
+  Ite3: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+  Page2: TStringList;
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Ite := GetPage(Address);
+  Ite2 := UTF8Decode(Ite);
+  if Ite2 <> '' then
+    Page.Text := Ite2
+  else
+    Page.Text := Ite;
+
+  // Caratula
+  LineNr := FindLine('Detalles del título', Page, 0);
+  if LineNr > 0 then
+  begin
+    LineAc := FindLine('<img src="', Page, LineNr);
+    LineNr := LineAc;
+    Item := Page.GetString(LineAc);
+    Item := TextBetween (Item, '<img src="', '" width');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    GetPicture (Item);
+  end;
+  
+  // Titulo traducido
+  
+  LineAc := FindLine('<h1>', Page, LineNr);
+  Line := Page.GetString(LineAc);
+  Item := TextBetween (Line, '<h1>', '<small>');
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Año
+  
+  Item := TextBetween (Line, 'mall>(', ')</small>');
+  HTMLRemoveTags (Item);
+  HTMLDecode(Item);
+  SetField(fieldYear, Trim (Item));
+  LineNr := LineAc;
+
+  // Titulo Original y pais
+  
+  LineAc := FindLine('Título original', Page, LineNr);
+  if LineAc <> -1 then
+  begin
+    Line := Page.GetString(LineAc);
+    Item := TextBetween (Line, '</strong>', '(');
+    Line := Page.GetString(LineAc);
+    Ite2 := TextBetween (Line, '(', ')</p>');
+    Item  := Trim(Item );
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    HTMLDecode(Ite2);
+    SetField(fieldOriginalTitle, Trim (Item));
+    SetField(fieldCountry, Trim (Ite2));
+  end;
+  LineNr := LineAc;
+ 
+  // Categoria
+  
+  LineAc := FindLine('Películas', Page, LineNr);
+  if LineAc > 0 then
+  begin
+    Line := Page.GetString(LineAc);
+   
+    Item := '';
+    Ite2 := TextBetween (Line, 'genre', '</p>');
+    Line := Ite2;
+    Item := Item + TextBetween (Line, '>', '</a>');
+
+    while length(Line) > 4  do
+    begin
+      Line := Line + '</p>';
+      Ite2 := TextBetween (Line, 'genre', '</p>');
+      Line := Ite2;
+      Item :=  Item + ', '+ TextBetween (Line, '>', '</a>');
+    end;
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+  LineNr := LineAc;
+ 
+   // Director
+   
+  LineAc := FindLine('director=', Page, LineNr);
+  if LineAc > 0 then
+  begin
+    Line := Page.GetString(LineAc);
+    Item := TextBetween (Line, 'director=', '">');
+    HTMLRemoveTags (Item);
+    Item := StringReplace(Item, '+', ' ');
+    Item   := AnsiUpFirstLetter(Item );
+    Item   := Comillas(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  LineNr := LineAc;
+ 
+  // Duracion
+  
+  LineAc := FindLine('Duración:</strong>', Page, LineNr);
+  if LineAc > 0 then
+  begin
+    Line := Page.GetString(LineAc);
+    Item := TextBetween (Line, 'Duración:</strong>', 'minutos');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+  LineNr := LineAc;
+
+  // Sinopsis
+  
+  LineAc := FindLine('<p class="TEXT">', Page, LineNr);
+  if LineAc > 0 then
+  begin
+    LineTmp := FindLine('</p>', Page, LineAc);
+    Line := Page.GetString(LineAc);
+    Item := TextBetween (Line, '<p class="TEXT">', '');
+    LineAc := LineAc + 1;
+    while LineAc <= LineTmp  do
+    begin
+      Line := Page.GetString(LineAc);
+      Item := Item + Line;
+      LineAc := LineAc + 1;
+    end;
+    Item  := Comillas(Item );
+    Item  := StringReplace(Item , '<br/>', #13#10);
+    Item  := StringReplace(Item , '>', '');
+    HTMLRemoveTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+  LineNr := LineAc;
+  
+  // Productor
+  
+  // No sale en la web, lo pongo a blancos
+  
+  SetField(fieldProducer, ' ');
+  
+  // Comentarios
+  
+  // No hay comentarios, lo pongo a blancos
+  
+  SetField(fieldComments, ' ');
+ 
+  // Reparto
+  
+  LineAc := FindLine('Actores', Page, LineNr);
+
+  if LineAc > 0 then
+  begin
+    LineAc := LineAc + 1;
+    Line := Page.GetString(LineAc);
+    Item := '<' + TextBetween (Line, 'actor=', '');
+    Line := Item;
+    Ite2 := TextBetween (Item, '<', '">');
+    Ite3 := Ite2;
+    while length(Ite2) > 0 do
+    begin
+      Line := Item;
+      Item := '<' + TextBetween (Line, 'actor=', '');
+      Line := Item;
+      Ite2 := TextBetween (Item, '<', '">');
+      Ite3 := Acentos(Ite3);
+      if length(Ite2) > 0 then
+        begin
+        Ite2:= Acentos(Ite2);
+        Ite3 := Ite3+', '+Ite2;
+        end
+     end;
+
+    Ite3 := StringReplace(Ite3, '+', ' ');
+    Ite3 := StringReplace (Ite3, ', ' , #13#10);
+    HTMLRemoveTags (Ite3);
+    Ite3  := Trim(Ite3 );
+    HTMLDecode(Ite3);
+    SetField(fieldActors, Trim (Ite3));
+  end;
+end;
+
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('hispashare', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('hispashare', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.hispashare.com/?view=search&q=' + UrlEncode(MovieName));
+end. 

@@ -1,0 +1,1390 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=FypeR , Karagarga, Tiu Fang(base)
+Title=Beyazperde 2013 Mart
+Description=BeyazPerde den film ile ilgili bilgi ve mini resim alýr.
+Site=http://www.beyazperde.com
+Language=TR
+Version=v4.07
+Requires=3.5.0
+Comments=Ýstek ve öneriler için uuv9esg02@sneakemail.com  irtibata geçiniz.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+AramaMiktar=1|1|0=Arama Sonuçlarýnýn ilk sayfasýný listeler|1=Arama Sonuçlarýnýn varsa 2 sayfasýný getirir.|2=Arama Sonuçlarýnýn varsa 5 sayfasýný getirir.|3=Arama Sonuçlarýnýn varsa 10 sayfasýný getirir.|4=Arama Sonuçlarýnýn varsa 20 sayfasýný getirir.
+Tanekle=1|1|0=Hazýrda varolan filmin tanýmý temizler ve beyazperde içindeki tanýmý ekler|1=Hazýrda var olan tanýmý beyazperde tanýmýnýn arkasýna ekler
+Gos_tar=2|2|0=Gosterim tarihi bilgisini alma|1=GT. bilgisini al ve eklenme tarih alanýna yaz + eklenme tarihini de konunun ardýna ekle|2=G.T. bilgisini al ve konu kýsmýna ekle(sondan)|3=GT. bilgisini al eklenme tarihi bilgisi ile deðiþtir.
+Oyuncular=1|1|1=Film Anasayfasýndakileri al|2=Oyuncular sayfasýndan al Oyuncu(Rol)|3=Oyuncular sayfasýndan sadece oyuncu
+PuanSecim=2|2|0=Puan olarak Beyazperde Puanýný kullan|1=Basýn puanýný kullan|2=Üye puanlamalarýný kullan
+NoktaliAra=1|1|1=Arama kutusunda isim içindeki noktalarý temizle|2=Temizlik yok
+BuyukPoster=1|1|1=Ana Sayfasýndaki küçük Resim|2=Büyük boyutlu resim
+
+[Parameters]
+
+***************************************************)
+
+//FypeR 111.06.2013 4.08
+//özet içindeki ü,ç, ö için düzeltici
+//FypeR 08.03.2013 4.07
+//Beyazperde oyuncu isimleri alma iþleminde yeni ek sonlandýrýcý eklendi.  <li>
+//FypeR 28.02.2013 4.06
+// isim bulmada ilk isim için kullanýlan delta satýr deðeri düzeltildi.
+//FypeR 20.12.2012 4.05
+//Deðiþen beyazperde sayfa yapýsýna uyumlandýrma
+//film arama kýsmýnda bazý Türkçe Karakterler için düzenleme
+//FypeR 23.10.2012 4.04
+//oyuncu isimlerindeki utf8 bozulmasý düzeltildi
+//oyuncu bilgisi toplamada hatalar giderildi
+//FypeR 28.08.2012 4.03
+//resim alýmýndaki hata giderildi
+//buyuk resim alma iþlemi eklendi
+//oyuncularý alma iþlemindeki eksik kýsým (devamý aramadan ana sayfadan oyuncu alma) giderildi
+//FypeR 13.03.2012  4.02
+//orijinal adý ve tür bilgisi alýmýndaki hata giderildi
+//FypeR 25.7.2011
+// URL bilgisi ile ilgili bir mantýk hatasý giderildi.
+//gösterim tarihi ile ilgili eksik kod giderildi
+//yeni opsiyon:noktali arama
+
+//FypeR 23.7.2011
+// beyazperde nin yeni tasarýmý için script güncellendi(%90 oranýnda yeniden yazýldý)
+//beyazperdenin arama sayfasýnýn getirdiði sonuçlarýn sýralamasý çok kötü durumda umarým ileride iyileþtirilir.
+//FypeR 17.7.2010
+//arama sayfasý için kullanýlan adres güncellendi.
+//FypeR 20.05.2010
+//sinepuan alýmý düzeltildi. bildirim için teþekkürler msurg
+//FypeR 18.12.2009
+//ilk açýlýþtaki reklam sayfasýný geçme eklendi
+//yapýlacaklar:ilgili prosedür ün else ifadesi düzenlenecek
+//FypeR 26.09.2009
+//film seçim listesindeki adres almama sorunu düzeltildi
+//film orjinal/çeviri isimlerini almama giderildi
+//Fyper 22.02.2009
+//film listeleme sayfasýndaki düzenleme yüzünden çalýþmayan picktreelist prosedürü
+//tekrar baþtan düzenlendi. daha hýzlý çalýþýyor.
+//Fyper 31-08-2008
+//boþ görüntü yönetmeni bilgisine karþý iyileþtirme yapýldý
+//FypeR 20-7-2007
+//görüntü yönetmeni bilgisi alýp almama ve nereye alýnacaðý eklendi
+//müzik bilgisi alýp almama ve nereye ekleneceði eklendi
+//gösterim tarihi bilgisi alýp almama ve nereye ekleneceði eklendi
+//FypeR 18-7-2007
+//sayfa deðiþiklikleri güncellendi
+//bazý hýzlandýrýcý kontroller eklendi.
+//görüntü yönetmeni eklendi
+//FypeR edit 8,4,2006 22:22 gmt+2
+// sitenin hosting deðiþtirmesinden kaynaklanan adres deðiþikliði güncelleme ile
+//giderildi
+// özgün isim , çeviri ismi ve yýl bilgisi düzeltildi
+//taným alaný tekrar düzeltildi
+//FypeR edit 9,3,2006 13:19 gmt+2
+//taným alanýndaki fazla kýrpma düzeltildi.
+//FypeR edit 3,3,2006 16:00 gmt +2
+//sonsuz döngü hatalarýna yol açan kontroller deðiþtirildi
+//ek arama fonksiyonu düzenlendi(anti amele sistem eklendi)
+//bilgilendirmeler eklendi
+//film tanýmý alma düzenlendi
+//FypeR  edit 24,2,2006 17:37 gmt+2
+//arama fonksiyonunun sonlandýrma noktasý deðiþtirildi
+//FypeR  edit 15,2,2006  01:00 gmt+2
+//seçilebilir arama miktarý eklendi
+//seçilebilir arama yöntemi eklendi
+//arama sayfasý deðiþtirildi
+//film seçim sayfasý düzenlendi
+//ek arama eklendi
+//FypeR  edit 07-02-2006 16:16 gmt+2
+//senaryo+kitap alaný düzeltildi
+//tarihçe eklendi
+//minik bilgilendirmeler eklendi
+program BeyazPerde;
+var
+  MovieName: string;
+  Alper : string;
+  Alperint :integer;
+  Alperdec :Extended;
+  HedefAdres: string;
+ // denek : integer;
+  basdeger,sondeger:integer;
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+  begin
+
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+    end;
+end;
+
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  pozisyon: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  pozisyon:=pos('<title>Beyazperde.com - Film Arama</title>', Page.Text);    //Arama</title>
+  if pozisyon = 0 then
+  begin
+    pozisyon:=pos('- Beyazperde''de Ara',Page.Text);
+  
+    if(pozisyon>0)  then
+
+    begin
+      //sonuc sayýsýna bak ona göre listeleme kýsmýna atla
+      LineNr := 0;
+      LineNr := FindLine('div class="vpadding10t">',Page,LineNr);
+      if(LineNr>0) then
+      begin
+        Alper:=Page.GetString((LineNr+2));
+        basdeger:= 17;
+        sondeger:= pos(' sonu',Alper);
+
+        if(strtoint(copy(Alper,basdeger,sondeger-basdeger),0)>0) then
+        begin
+
+          PickTreeAdd('BeyazPerde Film Arama Sonuçlarý '+ copy(Alper,basdeger,sondeger-basdeger)+ ' adet film' ,'');
+          MovieListBuilder(Page,strtoint(copy(Alper,basdeger,sondeger-basdeger),0));//film listesi oluþturulacak. parametrelerde alým miktarý parametresi tanýmla
+          if PickTreeExec(Address) then
+          begin
+            //listeden filmi seçmiþ ise film bilgileri alýnacak
+            Page.Text:=GetPage(Address);
+            setfield(fieldURL,Address);
+            Hedefadres:=Address;
+            AnalyzeMoviePageAllocine(Page);
+
+          end;
+        end else
+        begin
+          ShowMessage('Film Bulunamadý');
+        end;
+      end;
+
+    end;
+  Page.Free;
+end;
+end;
+procedure AnalyzeMoviePageAllocine(Page:TstringList);
+var
+  Line,Value,Value1,Value2:string;
+  UTF8Coded :string;
+  Rol:string;
+  Artiz:string;
+  Castprotect:integer;
+  LineNr:integer;
+  BeginPos,EndPos:Integer;
+begin
+//isimleri bul
+LineNr:=0;
+LineNr:=FindLine('class="tt_r26 j_enti' ,Page,0);
+if(LineNr>0) then
+begin
+
+  Line:=Page.GetString(LineNr+4);
+  Value:=UTF8Decode(Line); //türkçe isim olabilir. ama orjinal isim yok ise bu orjinaldir
+  SetField(fieldOriginalTitle,Value);
+  BeginPos:=LineNr;
+  UTF8Coded:=UTF8Encode('<div class="expendTable">');
+  LineNr:=FindLine(UTF8Coded,Page,LineNr);
+
+  if(LineNr>BeginPos) then
+  begin
+     //filmin orijinal adý bilgisi var demektir.
+     Line:=Page.GetString(LineNr+1);
+     BeginPos:= pos(UTF8Encode('Orijinal adý'),Line);
+     if(BeginPos>0) then
+     begin
+        Line:= copy(Line,BeginPos+28,Length(Line)-(BeginPos+28));
+        EndPos:=pos('</td><td',Line);
+        Line:=copy(Line,0,EndPos-1);
+        SetField(fieldOriginalTitle,Line);
+        SetField(fieldTranslatedTitle,Value);
+     end
+     //yapým yýlý tablo içinde saklý
+     Line:=Page.GetString(LineNr+1);
+     BeginPos:=pos(UTF8Encode('Yapým yýlý'),Line);
+     if(BeginPos>0) then
+     begin
+        Line:=copy(Line,BeginPos,Length(Line)-BeginPos);
+        BeginPos:=pos('">',Line);
+        EndPos:=pos('</span',Line);
+        Line:=copy(Line,BeginPos+2,Endpos-(BeginPos+2));
+        SetField(fieldYear,Line);
+     end;
+     //yapým yýlý
+  end;
+end;
+// isimleri bulma þeysi tamam
+
+//süre
+LineNr:=0;
+LineNr:=FindLine(UTF8Encode('(<span itemprop="duration"'),Page,LineNr);
+if(LineNr>0) then
+begin
+  Line:=Page.GetString(LineNr);
+  BeginPos:=pos('PT',Line);
+  EndPos:=pos('">' ,Line);
+  Line:=copy(Line,BeginPos+2,EndPos-BeginPos-2)  ;
+
+  BeginPos:=pos('H',Line);
+  EndPos:=pos('M',Line);
+  Alperint:=strtoint(copy(Line,0,BeginPos-1),0)*60;
+  Alperint:=Alperint+strtoint(copy(Line,BeginPos+1,EndPos-3),0);
+  SetField(fieldLength,inttostr(Alperint));
+end;
+//  süre biter
+//Yönetmen
+Line:='';
+Value:='';
+LineNr:=0;
+UTF8Coded:=UTF8Encode('Yönetmen');
+LineNr:= FindLine(UTF8Coded,Page,LineNr);
+if(LineNr>0) then
+begin
+  Line:=Page.Getstring(LineNr+2);
+  HtmlRemoveTags(Line);
+  Value:=UTF8DEcode(Line);
+  setfield(fieldDirector,Value);
+end;
+
+
+//Yönetmen Biter
+
+//Türü
+LineNr:=0;
+Value:='';
+LineNr:=FindLine(UTF8Encode('Tür'),Page,LineNr);
+if(LineNr>0) then
+begin
+
+      LineNr:=LineNr+2;
+      Line:=Page.GetString(LineNr);
+
+      while(pos('span class="acLnk',Line)>0)  do
+      begin
+      LineNr:=LineNr+1;
+      Line:=Page.GetString(LineNr);
+      Line:= UTF8Decode(Line);
+      HtmlRemoveTags(Line);
+      if(length(Value)>0) then Value:= Value+', ';
+      Value:=Value+ Line;
+      LineNr:=LineNr+1;
+      Line:=Page.GetString(LineNr);
+      end;
+
+      SetField(fieldCategory,Value);
+end;
+//tür
+// Ülke
+LineNr:=0;
+Value:='';
+LineNr:=FindLine(UTF8Encode('Ülke</span>'),Page,LineNr);
+if(LineNr>0) then
+begin
+
+      LineNr:=LineNr+2;
+      Line:=Page.GetString(LineNr);
+      while(pos('span class="acLnk',Line)>0)  do
+      begin
+      LineNr:=LineNr+1;
+      Line:=Page.GetString(LineNr);
+      Line:= UTF8Decode(Line);
+      HtmlRemoveTags(Line);
+      if(length(Value)>0) then Value:= Value+', ';
+      Value:=Value+ Line;
+      LineNr:=LineNr+1;
+      Line:=Page.GetString(LineNr);
+      end;
+      SetField(fieldCountry,Value);
+end;
+// ülke biter
+//özet getir
+LineNr:=0;
+Value:='';
+UTF8Coded:=UTF8Encode('<p itemprop="description">');
+LineNr:=FindLine(UTF8Coded,Page,LineNr);
+if(LineNr>0) then
+begin
+   Line:=Page.GetString(LineNr+1);
+   HtmlRemoveTags(Line);
+   Value:=UTF8Decode(Line);
+   Value:=TurkceDuzelt(Value);
+
+   
+  case getOption('Tanekle') of
+
+    1:  value:=value+#13#10+eskitan;
+
+
+  end;
+  SetField(fieldDescription,Value);
+end;
+// özet
+//gösterim Tarihi
+Value:='';
+LineNr:=0;
+UTF8Coded:=UTF8Encode('Vizyon Tarihi </span>');
+LineNr:= FindLine(UTF8Coded,Page,LineNr);
+if(LineNr>0) then
+begin
+  Line:=Page.GetString(LineNr+3);
+  HtmlRemoveTags(Line);
+  Line:=StringReplace(Line,UTF8Coded,'');
+  Value2:=UTF8DEcode(Line);
+  Alperint:=getoption('Gos_tar');
+  case getoption('Gos_tar') of
+  1:
+    begin
+      Value:=GetField(fieldDescription);
+      if(length(getfield(fielddate))>0) then
+      value:= value+#13#10+'Eklenme Tarihi:'+getfield(fielddate);
+
+      setfield(fielddescription,value);
+      setfield(fieldDate, Value2);
+    end;
+  2:
+    begin
+      Value:=Getfield(fieldDescription);
+      Value:= Value+ #13#10+ 'Gösterim Tarihi:'+Value2;
+      SetField(fielddescription,Value);
+    end;
+  3:
+    begin
+      Value2:=Aylar(Value2);
+      SetField(fieldDate,Value2);
+    end;
+  end;
+end;
+
+//gösterimTarihi biter
+//Resim
+LineNr:=0;
+LineNR:=FindLine('<div class="poster">',Page,LineNr);
+if(LineNr>0) then
+begin
+Alperint:=getoption('BuyukPoster');
+Line:=Page.GetString(LineNr+1);
+if(pos('pan class',Line)>0) then Line:=Page.GetString(LineNr+2);
+if(Alperint=2) then  Line:=stringReplace(Line,'160_240','640_600' );
+  EndPos:= pos(' alt=',Line);
+ Value:=copy(Line,11,EndPos-12);
+ if(pos('emptyposter',Line)=0) then
+    getpicture(Value);
+
+end;
+//Resimbiter
+
+//puan al
+LineNr:=0;
+   LineNr:=FindLine(UTF8Encode('/list_item_p2v'),Page,LineNr);
+    if(LineNr>0) then
+    begin
+    
+    end;
+  case getoption('PuanSecim') of
+  0:
+  begin //beyazperde
+    LineNr:=FindLine(UTF8Encode('Beyazperde'),Page,LineNr);
+    if(LineNr>0) then
+    begin
+     Line:=Page.GetString(LineNr+4);
+    end
+    
+    HtmlRemoveTags(Line);
+    Line:=stringReplace(Line,'&nbsp;&nbsp;','');
+    if(Length(Line)=0) then
+    begin
+      Value:='0';
+    end else
+    begin
+      Value:=Line;
+    end;
+
+
+    
+  end;
+  1:
+  begin //basýn
+    LineNr:=FindLine(UTF8Encode('Basýn'),Page,LineNr);
+
+   if(LineNr>0) then
+    begin
+     Line:=Page.GetString(LineNr+4);
+    end
+
+    HtmlRemoveTags(Line);
+    Line:=stringReplace(Line,'&nbsp;&nbsp;','');
+    if(Length(Line)=0) then
+    begin
+      Value:='0';
+    end else
+    begin
+      Value:=Line;
+    end;
+
+
+  
+  
+  end;
+  2:
+  begin //üyeler
+    LineNr:=FindLine(UTF8Encode('Üyeler'),Page,LineNr);
+   if(LineNr>0) then
+    begin
+     Line:=Page.GetString(LineNr+4);
+    end
+
+    HtmlRemoveTags(Line);
+    Line:=stringReplace(Line,'&nbsp;&nbsp;','');
+    Line:=UTF8Decode(Line);
+    if(Length(Line)=0) then
+    begin
+      Value:='0';
+    end else
+    begin
+      Value:=Line;
+    end;
+
+  end;
+  end;
+  //Value:=puanci(Value);
+  if(Value='') then
+  begin
+    Value:='0';
+  end
+  
+  if(value='0') then
+  begin
+  end else
+  begin
+      Alperdec:=convert_STF(value);
+      Alperdec:=Alperdec * 2;
+      Value:=floattostr(Alperdec);
+      setfield(fieldRating,Value);
+  end;
+
+//puan biter
+//oyuncular gelsin
+Value:='';
+LineNr:=0;
+BeginPos:=0;
+EndPos:=0;
+Value2:='';
+
+
+
+
+
+
+
+case getoption('Oyuncular') of
+  1:
+  begin
+    LineNr:=FindLine('Oyuncular: </span>',Page,LineNr);
+    if(LineNr>0) then
+    begin
+      Line:=page.getstring(LineNr+2);
+      HtmlRemoveTags(Line);
+      Value:=UTF8Decode(Line);
+      Value:=stringReplace(Value,'Oyuncular: ','');
+
+      Setfield(fieldActors,Value);
+    end;
+
+  end;
+  2,
+  3:
+  begin
+    Alper:='';
+    LineNr:=FindLine('Oyuncular: </span>',Page,LineNr);
+    Value2:=page.getstring(LineNr+4);
+    BeginPos:=pos(UTF8Encode('evamý...'),Value2);
+    if(BeginPos>0) then
+    begin
+      Value:=hedefadres;
+      Page.Text:=getpage(Value+'oyuncular/');
+      LineNr:=0;
+      LineNr:=FindLine('<h2 class="tt_r22 d_inline_block">',Page,LineNr);
+      LineNr:=FindLine('<h2 class="tt_r22 d_inline_block">',Page,LineNr+1);
+      LineNr:=FindLine('alt=''',Page,LineNr+1);
+
+
+      Line:=page.Getstring(LineNr+3);
+      Value:=page.Getstring(LineNr+6);
+
+      Value:=StringReplace(Value,'Rol: ','');
+      Alper:=Line;
+      if(getoption('Oyuncular')=2) then
+      begin
+      if((Value<>'</li>') and (Value<>'Oyuncu')) then Alper:=Alper+' ('+Value+')';
+      end;
+
+      LineNr:=FindLine('alt=''',Page,LineNr+1);
+      while(linenr>-1) do
+      begin
+
+        Line:=page.Getstring(LineNr+3);
+        Value:=page.Getstring(LineNr+6);
+        if(Line='</div>') then
+        begin
+         Value:=page.GetString(LineNr-12);
+         Line:=page.getstring(LineNr-7);
+        end
+        if(Line='<li>') then break;
+        Value:=StringReplace(Value,'Rol: ','');
+        if(getoption('Oyuncular')=2)  then
+        begin
+          if((Value<>'</li>') and (Value<>'Oyuncu')) then
+          begin
+            Alper:=Alper+', '+ Line+' ('+Value+')';
+            end else
+            begin
+              Alper:=Alper+', '+ Line;
+            end;
+
+        end;
+        if(getoption('Oyuncular')=3) then
+        Alper:=Alper+', '+ Line;
+        LineNr:=FindLine('alt=''',Page,LineNr+7);
+      end;
+
+    end//devamý kontrolü
+    else begin
+      Line:=   page.GetString(LineNr+2);
+      HTMLRemoveTags(Line);
+      Line:=UTF8Decode(Line);
+      Alper:=Line;
+    end;
+    Alper:=UTF8Decode(Alper);
+    setfield(fieldActors,Alper);
+
+  end;
+
+end;
+
+
+
+//
+
+//oyuncular tamam
+//producer
+LineNr:=0;
+LineNr:=FindLine('Yapimci',Page,LineNr);
+if(LineNr>-1)
+then
+begin
+
+Line:=page.getstring(LineNr+5);
+setfield(fieldProducer,Line);
+end
+//
+
+end;//procedure end
+
+function puanci(stre:string) :string;
+var
+BeginPos,EndPos:integer;
+begin
+  BeginPos:=pos('"moreinfo">(',stre);
+    if(BeginPos>0) then
+    begin
+      BeginPos:=Beginpos+12;
+      EndPos:=pos(')</span><',stre);
+      stre:=copy(stre,BeginPos,EndPos-BeginPos);
+      
+      result:= stre;
+    end else
+    begin
+      result:= '0';
+    end;
+
+end;
+ function convert_STF (ligne : String ) : extended;
+  begin
+    if pos(',',ligne) > 0 then
+    ligne := stringreplace(ligne,',','.');
+    result := StrToFloat(ligne);
+  end;
+
+
+procedure AnalyzeMoviePage(Page: TStringList);    //çooook eski beyazperde  için
+var
+  Line, Value, Value2, FullValue,muzik,gy: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  // çeviri ismi ve orjinal ismi
+  LineNr := FindLine('"baslik_filmadi31"', Page, 0);
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('"baslik_filmadi31">', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 19;
+    EndPos := pos('</h1>', Line);
+    if EndPos > BeginPos then
+    begin
+      //EndPos := pos(' (', Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      SetField(fieldTranslatedTitle, Value);
+      //SetField(fieldOriginalTitle, Value);//orjinalide ayný yap
+    end
+    begin
+      LineNr:= FindLine('"baslik_filmadi32">', Page, linenr);
+      if(linenr>-1) then
+      begin
+        Line := Page.GetString(LineNr);
+        BeginPos := pos('"baslik_filmadi32">', Line);
+        BeginPos := BeginPos + 19;
+        EndPos := pos('</h2>', Line);
+        if EndPos > BeginPos then
+          begin
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          SetField(fieldOriginalTitle, Value);
+          end;
+      end else
+      begin
+      SetField(fieldOriginalTitle, Value);//madem orjinal isim yok demek ki orjinali bulmuþum
+      end;
+
+    end;
+
+   // BeginPos := pos('(', Line) + 1;
+   // if BeginPos > 0 then
+   // begin
+   //   EndPos := pos(')', Line);
+   //   Value := copy(Line, BeginPos, EndPos - BeginPos);
+   //   SetField(fieldYear, Value);
+   // end;
+  end;
+
+  // sinepuan
+  LineNr := FindLine('SinePuan:', Page, 0);   //span class="metin2">
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    if Pos('<img src="http://img.beyazperde.com/beyazperde/meter-kenar1.gif', Line) > 0 then
+    begin
+      EndPos := pos(' &nbsp; <img', Line);
+      BeginPos := pos('inePuan:&nbsp;', Line) + 14;
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+
+      if pos(',', Value) > 0 then
+      begin
+        //Value := IntToStr(Round(StrToInt(StrGet(Line, BeginPos), 0) + (StrToInt(StrGet(Line, BeginPos + 2), 0) / 10)));
+        //Value:='5,6';
+      end;
+      SetField(fieldRating, Value);
+    end else
+    begin
+      SetField(fieldRating, 0);
+    end;
+  end;
+
+  // Picture
+  LineNr := FindLine('/images/film/', Page, 0);
+  
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('src="', Line) + 5;
+    EndPos := pos('" width="', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    GetPicture(Value);
+  end;
+
+  // Director
+  value:='';
+  LineNr := FindLine('<!-- YONETMEN -->', Page, 0);
+  if LineNr > -1 then
+  begin
+  line:= Page.GetString(linenr);
+  repeat
+
+    beginpos:=pos('1_px>', line);
+    if beginpos>0 then
+      begin
+        beginpos:=beginpos+5;
+        endpos:=pos('</a>', line);
+        if length(value)> 0 then value:=value + ', ';
+        value:=value+ copy(line, beginpos,Endpos-beginpos);
+      end;
+      linenr:=linenr+1;
+      line:= Page.GetString(linenr);
+  until (pos('- SENARYO -', line) > 1) or (linenr = Page.count -1);
+  end;
+  FullValue := '';
+  HTMLDecode(Value);
+  SetField(fieldDirector, Value);
+  // görüntunun  yonetemeni
+  case getOption('Gor_yonetmeni') of
+  1,
+  2:
+    begin
+      LineNr := FindLine('<!-- GORUNTU YONETMENI -->', Page, 0);
+      if LineNr > -1 then
+      begin
+        Line := Page.GetString(LineNr + 4);
+        BeginPos := pos('1_px>', Line) + 5;
+        EndPos := pos('</a>', Line);
+        if endpos >beginpos then
+        begin
+          gy := copy(Line, BeginPos, EndPos - BeginPos);
+        end;
+        HTMLDecode(gy);
+      end;
+    end;
+  end;
+
+
+  // PRODUCER senaryo ve kitap
+  value:='';
+  LineNr := FindLine('<!-- SENARYO -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    line:=page.getstring(linenr);
+    repeat
+      beginpos:=pos('1_px>', line);
+      if beginpos>1 then
+      begin
+        beginpos:=beginpos+5;
+        endpos:=pos('</a>', line);
+        if  length(value)>1 then value:= value+ ', ';
+        value:=value+copy(line, beginpos, endpos-beginpos);
+      end;
+      linenr:=linenr+1;
+      line:=page.getstring(linenr);
+    until (pos('- KÝTAP -', line)>1) OR (linenr=Page.count-1);
+    FullValue := '';
+    //LineNr := FindLine('<!-- KÝTAP -->', Page, 0);
+    Line := Page.GetString(LineNr + 1);
+    BeginPos := pos(',', Line);
+    if beginpos>0 then
+    begin
+      Line := Page.GetString(LineNr + 2);
+      BeginPos := pos('1_px>', Line) + 5;
+      EndPos := pos('</a>', Line);
+      Value := Value + ',' + copy(Line, BeginPos, EndPos - BeginPos)+ '(Kitap)';
+    end;
+    HTMLDecode(Value);
+    SetField(fieldPRODUCER, Value);
+  end;
+  // Actors
+  FullValue := '';
+  LineNr := FindLine('<!-- OYUNCULAR -->', Page, 0);
+  
+  if LineNr > -1 then
+  begin
+    repeat
+      LineNr := LineNr + 1;
+      if linenr>page.count then showmessage('Döngüsel Hata 1');
+
+      Line := Page.GetString(LineNr);
+
+      if pos('href="/kisi/', Line) > 0 then
+      begin
+        BeginPos := pos(':15px;">', Line) + 8;
+        EndPos := pos('</a>', Line);
+        Value := copy(Line, BeginPos, EndPos - BeginPos);
+        BeginPos := pos('(', Line);
+        EndPos := pos(')', Line) + 1;
+        Value := Value + ' ' + copy(Line, BeginPos, EndPos - BeginPos) + ', ';
+        FullValue := FullValue + Value;
+      end;
+    until (pos('</table>', Line) > 0) OR (linenr=Page.Count-1);
+    EndPos := Length(FullValue);
+    Delete(FullValue, EndPos - 1, EndPos);
+    HTMLDecode(FullValue);
+    SetField(fieldActors, FullValue);
+  end;
+
+  //Country
+  LineNr := FindLine('<!-- ULKE -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    linenr:=linenr+1;
+    value:='';
+    repeat
+      Line := Page.GetString(LineNr);
+      beginpos:=pos('1_px>',line);
+      if beginpos>1 then
+      begin
+        BeginPos := beginpos + 5;
+        EndPos := pos('</a>', Line);
+        if length(value)>1 then value:=value+ ' / ';
+        Value := value+ copy(Line, BeginPos, EndPos - BeginPos);
+      end;
+      linenr:=linenr+1;
+    until (pos('- SURESI --', line)>1) OR (linenr=Page.Count-1);
+    HTMLDecode(Value);
+    SetField(fieldCountry, Value);
+  end;
+  //muzik
+  case getOption('Muzik') of
+  1,
+  2:
+    begin
+      LineNr := FindLine('- MUZIK -', Page, 0);
+      if LineNr > -1 then
+      begin
+        linenr:=linenr+1;
+        value2:='';
+        repeat
+          Line := Page.GetString(LineNr);
+          beginpos:=pos('1_px>',line);
+          if beginpos>1 then
+          begin
+            BeginPos := beginpos + 5;
+            EndPos := pos('</a>', Line);
+            if length(value2)>1 then value2:=value2+ ' / ';
+            Value2 := value2+ copy(Line, BeginPos, EndPos - BeginPos);
+          end;
+          linenr:=linenr+1;
+        until (pos('YAPIM YILI', line)>1) OR (linenr=Page.Count-1);
+        HTMLDecode(Value2);
+      end;
+    end;
+  end;
+  if(length(value2)>1) then
+    begin
+
+  case getOption('Muzik') of
+  1:
+    begin
+      Value2:= GetField(fieldProducer)+' Müzik:'+ Value2;
+      SetField(fieldProducer, Value2);
+    end;
+  2:
+    begin
+    muzik:=#13#10+' Müzik:'+ Value2;
+    end;
+  end;
+  end;
+  
+
+  //<!-- YAPIM YILI -->
+  LineNr := FindLine('<!-- YAPIM YILI -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    BeginPos := pos('1_px>', Line) + 5;
+    EndPos := pos('</a>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  //Category
+ // LineNr := FindLine('arama.asp?kat=tur', Page, 0);
+  //if LineNr > -1 then
+ // begin
+//    Line := Page.GetString(LineNr);
+ //   BeginPos := pos('em>', Line) + 3;
+ //   EndPos := pos('</a>', Line);
+  //  Value := copy(Line, BeginPos, EndPos - BeginPos);
+  //  HTMLDecode(Value);
+ //   SetField(fieldCategory, Value);
+ // end;
+ 
+ 
+   // kategori
+  FullValue := '';
+LineNr := FindLine('<!-- TÜRÜ -->', Page, 0);
+
+  if LineNr > -1 then
+  begin
+  Line:= Page.GetString(linenr);
+  
+    repeat
+       LineNr := LineNr + 1 ;
+       if linenr>page.count then showmessage('Döngüsel Hata 2');
+
+       Line := Page.GetString(LineNr);
+       if pos('arama.asp?kat=tur', Line) > 0 then
+       begin
+          BeginPos := pos('1_px>', Line) + 5;
+          EndPos := pos('</a>', Line);
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          linenr := linenr + 1;
+          if linenr>page.count then showmessage('Döngüsel Hata 3');
+
+          fullvalue := fullvalue +  value + ' / ';
+       end;
+    until pos('GÖSTERÝM TARÝHÝ -',line)>0 ;
+    EndPos := Length(FullValue);
+    Delete(FullValue, EndPos - 1, EndPos);
+    HTMLDecode(fullValue);
+    SetField(fieldCategory, fullValue);
+  end
+  // Length
+  LineNr := FindLine('<!-- SURESI -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    BeginPos := pos(', ', Line) + 2;
+    EndPos := pos(' dk', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLength, Value);
+  end;
+
+
+  //Description
+
+
+  LineNr := FindLine('<td width="450" class=metin align=left valign="middle">', Page, 0);
+  Value := '';
+  //while linenr<page.count do
+  denek:=page.count;
+  if denek=0 then
+  begin
+  showmessage('hatalý ya da eksik veri alýmý 1. Ýþlem sonlandýrýlýyor!! Tekrar deneyebilirsiniz.');
+  end else
+  begin
+  repeat
+    LineNr := LineNr + 1;
+    if linenr>page.count then showmessage('hatalý veri alýmý 2');
+    denek:=page.count;
+    Line := Page.GetString(LineNr);
+    if pos('</td>', Line) < 1 then
+    begin
+      Value := Value + Line;
+    end;
+
+    until (pos('</td>',line)>0) or (linenr=page.count-1);    //pos('<!-- pt src="/beyazperde.js">',line)>0 *0,4b
+  end;
+  //until pos('<!-- pt language="">', Line) > 0;
+
+  Value := StringReplace(Value, '<br>', #13#10);
+  Value := StringReplace(Value, '<p>', '');
+  Value := StringReplace(Value, '</b>', '');
+ // Value := StringReplace(Value, #13#10+' ', #13#10);
+   Value := trim(StringReplace(Value, #13#10+' ', #13#10));
+
+        HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+//  endpos := length(value);
+ // value := copy(value , 22, EndPos);
+    case getOption('Tanekle') of
+    1:  value:=value+#13#10+eskitan;
+    end;
+    case getOption('Gos_tar') of
+    1,
+    2:
+      begin
+        Linenr:=Findline('GÖSTERÝM TARÝHÝ -', Page,0);
+        if(linenr>-1) then
+        begin
+          line:=Page.GetString(linenr+3);
+          beginpos:=pos('?kat=vizyon&keyword=', line);
+          if beginpos>0 then
+          begin
+            beginpos:=beginpos+20;
+            endpos:=pos('">', line);
+            if(endpos>beginpos) then value2:= copy(line,beginpos, endpos-beginpos);
+          end;
+        end;
+      end;
+    end;
+
+    case getOption('Gos_tar') of
+    1:
+      begin
+      value:= value+#13#10+'Eklenme Tarihi:'+getfield(fielddate);
+      setfield(fieldDate, Value2);
+      end;
+    2:    value:=value+ ' Gösterim Tarihi:'+value2;
+    3:    setfield(fielddate, value2);
+    end;
+    case getoption('Gor_yonetmeni') of
+      1:
+        begin
+          if(length(gy)>0)  then
+            begin
+              setfield(fielddirector, getfield(fielddirector)+ ' /GY:'+gy);
+          end;
+        end;
+      2:
+        begin
+          if(length(gy)>0)  then
+          begin
+            value:= value+ #13#10+ 'Görüntü Yönetmeni: '+gy;
+          end;
+        end;
+    
+    end;
+    case getoption('Muzik') of
+    2: value:= value+ muzik;
+    end;
+
+  SetField(fieldDescription, Value);
+
+  //DisplayResults;
+end;
+//_-----------___---------------------____-------
+
+//html dekoder    megafilm pl den araklama
+procedure DecodeHTML(var Value: String);
+  var
+  FullValue, CharCode: String;
+  Counter: Integer;
+  begin
+  if Value <> '' then begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+        CharCode := copy(Value, Counter, 1);
+        case CharCode of
+          '±': CharCode := '¹';
+          '¶': CharCode := 'œ';
+          '¡': CharCode := '¥';
+          '¼': CharCode := 'Ÿ';
+          '¦': CharCode := 'Œ';
+          '¬': CharCode := '';
+          end;
+        FullValue := FullValue + CharCode;
+        Counter := Counter + 1;
+        end
+      else
+        begin
+        CharCode := copy(Value, Counter, 7);
+        case CharCode of
+          '&#x105;': FullValue := FullValue + '¹';
+          '&#x107;': FullValue := FullValue + 'æ';
+          '&#x119;': FullValue := FullValue + 'ê';
+          '&#x142;': FullValue := FullValue + '³';
+          '&#x144;': FullValue := FullValue + 'ñ';
+          '&#x0f3;': FullValue := FullValue + 'ó';
+          '&#x15b;': FullValue := FullValue + 'œ';
+          '&#x17a;': FullValue := FullValue + 'Ÿ';
+          '&#x17c;': FullValue := FullValue + '¿';
+          '&#x104;': FullValue := FullValue + '¥';
+          '&#x106;': FullValue := FullValue + 'Æ';
+          '&#x118;': FullValue := FullValue + 'Ê';
+          '&#x141;': FullValue := FullValue + '£';
+          '&#x143;': FullValue := FullValue + 'Ñ';
+          '&#x0d3;': FullValue := FullValue + 'Ó';
+          '&#x15a;': FullValue := FullValue + 'Œ';
+          '&#x179;': FullValue := FullValue + '';
+          '&#x17b;': FullValue := FullValue + '¯';
+          '&#x160;': FullValue := FullValue + ' ';
+          '&#x161;': FullValue := FullValue + '¡';
+          '&#x162;': FullValue := FullValue + '¡';
+          '&#x163;': FullValue := FullValue + '£';
+          '&#x164;': FullValue := FullValue + '¤';
+          '&#x165;': FullValue := FullValue + '¥';
+          '&#x166;': FullValue := FullValue + 'Œ';
+          '&#x167;': FullValue := FullValue + '§';
+          '&#x168;': FullValue := FullValue + '¨';
+          '&#x169;': FullValue := FullValue + '©';
+          '&#x170;': FullValue := FullValue + 'ª';
+          '&#x171;': FullValue := FullValue + '«';
+          '&#x172;': FullValue := FullValue + '¬';
+          '&#x173;': FullValue := FullValue + '­';
+          '&#x174;': FullValue := FullValue + '®';
+          '&#x175;': FullValue := FullValue + '¯';
+          '&#x176;': FullValue := FullValue + '°';
+          '&#x177;': FullValue := FullValue + '±';
+          '&#x178;': FullValue := FullValue + '²';
+          '&#x180;': FullValue := FullValue + '´';
+          '&#x181;': FullValue := FullValue + 'µ';
+          '&#x182;': FullValue := FullValue + '¶';
+          '&#x183;': FullValue := FullValue + '·';
+          '&#x184;': FullValue := FullValue + '¸';
+          '&#x185;': FullValue := FullValue + '¹';
+          '&#x186;': FullValue := FullValue + 'º';
+          '&#x187;': FullValue := FullValue + '»';
+          '&#x188;': FullValue := FullValue + '¼';
+          '&#x189;': FullValue := FullValue + '½';
+          '&#x190;': FullValue := FullValue + '¾';
+          '&#x191;': FullValue := FullValue + '¿';
+          '&#x192;': FullValue := FullValue + 'À';
+          '&#x193;': FullValue := FullValue + 'Á';
+          '&#x194;': FullValue := FullValue + 'Â';
+          '&#x195;': FullValue := FullValue + 'Ã';
+          '&#x196;': FullValue := FullValue + 'Ä';
+          '&#x197;': FullValue := FullValue + 'Å';
+          '&#x198;': FullValue := FullValue + 'Æ';
+          '&#x199;': FullValue := FullValue + 'Ç';
+          '&#x200;': FullValue := FullValue + 'È';
+          '&#x201;': FullValue := FullValue + 'É';
+          '&#x202;': FullValue := FullValue + 'Ê';
+          '&#x203;': FullValue := FullValue + 'Ë';
+          '&#x204;': FullValue := FullValue + 'Ì';
+          '&#x205;': FullValue := FullValue + 'Í';
+          '&#x206;': FullValue := FullValue + 'Î';
+          '&#x207;': FullValue := FullValue + 'Ï';
+          '&#x208;': FullValue := FullValue + 'Ð';
+          '&#x209;': FullValue := FullValue + 'Ñ';
+          '&#x210;': FullValue := FullValue + 'Ò';
+          '&#x211;': FullValue := FullValue + 'Ó';
+          '&#x212;': FullValue := FullValue + 'Ô';
+          '&#x213;': FullValue := FullValue + 'Õ';
+          '&#x214;': FullValue := FullValue + 'Ö';
+          '&#x215;': FullValue := FullValue + '×';
+          '&#x216;': FullValue := FullValue + 'Ø';
+          '&#x217;': FullValue := FullValue + 'Ù';
+          '&#x218;': FullValue := FullValue + 'Ú';
+          '&#x219;': FullValue := FullValue + 'Û';
+          '&#x220;': FullValue := FullValue + 'Ü';
+          '&#x221;': FullValue := FullValue + 'Ý';
+          '&#x222;': FullValue := FullValue + 'Þ';
+          '&#x223;': FullValue := FullValue + 'ß';
+          '&#x224;': FullValue := FullValue + 'à';
+          '&#x225;': FullValue := FullValue + 'á';
+          '&#x226;': FullValue := FullValue + 'â';
+          '&#x227;': FullValue := FullValue + 'ã';
+          '&#x228;': FullValue := FullValue + 'ä';
+          '&#x229;': FullValue := FullValue + 'å';
+          '&#x230;': FullValue := FullValue + 'æ';
+          '&#x231;': FullValue := FullValue + 'ç';
+          '&#x232;': FullValue := FullValue + 'è';
+          '&#x233;': FullValue := FullValue + 'é';
+          '&#x234;': FullValue := FullValue + 'ê';
+          '&#x235;': FullValue := FullValue + 'ë';
+          '&#x236;': FullValue := FullValue + 'ì';
+          '&#x237;': FullValue := FullValue + 'í';
+          '&#x238;': FullValue := FullValue + 'î';
+          '&#x239;': FullValue := FullValue + 'ï';
+          '&#x240;': FullValue := FullValue + 'ð';
+          '&#x241;': FullValue := FullValue + 'ñ';
+          '&#x242;': FullValue := FullValue + 'ò';
+          '&#x243;': FullValue := FullValue + 'ó';
+          '&#x244;': FullValue := FullValue + 'ô';
+          '&#x245;': FullValue := FullValue + 'õ';
+          '&#x246;': FullValue := FullValue + 'ö';
+          '&#x247;': FullValue := FullValue + '÷';
+          '&#x248;': FullValue := FullValue + 'ø';
+          '&#x249;': FullValue := FullValue + 'ù';
+          '&#x250;': FullValue := FullValue + 'ú';
+          '&#x251;': FullValue := FullValue + 'û';
+          '&#x252;': FullValue := FullValue + 'ü';
+          '&#x253;': FullValue := FullValue + 'ý';
+          '&#x254;': FullValue := FullValue + 'þ';
+          '&#x255;': FullValue := FullValue + 'ÿ';
+          '&#x%DF;': FullValue := FullValue + 'ß';
+          '&#x34;': FullValue := FullValue + '"';
+          '&#8211;': FullValue := FullValue + '-';
+          '&#8216;': FullValue := FullValue + '"';
+          '&#8217;': FullValue := FullValue + '"';
+          '&#8220;': FullValue := FullValue + '"';
+          '&#8221;': FullValue := FullValue + '"';
+          '&#8222;': FullValue := FullValue + '"';
+          else
+            FullValue := FullValue + CharCode;
+          end;
+        Counter := Counter + 7;
+      end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+    end
+  end;
+///
+
+//aylar
+function Aylar(stre:string) :string;
+begin
+stre:=StringReplace (stre,' Ocak ','.01.');
+stre:=StringReplace (stre,' Þubat ','.02.');
+stre:=StringReplace (stre,' Mart ','.03.');
+stre:=StringReplace(stre,' Nisan ','.04.');
+stre:=StringReplace (stre,' Mayýs ','.05.');
+stre:=StringReplace (stre,' Haziran ','.06.');
+stre:=StringReplace (stre,' Temmuz ','.07.');
+stre:=StringReplace (stre,' Aðustos ','.08.');
+stre:=StringReplace (stre,' Eylül ','.09.');
+stre:=StringReplace (stre,' Ekim ','.10.');
+stre:=StringReplace (stre,' Kasým ','.11.');
+stre:=StringReplace (stre, ' Aralýk ','.12.');
+
+result:= stre;
+end;
+///
+//Turkceci god damn it
+function Turkcele(str1: string) :string;
+begin
+         // str1  := AnsiLowerCase(str1);
+          //str1  := AnsiUpFirstLetter(str1);
+          str1 := StringReplace(str1, 'Ä±' , 'ý');
+          str1 := StringReplace(str1, 'Ã¶' , 'ö');
+          str1 := StringReplace(str1, 'Ã©', 'é');
+          str1 := StringReplace(str1, 'Å' , 'Þ');
+          str1 := StringReplace(str1, 'Ã¼' , 'ü');
+          Str1 := StringReplace(Str1, 'Ä°', 'Ý');
+          Str1 := StringReplace(Str1, 'Ã–', 'Ö');
+          Str1 := StringReplace(Str1, 'ÅŸ', 'þ');
+          Str1 := StringReplace(Str1, 'ÄŸ', 'ð');
+          Str1 := StringReplace(Str1, 'Ã§', 'ç');
+          Str1 := StringReplace(Str1, 'Ã‡', 'Ç');
+          Str1 := StringReplace(Str1, 'ÅŸ', 'þ');
+result := str1;
+end;
+
+
+//
+//Aksan düzeltici
+function Aksanator(stret:string):string ;
+begin
+stret:= StringReplace(stret,'Ã­','í');
+stret:= StringReplace(stret,'Ã¡','á');
+result :=stret;
+end;
+
+//türkçe karakter duzeltici
+function TurkceDuzelt(strtt: string) :string;
+begin
+strtt:= StringReplace(strtt,'&uuml;','ü');
+//&ccedil;   ç
+strtt:= StringReplace(strtt,'&ccedil;','ç');
+//&ouml; ö
+strtt:= StringReplace(strtt,'&ouml;','ö');
+result:= strtt;
+end;
+
+
+//v2 filmliste oluþturucu
+
+procedure MovieListBuilder(Page: TStringList; Rakam:Integer) ;
+var
+  LineNr: Integer;
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos:Integer;
+  EndPos:Integer;
+  Year:string;
+  OrgTitle:string;
+  Director:string;
+  Cast: string;
+  Turlayici: Integer;
+  Sayici:Integer;
+  Yirmi:Integer;
+  
+begin
+  LineNr:=0;
+  StartPos:=0;
+  Line:='';
+  EndPos:=0;
+  Sayici:=1;
+  Yirmi:=20;
+  Turlayici:= Rakam ;
+  
+  
+  While((Sayici-1) <strtoint(aramikdeger,0))  do
+  begin
+    if(sayici>1) then begin
+
+    Page.Text := GetPage('http://www.beyazperde.com/ara/1/?p='+inttostr(Sayici)    +'&q='+UrlEncode(MovieName));
+    LineNr:=0;
+    end;
+    while(FindLine('<tr><td style=" vertical-align:top;">',Page, LineNr+1)>0)
+    do
+    begin
+      LineNr:=FindLine('<tr><td style=" vertical-align:top;">',Page, LineNr+1);
+      Line:=Page.GetString(LineNr+1);
+      StartPos:=10;
+      EndPos:=pos('''><img',Line);
+      MovieAddress:='http://www.beyazperde.com'+copy(Line,StartPos,EndPos-StartPos);
+
+      //isimleri al
+      Line:=Page.GetString(LineNr+6);
+      MovieTitle:=UTF8Decode(Line);
+      HtmlRemoveTags(MovieTitle);
+      if(pos(')',Page.GetString(LineNr+7))>0)then
+      begin
+        OrgTitle:=Page.GetString(LineNr+7);
+        Year:=Page.GetString(LineNr+10);
+        Director:= copy(Page.GetString(LineNr+11),12,Length(Page.GetString(LineNr+11))-12);
+      end else
+      begin
+        OrgTitle:='';
+        Year:=Page.GetString(LineNr+9);
+        Director:=copy(Page.GetString(LineNr+10),12,Length(Page.GetString(LineNr+10))-12);
+      end;
+      OrgTitle:=UTF8Decode(OrgTitle);
+      HtmlRemoveTags(OrgTitle);
+      Director:= UTF8DEcode(Director);
+      HtmlRemoveTags(Director);
+      HtmlRemoveTags(Year);
+      PickTreeAdd(MovieTitle + ' '+OrgTitle+'('+Year+')Y:'+Director,MovieAddress);
+    
+     end;
+    
+    Turlayici:=Turlayici-Yirmi;
+    Sayici:=Sayici+1;
+
+  end;
+  
+  
+  
+
+
+end;
+// -------------------------------------------
+
+  
+
+  var
+  extraara :integer;
+  aramikdeger : String;
+  listetipi :string;
+  eskitan: string;
+begin
+
+  if CheckVersion(3,5,0) then
+  begin
+    case GetOption('Tanekle') of
+      1:eskitan:=GetField(fieldDescription);
+    end;
+    case GetOption('AramaMiktar') of
+      0:aramikdeger:='1';
+      1:aramikdeger:='2';
+      2:aramikdeger:='5';
+      3:aramikdeger:='10';
+      4:aramikdeger:='20';
+    end;
+    case GetOption('AramaListeTipi') of
+      0:listetipi:='yild';
+      1:listetipi:='isima';
+      2:listetipi:='puand';
+      3:listetipi:='yila';
+      4:listetipi:='isimd';
+      5:listetipi:='puana';
+    end;
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Beyaz Perde script(F)', 'Lütfen bilgileri yüklenecek filmin ismini girin', MovieName) then
+    begin
+      PickTreeClear;
+      extraara:=0;
+      if(getoption('NoktaliAra')=1) then
+      MovieName:=stringreplace(MovieName,'.',' ');
+      if(pos('ð',MovieName)>0) then MovieName:=StringReplace(MovieName,'ð','g');
+      if(pos('Ð',MovieName)>0) then MovieName:=StringReplace(MovieName,'Ð','G');
+      if(pos('þ',MovieName)>0) then MovieName:=StringReplace(MovieName,'þ','s');
+      if(pos('Þ',MovieName)>0) then MovieName:=StringReplace(MovieName,'Þ','S');
+      Alper:=UrlEncode(MovieName);
+      
+      AnalyzePage('http://www.beyazperde.com/ara/1/?q='+UrlEncode(MovieName));//+'&sira='+listetipi+'&f=0&t='+aramikdeger);//AnalyzePage('http://www.beyazperde.com/hizliarama.asp?keyword='+UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage( 'programýn daha yeni versiyonunu kurunuz(minimum versiyon ihtiyacý 3.5.0)');
+end.

@@ -1,0 +1,288 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2005 tomba
+Title=dvdinfo.be
+Description=Movie description and picture from dvdinfo.be
+Site=http://www.dvdinfo.be
+Language=NL
+Version=1.1
+Requires=3.5.0
+Comments=Script written on Bad Omen's request.||Changes since v1.0:|- added SearchType option|
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.|
+GetInfo=1
+
+[Options]
+SearchType=1|1|0=cat=14 (Zoek button)|1=cat=21 (Full reviews)
+
+***************************************************)
+
+program dvdinfo;
+uses
+  StringUtils1;
+var
+  MovieName: string;
+  SearchType: Integer;
+
+// simple string procedures
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+// Loads and analyses page from internet (list of movies or direct hit)
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  if SearchType = 1 then Page.Text := PostPage(Address,'keyword='+URLEncode(MovieName))
+  else Page.Text := GetPage(Address);
+  // movie list
+  if Pos('<tr><td class="spacer-tekst"></td><td class="content-tekst" height="25', Page.Text) > 0 then
+  begin
+    PickTreeClear;
+    PickTreeAdd('Search results:', '');
+    AddMoviesTitles(Page);
+    if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+  end
+  else ShowMessage('Nothing found');
+end;
+
+// Extracts movie details from page
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: string;
+  Value: string;
+  Title: string;
+  Review: string;
+  Tmp: string;
+  Comments: string;
+  WasActors: integer;
+begin
+  Address := 'http://dvdinfo.be/' + Address;
+  Page := GetPage(Address);
+
+  // original title
+  Value := GetStringFromHTML(Page, '<td class="content-header" colspan="3">BESPREKING', ': ', ' (',0);
+  if Length(Value) > 0 then
+  begin
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  Tmp := Page;
+  // regio
+  CutBefore(Tmp, '<td class="content-specs"');
+  CutAfter(Tmp, '</td>');
+  // genre
+  CutBefore(Tmp, '<td class="content-specs"');
+  Value := GetStringFromHTML(Tmp, '<td class="content-specs"', '>', '</td>', 0);
+  SetField(fieldCategory, Value);
+  CutAfter(Tmp, '</td>');
+  // versie (version)
+  CutBefore(Tmp, '<td class="content-specs"');
+  CutAfter(Tmp, '</td>');
+  // jaar (year)
+  CutBefore(Tmp, '<td class="content-specs"');
+  Value := GetStringFromHTML(Tmp, '<td class="content-specs"', '>', '</td>', 0);
+  SetField(fieldYear, Value);
+  CutAfter(Tmp, '</td>');
+  // leeftijd (rating for minimum age)
+  CutBefore(Tmp, '<td class="content-specs"');
+  CutAfter(Tmp, '</td>');
+  // speelduur (runtime)
+  CutBefore(Tmp, '<td class="content-specs"');
+  Value := GetStringFromHTML(Tmp, '<td class="content-specs"', '>', ' min.</td>', 0);
+  SetField(fieldLength, Value);
+  CutAfter(Tmp, '</td>');
+  // Ondertitels (subtitles)
+  CutBefore(Tmp, '<td class="content-specs"');
+  Value := GetStringFromHTML(Tmp, '<td class="content-specs"', '>', '</td>', 0);
+  SetField(fieldSubtitles, Value);
+  CutAfter(Tmp, '</td>');
+  // Type dvd
+  CutBefore(Tmp, '<td class="content-specs"');
+  CutAfter(Tmp, '</td>');
+
+  //URL
+  SetField(fieldURL,Address);
+
+  // Image
+  Value := GetStringFromHTML(Page, '<td class="content-tekst"><center><img src="images/reviews', '/', '.jpg"', 0);
+  Value := 'http://dvdinfo.be/images/' + Value + '.jpg';
+  GetPicture(Value);
+
+  // Description
+  Value := GetStringFromHTML(Page, '<td class="content-tekst" colspan="3">', '', '<td class="spacer-tekst"></td>',1);
+  if Length(Value) > 0 then SetField(fieldDescription, Value);
+
+  // Director
+  Value := GetStringFromHTML(Page, '<b>Regisseur:', ' </b>', '<br>', 0);
+  SetField(fieldDirector, Value);
+
+  // Actors
+  Value := GetStringFromHTML(Page, '<b>Met:', ' </b>', '<br>', 0);
+  SetField(fieldActors, Value);
+
+  // Rating
+  Value := GetStringFromHTML(Page, '<b>Film:', ' </b>', '/10<br>', 0);
+  SetField(fieldRating, Value);
+
+  //DisplayResults;
+end;
+
+// Adds movie titles from search results to tree
+procedure AddMoviesTitles(ResultsPage: TStringList);
+var
+  Page: string;
+  MovieTitle, MovieAddress: string;
+begin
+  Page := ResultsPage.Text;
+
+  while Pos('<tr><td class="spacer-tekst"></td><td class="content-tekst" height="25"', Page) > 0 do
+  begin
+    CutBefore(Page, '<tr><td class="spacer-tekst"></td><td class="content-tekst" height="25"');
+    MovieAddress := GetStringFromHTML(Page, '><a ', 'href="', '">', 0);
+    MovieTitle := GetStringFromHTML(Page, 'a href', '">', '</a>', 0);
+//    ShowMessage('MA='+MovieAddress+#10#13+'MT='+MovieTitle);
+    CutAfter(Page, '</td></tr>');
+    PickTreeAdd(MovieTitle, MovieAddress);
+  end;
+end;
+
+// Extracts single movie detail (like director, genre) from page
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string; RemoveTags: Integer): string;
+begin
+  Result := '';
+  // recognition tag - if present, extract detail from page, otherwise assume detail is not present
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    // optional cut tag helps finding right string in html page
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    // movie detail copied with html tags up to end string
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    // remove html tags (if needed) and decode html string
+    if RemoveTags > 0 then
+    begin
+      HTMLRemoveTags(Result);
+    end;
+    HTMLDecode(Result);
+//  ShowMessage('DEBUG: GetStringFromHTML - StartTag "'+StartTag+'", CutTag "'+CutTag+'", EndTag "'+EndTag+'", Result "'+Result+'" ___ '+Page);
+  end;
+end;
+
+
+function GetToken(aString, SepChar: String; TokenNum: Integer):String;
+var
+   Token     : string;
+   StrLen    : Integer;
+   TNum      : Integer;
+   TEnd      : Integer;
+
+begin
+     StrLen := Length(aString);
+     TNum   := 1;
+     TEnd   := StrLen;
+     while ((TNum <= TokenNum) and (TEnd <> 0)) do
+     begin
+          TEnd := Pos(SepChar,aString);
+          if TEnd <> 0 then
+          begin
+               Token := Copy(aString,1,TEnd-1);
+               Delete(aString,1,TEnd);
+               TNum := TNum + 1;
+          end
+          else
+          begin
+               Token := aString;
+          end;
+     end;
+     if TNum >= TokenNum then
+     begin
+          GetToken := Token;
+     end
+     else
+     begin
+          GetToken := '';
+     end;
+end;
+
+function AsinParse(Line : string): string;
+begin
+  Result := GetToken(GetToken(Line,'.',2),Chr(34),1);
+end;
+
+procedure RemovePronoun(var Str: string);
+var
+  i: Integer;
+  s: string;
+  c: char;
+begin
+  // remove pronouns
+  if (Copy(Str, 0, 2) = 'L ') or (Copy(Str, 0, 2) = 'A ') then
+    Str := Copy(Str, 3, Length(Str) - 2)
+  else if (Copy(Str, 0, 3) = 'Le ') or (Copy(Str, 0, 3) = 'La ') or (Copy(Str, 0, 3) = 'Un ') then
+    Str := Copy(Str, 4, Length(Str) - 3)
+  else if (Copy(Str, 0, 4) = 'Les ') or (Copy(Str, 0, 4) = 'Une ') or (Copy(Str, 0, 4) = 'The ') then
+    Str := Copy(Str, 5, Length(Str) - 4);
+
+  Str := StringReplaceAll(Str, '_', ' ');
+  // remove non-letters, non-digits and non-spaces
+  // polish diacritics chars are allowed
+  s := '';
+  for i := 1 to Length(Str) do begin
+  c := StrGet(Str, i);
+    if ((c<'a') or (c>'z')) and
+       ((c<'A') or (c>'Z')) and
+       ((c<'0') or (c>'9')) and
+       (c<>' ') and (c<>'π') and
+       (c<>'•') and (c<>'Í') and
+       (c<>' ') and (c<>'Ê') and
+       (c<>'∆') and (c<>'ú') and
+       (c<>'å') and (c<>'ø') and
+       (c<>'Ø') and (c<>'ü') and
+       (c<>'è') and (c<>'Û') and
+       (c<>'”') and (c<>'≥') and
+       (c<>'£') and (c<>'Ò') and
+       (c<>'—') then
+    else
+      s := s + Copy(Str, i, 1);
+  end;
+  Str := s;
+end;
+
+begin
+  if CheckVersion(3,5,0) then begin
+    SearchType := GetOption('SearchType');
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then MovieName := GetField(fieldTranslatedTitle);
+    RemovePronoun(MovieName);
+    if Input('dvdinfo.be import', 'Enter movie title:', MovieName) then
+      case SearchType of
+        0 :
+        begin
+          AnalyzePage('http://dvdinfo.be/index-02.php?cat=14');
+        end;
+        1 :
+        begin
+          AnalyzePage('http://dvdinfo.be/index-02.php?cat=21&kerword='+URLEncode(MovieName)+'&full=Review');
+        end;
+      end;
+  end else ShowMessage('AMC version required: 3.5.0');
+end.

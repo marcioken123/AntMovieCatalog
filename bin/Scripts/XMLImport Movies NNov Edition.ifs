@@ -1,0 +1,277 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=LA (Andrey Lukyanov)       (<link>l_a@hotmail.ru</link>)
+Title=XMLImport (Movies NNov Edition)
+Description=Imports movies info from ***Movies NNov*** Ant Movie catalog in XML format.
+Site=
+Language=?
+Version=1.0 Movies NNov Edition (19.03.2006)
+Requires=3.5.0
+Comments=Additional conversion rules have been added into original XMLImport script to support Movies NNov catalog.
+License=This script is free; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+OriginalTitle=2|2|1=Добавлять полное оригинальное название|2=Добавлять только первое оригинальное название
+CountryTranslate=1|1|1=Переводить название страны на русский|2=Оставить на английском
+CategoryTranslate=1|1|1=Переводить жанр на русский|2=Оставить на английском
+DirectorTranslate=3|3|1=Транслитерировать имя режиссера на русский|2=Оставить на английском|3=Транслитерировать имя режиссера на русский, но оставить оригинал в скобках|4=Оставить на английском, но добавить транслитерированный вариант в скобках
+ActorsLayout=1|1|1=Только имена актеров, разделенные запятыми|2=Только имена актеров построчно|3=Имена актеров с персонажами в скобках, разделенные запятыми|4=Имена актеров с персонажами в скобках построчно
+ActorsTranslate=2|2|1=Транслитерировать имена актеров [и персонажей] на русский|2=Оставить на английском
+
+***************************************************)
+
+program XMLImport_MoviesNNovEdition;
+var
+  MovieName, DatabaseFile, Value: string;
+  XMLFile: TJvSimpleXml;
+  CurItem: TJvSimpleXmlProps;
+
+// функция преобразования английского текста в русский
+function EngToRus(Text:String):String;
+var
+ i : Integer;
+ Eng, Rus : String;
+begin
+  Eng := 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+  Rus := 'квертиюиопасдфжхюклзсцвбнмКВЕРТИЮИОПАСДФЖХЮКЛЗСЦВБНМ';
+  result := Text;
+   for i := 1 to Length(Eng) do
+     result:=StringReplace(result, Copy(Eng,i,1), Copy(Rus,i,1));
+end;
+
+procedure AnalyzeDatabase;
+var
+  s, s1, s2: string;
+  i: Integer;
+
+begin
+ XMLFile := TJvSimpleXml.Create(nil);
+ XMLFile.LoadFromFile(DatabaseFile);
+ if XMLFile.Root.Name = 'AntMovieCatalog' then
+  begin
+    if XMLFile.Root.Items.Count = 0 then
+    begin
+      ShowInformation('Chosen XML Catalog is empty.');
+      XMLFile.Free;
+      Exit;
+    end;
+    PickTreeClear;
+    PickTreeAdd('Search result of movie: ' + MovieName, '');
+    for i := 0 to XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.Count-1 do
+    begin
+      CurItem := XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.GetItem(i).Properties;
+      s1 := CurItem.GetItemNamed('TranslatedTitle').Value;
+      s2 := CurItem.GetItemNamed('OriginalTitle').Value;
+      s := s1;
+      if s <> '' then
+       if (s2 <> '') and (s2 <> s1) then s := s1 + ' / ' + s2 else s := s2;
+      if Pos(AnsiUpperCase(MovieName), AnsiUpperCase(s)) > 0 then
+       PickTreeAdd(s, IntToStr(i));
+    end;
+    If PickTreeExec(DatabaseFile) Then
+      AnalyzeMovieItem(DatabaseFile);
+  end;
+ XMLFile.Free;
+end;
+
+procedure AnalyzeMovieItem(MovieI: String);
+var
+ EndPos: Integer;
+begin
+  CurItem := XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.GetItem(StrToInt(MovieI, 0)).Properties;
+  // ShowMessage(CurItem.GetItemNamed('MediaLabel').Value);
+  if CurItem.GetItemNamed('MediaLabel') <> nil then
+    SetField(fieldMedia,CurItem.GetItemNamed('MediaLabel').Value);
+  if CurItem.GetItemNamed('TranslatedTitle') <> nil then
+    SetField(fieldTranslatedTitle,CurItem.GetItemNamed('TranslatedTitle').Value);
+
+  if CurItem.GetItemNamed('OriginalTitle') <> nil then
+  begin
+     Value := CurItem.GetItemNamed('OriginalTitle').Value;
+     if GetOption('OriginalTitle') = 2 then
+      if Pos('/', Value) > 0 then
+        Value := Copy(Value, 1, Pos('/',Value) - 2);
+     SetField(fieldOriginalTitle,Value);
+  end;
+
+
+  if CurItem.GetItemNamed('Rating') <> nil then
+    SetField(fieldRating,CurItem.GetItemNamed('Rating').Value);
+
+  if CurItem.GetItemNamed('Director') <> nil then
+  begin
+     Value := CurItem.GetItemNamed('Director').Value;
+     case GetOption('DirectorTranslate') of
+       1: Value := EngToRus(Value);
+       2: Value := Value;
+       3: Value := EngToRus(Value) + ' /'+Value+'/';
+       4: Value := Value + ' /'+EngToRus(Value)+'/';
+     end;
+     SetField(fieldDirector,Value);
+  end;
+
+  if CurItem.GetItemNamed('Country') <> nil then
+  begin
+     Value := CurItem.GetItemNamed('Country').Value;
+     if GetOption('CountryTranslate') = 1 then
+     begin
+        Value := StringReplace(Value, 'New Zealand', 'Новая Зеландия');
+        Value := StringReplace(Value, 'South Africa', 'Южная Африка');
+        Value := StringReplace(Value, 'South Korea', 'Южная Корея');
+        Value := StringReplace(Value, 'Soviet Union', 'СССР');
+        Value := StringReplace(Value, 'West France', 'Западная Франция');
+        Value := StringReplace(Value, 'Republic Czechoslovakia', 'Республика Чехословакия');
+        Value := StringReplace(Value, 'North Korea', 'Северная Корея');
+        Value := StringReplace(Value, 'East Germany', 'Восточная Германия');
+        Value := StringReplace(Value, 'Federal Republic of Finland', '');
+        Value := StringReplace(Value, 'Africa', 'Африка');
+        Value := StringReplace(Value, 'Alger', 'Алжир');
+        Value := StringReplace(Value, 'Argentina', 'Аргентина');
+        Value := StringReplace(Value, 'Australia', 'Австралия');
+        Value := StringReplace(Value, 'Austria', 'Австрия');
+        Value := StringReplace(Value, 'Belgium', 'Бельгия');
+        Value := StringReplace(Value, 'Bosnia-Herzegovina', 'Босния-Герцеговина');
+        Value := StringReplace(Value, 'Botswana', 'Ботсвана');
+        Value := StringReplace(Value, 'Brazil', 'Бразилия');
+        Value := StringReplace(Value, 'Bulgaria', 'Болгария');
+        Value := StringReplace(Value, 'Canada', 'Канада');
+        Value := StringReplace(Value, 'China', 'Китай');
+        Value := StringReplace(Value, 'Croatia', 'Хорватия');
+        Value := StringReplace(Value, 'Czech', 'Чехия');
+        Value := StringReplace(Value, 'Denmark', 'Дания');
+        Value := StringReplace(Value, 'France', 'Франция');
+        Value := StringReplace(Value, 'Germany', 'Германия');
+        Value := StringReplace(Value, 'Hong Kong', 'Гонк Конг');
+        Value := StringReplace(Value, 'Hungary', 'Венгрия');
+        Value := StringReplace(Value, 'Iceland', 'Исландия');
+        Value := StringReplace(Value, 'India', 'Индия');
+        Value := StringReplace(Value, 'Iran', 'Иран');
+        Value := StringReplace(Value, 'Ireland', 'Ирландия');
+        Value := StringReplace(Value, 'Israel', 'Израиль');
+        Value := StringReplace(Value, 'Italy', 'Италия');
+        Value := StringReplace(Value, 'Japan', 'Япония');
+        Value := StringReplace(Value, 'Kazakhstan', 'Казахстан');
+        Value := StringReplace(Value, 'Korea', 'Корея');
+        Value := StringReplace(Value, 'Malta', 'Мальта');
+        Value := StringReplace(Value, 'Mexico', 'Мексика');
+        Value := StringReplace(Value, 'Netherlands', 'Нидерланды');
+        Value := StringReplace(Value, 'Norway', 'Норвегия');
+        Value := StringReplace(Value, 'Peru', 'Перу');
+        Value := StringReplace(Value, 'Philippines', 'Филлипины');
+        Value := StringReplace(Value, 'Poland', 'Польша');
+        Value := StringReplace(Value, 'Romania', 'Романия');
+        Value := StringReplace(Value, 'Russia', 'Россия');
+        Value := StringReplace(Value, 'Spain', 'Испания');
+        Value := StringReplace(Value, 'Sweden', 'Швеция');
+        Value := StringReplace(Value, 'Switzerland', 'Швейцария');
+        Value := StringReplace(Value, 'Taiwan', 'Тайвань');
+        Value := StringReplace(Value, 'Thailand', 'Тайланд');
+        Value := StringReplace(Value, 'Turkey', 'Турция');
+        Value := StringReplace(Value, 'UK', 'Великобритания');
+        Value := StringReplace(Value, 'Ukraine', 'Украина');
+        Value := StringReplace(Value, 'USA', 'США');
+     end;
+     SetField(fieldCountry, Value);
+  end;
+
+  if CurItem.GetItemNamed('Category') <> nil then
+    begin
+     Value := CurItem.GetItemNamed('Category').Value;
+     if GetOption('CategoryTranslate') = 1 then
+      begin
+        Value := StringReplace(Value, 'Action', 'Экшн');
+        Value := StringReplace(Value, 'Adult', 'Порно');
+        Value := StringReplace(Value, 'Adventure', 'Приключение');
+        Value := StringReplace(Value, 'Animation', 'Анимация');
+        Value := StringReplace(Value, 'Anime', 'Анимэ');
+        Value := StringReplace(Value, 'Classic', 'Классика');
+        Value := StringReplace(Value, 'Comedy', 'Комедия');
+        Value := StringReplace(Value, 'Crime', 'Криминал');
+        Value := StringReplace(Value, 'Documentar', 'Документальный');
+        Value := StringReplace(Value, 'Drama', 'Драма');
+        Value := StringReplace(Value, 'Eastern', 'Западный');
+        Value := StringReplace(Value, 'Erotic', 'Эротика');
+        Value := StringReplace(Value, 'Family', 'Семейный');
+        Value := StringReplace(Value, 'Fantasy', 'Фэнтэзи');
+        Value := StringReplace(Value, 'Film-Noir', 'Film-Noir');
+        Value := StringReplace(Value, 'Hentai', 'Хентай');
+        Value := StringReplace(Value, 'Horror', 'Ужасы');
+        Value := StringReplace(Value, 'Music', 'Музыка');
+        Value := StringReplace(Value, 'Musical', 'Мюзикл');
+        Value := StringReplace(Value, 'Mystery', 'Мистика');
+        Value := StringReplace(Value, 'Romance', 'Романтика');
+        Value := StringReplace(Value, 'Sci-Fi', 'Научная Фантастика');
+        Value := StringReplace(Value, 'Series', 'Сериал');
+        Value := StringReplace(Value, 'Short', 'Короткометражный');
+        Value := StringReplace(Value, 'Thriller', 'Триллер');
+        Value := StringReplace(Value, 'War', 'Военный');
+        Value := StringReplace(Value, 'Western', 'Вестерн');
+      end;
+      SetField(fieldCategory, Value);
+    end;
+
+  if CurItem.GetItemNamed('Year') <> nil then
+    SetField(fieldYear,CurItem.GetItemNamed('Year').Value);
+  if CurItem.GetItemNamed('Length') <> nil then
+    SetField(fieldLength,CurItem.GetItemNamed('Length').Value);
+
+  if CurItem.GetItemNamed('Actors') <> nil then
+  begin
+      Value := CurItem.GetItemNamed('Actors').Value;
+      case GetOption('ActorsLayout') of
+           1, 2: begin
+                    while Pos('(',Value) > 0 do
+                    begin
+                      EndPos := Pos(')', Value);
+                      if Copy(Value, EndPos + 1, 1) = ')' then
+                        EndPos := EndPos + 1;
+                      Delete(Value, Pos('(', Value) - 1, EndPos - Pos('(', Value) + 2);
+                    end;
+                    if GetOption('ActorsLayout') = 2 then
+                      Value := StringReplace(Value, ', ', #13#10);
+                 end;
+           3, 4: begin
+                 Value := StringReplace(Value, '(as ', '(в роли ');
+                 if GetOption('ActorsLayout') = 4 then
+                   Value := StringReplace(Value, ', ', #13#10);
+                 end;
+      end;
+         if GetOption('ActorsTranslate') = 1 then
+                      Value := EngToRus(Value);
+      SetField(fieldActors, Value);
+  end;
+
+  if CurItem.GetItemNamed('URL') <> nil then
+    SetField(fieldURL,CurItem.GetItemNamed('URL').Value);
+  if CurItem.GetItemNamed('Description') <> nil then
+  begin
+    Value := CurItem.GetItemNamed('Description').Value;
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<BR>', #13#10);
+    Value := StringReplace(Value, '|', #13#10);
+    SetField(fieldDescription, Value);
+  end;
+  if CurItem.GetItemNamed('Size') <> nil then
+    SetField(fieldSize,CurItem.GetItemNamed('Size').Value);
+  if CurItem.GetItemNamed('Disks') <> nil then
+    SetField(fieldDisks,CurItem.GetItemNamed('Disks').Value);
+// if CurItem.GetItemNamed('Picture') <> nil then
+//    SetField(fieldPicture,CurItem.GetItemNamed('Picture').Value);
+// GetPicture(dirApp+CurItem.GetItemNamed('Picture').Value);
+
+end;
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if Trim(MovieName) = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    DatabaseFile := '..\Catalogs\www.movies.nnov.ru.xml';
+    // Input('Import from another XML database', 'Enter the database name and path:', DatabaseFile);
+    // if Input('Import from another XML database', 'Enter the title of the movie:', MovieName) then
+      AnalyzeDatabase;
+end.

@@ -1,0 +1,304 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fulvio53s03 based on original script by L.Francisco
+Title=AsianWorld
+Description=Get movie info from www.AsianWorld.it
+Site=http://www.asianworld.it
+Language=IT
+Version=2.0 -  10.07.2020
+Requires=4.2.2
+License=*  The source code of the script can be used in   |*  another program only if full credits to              |*  script author and a link to Ant Movie Catalog  |*  website are given in the About box or in       |*  the documentation of the program               |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+EmuleClearer=0|0|0=Title as is|1=Title without ".","_" & "[...]"
+
+[Parameters]
+
+***************************************************)
+
+program AsianWorld;
+uses
+  StringUtils7552;
+
+const
+   debug_search = false;                                   // debuga mode on/off su ricerca dischi
+   debug_film = false;                                   // debug mode on/off su estrazione dati film_o_serie
+   folder = 'f:\prova\';                                       // directory where to save files
+   
+var
+  MovieName, Pagestr, indirizzo, indirizzoDVD: string;
+  Page_search: string;
+  TheMovieAddress: string;
+  Italia, comm: String;
+  StartChar, EndChar: string;
+  LineNr: integer;
+
+procedure AnalyzePageDVD(Address: string);
+var
+  Page: TStringList;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  Pagestr := Page.Text;
+  if debug_search then
+     DumpPage(folder+'Asianworld_search.html', Pagestr);                // debug
+  LineNr := FindLine('id_boxq', Page, 0);
+  Page_search := TextBetween(Pagestr, '<select name="id_boxq">', '</select>') + '</select>';               // </option></select>  );
+  if debug_search then
+     DumpPage(folder+'Asianworld_search_tab.html', Page_search);                // debug
+  PickTreeClear;
+//FS2020 07 07   AnalyzeSearchPageDVD;
+      AddMoviesTitlesFromDVDPage(Page);
+      if TheMovieAddress='' then
+        begin    // risultati multipli  oppure 0
+          if PickTreeExec(Address) then
+             TheMovieaddress := Address;
+          if Length(TheMovieAddress) > 0 then
+             begin
+             Pagestr := GetPage(TheMovieAddress);
+             Pagestr := UTF8decode(Pagestr);                    //fs2020-07-09
+             SetField(FieldUrl, TheMovieAddress);
+             if pos('dvdrisultato.php', TheMovieAddress) >0 then
+//                AnalyzeMoviePageDVD(Pagestr);   //fulvio: viene eseguito questo
+             AnalyzeMoviePageDVD(Page);   //fulvio: viene eseguito questo
+            end
+        end
+      else
+        begin    // solo 1 risultato
+          SetField(fieldURL, TheMovieAddress);
+          Page.Text := GetPage(TheMovieAddress);
+          Pagestr := Page.Text;
+        end;
+      end;
+//  Page.Free;
+//end;
+
+procedure AnalyzeMoviePageDVD(Page: TStringList);//---------------------------------------
+var
+  Line, Linestr, Commento, Savecommento, TabComm: string;
+  Anno, InitChar, EndChar: string;
+  Page_film: string;
+  PrevLineNr, BeginPos, EndPos, Field, PositionComm, lgthpage: Integer;
+  LgthTabComm: integer;
+begin
+//setfield (fieldDescription, address);
+  Page_film := Page.Text;
+  if debug_film then
+     DumpPage(folder+'Asianworld_film.html', Page_film);                // debug
+
+  SetField(fieldDate, DateToStr(Date));
+  LineNr := FindLine('/images/asiandvd', Page, 0);
+  if LineNr > -1 then
+  begin
+    startchar := '<h3 class=';
+    comm := startchar + textbetween(Pagestr, '<h3 class=', '</h3>');
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    comm := Fulltrim(comm);
+    SetField(fieldTranslatedTitle, comm);
+
+    comm := textBetween(Pagestr, '<img class="imgnews" src="', '"');
+    GetPicture(comm);      //http://www.asianworld.it/
+
+    comm := textbetween(Pagestr, '<b>Titolo originale: </b>', '<br>');
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    SetField(fieldOriginalTitle, comm);
+
+    comm := textbetween(Pagestr, '<b>Anno e Nazione: </b>', '<br>');
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+//    Anno := Copy(comm, length(comm) - 3, 4);
+    Anno := Copy(comm, 1, 4);
+//    SetField(fieldYear, StrToInt(Anno, 0));
+    SetField(fieldYear, Anno);
+    if (anno > '1900') and (anno < '2100') then
+        delete(comm, 1, 7);
+    comm := stringreplace(comm, '- ', '');
+    SetField(FieldCountry, comm);
+   
+    comm := textbetween(Pagestr, '<b>Regia: </b>', '<br>');
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    SetField(fieldDirector, comm);
+
+    comm := textbetween(Pagestr, '<b>Durata: </b>', ' ');             //<b>Durata: </b>115 '<br>
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    if getfield(fieldlength) = '' then
+       SetField(fieldlength, comm);
+
+    comm := textbetween(Pagestr, '<b>Generi: </b>', '<br>');
+    comm := stringReplace(comm, '- ', '');
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    comm := stringreplace(comm, '  ', ', ');
+    SetField(fieldCategory, comm);
+
+    comm := textbetween(Pagestr, '<b>Cast: </b>', '<br>');
+    comm := Fulltrim(comm);
+    HTMLRemoveTags(comm);
+    HTMLDecode(comm);
+    SetField(fieldActors, comm);
+
+// prima parte commenti
+  Linenr := Linenr+1;
+
+// descrizione
+  PositionComm := pos('Trama e recensione', PageStr);
+  Delete(Pagestr, 1, PositionComm-1);
+  Endchar := '<h3 class=';
+  comm := TextBetween(Pagestr, 'Trama e recensione</h3>', Endchar);
+  comm := Fulltrim(comm);
+  HTMLRemoveTags(comm);
+  HTMLDecode(comm);
+  SetField(fieldDescription, comm);
+  PositionComm := pos(Endchar, PageStr);
+  Delete(Pagestr, 1, PositionComm-1);
+  lgthpage := length(Pagestr);
+  PositionComm := pos('</form>', PageStr);
+  Delete(Pagestr, 1, PositionComm-1);
+  lgthpage := length(Pagestr);
+
+// Commenti
+  InitChar := '<table width=';
+  PositionComm := pos(InitChar, PageStr);
+  Delete(Pagestr, 1, PositionComm - 1);   //mi posiziono su Pagestr verso l'inizio dei commenti
+  Pagestr := TextBetween(Pagestr, InitChar, '</table>');
+  Linestr := Pagestr;
+// Linestr contiene tutti i commenti
+  SaveCommento := Commento;
+  Commento := '';
+  InitChar := '<tr valign=';
+  EndChar  := '<tr valign=';
+  TabComm := TextBetween(Linestr, InitChar, EndChar) + EndChar;   //elemento di commento
+  LgthTabcomm := length(Tabcomm) + length(initChar) + length(EndChar);
+  While LgthTabComm > 0 do
+    begin
+//  commenti: Voto
+    EndChar := '</div>';
+    comm := Initchar + TextBetween(Linestr, InitChar, EndChar);
+    PositionComm := pos(EndChar, Linestr) + length(EndChar);
+    comm := stringreplace(comm, '<img src=', ' ');
+    comm := stringreplace(comm, '/images/', '');
+    comm := stringreplace(comm, 'star.gif', '  ');
+    comm := stringreplace(comm, ' alt="star">', '');
+    comm := stringreplace(comm, crlf, '');
+    comm := stringreplace(comm, '  ', ' ');
+    comm := stringreplace(comm, '|', '');
+    HTMLRemoveTags(comm);
+//    HTMLDecode(comm);
+    comm := Fulltrim(comm);
+    Commento := Commento + 'Commenti e voti : ' + Comm;
+    Delete(Linestr, 1, PositionComm);
+
+// fine commenti: Voto
+
+// Commenti: autore
+    InitChar := '<td width';
+    EndChar := '</td>';
+    PositionComm := pos(EndChar, Linestr) + length(EndChar);
+    Comm := InitChar + TextBetween(Linestr, InitChar, EndChar);
+    HtmlRemoveTags(Comm);
+    Comm := FullTrim(Comm);
+    comm := stringreplace(comm, crlf, '');
+    Commento := Commento + crlf + '- ' + Comm;
+    Delete(Linestr, 1, PositionComm - 1);
+   
+// Commenti: descrizione
+    InitChar := '<td width';
+    EndChar := '</td>';
+    PositionComm := pos(EndChar, Linestr) + length(EndChar);
+    Comm := InitChar + TextBetween(Linestr, InitChar, EndChar);
+    HtmlRemoveTags(Comm);
+    comm := stringreplace(comm, crlf, '');
+    Comm := FullTrim(Comm);
+    Commento := Commento + ' - ' + Comm;
+
+    if comm <> '' then
+       SaveCommento := Savecommento + Commento + crlf;
+    Delete(Pagestr, 1, LgthTabcomm - 1);
+    InitChar := '<tr valign=';
+    EndChar  := '<tr valign=';
+    Linestr := Pagestr + EndChar;
+    TabComm := TextBetween(Linestr, '<tr valign=', '<tr valign=') + EndChar;
+    LgthTabcomm := length(Tabcomm) - length(EndChar);
+    Commento := '';
+  end;
+
+  SetField(fieldComments, SaveCommento);
+// fine terza parte commenti
+
+  end;
+end;
+
+procedure AddMoviesTitlesFromDVDPage(Page: TStringList);//---------------------------------------
+var
+//  LineNr: integer;
+  pos_search: Integer;
+  save_MovieTitle, Save_Moviename: string;
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  BeginPos, EndPos: Integer;
+  begin
+//  LineNr := 0;
+  LineNr := FindLine('option',Page,LineNr);
+
+  Line := TextAfter(Page.GetString(LineNr),'id_boxq"');
+  if debug_search then
+     DumpPage(folder+'Asianworld_search_lines.html', line);                // debug
+  save_MovieName := MovieName;
+  PickTreeAdd('Asianworld - Risultati ricerca per "' + MovieName + '":', '');
+While pos ('option',Line) > 0 do
+  begin
+    MovieAddress := 'http://www.asianworld.it/dvditalia/dvdrisultato.php?id_boxq=' + TextBetween(Line, 'option value="', '"');
+//    MovieAddress := 'http://www.asianworld.it/dvdesteri/dvdrisultato.php?id_boxq=' + TextBetween(Line, 'option value="', '"');
+    MovieTitle := Textbetween(Line,'">','</');
+    save_MovieTitle := MovieTitle;
+    MovieTitle := AnsiLowerCase(MovieTitle);
+    MovieName  := AnsiLowerCase(MovieName);
+//    MovieTitle := 'DVD: ' + MovieTitle;
+    Line := textafter (Line, '</option>');
+    pos_search := pos(MovieName, MovieTitle);
+    if pos_search > 0 then
+      PickTreeAdd(save_MovieTitle, MovieAddress);
+    if TheMovieAddress='*' then
+      TheMovieAddress := MovieAddress
+    else
+      TheMovieAddress := '';
+  end;
+  if TheMovieAddress='*' then TheMovieAddress := '';
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(4,2,2) then
+   begin
+    TheMovieAddress := '*';
+    moviename:= GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+       MovieName := GetField(fieldOriginalTitle);
+    if Input('AsianWorld Import', 'Digita il titolo del film:', MovieName) then
+    begin
+      indirizzoDVD := 'http://www.asianworld.it/dvditalia/cercadvd_titolo.php?box_title=' + UrlEncode(MovieName);
+      Italia := '&naz=1&ita=0';
+      AnalyzePageDVD(indirizzoDVD);
+    end;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 4.2.2)');
+end.

@@ -1,0 +1,95 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=ExportToTxt
+Description=Export movie information in separated text files
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=?
+Version=1.1 (10/12/2011)
+Requires=4.1.0
+Comments=
+License=
+GetInfo=0
+
+[Options]
+Number=1|1|1=Yes|0=No
+Title=0|0|0=Translated title [Original title]|1=Translated title|2=Original title
+Year=1|1|1=Yes|0=No
+Languages=1|1|1=Yes|0=No
+Subtitles=1|1|1=Yes|0=No
+Categories=1|0|1=Yes|0=No
+Source=1|0|1=Yes|0=No
+VideoFormat=1|0|1=Yes|0=No
+AudioFormat=1|0|1=Yes|0=No
+Framerate=1|0|1=Yes|0=No
+
+***************************************************)
+
+program ExportToTxt;
+uses
+  SoulSnakeUtils;
+
+var
+  path, filename, ext, fullPath, data, sep : string;
+  outToFile: TStringList;
+
+begin
+  //path := 'C:\Test\';
+  ext := '.txt';
+  sep := ': ';
+
+  if (path = '') then
+  begin
+     Input('Folder path to store text files', 'Folder path:', path);
+     path := IncludeTrailingPathDelimiter(path);
+  end;
+
+  filename := GenerateFilenameWithGetOptions();
+
+  if (filename <> '') then
+  begin
+    fullPath := path + filename + ext;
+
+    data := '';
+    //data := data + GetFieldName(fieldNumber) + sep + GetField(fieldNumber) + #13#10;
+    data := data + GetFieldName(fieldTranslatedTitle) + sep + GetField(fieldTranslatedTitle) + #13#10;
+    data := data + GetFieldName(fieldOriginalTitle) + sep + GetField(fieldOriginalTitle) + #13#10;
+    data := data + GetFieldName(fieldYear) + sep + GetField(fieldYear) + #13#10;
+    data := data + GetFieldName(fieldDirector) + sep + GetField(fieldDirector) + #13#10;
+    data := data + GetFieldName(fieldProducer) + sep + GetField(fieldProducer) + #13#10;
+    data := data + GetFieldName(fieldCountry) + sep + GetField(fieldCountry) + #13#10;
+    data := data + GetFieldName(fieldCategory) + sep + GetField(fieldCategory) + #13#10;
+    data := data + GetFieldName(fieldLength) + sep + GetField(fieldLength) + ' minutes' + #13#10;
+    data := data + GetFieldName(fieldRating) + sep + GetField(fieldRating) + ' / 10' + #13#10 + #13#10;
+
+    data := data + GetFieldName(fieldMedia) + sep + GetField(fieldMedia) + #13#10;
+    data := data + GetFieldName(fieldMediaType) + sep + GetField(fieldMediaType) + #13#10;
+    data := data + GetFieldName(fieldSource) + sep + GetField(fieldSource) + #13#10;
+    data := data + GetFieldName(fieldVideoFormat) + sep + GetField(fieldVideoFormat) + #13#10;
+    data := data + GetFieldName(fieldVideoBitrate) + sep + GetField(fieldVideoBitrate) + ' kb/s' + #13#10;
+    data := data + GetFieldName(fieldFrameRate) + sep + GetField(fieldFrameRate) + ' img/s' + #13#10;
+    data := data + GetFieldName(fieldResolution) + sep + GetField(fieldResolution) + #13#10;
+    data := data + GetFieldName(fieldAudioFormat) + sep + GetField(fieldAudioFormat) + #13#10;
+    data := data + GetFieldName(fieldAudioBitrate) + sep + GetField(fieldAudioBitrate) + ' kb/s' + #13#10;
+    data := data + GetFieldName(fieldLanguages) + sep + GetField(fieldLanguages) + #13#10;
+    data := data + GetFieldName(fieldSubtitles) + sep + GetField(fieldSubtitles) + #13#10;
+    data := data + GetFieldName(fieldSize) + sep + GetField(fieldSize) + ' Mo' + #13#10;
+    data := data + GetFieldName(fieldDisks) + sep + GetField(fieldDisks) + #13#10 + #13#10;
+    
+    data := data + GetFieldName(fieldURL) + sep + GetField(fieldURL) + #13#10 + #13#10;
+    
+    data := data + '[' + GetFieldName(fieldActors) + ']' + #13#10 + GetField(fieldActors) + #13#10 + #13#10;
+    data := data + '[' + GetFieldName(fieldDescription) + ']' + #13#10 + GetField(fieldDescription) + #13#10 + #13#10;
+    data := data + '[' + GetFieldName(fieldComments) + ']' + #13#10 + GetField(fieldComments);
+
+    outToFile := TStringList.Create;
+    outToFile.Append(UTF8Encode(data));
+    if (FileExists(fullPath) = false) then
+      outToFile.SaveToFile(fullPath);
+    outToFile.Free;
+  end;
+end.

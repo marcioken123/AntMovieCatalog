@@ -1,0 +1,304 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Gigibop (luca.marcato@gmail.com)
+Title=Dvd.it
+Description=Get movie info from http://www.dvd.it/
+Site=http://www.dvd.it/
+Language=IT
+Version=1.0.2 - 08.09.2008
+Requires=3.5.1
+Comments=Changes|28.08.2008 v. 1.0.1: First Version (Gigibop)|08.09.2008 v. 1.0.2: Fix random "Out of Range" in RemoveTabs (Gigibop)
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DvdIt;
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  TheMovieAddress: string;
+  comm: String;
+
+function RemoveTabs(Value : string) : String;
+begin
+  repeat
+      Value:= StringReplace(Value, '   ', '');
+  until (pos('   ',Value) = 0);
+  result := Value;
+end;
+
+function TranslateSpecial(str1: string) :string;
+begin
+
+   str1 := StringReplace(str1, '&amp;', '&');
+   HTMLDecode(str1);   
+   result := Trim(str1);
+end;
+
+function RemoveHtmlClean(str1: string) :string;
+begin
+
+  HTMLRemoveTags(str1);
+  HTMLDecode(str1);
+  str1 := RemoveTabs(str1);
+  result := FullTrim(str1);
+ 
+end;
+
+function Str_UpperCase(str1: string; f: integer) :string;
+//------------------------------------------------------------------------------
+// returns a string formatted according to the following convention
+// final_text := TranslateText(initial_text, format_type);
+// format_type (integer)
+// 0 : no change
+// 1 : change all characters to lowercase
+// 2 : change all characters to uppercase
+// 3 : first character to uppercase, the others to lowercase
+// 4 : all first characters of words to uppercase, the others to lowercase
+//------------------------------------------------------------------------------
+
+begin
+   case f of
+   1: result := AnsiLowerCase(str1);
+   2: result := AnsiUpperCase(str1);
+   3: result := AnsiUpFirstLetter(AnsiLowerCase(str1));
+   4: result := AnsiMixedCase(AnsiLowerCase(str1), ' ');
+   else result := str1;
+   end;
+end;
+
+
+procedure AnalyzePage(Address: string; Params: string);
+var
+  Page: TStringList;
+  LineNr: integer;
+  BeginPos: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := PostPage(Address,Params);
+
+  LineNr := FindLine('<tr class="categoria">', Page, 0);
+  if LineNr = -1 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page);
+  end
+  else
+  begin
+    PickTreeClear;
+    AddMoviesTitles(Page);
+    if TheMovieAddress='' then
+    begin
+      if PickTreeExec(Address) then AnalyzePage(Address,Params);
+    end
+    else
+    begin
+      SetField(fieldURL, TheMovieAddress);
+      Page.Text := GetPage(TheMovieAddress);
+      AnalyzeMoviePage(Page);
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, sTemp, StrAll: string;
+  LineNr, LineAll: Integer;
+begin
+  sTemp := '';
+
+  LineAll := FindLine('<div class="dett_scheda">', Page, 0);
+  LineAll := FindLine('<table><tr><td colspan="2">', Page, LineAll);
+ 
+// mi trovo sporca la stringa, con a capi vari... e così si cicla
+// e si elabora quella già "pulita"... :)
+
+    while (LineAll > -1) and (FullTrim(sTemp) <> '</div>')  do
+    begin
+      sTemp := Page.GetString(LineAll);
+      StrAll := StrAll + sTemp;
+     
+      LineAll := LineAll + 1;
+    end;
+
+  //Titolo tradotto, l'originale non c'è... (metto uguale???)
+  LineNr := FindLine('<table class="dett_titolo"', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := RemoveHtmlClean(Page.GetString(LineNr +2));
+      SetField(fieldTranslatedTitle, Str_UpperCase(Line,4));
+      SetField(fieldOriginalTitle, Str_UpperCase(Line,4));
+      end;
+
+  //  genere
+  LineNr :=   FindLine('<b>Genere:</b>', Page, 0);
+    If LineNr > -1 Then
+      begin
+
+      Line := TextBetween(Page.GetString(LineNr), '<b>Genere:</b>','<br/>');
+      Line := RemoveHtmlClean(Line);
+      SetField(fieldCategory,Line);
+    end;
+
+  // Regia
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Registi:','</td></tr>');
+      SetField(fieldDirector,RemoveHtmlClean(' ' + Line));
+    end;
+
+  //attori
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Attori:','</td></tr>');
+      SetField(fieldActors,RemoveHtmlClean(' ' + Line));
+    end;
+
+  //  Distribuzione
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Casa Distribuzione:','</td></tr>');
+      SetField(fieldProducer,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+  //sottotitoli
+
+   if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Sottotitoli:','</td></tr>');
+      SetField(fieldSubtitles,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+  // descrizione
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<table><tr><td colspan="2">','<td class="label">');
+      SetField(fieldDescription,RemoveHtmlClean(' ' + Line));
+    end;
+
+    //  durata
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Durata:','</td></tr>');
+      SetField(fieldLength,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+
+  //Anno Produzione
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Anno Produzione:','</td></tr>');
+      SetField(fieldYear,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+  //Formato video
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Formato Video:','</td></tr>');
+      SetField(fieldVideoFormat,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+  //Formato audio
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Formato Audio:','</td></tr>');
+      SetField(fieldAudioFormat,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+  //Lingue Audio
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">Lingua Doppiaggio:','</td></tr>');
+      SetField(fieldLanguages,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+   
+  // numero di dischi
+  if StrAll > '' then
+    begin
+      Line := TextBetween(StrAll, '<td class="label">DVD nella confezione:','</td></tr>');
+      SetField(fieldDisks,Str_UpperCase(RemoveHtmlClean(' ' + Line),4));
+    end;
+
+
+
+  //  locandina del film
+  LineNr := FindLine('<td class="locandina">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    Line := TextBetween(Line, 'href="','"');
+    HTMLRemoveTags(Line);
+    Line := TranslateSpecial(Line);
+    GetPicture('http://www.dvd.it' + Line);
+  end;
+
+end;
+
+procedure AddMoviesTitles(Page: TStringList);
+var
+  LineNr,LineEnd: Integer;
+  Line: string;
+  MovieTitle, MovieAddress : string;
+
+  begin
+  LineNr := 0;
+  LineNr := FindLine('<td class="info">',Page,LineNr);
+  LineEnd :=FindLine('<td colspan="3">Videogiochi</td>',Page,0);
+ 
+  if LineEnd = -1 then
+  begin
+    LineEnd :=FindLine('<td colspan="3">Libri</td>',Page,0);
+    if LineEnd = -1 then
+      begin
+        LineEnd := 999999
+        end;
+  end;
+ 
+ 
+while ((LineNr > -1) and (LineNr < LineEnd)) do
+  begin
+    MovieAddress := TextBetween((Page.GetString(LineNr +1 )), 'href="', '" title="') ;
+    MovieTitle := RemoveHtmlClean(Page.GetString(LineNr + 1));
+
+    LineNr := FindLine('<td class="info">',Page,LineNr+1);
+    PickTreeAdd(MovieTitle, MovieAddress);
+    if TheMovieAddress='*' then
+      TheMovieAddress := MovieAddress
+    else
+      TheMovieAddress := '';
+  end;
+
+  if TheMovieAddress='*' then TheMovieAddress := '';
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(3,5,1) then
+   begin
+    TheMovieAddress := '*';
+    MovieName := StringReplace(GetField(fieldTranslatedTitle), '.', ' ');
+    if MovieName = '' then
+      MovieName := StringReplace(GetField(fieldOriginalTitle), '.', ' ');
+While pos ('[', MovieName) > 0 Do begin
+  MovieName := TextBefore(MovieName, '[', '') + TextAfter(MovieName, ']');
+end;
+    if Input('Dvd.it Importazione Film', 'Digitare il titolo del film:', MovieName) then
+    begin
+      AnalyzePage('http://www.dvd.it/risultati-di-ricerca/ricerca/rpag-1-rmax-50-rcat--categoria-/',UrlEncode('testo_ricerca= ' + MovieName));
+    end;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 3.5.1)');
+end.

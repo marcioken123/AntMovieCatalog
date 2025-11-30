@@ -1,0 +1,59 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fulvio53s03, MrObama based on original by Penanders (2006)
+Title=KultVideo - Shared edition
+Description=Get movie info from Kultvideo.com
+Site=www.kultvideo.com
+Language=IT
+Version=1.0.0    28.06.2020
+Requires=4.2.2
+Comments=Based on original Kultvideo script, this program uses an external unit KultVideoPas.pas. This is a common unit used by ItalianMultisite (IT).ifs, so if you want to contribute and improve the unit please check it still work when included in ItalianMultisite (IT).ifs|Use Kultvideo for very rare movies
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Update fields=1|1|0=Don't overwrite field values|1=Update fields values (default)
+Use director & year values=1|1|0=Standard search|1=Limit search results using director and year values set in fields or in title (default)
+UseUrlField=0|0|0=Ask for movie title (default)|1=Use URL value (if available) instead of movie title to fasten research (ignore "Use director & year values values" option)
+
+[Parameters]
+
+***************************************************)
+
+program KultVideoIT;
+
+uses
+  KultVideoPas;
+
+
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------
+// DEBUG UNIT START: (HOW TO START DEBUG) COMMENT "uses KultVideoPas;" AND COPY & PASTE ALL UNIT CODE HERE, EXCEPT THE FIRST AND THE LAST LINE
+
+
+
+
+
+// DEBUG UNIT END: (HOW TO FINISH DEBUG) REMOVE THE CODE WHEN DONE AND REMOVE COMMENT FROM "uses KultVideoPas;"
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  
+begin
+  // insert here proprietary parameters and option check, if any // 
+
+  // all checks, setup, starting sets, then retrieve movie name
+  SharedInitStandAlone('KultVideo');
+  
+  // retrieve key elements for searching
+  if (SharedGetForceExit()) then
+    exit;
+    
+  if (SharedGetMoviesFound() = 0) then // Analyze search page and get movie url (user choice)
+    KultVideoSearchResults();
+  if (SharedGetMoviesFound() > 0) then // Analyze movie page and set movie fields
+    KultVideoSetMovieFields();  
+end.

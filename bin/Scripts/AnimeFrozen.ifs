@@ -1,0 +1,257 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad, FinderX
+Title=AnimeFrozen
+Description=Script for anime information in Spanish
+Site=www.frozen-layer.com
+Language=ES
+Version=1.2.2
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+BatchMode=0|0|0=Modo Normal|1=Modo Batch, busca por titulo (original)
+
+***************************************************)
+
+program AnimeFrozen;
+
+uses StringUtils7552;
+
+const
+    FrozenURL = 'http://www.frozen-layer.com/buscar/anime/';
+   
+var
+    MovieName,tmp: string;
+    BatchMode, Cancel, BMMatchFind: boolean;
+    nResults: integer;
+
+//------------------------------------------------
+
+function funcHTMLRemoveTags(Str:string) : string;
+begin
+    HTMLRemoveTags(Str);
+    result := Str;
+end;
+
+//------------------------------------------------
+
+function funcHTMLDecode(Str:string) : string;
+begin
+    HTMLDecode(Str);
+    result := Str;
+end;
+
+//------------------------------------------------
+
+function ParserText(Text:string ; StartAt:string ; EndAt:string) : string;
+begin
+    if (Pos(StartAt, Text) > 0) then
+        result := UTF8Decode(FullTrim(funcHTMLRemoveTags(funcHTMLDecode(TextBetween(Text,StartAt,EndAt)))))
+    else
+        result := '';
+end;
+
+//------------------------------------------------
+
+procedure AnalyzeForVariuosPages(Address:string);
+var
+    lotPos, num: integer;
+    strPage, nextAddress: string;
+    nPage: char;
+   
+begin
+    strPage := GetPage(Address);
+    lotPos := Pos('<div class="pagination">',strPage);
+    PickTreeClear;
+   
+    if (lotPos > 0 ) then begin
+        strPage := TextBetween(strPage,'<div class="pagination">','</div>');
+        nextAddress := Address;
+        num := 49; // '1'
+       
+        repeat
+            AnalyzePage(nextAddress);
+            if (BMMatchFind) then break;
+            num := num + 1;
+            nPage := Chr(num);
+            nextAddress := Address + '?page=' + nPage;
+            lotPos := Pos('?page=' + nPage,strPage);
+        until (lotPos = 0);
+       
+    end else
+        AnalyzePage(Address);
+
+    if (not BatchMode) then
+        if (nResults > 0) then begin
+            if (PickTreeExec(Address)) then begin
+                Cancel := TRUE;
+                AnalyzeMoviePage(Address);
+            end;
+        end else
+            ShowInformation('El titulo "' + MovieName + '" no arroja resultados' + #13#10 + 'Prueba con otro titulo');
+
+    PickTreeClear;
+end;
+
+//------------------------------------------------
+
+procedure AnalyzePage(Address:string);
+var
+    strPage, movieAddr, movieTitle, movieID: string;
+    titleAlt, tagAlt: string;
+    titlePos: Integer;
+
+begin
+    strPage := GetPage(Address);
+    titlePos := Pos('<a href="/animes/',strPage);
+    if (titlePos > 0) then begin
+        Delete(strPage, 1,titlePos - 1);
+
+        repeat
+            movieId := TextBetween(strPage,'<a href="/animes/','">');
+            movieAddr := 'http://www.frozen-layer.com/animes/' + movieId;
+            movieTitle := TextBetween(strPage,'<a href="/animes/' + movieId + '">','</a>');
+            nResults := nResults + 1;
+           
+            titlePos := Pos('<a href="/animes/' + movieId,strPage);
+            Delete(strPage,1,titlePos + length('<a href="/animes/' + movieId));
+           
+            tagAlt := '<a href="/animes/' + movieId + '" class="busqueda_titulo_alt">';
+            titlePos := Pos(tagAlt,strPage);
+           
+            //The titles alt. is no use, but if you interested, here's title alt.
+            //NOTE: If you quit this loop, the title will not appear properly.
+            //      Sometimes are variuos titles alt. with the same original title tag
+            while (titlePos > 0) do begin
+                titleAlt := TextBetween(strPage,tagAlt,'</a>');
+                Delete(strPage,1,titlePos + length(tagAlt));
+                titlePos := Pos(tagAlt,strPage);
+            end;
+           
+            if (BatchMode) then
+                if (CompareWords(movieTitle,movieName) = 100) then begin
+                    AnalyzeMoviePage(movieAddr);
+                    BMMatchFind := TRUE;
+                    break;
+                end;
+           
+            PickTreeAdd(UTF8Decode(movieTitle),movieAddr);
+           
+            titlePos := Pos('href="/animes/',strPage);
+        until (titlePos = 0);
+       
+    end;
+end;
+
+//------------------------------------------------
+
+procedure AnalyzeMoviePage(Address:string);
+var
+    page: TStringList;
+    lineNr, atPos, lastAlt: integer;
+    item, user, comment, comments: string;
+
+begin
+    comments := '';
+
+   
+    // URL
+    SetField(fieldURL,Address);
+    page := TStringList.Create;
+    page.Text := GetPage(Address);
+
+    // Original Title - Titulo
+    SetField(fieldOriginalTitle,ParserText(page.Text,'<h1 class=''head''>','</h1>'));
+
+    // TranslatedTitle - Titulo Alternativo
+    lineNr := FindLine('<h2 class=''titulo_alt''>',page,0);
+    if (lineNr >= 0) then begin
+       
+        repeat
+            lastAlt := lineNr;
+            lineNr := FindLine('<h2 class=''titulo_alt''>',page,lastAlt + 1);
+        until (lineNr = -1);
+       
+        SetField(fieldTranslatedTitle,ParserText(page.GetString(lastAlt),'<h2 class=''titulo_alt''>','</h2>'));
+    end;
+
+    // Description - Resumen
+    SetField(fieldDescription,ParserText(page.Text,'<p class=''desc'' id=''sinopsis''>','</p>'));
+
+    // Picture
+    GetPicture(ParserText(page.Text,'<div id="ani_img"><a href="','" title="'));
+
+    // Year - Año
+    SetField(fieldYear,ParserText(page.Text,'<strong>AÃ±o:</strong>','</li>'));
+ 
+    // Director - Tipo
+    SetField(fieldDirector,ParserText(page.Text,'<strong>Tipo:</strong>','</li>'));
+
+     // Disks - Episodios
+    SetField(fieldDisks,ParserText(page.Text,'<strong>Numero de episodios:</strong>','</li>'));
+ 
+    // Productor - Estudio
+    SetField(fieldProducer,ParserText(page.Text,'<strong>Estudio:</strong>','</li>'));
+
+    // Source - Género
+    SetField(fieldSource,AnsiMixedCase(ParserText(page.Text,'<strong>Genero:</strong>','</li>'),' ,-'));
+
+    // Comments - Comentarios
+    lineNr := FindLine('<p class="no_comments">', page, 0);
+    if (lineNr = -1) then begin
+        item := Copy(page.Text,Pos('<a href="/users/',page.Text),length(page.Text));
+        comments := '';
+
+        repeat
+            user := ParserText(item,'/lista">','</a>');
+            comments := comments + user + ': ';
+            atPos := Pos('<a name=',item);
+            Delete(item,1,atPos);
+            comment := ParserText(item,'<p>','</p>');
+            comments := comments + comment + #13#10 + #13#10;
+            atPos := Pos('<a href="/users/',item);
+        until (atPos = 0);
+
+        SetField(fieldcomments,FullTrim(comments));
+    end;
+   
+    page.Free;
+end;
+
+
+//----------------------MAIN-PROGRAM-------------------------
+
+
+begin
+    if (CheckVersion(3,5,0)=FALSe) then begin
+      ShowWarning('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      EXIT;
+    end;
+   
+    Cancel := FALSE;
+    BatchMode := GetOption('BatchMode') = 1;
+    BMMatchFind := FALSE;
+    nResults := 0;
+    MovieName := GetField(fieldOriginalTitle);
+   
+    if (MovieName = '') then
+        MovieName := GetField(fieldTranslatedTitle);
+
+    if (BatchMode) then
+        AnalyzeForVariuosPages(FrozenURL + UrlEncode(MovieName))
+    else begin
+        repeat
+            if (Input('AnimeFrozen', 'Buscar:', MovieName)) then
+                AnalyzeForVariuosPages(FrozenURL + UrlEncode(MovieName))
+            else
+                Cancel := TRUE;
+        until Cancel;
+    end;
+end.

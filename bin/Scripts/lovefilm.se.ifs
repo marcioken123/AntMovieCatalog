@@ -1,0 +1,486 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Karl Johan Petersson (Kalle@verification.se)
+Title=LoveFilm
+Description=Import data & picture from www.lovefim.se in swedish
+Site=www.lovefilm.se
+Language=SE
+Version=0.5
+Requires=3.5.0
+Comments=Script cleaned and Batch mode working.
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not display any window, takes the first movie found
+
+***************************************************)
+
+program LoveFilm;
+
+uses
+  StringUtils1;
+
+var
+  MovieName: string;
+  MovieURL: string;
+  MovieNumber: string;
+
+// ***** analyzes the results page that asks to select a movie from a list *****
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  PageText: string;
+  Value: string;
+begin
+  PageText := GetPage(Address);
+
+  // If the page contains 'LOVEFIL : Sök' the this is a list of different movies that applies to the seach critera.
+  // If it does not contain this text then this is the page with Movie information.
+  if (Pos('<div id="searchResult">', PageText) = 0) then
+  begin
+    // Lets analyze the information and grap all we want...
+    AnalyzeMoviePage(PageText)
+  end else
+  // The page is a list of different Movies that matches the Critera.
+  // A Pick list is created with the different movies.
+  begin
+    // First check if there is any movies in the list.
+    if Pos('Försök med ett annat sökord.', PageText) > 0 then
+    begin
+      if GetOption('BatchMode') = 0 then
+        ShowMessage('No movie found for this search');
+      Exit;
+    end;
+
+    // The tree shall be built.
+    if GetOption('BatchMode') = 0 then
+      begin
+        // Clear the PickTree.
+        PickTreeClear;
+
+        // First add the Root of the tree. The text will be the Search Critera.
+        Value := TextBetween(PageText, '<h1 class="searchTitle">', '</h1>');
+        if Value <> '' then
+        begin
+          HTMLRemoveTags(Value);
+          HTMLDecode(Value);
+          PickTreeAdd(Value, '');
+        end;
+
+        // Use the text after the search Criteria down to the end of the page and search for Movie Titles.
+        //Value := TextBetween(PageText, '<h1 class="searchTitle">', '</html>');
+        // Scan for Titles.
+        AddMovieTitles(RemainingText);
+
+        // Choose Movie Title from the list.
+        if PickTreeExec(Address) then
+          AnalyzeResultsPage(Address);
+      end
+    else
+      begin
+        // batch mode, pick the first available movie
+        Value := TextBetween(PageText, '<h1 class="searchTitle">', '</html>');
+        Value := TextBetween(Value, '<img src="/img/cover/movie/large', '</a>');
+        Address := TextBetween(Value, '/', '.jpg');
+        AnalyzeResultsPage('http://www.lovefilm.se/browse.do?show=movie&id=' + Address);
+      end;
+  end;
+
+end;
+
+// ***** adds the titles contained in the table *****
+
+function AddMovieTitles(Value: string): Boolean;
+var
+  Title: string;
+  Address: string;
+  MovieData: string;
+  
+begin
+  Result := False;
+  MovieData := TextBetween(Value, '<div class="movieBox">', '</div>');
+  Value := RemainingText;
+  while MovieData <> '' do
+  begin
+    Address := TextBetween(MovieData, '<a href="/', '"');
+    Title := TextBetween(RemainingText, 'title="Läs mer: ', '"');
+    //HTMLRemoveTags(Title);
+    //HTMLDecode(Title);
+    PickTreeAdd(Title, 'http://www.lovefilm.se/' + Address);
+    Result := True;
+    MovieData := TextBetween(Value, '<div class="movieBox">', '</div>');
+    Value := RemainingText;
+  end;
+end;
+
+// ***** analyzes the page containing movie information *****
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  sBetyg, MovieMatch, MovieInfo, PRESSKRITIK, List, sVal1, sMinutes, sHours, Value, Value2, Value3, sComment: string;
+  errorflag, p, iHours, iMinutes, iLength: Integer;
+  rating : Real;
+begin
+  PageText := StringReplace(PageText, #09,'');
+  PageText := StringReplace(PageText, #13#10,'');
+  PRESSKRITIK := TextBetween(PageText, '<h1>PRESSKRITIK</h1>', '</div>');
+  MovieMatch := TextBetween(PageText, '<div id="movieMatches">', '</div>');
+  MovieNumber := TextBetween(MovieMatch, '<img src="/img/cover/movie/huge/', '.jpg');
+
+  MovieInfo := TextBetween(PageText, '<div id="browseMovieInfo">', '</div>');
+
+
+  
+
+  //MovieURL := 'http://www.discshop.se/shop/ds_produkt.php?subsite=movies&id=' + MovieNumber;
+  MovieURL := 'http://www.lovefilm.se/browse.do?show=movie&id=' + MovieNumber;
+  // URL
+  if CanSetField(fieldURL) then
+    SetField(fieldURL, MovieURL);
+
+  // Translated Title
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    Value := TextBetween(MovieInfo, '<h1>', '</h1>');
+    HTMLDecode(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldTranslatedTitle, Value);
+  end;
+
+  // Original Title
+  if CanSetField(fieldOriginalTitle) then
+  begin
+    Value := TextBetween(MovieInfo, 'Originaltitel:', '</tr>');
+    Value := TextBetween(Value, '<td>', '</td>');
+    HTMLDecode(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Year
+  if CanSetField(fieldYear) then
+  begin
+    Value := TextBetween(MovieInfo, '(', ')');
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    iLength := 0;
+    Value := TextBetween(MovieInfo, 'Speltid:', '</tr>');
+    sHours := TextBetween(Value, '<td>', ' tim');
+    sMinutes := TextBetween(Value, 'tim ', ' min');
+    iLength := StrToInt(sHours,1)*60+StrToInt(sMinutes,1);
+    SetField(fieldLength, IntToStr(iLength));
+  end;
+
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(MovieInfo, 'Regissör:', '</tr>');
+    Value := TextBetween(Value, '<td>', ', </td>');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldDirector, Value);
+
+  end;
+
+  // Picture
+  if CanSetPicture then
+  begin
+      Value := 'http://www.lovefilm.se/img/cover/movie/huge/' + MovieNumber + '.jpg';
+      GetPicture(Value);
+  end;
+
+  // Country
+  if CanSetField(fieldCountry) then
+    Value := TextBetween(MovieInfo, 'Land:', '</tr>');
+    //Value := TextBetween(Value, '<td>', '</td>');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    
+    if Pos('US', Value) > 0 then
+    begin
+      Value := 'United States'
+    end;
+    
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldCountry, Value);
+
+  // Category
+  if CanSetField(fieldCategory) then
+    Value := TextBetween(MovieInfo, 'Genre:', '</tr>');
+    Value := TextBetween(Value, '<td>', ',');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    
+    if Pos('action och äventyr', AnsiLowerCase(Value)) > 0 then
+    begin
+      Value := 'Action & Adventure'
+    end;
+
+    if Pos('äventyr', AnsiLowerCase(Value)) > 0 then
+    begin
+      Value := 'Adventure'
+    end;
+
+    if Pos('dokumentär', AnsiLowerCase(Value)) > 0 then
+    begin
+      Value := 'Documentary'
+    end;
+
+    if Pos('skräck', AnsiLowerCase(Value)) > 0 then
+    begin
+      Value := 'Horror'
+    end;
+
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldCategory, Value);
+
+  // Actors
+  if CanSetField(fieldActors) then
+    Value := TextBetween(MovieInfo, 'Skådespelare:', '</tr>');
+    Value := TextBetween(Value, '<td>', ', </td>');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    SetField(fieldActors, Value);
+
+  // Video Format
+  if CanSetField(fieldVideoFormat) then
+    Value := TextBetween(MovieInfo, 'Bild:', '</tr>');
+    Value := TextBetween(Value, '<td>', ',');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    Value := StringReplace(Value, ',', ', ');
+    SetField(fieldVideoFormat, Value);
+
+  // Audio Format
+   if CanSetField(fieldAudioFormat) then
+    Value := TextBetween(MovieInfo, 'Ljud:', '</tr>');
+    Value := TextBetween(Value, '<td>', ',<');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    Value := StringReplace(Value, ',', ', ');
+    SetField(fieldAudioFormat, Value);
+
+  // fieldLanguages
+  if CanSetField(fieldLanguages) then
+    Value := TextBetween(MovieInfo, 'Spr&aring;k', '</tr>');
+    Value := TextBetween(Value, '<td>', ',<');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    Value := StringReplace(Value, ',', ', ');
+    SetField(fieldLanguages, Value);
+
+  // fieldSubtitles
+  if CanSetField(fieldSubtitles) then
+    Value := TextBetween(MovieInfo, 'Textning:', '</tr>');
+    Value := TextBetween(Value, '<td>', ',<');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := AnsiMixedCase(Value, ' ');
+    Value := StringReplace(Value, ',', ', ');
+    SetField(fieldSubtitles, Value);
+
+
+  // Description
+  if CanSetField(fieldDescription) then
+  begin
+    Value := TextBetween(MovieInfo, '<p class="movieDescription">', '</p>');
+    if Value = '' then Value := TextBetween(PageText, 'Beskrivning:', '<BR>');
+
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+  // Comments
+  if CanSetField(fieldComments) then
+  
+    sComment := 'Genre             :  ';
+
+    Value := TextBetween(MovieInfo, 'Genre:', '</tr>');
+    Value := TextBetween(Value, '<td>', '</td>');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+
+    sVal1 := TextBefore(Value, ',', '');
+    Value := RemainingText;
+    sComment := sComment + sVal1;
+
+    while Length(Value) > 3 do
+    begin
+      sVal1 := TextBefore(Value, ',', '');
+      Value := RemainingText;
+      sComment := sComment + ', ' + sVal1;
+    end;
+    sComment := sComment + #13#10;
+
+    sComment := sComment + 'Nyckelord         :  ';
+
+    if Pos('Nyckelord',MovieInfo) > 0 then
+      begin
+        Value := TextBetween(MovieInfo, 'Nyckelord:', '</tr>');
+        Value := TextBetween(Value, '<td>', '</td>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+      end
+    else if Pos('Taggar',MovieInfo) > 0 then
+      begin
+        Value := TextBetween(MovieInfo, 'Taggar:', '</tr>');
+        Value := TextBetween(Value, '<td>', '</td>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+      end
+      
+    sVal1 := Trim(TextBefore(Value, ',', ''));
+
+    Value := RemainingText;
+    sComment := sComment + sVal1;
+
+    while Length(Value) > 3 do
+    begin
+      sVal1 := Trim(TextBefore(Value, ',', ''));
+      Value := RemainingText;
+      sComment := sComment + ', ' + sVal1;
+    end;
+    sComment := sComment + #13#10;
+
+    if Pos('Filmpriser',MovieInfo) > 0 then
+    begin
+      sComment := sComment + 'Filmpriser        :  ';
+
+      Value := TextBetween(MovieInfo, 'Filmpriser:', '</tr>');
+      Value := TextBetween(Value, '<td>', '</td>');
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+
+      sVal1 := TextBefore(Value, ',', '');
+      Value := RemainingText;
+      sComment := sComment + sVal1;
+
+      while Length(Value) > 3 do
+      begin
+        sVal1 := TextBefore(Value, ',', '');
+        Value := RemainingText;
+        sComment := sComment + ', ' + sVal1;
+      end;
+      sComment := sComment + #13#10;
+    end;
+
+    if Pos('Releasedatum', MovieInfo) > 0 then
+    begin
+        Value := TextBetween(MovieInfo, 'Releasedatum:', '</tr>');
+        Value := TextBetween(Value, '<td>', '</td>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        sComment := sComment + 'Releasedatum      :  ' + Value + #13#10;
+    end;
+
+    if Pos('Åldersgräns', MovieInfo) > 0 then
+    begin
+        Value := TextBetween(PageText, 'Åldersgräns:', '</tr>');
+        Value := TextBetween(Value, '<td>', '</td>');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+        sComment := sComment + 'Åldersgräns       :  ' + Value + #13#10;
+    end;
+
+    Value := TextBetween(PRESSKRITIK, 'alt="', '"');
+    sBetyg := TextAfter(Value, 'Betyg');
+    List := RemainingText;
+    if Value <> '' then
+    begin
+    sComment := sComment + #13#10 + 'BETYG:' + #13#10;
+    end;
+
+    while Value <> '' do
+    begin
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    if Pos('Aftonbladet', Value) > 0 then
+      begin
+        sComment := sComment + 'Aftonbladet       : ' + sBetyg + #13#10;
+      end;
+    if Pos('Moviezine', Value) > 0 then
+      begin
+        sComment := sComment + 'Moviezine         : ' + sBetyg + #13#10;
+      end;
+    if Pos('GP', Value) > 0 then
+      begin
+        sComment := sComment + 'Göteborgs Posten  : ' + sBetyg + #13#10;
+      end;
+    if Pos('Expressen', Value) > 0 then
+      begin
+        sComment := sComment + 'Expressen         : ' + sBetyg + #13#10;
+      end;
+    if Pos('Svenska Dagbladet', Value) > 0 then
+      begin
+        sComment := sComment + 'Svenska Dagbladet : ' + sBetyg + #13#10;
+      end;
+    Value := TextBetween(List, 'alt="', '"');
+    sBetyg := TextAfter(Value, 'Betyg');
+    List := RemainingText;
+    end;
+
+    SetField(fieldComments, sComment);
+
+end;
+
+function Test():string;
+
+var yold : integer;
+begin
+
+  yold := StrToInt('120',1);
+  Result:= 'Kalle';
+end;
+
+
+// ***** beginning of the program *****
+
+begin
+  // Start by checking that it is the latest version.
+  if CheckVersion(3,5,0) then
+    begin
+      MovieName := '';
+
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+
+      if MovieName = '' then
+        MovieName := GetField(fieldOriginalTitle);
+
+      if GetOption('BatchMode') = 0 then
+        begin
+          if not Input('LoveFilm.se import', 'Enter the title of the movie:', MovieName) then
+            Exit;
+        end
+
+      else
+        Sleep(500);
+
+      if MovieName <> '' then
+        begin
+          MovieName := StringReplace(MovieName, '&', 'and');
+
+          // Search the Site for the Movie.
+          AnalyzeResultsPage('http://www.lovefilm.se/search.do?method=search&query=' + UrlEncode(MovieName))
+        end;
+    end
+
+  else // if NOT CheckVersion(3,5,0)
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

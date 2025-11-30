@@ -1,0 +1,96 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=scorpion7552
+Title=SwapFields
+Description=inverse 2 champs/ swaps 2 fields 
+Site=
+Language=EN,FR
+Version=2.0
+Requires=3.5.0
+Comments=Uniquement des champs caractères et modifiables|Only string fields and modifiable
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=0
+
+[Options]
+
+***************************************************)
+program SwapFields;
+var
+	str1, abort: string;
+	fld1, fld2: integer;
+
+//------------------------------------------------------------------------------
+// creates fields list and returns the selected field number
+//------------------------------------------------------------------------------
+function SelectField :integer;
+var
+	fld: string;
+
+begin
+	PickTreeClear;
+	if fld1 = 0 then
+		PickTreeAdd('Sélectionner le 1er champ/Select 1st field', '')
+	else
+		PickTreeAdd('Sélectionner le 2ème champ/Select 2nd field', '');
+// create list (string fields only)
+	AddFieldToList(fieldOriginalTitle, 'Titre original/Original Title');
+	AddFieldToList(fieldTranslatedTitle, 'Titre Traduit/Translated Title');
+	AddFieldToList(fieldDirector, 'Réalisateur/Director');
+	AddFieldToList(fieldProducer, 'Producteur/Producer');
+	AddFieldToList(fieldCountry, 'Pays/Country');
+	AddFieldToList(fieldCategory, 'Catégorie/Category');
+	AddFieldToList(fieldActors, 'Acteurs/Actors');
+	AddFieldToList(fieldUrl, 'Adresse  Web/URL');
+	AddFieldToList(fieldDescription, 'Description');
+	AddFieldToList(fieldComments, 'Commentaires/Comments');
+//
+	PickTreeExec(fld);
+	result := StrToInt(fld,0);
+end;
+
+//------------------------------------------------------------------------------
+// add a field to the selection list
+// AddFieldToList(fieldnumber, text_for_display);
+//------------------------------------------------------------------------------
+procedure AddFieldToList(fldn: integer; str:string);
+begin
+// if fieldnumber is not equal to fld1 (1st selected field) and is modifiable
+	if (fldn <> fld1) and CanSetField(fldn) then 
+		PickTreeAdd(str, IntToStr(fldn));
+end;
+
+//------------------------------------------------------------------------------
+//  start here
+//------------------------------------------------------------------------------  
+begin
+	if abort = 'o' then                             // selection has been canceled
+		exit;
+	if fld1 = 0 then                          // first time: select fields to swap
+// note: number = 0 = fieldNumber: not selectable here
+	begin
+		if not CheckVersion(3,5,0) then
+		begin
+			ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');		
+			abort := 'o';
+			exit;
+		end;
+		fld1 := SelectField;
+		if fld1 <> 0 then
+		begin
+			fld2 := SelectField;
+		end;
+		if (fld1 = 0) or (fld2 = 0) then
+		begin
+			abort := 'o';                                              // no selection
+			exit;
+		end;
+	end;
+// swap these two fields for the current item
+	str1 := GetField(fld1);
+	SetField(fld1, GetField(fld2));
+	SetField(fld2, str1);
+end.

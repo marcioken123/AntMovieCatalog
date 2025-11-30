@@ -1,0 +1,222 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com</link>
+Title=CineDvd
+Description=Movie importation script for cinedvd.com.br
+Site=www.cinedvd.com.br
+Language=BR
+Version=1.1 - 29 Maio 2008
+Requires=3.5.1
+Comments=Script feito por Guardião para o site "www.cinedvd.com.br"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=819</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+OptimizarNome=0|0|0=Tira lixo do nome|1=Não altera o nome
+
+***************************************************)
+
+program cinedvd;
+uses
+  StringUtils1;
+var
+  MovieName: string;
+
+function TirarLixo(nome:string):string;
+begin
+if GetOption('OptimizarNome')=0 then
+begin
+  nome:=StringReplace(nome,'(2 DVD´s)','');
+  nome:=StringReplace(nome,'(Recomendado)','');
+  nome:=StringReplace(nome,' - Fullscreen Version','');
+  nome:=StringReplace(nome,' - Versão Fullscreen','');
+  nome:=StringReplace(nome,' (4 DVD`s)','');
+  nome:=StringReplace(nome,' (1 DVD)','');
+  nome:=StringReplace(nome,' (Promoção/Recomendado)','');
+  nome:=StringReplace(nome,' (Promoção)','');
+end;
+  repeat
+    nome:=StringReplace(nome,'  ',' ');
+  until pos('  ',nome)=0;
+  result:=trim(nome);
+end;
+
+procedure AnalyzeFilmPage(mode:integer;Address: String);
+var
+  Page: TStringList;
+  value, linha: string;
+  LineNr, BeginPos, EndPos, tentativas: integer;
+begin
+  Page := TStringList.Create;
+if mode=0 then
+  Page.Text := GetPage(Address)
+else
+begin
+  Page.Text:=Address;
+  BeginPos:=LastPos('&nIdFilme=',Page.Text)+10;
+  value:=Copy(Page.Text,BeginPos,length(Page.Text));
+  EndPos:=Pos('"',value);
+  value:=Copy(value,1,EndPos-1);
+  Address:='http://www.cinedvd.com.br/Filme.asp?sAcao=CONSULTA&nIdFilme='+value;
+end;
+    SetField(fieldURL, Address);
+    LineNr := FindLine('<td width="11">&nbsp;&nbsp;&nbsp;</td>', Page, 0)+2;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=StringReplace(value,'           ','');
+    value:=TirarLixo(value);
+    SetField(fieldTranslatedTitle, value);
+    
+    LineNr := FindLine('<td class="cabAzul" colspan="5">',Page,0);
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=StringReplace(value,'            ','');
+    value:=TirarLixo(value);
+    SetField(fieldOriginalTitle, value);
+
+    LineNr := FindLine('">Ano Produção</td>',Page,0)+5;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=trim(value);
+    SetField(fieldYear, value);
+
+    LineNr := FindLine('">País Origem</td>', Page, 0)+5;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=StringReplace(value,'                ','');
+    SetField(fieldCountry, value);
+
+    LineNr := FindLine('">Gênero</td>', Page, 0)+4;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    SetField(fieldCategory, value);
+
+    LineNr := FindLine('">Diretor</td>', Page, 0)+7;
+    tentativas:=0;
+    repeat
+      value := Page.GetString(LineNr+tentativas);
+      tentativas:=tentativas+1;
+      HTMLRemoveTags(value);
+      HTMLDecode(value);
+      value:=trim(value);
+    until (value<>'') or (tentativas=2);
+    SetField(fieldDirector, value);
+
+    value:='';
+    LineNr:=FindLine('<td rowspan="3" class="detNormal" valign="top">',Page,0);
+    if LineNr>-1 then
+    begin
+       linha:=Page.GetString(LineNr+1);
+      repeat
+        HTMLRemoveTags(linha);
+        linha:=trim(linha);
+        if length(linha)>0 then
+        begin
+          value:=value + linha+', ';
+        end;
+        LineNr:=LineNr+1;
+        linha:=Page.GetString(LineNr+1);
+      until (pos('</td>',linha)>0);
+    end;
+    value:=trim(value);
+    if copy(value,length(value),1)=',' then
+      value:=copy(value,1,length(value)-1);
+    SetField(fieldActors, value);
+      
+    LineNr := FindLine('">Sinopse</td>', Page, 0)+4;
+    value := Page.GetString(LineNr);
+    value:=StringReplace(value,'<br>',#13#10);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=StringReplace(value,'                  ','');
+    SetField(fieldDescription, value);
+
+    LineNr := FindLine('">Duração</td>', Page, 0)+5;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=trim(StringReplace(value,' min',''));
+    SetField(fieldLength, value);
+
+    LineNr := FindLine('">Distribuidora</td>', Page, 0)+5;
+    value := Page.GetString(LineNr);
+    HTMLRemoveTags(value);
+    HTMLDecode(value);
+    value:=StringReplace(value,'                ','');
+    SetField(fieldProducer, value);
+
+    LineNr:=FindLine('<td class="cabNormal">Avaliação',Page,0);
+    value := Page.GetString(LineNr+1);
+    EndPos:=Pos(' de ',value);
+    value:=Copy(value,1,EndPos-1);
+    SetField(fieldRating, value);
+      
+    LineNr := FindLine('" vspace="10" hspace="0">', Page, 0);
+    value := Page.GetString(LineNr);
+    BeginPos:=Pos('<img src="',value)+10;
+    EndPos:=Pos('" vspace="10" hspace="0">',value);
+    value:=Copy(value,BeginPos,EndPos-BeginPos);
+    value:='http://www.cinedvd.com.br/'+value;
+    GetPicture(Value);
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  valor, nomeFilme, urlFilme: string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text :=GetPage(Address);
+  LineNr:=0;
+
+if (pos('encontrou o produto que procurava',Page.Text)>0) and (pos('javascript:funShowProduto',Page.Text)=0) then
+    showmessage('Filme não encontrado')
+else
+  if (pos('encontrou o produto que procurava',Page.Text)=0) then
+    AnalyzeFilmPage(1,Page.text)
+else
+begin
+  repeat
+        LineNr:=FindLine('<a href="javascript:funShowProduto(',Page,LineNr+1);
+        valor:=Page.GetString(LineNr);
+        if (pos('</a><BR>',valor)>0) then
+        begin
+          nomeFilme:=valor;
+          HTMLRemoveTags(nomeFilme);
+          HTMLDecode(nomeFilme);
+          nomeFilme:=trim(nomeFilme);
+
+         urlFilme:=TextBetween(valor,'funShowProduto(',',');
+         if (length(nomeFilme)>0) and (length(urlFilme)>0) then
+         begin
+          urlFilme:='http://www.cinedvd.com.br/Filme.asp?sAcao=CONSULTA&nIdFilme='+urlFilme;
+          PickTreeAdd(trim(nomeFilme), urlFilme);
+         end;
+        end;
+
+   until (LineNr=-1);
+   if PickTreeExec(Address) then
+      AnalyzeFilmPage(0,Address);
+end;
+    Page.Free;
+end;
+
+begin
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do CineDVD', 'Escreva o nome do filme:', MovieName) then
+  begin
+    MovieName:=StringReplace(MovieName,' ','+');
+    AnalyzePage('http://www.cinedvd.com.br/ProdutoLista.asp?sAcao=CONSULTA&sBusca='+MovieName);
+  end;
+end.

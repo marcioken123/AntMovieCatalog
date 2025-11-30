@@ -1,0 +1,270 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Dmitry501,Inteline,Kalten
+Title=csfd.cz (sk)
+Description=Import dat ze serveru csfd.cz (èeské/slovenské  názvy filmù)
+Site=www.csfd.cz
+Language=CZ
+Version=1.1
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Csfd_cz;
+const
+  BaseAddress = 'http://www.csfd.cz/';
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure RozdelStat(Line: string);
+var CarkaPos1, CarkaPos2, minPos : Integer;
+begin
+//rozdeleni statu, roku a delky
+    CarkaPos1 := Pos(',', Line);
+    if CarkaPos1 > 0 then
+    begin
+      CarkaPos2 := Pos(',', copy(Line, CarkaPos1+1, length(Line)));
+      if CarkaPos2 > 0 then
+      begin
+        minPos := Pos('min', copy(Line, CarkaPos1+CarkaPos2+1, length(Line)));
+        if minPos > 0 then
+        begin
+          SetField(fieldCountry, trim(copy(Line, 0, CarkaPos1-1)));
+          SetField(fieldYear, trim(copy(Line, CarkaPos1+1, CarkaPos2-1)));
+          SetField(fieldLength, trim(copy(Line, CarkaPos1+CarkaPos2+1, minPos-1)));
+        end
+      end
+    end
+end;
+
+function GetDirector(Line: string): String;
+var BeginPos : Integer;
+begin
+    result := '';
+    BeginPos := Pos('Režie:', Line);
+    if BeginPos > 0 then
+    begin
+      Delete(Line,1,BeginPos+5);
+      BeginPos := Pos('<br>', Line);
+      if BeginPos = 0 then BeginPos := Length(Line);
+      result := copy(Line, 1, BeginPos);
+      HTMLDecode(result);
+      HTMLRemoveTags(result);
+    end;
+  result := Trim(result);
+end;
+
+function GetActor(Line: string): String;
+var BeginPos : Integer;
+begin
+    result := '';
+    BeginPos := Pos('Hrají:', Line);
+    if BeginPos > 0 then
+    begin
+      Delete(Line,1,BeginPos + 5);
+      BeginPos := Pos('<br>', Line);
+      if BeginPos = 0 then BeginPos := Length(Line);
+      result := copy(Line, 1, BeginPos);
+      HTMLDecode(result);
+      HTMLRemoveTags(result);
+    end;
+  result := Trim(result);
+end;
+
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  BeginPos, EndPos : Integer;
+  FilmName, FilmAddr, dalsi : String;
+begin
+    Page := TStringList.Create;
+    Page.Text := GetPage(Address);
+    LineNr := FindLine('Hledaný výraz: <b>', Page, 0);
+    if LineNr = -1 then
+    begin
+        AnalyzeMoviePage(Address);
+    end
+    else
+    begin
+     LineNr := FindLine('FILMY</td>', Page, 0);
+      if LineNr = -1 then
+       ShowMessage('No movie found for this search.'+chr(13)+'Nebyly nalezeny zadne zaznamy.')
+      else
+      begin
+        LineNr := FindLine('<a href="film.', Page, 0);
+        if LineNr > -1 then
+        begin
+          PickTreeClear;
+          PickTreeAdd('Filmy: ' + MovieName, '');
+          Line := Page.GetString(LineNr);
+          repeat
+            BeginPos := Pos('<a href="film',Line);
+            If BeginPos > 0 Then
+            begin
+              EndPos := Pos('" >',Line);
+              if EndPos = 0 Then EndPos := Length(Line);
+              FilmAddr := Copy(Line, BeginPos+9, EndPos-BeginPos-9);
+              HTMLDecode(FilmAddr);
+              HTMLRemoveTags(FilmAddr);
+              EndPos := Pos('<br>',Line);
+              if EndPos = 0 Then EndPos := Length(Line);
+              FilmName := Copy(Line, BeginPos, EndPos-BeginPos);
+              HTMLDecode(FilmName);
+              HTMLRemoveTags(FilmName);
+              dalsi := Copy(FilmName,0,25);
+              if dalsi = '...další nalezené záznamy' then
+               FilmName := Copy(FilmName,26,Length(FilmName)-25);
+              if FilmName <> '' then
+               PickTreeAdd(FilmName, BaseAddress + FilmAddr + '&text=1');
+              Delete(Line,1,EndPos+3);
+            end;
+          until BeginPos <1;
+         If  PickTreeExec(Address) Then
+           AnalyzeMoviePage(Address);
+        end;
+      end;
+    end;
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value, Value2 : String;
+  LinePos, BeginPos, EndPos, MidPos, PomPos : Integer;
+begin
+    Page := TStringList.Create;
+    Page.Text := GetPage(Address);
+    LineNr := FindLine('<span class="style4"', Page, 0);
+    if LineNr > -1 then
+    begin
+      LinePos := 1;
+      Line := Page.GetString(LineNr+LinePos);
+      //prelozeny nazev
+      HTMLDecode(Line);
+      HTMLRemoveTags(Line);
+      Value := Copy(Trim(Line),4,Length(Trim(Line))-3);
+
+      //nazev
+      LinePos := LinePos + 1;
+      Line := Page.GetString(LineNr+LinePos);
+      Value2 := '';
+      repeat
+        BeginPos := Pos('<table cellpadding=',Line);
+        If BeginPos > 0 Then
+        begin
+          BeginPos := Pos('<td>',Line);
+          MidPos := Pos('flag_52.gif',Line);
+          Line := Copy(Line,BeginPos+4,Length(Line)-(BeginPos+3));
+          EndPos := Pos('</td>',Line);
+          if EndPos = 0 Then EndPos := Length(Line);
+          if (MidPos < BeginPos) and (MidPos > 0) then
+            Value := Value + '/' + Copy(Line, 1, EndPos-1)
+          else
+            Value2 := Value2 + Copy(Line, 1, EndPos) + '/';
+        end;
+      until BeginPos < 1;
+      SetField(fieldTranslatedTitle, Value);
+      if Value2 = '' then
+        Value2 := Value
+      else
+        Value2 := Copy(Value2,1,length(Value2)-2);
+      SetField(fieldOriginalTitle, Value2);
+
+      //kategorie
+      BeginPos := Pos('<b>',Line);
+      Line := Copy(Line, BeginPos+3,Length(Line)-(BeginPos-2));
+      MidPos := Pos('<br>',Line);
+      EndPos := Pos('</b>',Line);
+      PomPos := Pos('min</b>',Line);
+        //existuji oba radky - kategorie i stat,rok,delka
+      if (MidPos < EndPos) and (MidPos > 0) then
+      begin
+        Value := Trim(Copy(Line, 1, MidPos-7));
+        SetField(fieldCategory, Value);
+        Value := Trim(Copy(Line, MidPos+4, EndPos-MidPos-4));
+        RozdelStat(Value);
+      end else
+        //existuje jen jeden radek
+      if (PomPos < EndPos) and (PomPos > 0) then
+      begin
+        Value := Trim(Copy(Line, 1, EndPos-1));
+        RozdelStat(Value);
+      end else
+      begin
+        Value := Trim(Copy(Line, 1, EndPos-7));
+        SetField(fieldCategory,Value);
+      end;
+     
+      Value := GetDirector(Line);
+      SetField(fieldDirector, Value);
+      Value := GetActor(Line);
+      SetField(fieldActors, Value);
+    end;
+    // picture
+    LineNr := FindLine('src="posters/', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('<img src="posters', Line) + 10;
+      if BeginPos > 10 then
+        begin
+          EndPos := pos('" border="', Line);
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          Value := BaseAddress + Value;
+          GetPicture(Value);
+        end;
+    end;
+    // Info
+    LineNr := FindLine('<B>Obsah/Info:</B>', Page, 0);
+    if LineNr > -1 then
+    begin
+      Value := Page.GetString(LineNr+2);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      SetField(fieldDescription, Trim(Value));
+    end;
+   // URL
+   SetField(fieldURL, Address);
+  //DisplayResults;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import movie from www.csfd.cz', 'Enter the title of the movie:', MovieName) then
+    begin         AnalyzePage(BaseAddress + 'search.php?search='+UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

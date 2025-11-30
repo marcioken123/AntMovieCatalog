@@ -1,0 +1,358 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=HTML TO CHM
+Description=Transformation d'un catalogue HTML en CHM, et redimensionnement d'images.
+Site=http://scorepion.le-site.info
+Language=FR
+Version=06 du 31/07/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=
+GetInfo=0
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Afficher le CHM final=0|1|0=Oui|1=Non
+Afficher les batchs=0|1|0=Oui|1=Non
+
+***************************************************)
+
+program HTMLtoCHM;
+uses
+  ScorEpioNCommonScript ;
+
+const
+  VersionScript = '06 du 31/07/2005';
+  NomScript = 'HTMLTOCHM';
+
+var
+  Value, NomCatalog, NomHTML, PathHHW, PathNC, largeurImage, PathHTML, ExitScript : String;
+  hhpfile : TStringList;
+
+//------------------------------------------------------------------------------
+// MENU PRINCIPAL
+//------------------------------------------------------------------------------
+procedure menuPrincipal();
+begin
+    PickTreeClear;
+    PickTreeAdd('Création d''un fichier CHM depuis un catalogue exporté en HTML :', '');
+    PickTreeAdd('Explications', 'howto');
+    PickTreeAdd('Options', 'params');
+    PickTreeAdd('Redimensionner les images', 'Resize');
+    PickTreeAdd('Création du fichier CHM', 'CHM');
+    PickTreeAdd('Quitter le script', 'ScriptExit');
+    PickTreeExec(Value);
+
+    If Value = 'params' then
+       menuConfig()
+    else If Value = 'howto' then
+       howto()
+    else If Value = 'Resize' then
+       resize()   
+    else If Value = 'ScriptExit' then
+       ExitScript := 'O'
+    else If Value = 'CHM' then
+       CreateCHM();
+end;
+
+//------------------------------------------------------------------------------
+// HOWTO
+//------------------------------------------------------------------------------
+procedure howto();
+begin
+    showmessage('1°) Exporter votre catalogue en HTML.'+#13#10+'> Complet : PDA_template_full.html'+#13#10+'> Individuel : PDA_template_indiv.html'+#13#10+'2°) Installer HTML Help Workshop de Microsoft'+#13#10+'> Lien dans ''Options'''+#13#10+'3°) Installer NConvert de Xnview'+#13#10+'> Lien dans ''Options'''+#13#10+'4°) Configuration des options'+#13#10+'> Nom des fichiers, liens vers le catalogue...'+#13#10+'5°) Redimensionner les images'+#13#10+'> Pour un meilleur affichage sur le PDA (220 pour un PDA VGA)'+#13#10+'4°) Création du fichier CHM'+#13#10+'> Compilation des pages HTML en un fichier CHM'+#13#10#13#10+'Les fichiers CHM sont lisibles sur tout les postes Windows, et sur les Pocket PC.'+#13#10#13#10+'Pour les Pocket Pc, il est nécessaire d''installer ''CHM reader.Net'' ou ''CHM eBook Reader''.');
+    menuPrincipal();
+end;
+
+//------------------------------------------------------------------------------
+// CONFIG
+//------------------------------------------------------------------------------
+procedure menuConfig();
+begin
+    PickTreeClear;
+    PickTreeAdd('Options :', '');
+    PickTreeAdd('HTML Help Workshop :', '');
+    PickTreeAdd('Télécharger HTML Help Workshop de Microsoft.', 'dlHHW');
+    PickTreeAdd('Répertoire de ''HTML Help Workshop'' :', '');
+    PickTreeAdd(PathHHW, 'PathdeHHW');
+    PickTreeAdd('Nom du CHM créé :', '');
+    PickTreeAdd(NomCatalog, 'nomduCatalog');
+    PickTreeAdd('NConvert :', '');   
+    PickTreeAdd('Télécharger NConvert de Xnview.', 'dlNC');
+    PickTreeAdd('Répertoire de ''NConvert'' :', '');
+    PickTreeAdd(PathNC, 'PathdeNC');
+    PickTreeAdd('Largeur souhaitée des images :', '');
+    PickTreeAdd(largeurImage, 'largeurImage');    
+    PickTreeAdd('Chemin du fichier exporter en HTML ''Complet'' :', '');
+    PickTreeAdd(NomHTML, 'nomduHTML');
+    PickTreeAdd('', '');
+    PickTreeAdd('Retour au menu principal.', 'principal');
+    PickTreeExec(Value);
+
+    If Value = 'dlHHW' then
+       dlHHW()
+    else If Value = 'PathdeHHW' then
+       pathdeHHW()
+    else If Value = 'nomduCatalog' then
+       nomduCatalog()
+    else If Value = 'dlNC' then
+       dlNC()
+    else If Value = 'PathdeNC' then
+       pathdeNC()             
+    else If Value = 'largeurImage' then
+       largeurdelImage() 
+    else If Value = 'principal' then
+       menuPrincipal()
+    else If Value = 'nomduHTML' then
+       nomduHTML();
+end;
+
+procedure dlHHW();
+begin
+     Launch('http://divouix.free.fr/Fichiers/hhc.exe', '');
+     menuConfig();
+end;
+
+procedure pathdeHHW();
+begin
+     PathHHW := GetStatic('PathHHW');
+     Value := choixFichier('Répertoire de HTML Help Workshop', 'Entrer le chemin vers le répertoire de HTML Help Workshop', PathHHW);
+     if (copy(Value,length(Value),length(Value)) <> '\') then
+        Value := Value+'\';
+     SetStatic('PathHHW',upcaseDrive(Value));
+     PathHHW := GetStatic('PathHHW');
+     menuConfig();
+end;
+
+procedure nomduCatalog();
+begin
+     NomCatalog := GetStatic('CatalogName');
+     Value := choixFichier('Nom du CHM créé', 'Entrer le nom du CHM que vous voulez créer', NomCatalog);
+     SetStatic('CatalogName',Value);
+     NomCatalog := GetStatic('CatalogName');
+     menuConfig();
+end;
+
+procedure dlNC();
+begin
+     Launch('http://divouix.free.fr/Fichiers/nconvert.exe', '');
+     menuConfig();
+end;
+
+procedure pathdeNC();
+begin
+     PathNC := GetStatic('PathNC');
+     Value := choixFichier('Répertoire de NConvert', 'Entrer le chemin vers le répertoire de NConvert', PathNC);
+     if (copy(Value,length(Value),length(Value)) <> '\') then
+        Value := Value+'\';
+     SetStatic('PathNC',upcaseDrive(Value));
+     PathNC := GetStatic('PathNC');
+     menuConfig();
+end;
+
+procedure largeurdelImage();
+begin
+     largeurImage := GetStatic('largeurImage');
+     Value := choixFichier('Nom du CHM créé', 'Entrer le nom du CHM que vous voulez créer', largeurImage);
+     SetStatic('largeurImage',Value);
+     largeurImage := GetStatic('largeurImage');
+     menuConfig();
+end;
+
+procedure nomduHTML();
+begin
+     NomHTML := GetStatic('HTMLName');
+     Value := choixFichier('Chemin du fichier exporter en HTML Complet', 'Entrer le chemin vers le fichier HTML (Export Complet)'+#13#10+'Doit terminer par .htm ou .html', NomHTML);
+     if (pos('.htm',Value) = 0) then
+        Value := '';              
+     SetStatic('HTMLName',upcaseDrive(Value));
+     NomHTML := GetStatic('HTMLName');
+     menuConfig();
+end;
+
+//------------------------------------------------------------------------------
+// RESIZE
+//------------------------------------------------------------------------------
+procedure resize();
+Var
+   Drive, DriveHTML : String;
+begin
+     if (ShowConfirmation('Redimensionnement des images : '+#13#10#13#10+'La largeur des images sera : '+largeurImage+#13#10#13#10+'Cliquer sur ''OUI'' pour valider.'+#13#10+'Cliquer sur ''NON'' pour annuler.') = True) then
+     begin       
+       PathHTML := copyUntilLast(GetStatic('HTMLName'), '\');
+       Drive := copy(PathNC,0,2);
+       DriveHTML := copy(PathHTML,0,2);
+       hhpfile := TStringList.Create;
+       hhpfile.Add('@echo on');
+       // Renomme les étoiles et le logo
+       hhpfile.Add(DriveHTML);
+       hhpfile.Add('cd "'+PathHTML+'"');
+       hhpfile.Add('rename amc-logo.gif amc-logo.gif.txt');
+       hhpfile.Add('rename appr0.gif appr0.gif.txt');
+       hhpfile.Add('rename appr1.gif appr1.gif.txt');
+       hhpfile.Add('rename appr2.gif appr2.gif.txt');
+       hhpfile.Add('rename appr3.gif appr3.gif.txt');
+       hhpfile.Add('rename appr4.gif appr4.gif.txt');
+       // Lance le script de redimensionnement
+       hhpfile.Add(Drive);
+       hhpfile.Add('cd "'+PathNC+'"');
+       Value := StringReplace(PathHTML, ' ', '" "');
+       hhpfile.Add('nconvert.exe -npcd 2 -size 256x256+0 -ctype grey -corder inter -out jpeg -D -ratio -rtype quick -resize '+largeurImage+' 0 '+Value+'*');
+       // Renomme les étoiles et le logo
+       hhpfile.Add(DriveHTML);
+       hhpfile.Add('cd "'+PathHTML+'"');
+       hhpfile.Add('rename amc-logo.gif.txt amc-logo.gif');
+       hhpfile.Add('rename appr0.gif.txt appr0.gif');
+       hhpfile.Add('rename appr1.gif.txt appr1.gif');
+       hhpfile.Add('rename appr2.gif.txt appr2.gif');
+       hhpfile.Add('rename appr3.gif.txt appr3.gif');
+       hhpfile.Add('rename appr4.gif.txt appr4.gif');       
+       // Efface les fichiers temporaires
+       hhpfile.Add(Drive);
+       hhpfile.Add('cd "'+PathNC+'"');
+       if GetOption('Afficher les batchs') = 0 then             
+       begin
+           hhpfile.Add('Pause');
+           hhpfile.Add('del -f '+NomCatalog+'.bat');
+       end else
+           hhpfile.Add('del -f '+NomCatalog+'.bat');
+       hhpfile.SaveToFile(PathNC+NomCatalog+'.bat');
+       hhpfile.Free;
+       Launch(PathNC+NomCatalog+'.bat','');
+       showmessage('Les images ont été redimensionnées.');
+     end;
+     exit;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DU FICHIER HHP
+//------------------------------------------------------------------------------
+procedure CreateHHP();
+begin
+     PathHHW := GetStatic('PathHHW');
+     NomCatalog := GetStatic('CatalogName');
+     NomHTML := GetStatic('HTMLName');
+     hhpfile := TStringList.Create;
+     hhpfile.Add('; .==.');
+     hhpfile.Add('; :   '' <<<< /\');
+     hhpfile.Add('; ''''==<)))))):     CHM by ScorEpioN');
+     hhpfile.Add(';      <<<< \_/');
+     hhpfile.Add('');
+     hhpfile.Add('[OPTIONS]');
+     hhpfile.Add('Compatibility=1.1 or later');
+     hhpfile.Add('Compiled file='+NomCatalog+'.chm');
+     hhpfile.Add('Default topic='+NomHTML);
+     hhpfile.Add('Display compile progress=Yes');
+     hhpfile.Add('Full-text search=Yes');
+     hhpfile.Add('Language=0x40c Français (France)');
+     hhpfile.Add('Title='+NomCatalog);
+     hhpfile.Add('');
+     hhpfile.Add('[FILES]');
+     hhpfile.Add(NomHTML);
+     hhpfile.Add('');
+     hhpfile.Add('[INFOTYPES]');
+     hhpfile.SaveToFile(PathHHW+NomCatalog+'.hhp');
+     hhpfile.Free;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DU FICHIER CHM
+//------------------------------------------------------------------------------
+procedure CreateCHM();
+Var
+   Drive : String;
+begin
+     if (ShowConfirmation('Création du fichier CHM : '+#13#10+'Le fichier créé sera : '+#13#10#13#10+PathHHW+NomCatalog+'.chm'+#13#10#13#10+'Cliquer sur ''OUI'' pour valider.'+#13#10+'Cliquer sur ''NON'' pour annuler.') = True) then
+     begin
+       CreateHHP();
+       Drive := copy(PathHHW,0,2);
+       hhpfile := TStringList.Create;
+       hhpfile.Add('@echo on');
+       hhpfile.Add(Drive);
+       hhpfile.Add('cd "'+PathHHW+'"');
+       hhpfile.Add('hhc '+NomCatalog+'.hhp');
+       if GetOption('Afficher le CHM final') = 0 then
+          hhpfile.Add('start '+NomCatalog+'.chm');
+       hhpfile.Add('del -f '+NomCatalog+'.hhp');
+       if GetOption('Afficher les batchs') = 0 then 
+       begin            
+          hhpfile.Add('Pause');
+          hhpfile.Add('del -f '+NomCatalog+'.bat');          
+       end else
+          hhpfile.Add('del -f '+NomCatalog+'.bat');
+       hhpfile.SaveToFile(PathHHW+NomCatalog+'.bat');
+       hhpfile.Free;
+       Launch(PathHHW+NomCatalog+'.bat','');
+       showmessage('Le catalogue au format CHM a bien été créé.'+#13#10#13#10+'Le fichier '''+NomCatalog+'.chm'' se trouve dans le répertoire '''+PathHHW+'''.');
+     end;
+     ExitScript := 'O';
+     exit;
+
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION D'AFFICHAGE DE LA FENETRE DE SAISIE
+//------------------------------------------------------------------------------
+function choixFichier(LeTitre, LeMessage, LeResultat : String) : String;
+begin
+    if Input(LeTitre, LeMessage, LeResultat) then
+      result := LeResultat
+    else
+      exit;
+    result := LeResultat;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION POUR METTRE EN MAJUSCULE LE NOM DU LECTEUR
+//------------------------------------------------------------------------------
+function upcaseDrive(Chemin : String) : String;
+begin
+     Value := copy(Chemin,0,2);
+     delete(Chemin, 1, 2);
+     Chemin := AnsiUpperCase(Value)+Chemin; 
+     result := Chemin;
+end;     
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    NomCatalog := GetStatic('CatalogName');
+    largeurImage := GetStatic('largeurImage');
+    NomHTML := GetStatic('HTMLName');
+    PathHHW := GetStatic('PathHHW');
+    PathNC := GetStatic('PathNC');
+    if NomCatalog = '' then
+       SetStatic('CatalogName','Catalogue');
+    if largeurImage = '' then
+       SetStatic('largeurImage','220');   
+    if NomHTML = '' then
+       SetStatic('HTMLName',dirApp+'Templates\Catalogue\Catalogue.amc.html');
+    if PathHHW = '' then
+       SetStatic('PathHHW',dirScripts+'CHM\');
+    if PathNC = '' then
+       SetStatic('PathNC',dirScripts+'NConvert\');   
+    NomCatalog := GetStatic('CatalogName');
+    largeurImage := GetStatic('largeurImage');
+    NomHTML := GetStatic('HTMLName');
+    PathHHW := GetStatic('PathHHW');
+    PathNC := GetStatic('PathNC');
+    if ExitScript <> 'O' then
+       menuPrincipal();
+  end else
+    ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+    exit;
+end.

@@ -1,0 +1,477 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ketchup   (<link>ketchuppp@wp.pl</link>)
+Title=Stereo.pl
+Description=Movie information & picture importation
+Site=http://stereo.pl/
+Language=PL
+Version=
+Requires=3.5.0
+Comments= based on script 'Filmweb (PL) small pic.ifs'| by Piotr Kardasz & Adma's| Tlen Rulezzzzzzzzzzzz|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Stereo;
+var
+  MovieName, AdressTemp: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure DelSpace(var Value: String);
+var
+  FullValue: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := FullValue + StrGet(Value, 1);
+    for Counter := 2 to Length(Value) do
+    begin
+      if StrGet(Value, Counter) <> ' ' then
+        FullValue := FullValue + StrGet(Value, Counter)
+      else
+        if StrGet(FullValue, Length(FullValue)) <> ' ' then
+          FullValue := FullValue + ' ';
+    end;
+    Value := FullValue;
+  end
+end;
+
+procedure DecodeHTML(var Value: String);
+var
+  FullValue, CharCode: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+          CharCode := copy(Value, Counter, 1);
+          case CharCode of
+            '±': CharCode := '¹';
+            '¶': CharCode := 'œ';
+            '¡': CharCode := '¥';
+            '¼': CharCode := 'Ÿ';
+            '¦': CharCode := 'Œ';
+            '¬': CharCode := '';
+          end;
+          FullValue := FullValue + CharCode;
+          Counter := Counter + 1;
+        end
+      else
+        begin
+          CharCode := copy(Value, Counter, 7);
+          case CharCode of
+            '&#x105;': FullValue := FullValue + '¹';
+            '&#x107;': FullValue := FullValue + 'æ';
+            '&#x119;': FullValue := FullValue + 'ê';
+            '&#x142;': FullValue := FullValue + '³';
+            '&#x144;': FullValue := FullValue + 'ñ';
+            '&#x0f3;': FullValue := FullValue + 'ó';
+            '&#x15b;': FullValue := FullValue + 'œ';
+            '&#x17a;': FullValue := FullValue + 'Ÿ';
+            '&#x17c;': FullValue := FullValue + '¿';
+            '&#x104;': FullValue := FullValue + '¥';
+            '&#x106;': FullValue := FullValue + 'Æ';
+            '&#x118;': FullValue := FullValue + 'Ê';
+            '&#x141;': FullValue := FullValue + '£';
+            '&#x143;': FullValue := FullValue + 'Ñ';
+            '&#x0d3;': FullValue := FullValue + 'Ó';
+            '&#x15a;': FullValue := FullValue + 'Œ';
+            '&#x179;': FullValue := FullValue + '';
+            '&#x17b;': FullValue := FullValue + '¯';
+            '&#x160;': FullValue := FullValue + ' ';
+            '&#x161;': FullValue := FullValue + '¡';
+            '&#x162;': FullValue := FullValue + '¡';
+            '&#x163;': FullValue := FullValue + '£';
+            '&#x164;': FullValue := FullValue + '¤';
+            '&#x165;': FullValue := FullValue + '¥';
+            '&#x166;': FullValue := FullValue + 'Œ';
+            '&#x167;': FullValue := FullValue + '§';
+            '&#x168;': FullValue := FullValue + '¨';
+            '&#x169;': FullValue := FullValue + '©';
+            '&#x170;': FullValue := FullValue + 'ª';
+            '&#x171;': FullValue := FullValue + '«';
+            '&#x172;': FullValue := FullValue + '¬';
+            '&#x173;': FullValue := FullValue + '­';
+            '&#x174;': FullValue := FullValue + '®';
+            '&#x175;': FullValue := FullValue + '¯';
+            '&#x176;': FullValue := FullValue + '°';
+            '&#x177;': FullValue := FullValue + '±';
+            '&#x178;': FullValue := FullValue + '²';
+            '&#x180;': FullValue := FullValue + '´';
+            '&#x181;': FullValue := FullValue + 'µ';
+            '&#x182;': FullValue := FullValue + '¶';
+            '&#x183;': FullValue := FullValue + '·';
+            '&#x184;': FullValue := FullValue + '¸';
+            '&#x185;': FullValue := FullValue + '¹';
+            '&#x186;': FullValue := FullValue + 'º';
+            '&#x187;': FullValue := FullValue + '»';
+            '&#x188;': FullValue := FullValue + '¼';
+            '&#x189;': FullValue := FullValue + '½';
+            '&#x190;': FullValue := FullValue + '¾';
+            '&#x191;': FullValue := FullValue + '¿';
+            '&#x192;': FullValue := FullValue + 'À';
+            '&#x193;': FullValue := FullValue + 'Á';
+            '&#x194;': FullValue := FullValue + 'Â';
+            '&#x195;': FullValue := FullValue + 'Ã';
+            '&#x196;': FullValue := FullValue + 'Ä';
+            '&#x197;': FullValue := FullValue + 'Å';
+            '&#x198;': FullValue := FullValue + 'Æ';
+            '&#x199;': FullValue := FullValue + 'Ç';
+            '&#x200;': FullValue := FullValue + 'È';
+            '&#x201;': FullValue := FullValue + 'É';
+            '&#x202;': FullValue := FullValue + 'Ê';
+            '&#x203;': FullValue := FullValue + 'Ë';
+            '&#x204;': FullValue := FullValue + 'Ì';
+            '&#x205;': FullValue := FullValue + 'Í';
+            '&#x206;': FullValue := FullValue + 'Î';
+            '&#x207;': FullValue := FullValue + 'Ï';
+            '&#x208;': FullValue := FullValue + 'Ð';
+            '&#x209;': FullValue := FullValue + 'Ñ';
+            '&#x210;': FullValue := FullValue + 'Ò';
+            '&#x211;': FullValue := FullValue + 'Ó';
+            '&#x212;': FullValue := FullValue + 'Ô';
+            '&#x213;': FullValue := FullValue + 'Õ';
+            '&#x214;': FullValue := FullValue + 'Ö';
+            '&#x215;': FullValue := FullValue + '×';
+            '&#x216;': FullValue := FullValue + 'Ø';
+            '&#x217;': FullValue := FullValue + 'Ù';
+            '&#x218;': FullValue := FullValue + 'Ú';
+            '&#x219;': FullValue := FullValue + 'Û';
+            '&#x220;': FullValue := FullValue + 'Ü';
+            '&#x221;': FullValue := FullValue + 'Ý';
+            '&#x222;': FullValue := FullValue + 'Þ';
+            '&#x223;': FullValue := FullValue + 'ß';
+            '&#x224;': FullValue := FullValue + 'à';
+            '&#x225;': FullValue := FullValue + 'á';
+            '&#x226;': FullValue := FullValue + 'â';
+            '&#x227;': FullValue := FullValue + 'ã';
+            '&#x228;': FullValue := FullValue + 'ä';
+            '&#x229;': FullValue := FullValue + 'å';
+            '&#x230;': FullValue := FullValue + 'æ';
+            '&#x231;': FullValue := FullValue + 'ç';
+            '&#x232;': FullValue := FullValue + 'è';
+            '&#x233;': FullValue := FullValue + 'é';
+            '&#x234;': FullValue := FullValue + 'ê';
+            '&#x235;': FullValue := FullValue + 'ë';
+            '&#x236;': FullValue := FullValue + 'ì';
+            '&#x237;': FullValue := FullValue + 'í';
+            '&#x238;': FullValue := FullValue + 'î';
+            '&#x239;': FullValue := FullValue + 'ï';
+            '&#x240;': FullValue := FullValue + 'ð';
+            '&#x241;': FullValue := FullValue + 'ñ';
+            '&#x242;': FullValue := FullValue + 'ò';
+            '&#x243;': FullValue := FullValue + 'ó';
+            '&#x244;': FullValue := FullValue + 'ô';
+            '&#x245;': FullValue := FullValue + 'õ';
+            '&#x246;': FullValue := FullValue + 'ö';
+            '&#x247;': FullValue := FullValue + '÷';
+            '&#x248;': FullValue := FullValue + 'ø';
+            '&#x249;': FullValue := FullValue + 'ù';
+            '&#x250;': FullValue := FullValue + 'ú';
+            '&#x251;': FullValue := FullValue + 'û';
+            '&#x252;': FullValue := FullValue + 'ü';
+            '&#x253;': FullValue := FullValue + 'ý';
+            '&#x254;': FullValue := FullValue + 'þ';
+            '&#x255;': FullValue := FullValue + 'ÿ';
+            '&#x%DF;': FullValue := FullValue + 'ß';
+            '&#x34;': FullValue := FullValue + '"';    
+          else
+            FullValue := FullValue + CharCode;  
+          end;
+          Counter := Counter + 7;
+        end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+  end
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress,temp: string;
+  StartPos, EndPos: Integer;
+begin
+  LineNr := FindLine('kam.gif', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    PickTreeAdd('Znaleziono filmy:', '');
+    Line := Page.GetString(LineNr+1);
+    repeat
+      repeat
+        StartPos := pos('tytul_m href="', Line) + 14;
+        Line := copy(Line, StartPos, Length(Line) - StartPos);      
+        MovieAddress := copy(Line, 1, pos('">', Line) - 1);
+        StartPos := pos('">', Line) + 2;
+        Line := copy(Line, StartPos, Length(Line) - StartPos);
+        MovieTitle := copy(Line, 1, pos('</a>', Line) - 1);
+        DecodeHTML(MovieTitle);
+        HTMLRemoveTags(MovieTitle);
+        PickTreeAdd(MovieTitle, 'http://piwnicapodbaranami.stereo.pl/' + MovieAddress);
+      until pos('tytul_m href="', Line) = 0;
+      LineNr := LineNr + 1;
+      LineNr := FindLine('kam.gif', Page, LineNr);
+      Line := Page.GetString(LineNr+1);
+    until LineNr < 0;
+  end
+  else
+    break;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  AdressTemp := Address;
+  Page.Text := GetPage(Address);
+  if pos('Wyniki wyszukiwania', Page.Text) = 0 then
+    AnalyzeMoviePage(Page)
+  else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    AddMoviesTitles(Page, LineNr);
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, FullValue, LineTemp, ValueTemp: string;
+  LineNr, Counter, Temp: Integer;
+  StartPos, EndPos, i: Integer;
+begin
+Temp := 0;
+  // Tytu³ polski
+  LineNr := FindLine('class=tytul', Page, 0);
+  if LineNr > -1 then
+  begin
+    Temp := 1;
+    Line := Page.GetString(LineNr);
+    LineTemp := Line;
+    StartPos := pos('<i>', Line) + 3;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos(' - [', Line);
+    if StartPos > 0 then Value := copy(Line, 1, StartPos - 1)
+      else
+      begin
+       StartPos := pos(' (', Line);
+       if StartPos > 0
+         then Value := copy(Line, 1, StartPos - 1)
+         else
+         begin
+         StartPos := pos('<br>', Line); 
+         Value := copy(Line, 1, StartPos - 1);
+         end       
+      end  
+    ValueTemp := Value;  
+    DecodeHTML(Value);
+    HTMLRemoveTags(Value); 
+    SetField(fieldTranslatedTitle, Value);
+  end
+
+  // Tytu³ oryginalny
+  if Temp = 1 then
+  begin
+    Line := LineTemp;
+    StartPos := pos(' (', Line);
+    if StartPos > 0 then 
+      begin      
+       Line := copy(Line, StartPos + 2, Length(Line) - StartPos - 2);
+       StartPos := pos(')', Line);
+       Value := copy(Line, 1, StartPos - 1);
+       StartPos := pos('-', Value);
+       if StartPos > 0 then Value := copy(Value, 1, StartPos - 1); 
+      end
+      else
+      begin
+       Value := ValueTemp;
+      end    
+    DecodeHTML(Value);
+    HTMLRemoveTags(Value); 
+    SetField(fieldOriginalTitle, Value);
+  end
+    
+  // Rok produkcji
+  LineNr := FindLine('Rok premiery:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('Rok premiery:', Line) + 14;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('<BR>', Line);
+    Value := copy(Line, 1, StartPos - 1);
+    SetField(fieldYear, Value);
+  end
+
+  // Re¿yseria
+  LineNr := FindLine('Re¿yseria:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 3);
+    StartPos := pos('artysta.php', Line) + 11;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('">', Line) + 2;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('<', Line);
+    Value := copy(Line, 1, StartPos - 1);
+    HTMLRemoveTags(Value);
+    DecodeHTML(Value); 
+    SetField(fieldDirector, Value);
+  end
+
+  // Producent
+  LineNr := FindLine('Wydawca:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('Wydawca: ', Line) + 9;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos(' <br>', Line);
+    Value := copy(Line, 1, StartPos - 2);
+    HTMLRemoveTags(Value);
+    DecodeHTML(Value); 
+    SetField(fieldProducer, Value);
+  end
+
+  // Czas trwania
+  LineNr := FindLine('£±czny czas:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('£±czny czas:', Line) + 13;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('min.', Line);
+    Value := copy(Line, 1, StartPos - 2);
+    SetField(fieldLength, Value);
+  end
+  
+  // Opis filmu
+    LineNr := FindLine('Opis:', Page, 0);
+    if StartPos > 0 then
+    begin 
+     Line := Page.GetString(LineNr);
+     StartPos := pos('Opis:', Line);      
+     Delete(Line, StartPos, 5);
+     StartPos := pos('</ul>', Line);
+     if StartPos > 0 then
+     begin
+      Delete(Line, StartPos, 5);
+      Insert(#13#10, Line, StartPos);
+     end
+     repeat
+      StartPos := pos('<li>', Line);
+      if StartPos > 0 then
+      begin 
+       Delete(Line, StartPos, 4);
+       Insert(#13#10 + '-', Line, StartPos);    
+      end
+     until StartPos = 0;
+     StartPos := pos('Dodatki:', Line);
+     if StartPos > 0 then
+      Line := copy(Line, 1, StartPos - 1);
+     HTMLRemoveTags(Line);
+     DecodeHTML(Line); 
+     DelSpace(Line);  
+     SetField(fieldDescription, Line);  
+    end  
+
+  // Obsada
+  LineNr := FindLine('Wystêpuj', Page, 0);
+  i := 3;
+  Value := '';
+  if LineNr > -1 then
+  begin
+    repeat   
+     Line := Page.GetString(LineNr + i);  
+     StartPos := pos('artysta.php', Line) + 11;
+     Line := copy(Line, StartPos, Length(Line) - StartPos);
+     StartPos := pos('">', Line) + 2;
+     Line := copy(Line, StartPos, Length(Line) - StartPos);
+     StartPos := pos('<', Line);
+     Value := Value + copy(Line, 1, StartPos - 1) + ', ';
+     i := i + 2;
+    until pos('artysta.php', Page.GetString(LineNr + i)) = 0;
+    Value := copy(Value, 1, Length(Value) - 2);
+    HTMLRemoveTags(Value);
+    DecodeHTML(Value);     
+    SetField(fieldActors, Value);
+  end
+  
+  //URL
+  begin
+    setField(fieldURL, AdressTemp);
+  end
+  
+ //Foto
+  LineNr:= FindLine('okladka.php', Page, 0);
+  if LineNr > -1
+   then begin
+    Line:= Page.GetString(LineNr);
+    StartPos:= Pos('okladka.php', Line);
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    EndPos:=Pos(#39#44, Line) - 1;
+    Line:= Copy(Line, 1, EndPos);
+    Value:= 'http://piwnicapodbaranami.stereo.pl/' + Line;
+    Page.Text := GetPage(Value);
+    LineNr:= FindLine('<img src="', Page, 0);
+    if LineNr > -1
+     then begin
+      Line:= Page.GetString(LineNr);
+      StartPos:= Pos('<img src="', Line) + 11;
+      Line := copy(Line, StartPos, Length(Line) - StartPos);
+      EndPos:=Pos('">', Line) - 1;
+      Line:= Copy(Line, 1, EndPos);
+      Value:= 'http://piwnicapodbaranami.stereo.pl/' + Line;
+     end
+    GetPicture(Value); // False = nie przechowuj zdjêcia na zewnêtrz ; przechowuj w pliku katalogu
+  end
+
+  //DisplayResults;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('FilmWeb Import', 'Podaj tytu³ filmu:', MovieName) then
+    begin
+      AnalyzePage('http://piwnicapodbaranami.stereo.pl/most.php?szuk='+UrlEncode(MovieName));
+    end;
+  end else
+    ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.0 lub nowszej');
+end.
+
+

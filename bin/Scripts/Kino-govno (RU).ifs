@@ -1,0 +1,342 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Karamov Ilshat aka KAA (kaasoft@gmail.com)
+Title=Kino-Govno (RU)
+Description=Import from www.kino-govno.com
+Site=www.kino-govno.com
+Language=RU
+Version=1.0.0
+Requires=3.5.0
+Comments=Доступ к рецензиям, размещенным на сайте www.kino-govno.com
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program kinogovnokom;
+
+const
+  BaseAddress = 'http://kino-govno.com/';
+
+var
+  MovieName: string;
+
+//==============================================================================
+  procedure AnalyzePage(Address: string);
+  var
+    Page: TStringList;
+    AddressText: string;
+    HTMLText: string;
+    BeginPos, EndPos: Integer;
+  begin
+  Page := TStringList.Create;
+  
+  if Address <> 'http://kino-govno.com/?search&s_str=' then
+  begin
+    Page.Text := GetPage(Address);
+    HTMLText := GetText(Page.Text, '<b>Рецензии</b>', '<b>Новости</b>');
+
+    if Pos('ничего не найдено', HTMLText) > 0 then
+    begin
+      ShowWarning('Увы и ах - по вашему запросу ничего не найдено. Попробуйте позвонить позднее.');
+      Exit;
+    end
+    else
+    begin
+      PickTreeClear;
+      PickTreeAdd('Найденные фильмы:', '');
+      AddMoviesTitles(HTMLText);
+    end;
+  end
+  else
+  begin
+    PickTreeClear;
+    PickTreeAdd('Рецензии на Кино-Говно.ком в алфавитном порядке', '');
+    AddAlphabet();
+    if PickTreeExec(AddressText) then
+    begin
+      Page.Text := GetPage(AddressText);
+      HTMLText := Page.Text;
+    end;
+    BeginPos := Pos('>Все</a></b></td></tr></table><hr><br></div></b>', HTMLText);
+    HTMLText := Copy(HTMLText, BeginPos+Length('>Все</a></b></td></tr></table><hr><br></div></b>'), Length(HTMLText));
+    EndPos :=  Pos('<a href=?reviews&ar=1>Архив рецензий', HTMLText);
+    HTMLText := Copy(HTMLText, 0, EndPos-1);
+    Page.Text:=Trim(HTMLText);
+    PickTreeClear;
+    PickTreeAdd('Фильмы на выбранный символ', '');
+    AddMoviesTitles1(Page);
+  end;
+  
+  if PickTreeExec(AddressText) then
+  begin
+    // URL
+    if CanSetField(fieldURL) then
+      SetField(fieldURL, AddressText);
+    Page.Text := GetPage(AddressText);
+    AnalyzeVideoPage(Page);
+  end
+  Page.Free;
+end;
+
+//==============================================================================
+  procedure AddAlphabet();
+  var
+    i: integer;
+    Alphabet, Addresses, MovieTitle, MovieAddress: string;
+    StartPos, EndPos: Integer;
+  begin
+    MovieTitle:='';
+    Alphabet :='===========Английские-названия========== '+
+               '0-9 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z '+
+               '============Русские-названия============ '+
+               '0-9 А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Э Ю Я ';
+    Addresses:='@ '+
+               '0eng A B C D E F G H I J K L M N O P Q R S T U V W X Y Z '+
+               '@ '+
+               '0рус А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Э Ю Я ';
+    StartPos:=1;
+    for  i:=1  to 57 do
+    begin
+      EndPos:=Pos(' ', Alphabet);
+      MovieTitle := Copy(Alphabet, 1, EndPos);
+      Alphabet:=Copy(Alphabet, EndPos+1, Length(Alphabet));
+
+      EndPos:=Pos(' ', Addresses);
+      MovieAddress := Copy(Addresses, 1, EndPos-1);
+      Addresses:=Copy(Addresses, EndPos+1, Length(Addresses));
+
+      if MovieAddress='@' then
+       PickTreeAdd(MovieTitle, '')
+      else
+       PickTreeAdd(MovieTitle, BaseAddress+'?reviews&letter='+MovieAddress);
+    end;
+  end;
+
+//==============================================================================
+procedure AddMoviesTitles(HTMLText: String);
+  var
+    i: integer;
+    Line, Text: string;
+    Page: TStringList;
+    MovieTitle, MovieAddress: string;
+    StartPos, EndPos: Integer;
+  begin
+    Page:=TStringList.Create;
+    HTMLText := StringReplace(HTMLText, '</div><br>', '');
+    HTMLText := StringReplace(HTMLText, '<a href="', #13#10);
+
+    Page.Text:=HTMLText;
+
+    for  i:=0  to Page.Count-1 do
+    begin
+      Line := Page.GetString(i);
+      if Line='' then
+        Continue;
+      EndPos := Pos('">', Line);
+      MovieAddress := Copy(Line, 0, EndPos-1);
+      Line:=Copy(Line, EndPos+Length('">'), Length(Line));
+      EndPos := Pos('</a>', Line);
+      MovieTitle := Copy(Line, 0, EndPos-1);
+
+      HTMLDecode(MovieTitle);
+      HTMLRemoveTags(MovieTitle);
+      MovieTitle := Trim(MovieTitle);
+
+      if MovieTitle='()' then
+         MovieTitle := '(НАЗВАНИЕ ОТСУТСТВУЕТ)';
+         
+      PickTreeAdd(MovieTitle, BaseAddress+MovieAddress);
+    end;
+    Page.Free;
+  end;
+
+//==============================================================================
+procedure AddMoviesTitles1(Page: TStringList);
+  var
+    i: integer;
+    Line, Text: string;
+    MovieTitle, MovieAddress: string;
+    StartPos, EndPos: Integer;
+  begin
+    Text := StringReplace(Page.Text, '<a href="', #13#10);
+    Page.Text:=Text;
+
+    StartPos := Pos('<a href="', Line);
+    Line := Copy(Line, StartPos+Length('<a href="'), Length(Line));
+
+    for  i:=0  to Page.Count-1 do
+    begin
+      Line := Page.GetString(i);
+      if Line='' then
+        Continue;
+      EndPos := Pos('">"', Line);
+      MovieAddress := Copy(Line, 0, EndPos-1);
+      Line:=Copy(Line, EndPos+Length('">"'), Length(Line));
+
+      //EndPos := Pos('</font>', Line);
+      EndPos := Pos('</b> (', Line);
+
+      MovieTitle := Copy(Line, 0, EndPos-1);
+      Line:=Copy(Line, EndPos+Length('</b> ('), Length(Line));
+
+      HTMLDecode(MovieTitle);
+      HTMLRemoveTags(MovieTitle);
+      MovieTitle := StringReplace(MovieTitle, ')"', ') "');
+      MovieTitle := StringReplace(MovieTitle, '" (', ' (');
+
+      PickTreeAdd(MovieTitle, BaseAddress+MovieAddress);
+    end;
+  end;
+//==============================================================================
+  function GetText (Line: string; sBegin, sEnd: string): string;
+  var
+    BeginPos, EndPos: Integer;
+    s: string;
+  begin
+   Result := '';
+   BeginPos := Pos(sBegin, Line) + Length(sBegin);
+   EndPos := Pos(sEnd, Line);
+   if (BeginPos = 0) or (sBegin='') then
+     BeginPos := 1;
+   if (EndPos = 0) or (sEnd='') then
+     EndPos := Length(Line);
+   s := Copy(Line, BeginPos, EndPos - BeginPos);
+   Result := s;
+  end;
+
+//==============================================================================
+  procedure AnalyzeVideoPage(Page: TStringList);
+  var
+    HTMLText, Rating, Text: string;
+    BeginPos, EndPos: Integer;
+    MovieName, MovieNameTrans, MovieNameOrig, MovieRating,
+               MoviePictureAddress, MovieDescription, MovieComments: string;
+  begin
+
+  HTMLText:=Page.Text;
+
+  BeginPos := Pos('</TD><TD width="100%"><DIV class=top>&laquo;', HTMLText)+Length('</TD><TD width="100%"><DIV class=top>&laquo;');
+  HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+
+  EndPos := Pos('</span></h3><br><FONT class=revtxt>', HTMLText);
+  HTMLText := Copy(HTMLText, 0, EndPos-1);
+  HTMLText:=Trim(StringReplace(HTMLText,'</FONT></P><div align=justify class=revtxt><P>',#13#10));
+
+  // Наименование
+  if CanSetField(fieldTranslatedTitle) then
+    begin
+      EndPos := Pos('&raquo;</div><DIV class=top>', HTMLText);
+      MovieNameTrans := Trim(Copy(HTMLText, 0, EndPos-1));
+      HTMLDecode(MovieNameTrans);
+      HTMLRemoveTags(MovieNameTrans);
+      SetField(fieldTranslatedTitle, MovieNameTrans);
+    end;
+  BeginPos := Pos('&raquo;</div><DIV class=top>', HTMLText)+Length('&raquo;</div><DIV class=top>');
+  HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+  // Оригинальное наименование
+  if CanSetField(fieldOriginalTitle) then
+    begin
+      EndPos := Pos('</div></TD></tr></table><P><FONT class=headline>', HTMLText);
+      MovieNameOrig := Trim(Copy(HTMLText, 0, EndPos-1));
+      HTMLDecode(MovieNameOrig);
+      HTMLRemoveTags(MovieNameOrig);
+      SetField(fieldOriginalTitle, MovieNameOrig);
+    end;
+  BeginPos := Pos('</div></TD></tr></table><P><FONT class=headline>', HTMLText)+Length('</div></TD></tr></table><P><FONT class=headline>');
+  HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+  // Рейтинг
+  if CanSetField(fieldRating) then
+    begin
+       BeginPos := Pos('Читательский рейтинг</FONT><br><br>', HTMLText)+Length('Читательский рейтинг</FONT><br><br>');
+       Rating := Copy(HTMLText, BeginPos, Length(HTMLText));
+       BeginPos := Pos('<h3>', HTMLText)+Length('<h3>');
+       Rating := Copy(HTMLText, BeginPos, Length(HTMLText));
+       EndPos := Pos('%', Rating);
+       Rating := Trim(Copy(Rating, 0, EndPos-1));
+       Rating := StringReplace(Rating, ' ','');
+       HTMLRemoveTags(Rating);
+       Rating:=Trim(Rating);
+       if StrToInt(Rating, 0) <> 0 then
+       begin
+          Rating:=FloatToStr(StrToFloat(Rating)/10);
+          SetField(fieldRating, Rating);
+       end;
+    end;
+  // Описание
+  if CanSetField(fieldDescription) then
+    begin
+      EndPos := Pos('</I></div>', HTMLText);
+      MovieDescription := Copy(HTMLText, 0, EndPos-1);
+      MovieDescription:=Trim(StringReplace(MovieDescription,'&#8722;','-'));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'&#8211;','-'));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'&#8212;','-'));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'&hellip;','...'));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'Кадры из фильма',''));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'<div id=div_author align=right class=revtxt contentEditable=false style="text-decoration: italic; font-weight: bold";>',#13#10));
+      MovieDescription:=Trim(StringReplace(MovieDescription,'</div><div align=right class=revtxt><I>',#13#10));
+
+      MovieDescription:=StringReplace(MovieDescription, '        ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '       ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '      ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '     ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '    ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '   ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, '  ', ' ');
+      MovieDescription:=StringReplace(MovieDescription, #13#10+' ', #13#10);
+      MovieDescription:=StringReplace(MovieDescription, #13#10+#13#10+' ', #13#10);
+
+      HTMLDecode(MovieDescription);
+      HTMLRemoveTags(MovieDescription);
+      SetField(fieldDescription, 'Рецензия на Кино-Говно.ком:'+#13#10+MovieDescription);
+    end;
+  // Коментарий-отзыв
+  if CanSetField(fieldComments) then
+    begin
+      MovieComments := 'Вердикт:';
+      BeginPos := Pos('<FONT class=grade_active>' ,HTMLText)+Length('<FONT class=grade_active>');
+      HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+      EndPos := Pos('</FONT>' ,HTMLText);
+      MovieComments := MovieComments + Copy(HTMLText, 0, EndPos-1)+#13#10;
+      MovieComments := MovieComments+'Перевод:';
+      BeginPos := Pos('<FONT class=local_active>' ,HTMLText)+Length('<FONT class=local_active>');
+      HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+      EndPos := Pos('</FONT>' ,HTMLText);
+      MovieComments := MovieComments + Copy(HTMLText, 0, EndPos-1)+#13#10;
+
+      BeginPos := Pos('Мнения</FONT><br><br><FONT class=revtxt>', HTMLText)+Length('Мнения</FONT><br><br><FONT class=revtxt>');;
+      if BeginPos>0 then
+      begin
+        Text := Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos:=Pos('</font><HR SIZE=1>', Text);
+        MovieComments:=MovieComments+Copy(Text, 0, EndPos-1);
+      end;
+
+      MovieComments:=Trim(StringReplace(MovieComments,'&quot;','"'));
+      HTMLDecode(MovieComments);
+      HTMLRemoveTags(MovieComments);
+      SetField(fieldComments, 'Комментарий редакции Кино-Говно.ком на фильм:'+#13#10+MovieComments);
+    end;
+end;
+
+
+//==============================================================================
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('Поиск на Кино-говно.ком', 'Название фильма (пусто для доступа по алфавиту):', MovieName) then
+    begin
+      AnalyzePage('http://kino-govno.com/?search&s_str='+UrlEncode(MovieName));
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,319 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Maesen Adulto
+Description=cine X
+Site=
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program maesen;
+
+
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+//------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.maesen.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.maesen.com/sexshop/plantilla.php?id=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+53, EndPos-53);
+          MovieAddr := 'http://www.maesen.com/sexshop/plantilla.php?id=' + MovieId;
+          BeginPoss := Pos(')">',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle := TextBetween (MovieTitle, 'La Sexshop en Casa //', '-');
+          DeleteTags(MovieTitle);
+          MovieTitle  := UpFirstLetterWord(MovieTitle);
+          MovieTitle  := StringReplace(MovieTitle , 'â€™', 's');
+          MovieTitle  := StringReplace(MovieTitle , 'Ã€', 'á');
+          MovieTitle  := StringReplace(MovieTitle , 'ã‰‘', 'é');
+          MovieTitle  := StringReplace(MovieTitle , 'ã“', 'ó');
+          MovieTitle  := StringReplace(MovieTitle , 'ã‘', 'ñ');
+          MovieTitle  := StringReplace(MovieTitle , 'ã‡', 'ç');
+          MovieTitle  := StringReplace(MovieTitle , 'â®', '');
+          MovieTitle  := StringReplace(MovieTitle , '&amp;', '&');
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://www.maesen.com/sexshop/plantilla.php?id=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '//', '-');
+    Item  := UpFirstLetterWord(Item);
+    Item := BorraComillas(Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldTranslatedTitle, Trim (Item));
+  end;
+  // categoria
+
+    SetField(fieldCategory, Trim ('Cine X'));
+
+ // Productor
+  LineNr := FindLine('>Productora</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('>Productora</td>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'middle">', '</td>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+
+  // sinopsis
+ LineNr := FindLine('id="det_subtitulo">', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('id="det_subtitulo">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'id="det_texto">', '<br></td> ');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+  // actores
+ LineNr := FindLine('">Interpretes</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('">Interpretes</td>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"middle">', '...');
+    Item := StringReplace(Item ,#13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := StringReplace(Item , ', ',#13#10);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+  // director
+ LineNr := FindLine('Director</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Director</td>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '"middle">', '</td>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+  // duración
+ LineNr := FindLine('Duraci&oacute;', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Duraci&oacute;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '">', 'Min.');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+  // trailer
+ LineNr := FindLine('trailer.php?video=', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('trailer.php?video=',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'trailer.php?video=', '","trailer"');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldComments, Trim ('Trailer de la pelicula:  '+Item));
+  end;
+// Caratula
+  LineNr := FindLine('<img src="imagenes/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, 'src="', '" width');
+     GetPicture ('http://www.maesen.com/sexshop/'+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Maesen', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('Maesen', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=+%22' + UrlEncode(MovieName)+'%22+site%3Awww.maesen.com&btnG=B%C3%BAsqueda&meta=');
+end.

@@ -1,0 +1,213 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Max caratulas
+Description=Caratulas
+Site=www.maxcaratulas.net
+Language=ES
+Version=1
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program maxcaratulas;
+ Uses StringUtils7552;
+const
+
+  BaseURL1 = 'http://www.maxcaratulas.net/caratulas';
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+  //------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     // quitamos las comillas
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------------------------
+
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      // quitamos los tabuladores
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, strPages, MovieAddr, MovieTitle, MovieDate, MovieID: string;
+  BeginPos, EndPos, BeginPo, EndPo: Integer;
+  Line: string;
+  LineNr: Integer;
+  Page: TStringList;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.maxcaratulas.net', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.maxcaratulas.net/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('html" class', strPage);
+          MovieId := Copy(strPage, +34, EndPos-34);
+          MovieAddr := 'http://www.maxcaratulas.net/' + MovieId+'html';
+          BeginPos := Pos('/descargar',strPage);
+          EndPos := Pos('class', strPage);
+          MovieTitle := Copy(strPage,BeginPos, EndPos);
+          MovieTitle  := TextBetween (MovieTitle , '-', '.html');
+          DeleteTags(MovieTitle);
+          MovieTitle  := StringReplace(MovieTitle , 'back', 'trasera');
+          MovieTitle  := StringReplace(MovieTitle , 'front', 'frontal');
+          MovieTitle  := StringReplace(MovieTitle , '_', ' ');
+          MovieTitle  := UpFirstLetterWord(MovieTitle);
+          MovieTitle  := StringReplace(MovieTitle , 'frontal', '(FRONTAL)');
+          MovieTitle  := StringReplace(MovieTitle , 'trasera', '(TRASERA)');
+          MovieTitle  := StringReplace(MovieTitle , 'portada', '(PORTADA)');
+
+          PickTreeAdd(MovieTitle,  MovieAddr);
+          BeginPos := Pos('href="http://www.maxcaratulas.net/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+    SetField(fieldURL, Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  BaseURL2: string;
+  Beginpos: string;
+  titre_film: string;
+  EndPos: string;
+  Item1: string;
+  Item2: string;
+   Movie: string;
+begin
+  Description := '';
+
+ // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+
+  // Picture
+   LineNr := FindLine('src="caratulas', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, 'src="caratulas', '"');
+     Item  := StringReplace(Item , '/images/', '/originalimages/');
+     Item  := StringReplace(Item , ' ', '%20');
+      SetField(fieldProducer, trim (BaseURL1+Item));
+   GetPicture (BaseURL1+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+            Input('maxcaratulas', 'Buscar', MovieName);
+
+     if(GetOption('') = 0) then  Input('maxcaratulas', 'Buscar', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=' + UrlEncode(MovieName)+'+site%3Awww.maxcaratulas.net&meta=');
+end.

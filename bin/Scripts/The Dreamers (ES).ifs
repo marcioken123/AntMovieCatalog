@@ -1,0 +1,393 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Icecubix
+Title=The Dreamers (ES)
+Description=Movie importation script for Cineol (picture from Culturalia).
+Site=http://dreamers.com
+Language=ES
+Version=1.0
+Requires=3.5.1
+Comments=Películas de terror
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+
+[Options]
+BuscarCaratula=1|1|0=No|1=Si
+ModoBatch=1|0|0=Modo normal|1=Modo automático (batch). No pregunta nada ni muestra mensajes
+
+***************************************************)
+
+program Dreamers;
+
+uses
+  StringUtils1;
+
+const
+  BaseURL = 'http://dreamers.com/';
+  BaseURLBusqueda = 'http://info.dreamers.com/p/web/busqueda.html';
+
+var
+  MovieName: string;
+  MovieURL: string;
+  Title: string;
+  i: integer;
+  s11: string;
+  buscarCaratulas: string;
+  preguntarTitulo: string;
+  minicaratula: string;
+  BuscarCaratula, ModoBatch: Boolean;
+  Page: TStringList;
+
+//------------------------------------------------------------------------------------
+
+function MiTextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+  a,b: string;
+begin
+  a := ansiLowerCase(StartTag);
+  b := AnsiLowerCase(S);
+
+  InitialPos := Pos(AnsiLowerCase(StartTag), AnsiLowerCase(S));
+  Delete(S, 1, InitialPos + Length(StartTag) - 1);
+  InitialPos := Pos(AnsiLowerCase(EndTag), AnsiLowerCase(S));
+  result := copy(S, 1, InitialPos - 1);
+  Delete(S, 1, InitialPos + 1);
+end;
+
+//------------------------------------------------------------------------------------
+
+function EliminaInicio(S: string; CR: string): string;
+begin
+  result := S;
+  while Pos(CR, result) = 1 do
+  begin
+    Delete(result, 1, Length(CR));
+  end;
+end;
+
+function CadenaEntre(var S: string; StartTag: string; EndTag: string): string;
+var
+  InicioPos: Integer;
+  FinPos: Integer;
+  res: String;
+begin
+  InicioPos := Pos(StartTag, S);
+  FinPos    := Pos(EndTag, S);
+  res := copy(S, InicioPos + Length(StartTag), FinPos - 1);
+  result := res;
+end;
+
+function ComeTags(s: String): String;
+var i: integer;
+    res: String;
+    tag: Boolean;
+begin
+  res := '';
+  tag := False;
+ 
+  i := pos('<BR>', uppercase(s));
+  while i > 0 do
+  begin
+    s:= copy(s,1,i-1) + #13#10 + copy(s,i+4, length(s));
+    i := pos('<BR>', uppercase(s))
+  end;
+ 
+  for i := 1 to length(s) do
+  begin
+    if copy(s,i,1) = '<' then tag := true;
+    if not tag then res := res + copy(s,i,1);
+    if copy(s,i,1) = '>' then tag := false;
+  end;
+  result := res;
+end;
+
+procedure DREAMERS_BuscarInformacion;
+var url: String;
+  Articles: array of string;
+  Index: integer;
+begin
+  SetArrayLength(Articles,11);
+  Articles[0]:='Lo ';
+  Articles[1]:='La ';
+  Articles[2]:='Le ';
+  Articles[3]:='Uno ';
+  Articles[4]:='Una ';
+  Articles[5]:='Un ';
+  Articles[6]:='El ';
+  Articles[7]:='Los ';
+  Articles[8]:='Las ';
+  Articles[9]:='Unos ';
+  Articles[10]:='Unas ';
+
+
+
+
+
+
+
+
+
+//MovieName := 'the fear';
+
+  // Eliminate spanish article if exists
+  for Index := 0 to 10 do
+  begin
+   if Pos(Articles[Index], MovieName) = 1  then
+   MovieName := copy(MovieName, length(Articles[Index]), length(MovieName));
+  end;
+
+  url := DREAMERS_ListaBusqueda(BaseURLBusqueda, '?' +   URLEncode('query=' + MovieName));
+
+  if url <> '' then
+    DREAMERS_RecuperarInformacionPelicula(url);
+end;
+
+
+function DREAMERS_ListaBusqueda(Address, params: String): string;
+var
+  Page, TempTit: TStringList;
+  LineNr: Integer;
+  Code, Title, tmp: string;
+  ini, fin, cont: integer;
+  encontradoParaBatch: boolean;
+  Line: STring;
+begin
+  Page := TStringList.Create;
+  TempTit := TStringList.Create;
+
+  Page.Text := GetPage(Address +  params);
+//    Page.Text := GetPage('http://info.dreamers.com/p/web/busqueda.html?query=the%20fear');
+
+
+
+  Page.Text := StringReplace(Page.Text, '<BR>', #13#10);
+  Page.Text := StringReplace(Page.Text, '<br>', #13#10);
+  Page.Savetofile('c:\pagina retornada.htm');
+
+  ini := FindLine('>CRÍTICAS DE CINE', Page, 0);
+  fin := FindLine('>CRÍTICAS DE LIBROS', Page, 0);
+  Line := Page.GetString(ini);
+//  showmessage(inttostr(Pos ('No se ha encontrado nada que coincida con la búsqueda', Line)));
+  if Pos ('No se ha encontrado nada que coincida con la búsqueda', Line) <= 0 then
+  begin
+       PickTreeClear;
+       PickTreeAdd('THE DREAMERS: Resultados de búsqueda para: "' + MovieName + '"', '');
+
+         encontradoParaBatch := true; cont := 0;
+
+        for LineNr := ini to fin do
+        begin
+          if Pos('mostrarforo"><',Page.GetString(LineNr)) > 0 then
+          begin
+            Line  := Page.GetString(LineNr);
+            Code  := TextBetween(Line, '<a href="', '"><b>');
+            Title := ComeTags(TextBetween(Line, '<b>', '</b>'));
+
+            if ModoBatch and (AnsiLowerCase(Title) = AnsiLowerCase(MovieName)) then
+            begin
+              encontradoParaBatch := true;
+              Break;
+            end;
+
+            PickTreeAdd(Title, Code);
+         end;
+       end;
+
+         Page.Free;
+         if ModoBatch then
+         begin
+            if encontradoParaBatch or (cont  = 1) then
+              result := Code
+         end
+         else
+         begin
+           if PickTreeExec(Address) then result := Address
+                                    else result := '';
+         end
+  end else
+  if not ModoBatch then
+    ShowMessage('THE DREAMERS: No se ha encontrado ninguna coincidencia de "'+ MovieName +'"');
+end;
+
+procedure DREAMERS_RecuperarInformacionPelicula(Address: String);
+var
+  LineNr, aux: Integer;
+  Line, Line2: string;
+  Item, s_aux: string;
+  comentarios: string;
+  interpretes: string;
+  s: String;
+begin
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo original
+  s := buscaCampo('class="txPeliTit"', 0, '"txPeliTit">"', '" </TD>');
+
+  s := buscaCampo2('<b>Título original</b>', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('<b>Género</b>', 0, '<a href="', '">', '<');
+  setField(fieldOriginalTitle, s);
+ 
+  // Titulo traducido
+  s := buscaCampo('<title>THE DREAMERS: ', 0, '<title>THE DREAMERS: ', '<');
+  setField(fieldTranslatedTitle, s);
+ 
+  // Genero/Categoria
+  s := buscaCampo2('<b>Género</b>', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('<b>Género</b>', 0, '<a href="', '">', '<');
+  setField(fieldCategory, s);
+
+  // País
+  s := buscaCampo2('>Nacionalidad<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('>Nacionalidad<', 0, '<a href="', '">', '<');
+  setField(fieldCountry, s);
+
+  // Duración
+  s := buscaCampo2('>Duración<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  setField(fieldLength, s);
+
+  // Director
+  s := buscaCampo2('>Director<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('>Director<', 0, '<a href="', '">', '<');
+  setField(fieldDirector, s);
+
+  // Productor
+  s := buscaCampo2('>Producción<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('>Producción<', 0, '<a href="', '">', '<');
+  setField(fieldProducer, s);
+ 
+  // Año
+  s := buscaCampo2('>Año<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if trim(s) = '' then s := buscaCampo2('>Año<', 0, '<a href="', '">', '<');
+  setField(fieldYear, s);
+
+  // Comentarios = Premios, Guion, fotografia, Musica, comentario destacado, web oficial
+  // Cada cual que se lo monte a su gusto. A mi me gusta así:
+  comentarios := '';
+  s := buscaCampo2('>Guión<', 0, '<a href="', '">', '<');
+  if trim(s) = '' then s := buscaCampo2('>Guión<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if s <> '' then comentarios := comentarios + 'Guión: '#9#9 + s + #13#10;
+ 
+  s := buscaCampo2('>Música<', 0, '<a href="', '">', '<');
+  if trim(s) = '' then s := buscaCampo2('>Música<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if s <> '' then comentarios := comentarios + 'Música: '#9#9 + s + #13#10;
+ 
+  s := buscaCampo2('>Fotografía<', 0, '<a href="', '">', '<');
+  if trim(s) = '' then s := buscaCampo2('>Fotografía<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if s <> '' then comentarios := comentarios + 'Fotografía: '#9 + s + #13#10;
+
+  s := buscaCampo2('>Distribuidora<', 0, '<a href="', '">', '<');
+  if trim(s) = '' then s := buscaCampo2('>Distribuidora<', 0, '</b></td></tr><tr><td class="text"', '>', '<');
+  if s <> '' then comentarios := comentarios + 'Distribuidora: '#9 + s + #13#10;
+
+  //Calificación
+  s := buscaCampo2('del crítico: <b', 0, 'del crítico: <b', '>', '<');
+  if s <> '' then setField(fieldRating, s);
+
+  //Descripción
+  s := comeTags(buscaCampo2('<b>Sinopsis</b>', 0, '</td></tr><tr><td class="text"', '>', '</td>'));
+  if s <> '' then setField(fieldDescription, s);
+
+  //Comentarios
+  s := comeTags(buscaCampo2('del crítico: <b', 0, '</b></center></td></tr></table', '>', '</td>'));
+  if s <> '' then begin
+      comentarios := comentarios + ' _________________________________________________'#13#10;
+      comentarios := comentarios + #13#10 + 'CRÍTICA: ' + #13#10 + s + #13#10;
+  end;
+  setField(fieldComments, comentarios);
+
+  //Interpretes
+  s := comeTags(buscaCampo2('>Reparto<', 0, '<a href="', '">', '</tr>'));
+  SetField(fieldActors, s);
+
+  if BuscarCaratula then
+  begin
+    //Caratula
+    s := buscaCampo2('http://dreamers.com/cgibin/plantilla.cgi?plantilla', 0, '<img SRC=', '"', '" border');
+    if s <> '' then GetPicture(s);
+  end;
+
+end;
+
+
+function buscaCampo(patron: String; offset: integer; ini, fin: string): String;
+var
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+begin
+  Result := '';
+  LineNr := FindLine(patron, Page, 0);
+  if LineNr > 0 then
+  begin
+    LineNr := LineNr + offset;
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, ini, fin);
+    HTMLDecode(Item);
+    result := Trim(Item);
+  end;
+end;
+
+
+function buscaCampo2(patron: String; offset: integer; start, ini, fin: string): String;
+var
+  LineNr: Integer;
+  Line: string;
+begin
+  Result := '';
+  LineNr := FindLine(patron, Page, 0);
+  if LineNr > 0 then
+  begin
+    LineNr := LineNr + offset;
+    Line := Page.GetString(LineNr);
+    Line := TextBetween (Line, start, fin);
+    Line := TextBetween (Line + fin, ini, fin);
+    HTMLDecode(Line);
+    result := Trim(Line);
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+
+
+begin
+  BuscarCaratula        := getOption('BuscarCaratula') <> 0;
+  ModoBatch             := getOption('ModoBatch') = 1; //OJO: SI EL TITULO DE
+                 //LA PELICULA NO COINCIDE NO MOSTRARA INFORMACIÓN, POR QUE LOS
+                 //RESULTADOS DE LA BUSQUEDA NO LOS ORDENA POR ORDEN DE SEMEJANZA
+
+  { Un modo mas cómodo de asignar las variables es marcando el check de la caratula y
+    del titulo traducido, en los "campos modificables". Si me desmarca la imagen no la buscaré
+    y si me marca el titulo traducido(por ejemplo) serà un proceso batch.:
+   
+    BuscarCaratula        := CanSetPicture();
+    ModoBatch             := not CanSetField(fieldTranslatedTitle);
+   }
+
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+     
+    if (MovieName = '') or not (ModoBatch) then
+      if not Input('Importar de CINeol + Culturalia', 'Introduzca el titulo de la pelicula:', MovieName) then
+        Exit;
+
+    if (MovieName <> '') then
+    begin
+         DREAMERS_BuscarInformacion; // El titulo a buscar siempre está en MovieName
+    end;
+  end
+  else
+    ShowMessage('Este script requiere una version mas reciente de Ant Movie Catalog (por lo menos la version 3.5.0)');
+end.

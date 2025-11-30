@@ -1,0 +1,347 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Zoltan Karpati (<link>pinyo@gibzone.hu</link>)
+Title=NetPiac.hu
+Description=NetPiac.hu (HUN) import
+Site=http://www.netpiac.hu
+Language=HU
+Version=1.3
+Requires=3.5.0
+Comments=Fixed versions 1.2b (01/2007), 1.3 (12/2007) by bad4u
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+big_picture=1|1|0=import small picture|1=import big picture (standard)
+
+***************************************************)
+
+// netpiac.hu Script
+// Version 1.2b fixed server error, picturedownload, director, and much more.. (20070107/bad4u)
+// Version 1.3 fixed results list, titles, producer, actors, description, and a LOT more (20071228/bad4u)
+
+program netpiac;
+
+var
+  MovieName, MovieURL: string;
+  
+function RemoveHTML(Szoveg: string): String;
+begin
+  HTMLRemovetags(Szoveg);
+  HTMLDecode(Szoveg);
+  Szoveg := StringReplace(Szoveg, '%20', ' ');
+  Szoveg := StringReplace(Szoveg, '<i>', '');
+  Szoveg := StringReplace(Szoveg, '</i>', '');
+  Szoveg := StringReplace(Szoveg, '<b>', '');
+  Szoveg := StringReplace(Szoveg, '</b>', '');
+  Szoveg := StringReplace(Szoveg, '</p>', '');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  result := Trim(Szoveg);
+end;
+
+function AddHTML(Szoveg: string): String;
+begin
+  Szoveg := StringReplace(Szoveg, ' ','%20');
+  result := Szoveg;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := PostPage(Address,'');
+  if pos('Nincs találat.', Page.Text) <> 0 then
+    showmessage('Nincs ilyen címû film a NetPiac.hu adatbázisában!')
+  else begin
+    if pos('<td valign="top" class="product_list_info_td">', Page.Text) = 0 then
+    begin
+      MovieURL := Address;
+      AnalyzeMoviePage(Page);
+    end else
+    begin
+      PickTreeClear;
+      LineNr := 0;
+      LineNr := FindLine('<td valign="top" class="product_list_info_td">', Page, LineNr);
+      if LineNr > -1 then
+      begin
+        PickTreeAdd('DVD filmek:', '');
+        AddMoviesTitles(Page, LineNr);
+      end;
+      if PickTreeExec(Address) then
+        AnalyzePage(Address);
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue, PageString: string;
+  LineNr: Integer;
+  Adder: Integer;
+  Rate: Integer;
+  BeginPos, EndPos: Integer;
+begin
+  // fieldURL
+  SetField(fieldURL, MovieURL);
+
+  // fieldSource
+  SetField(fieldSource,'NetPiac.hu');
+
+  // fieldMediaType
+  SetField(fieldMediaType, 'DVD');
+
+  // fieldTranslatedTitle fieldOriginalTitle fieldCategory fieldYear fieldCountry
+  LineNr := FindLine('<div class="txt">', Page, 0);
+  if LineNr > -1 then
+  begin
+    LineNr := FindLine('ib2">', Page, LineNr);
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('ib2">', Line)+5;
+    EndPos := pos('</span>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldTranslatedTitle,RemoveHTML(Value));
+
+    Delete(Line,1,EndPos);
+    BeginPos := pos('ib3">', Line)+5;
+    EndPos := pos('<br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Value := RemoveHTML(Value);
+    Value := StringReplace(Value, '(','');
+    Value := StringReplace(Value, ')','');
+    SetField(fieldOriginalTitle,Value);
+
+    Delete(Line,1,EndPos+3);
+    EndPos := pos('</span>', Line);
+    FullValue := copy(Line, 1, EndPos-1);
+
+    EndPos := pos(',',FullValue);
+    Value := copy(FullValue, 1, EndPos-1);
+    SetField(fieldCategory, RemoveHTML(Value));
+
+    Delete(FullValue,1,EndPos+1);
+    EndPos := pos('-',FullValue);
+    Value := copy(FullValue, 1, EndPos-1);
+    SetField(fieldYear,RemoveHTML(Value));
+
+    Delete(FullValue,1,EndPos+1);
+    BeginPos := pos(' - ',FullValue);
+    EndPos := pos('film',FullValue);
+    Value := copy(FullValue, BeginPos, EndPos+3);
+    Value := StringReplace(Value, ' film','');
+    Value := StringReplace(Value, ' - ','');
+    SetField(fieldCountry,RemoveHTML(Value));
+  end;
+
+  // fieldDirector
+  LineNr := FindLine('Rendezte:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Rendezte:', Line) + 9;
+    EndPos := pos('</span></a>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldDirector, RemoveHTML(Value));
+  end;
+
+  // fieldActors
+  LineNr := FindLine('Fõszerepben: ', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Fõszerepben: ', Line) + 12;
+    Delete(Line,1, BeginPos);
+    FullValue := Line;
+    repeat
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      FullValue := FullValue + Line;
+    until (pos('  <br>', Line) > 0);
+    SetField(fieldActors, RemoveHTML(FullValue));
+  end;
+
+  // fieldProducer  - studió
+  LineNr := FindLine('Stúdió/Forgalmazó:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    // Line := Page.GetString(LineNr);
+    // BeginPos := pos('Stúdió/Forgalmazó:', Line);
+    // Delete(Line,1,BeginPos);
+    // BeginPos := pos('top">', Line)+5;
+    // EndPos := pos('</td></tr>', Line);
+    // Value := copy(Line, BeginPos, EndPos - BeginPos);
+    // SetField(fieldProducer,RemoveHTML(Value));
+    SetField(fieldProducer,RemoveHTML(Line));
+  end;
+
+  // fieldLanguages
+  LineNr := FindLine('> Hang:<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    // Line := Page.GetString(LineNr);
+    // BeginPos := pos('>Hang: <', Line);
+    // Delete(Line,1,BeginPos);
+    // BeginPos := pos('top">', Line)+5;
+    // EndPos := pos('</td></tr>', Line);
+    // Value := copy(Line, BeginPos, EndPos - BeginPos);
+    // SetField(fieldLanguages,RemoveHTML(Value));
+    SetField(fieldLanguages,RemoveHTML(Line));
+  end;
+
+  // fieldComments Kepformatum
+  LineNr := FindLine('Kép :', Page, 0);
+  FullValue := '';
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+2);
+    // repeat
+    //   LineNr := LineNr + 1;
+    //   Line := Page.GetString(LineNr);
+    //   BeginPos := pos('<td class="txt">', Line);
+    //   if BeginPos > 0 then
+    //   begin
+    //     Delete(Line,1,BeginPos+16);
+    //     FullValue := FullValue + RemoveHTML(Line);
+    //   end;
+    // until (pos('</tr>', Line) > 0);
+    // SetField(fieldComments,RemoveHTML(FullValue));
+    SetField(fieldComments,RemoveHTML(Line));
+  end;
+
+  // fieldSubtitles Kepformatum
+  LineNr := FindLine('Felirat nyelv:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    // Line := Page.GetString(LineNr);
+    // BeginPos := pos('Felirat nyelv:', Line);
+    // Delete(Line,1,BeginPos+13);
+    // EndPos := pos('</td></tr>', Line);
+    // Value := copy(Line, 1, EndPos);
+    // SetField(fieldSubtitles,RemoveHTML(Value));
+    SetField(fieldSubtitles,RemoveHTML(Line));
+  end;
+
+  // fieldLength
+  LineNr := FindLine('Hossza:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    BeginPos := pos('"txt">', Line)+6;
+    EndPos := pos(' perc', Line);
+    Value := copy(Line, BeginPos, EndPos-BeginPos);
+    SetField(fieldLength,RemoveHTML(Value));
+  end;
+
+  // Picture
+  if GetOption ('big_picture') = 1 then
+  begin
+    LineNr := FindLine('/pop.phtml?pic', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('window.open', Line)+9;
+      Delete(Line, 1, BeginPos + 18);
+      EndPos := pos('&', Line);
+      Value := copy(Line, 1, EndPos - 1);
+      GetPicture('http://www.netpiac.hu' + Value);
+    end;
+  end
+  else
+  begin
+    LineNr := FindLine('<!--kép-->', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('<img src="', Line)+9;
+      Delete(Line, 1, BeginPos);
+      EndPos := pos('" height', Line);
+      Value := copy(Line, 1, EndPos - 1);
+      GetPicture('http://www.netpiac.hu' + Value);
+    end;
+  end;
+  
+  
+  // fieldDescription
+  LineNr := FindLine('<div class="prod_text display_left">', Page, 0);
+  if LineNr > -1 then
+  begin
+    FullValue := '';
+    repeat
+      Line := Page.GetString(LineNr + 1);
+      FullValue := FullValue + Line;
+      LineNr := LineNr + 1;
+    until pos('</div>', Line) > 0;
+    FullValue := StringReplace(FullValue, '<br>', #13#10);
+    SetField(fieldDescription, RemoveHTML(FullValue));
+  end;
+
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+  EndPos: Integer;
+begin
+  LineNr := 0;
+  repeat
+    LineNr := FindLine('<td valign="top" class="product_list_info_td">', Page, LineNr);
+    Line := Page.GetString(LineNr-1);
+    StartPos := pos('a href="', Line);
+    if StartPos > 0 then
+    begin
+      EndPos := pos('"><img', Line);
+      MovieAddress := copy(Line, StartPos + 8, EndPos-StartPos-8);
+      Line := Page.GetString(LineNr+1);
+      StartPos := pos('">', Line)+2;
+      EndPos := pos('</a>', Line)-StartPos;
+      MovieTitle := copy(Line, StartPos, EndPos);
+      Page.SetString(LineNr, '');
+      PickTreeAdd(MovieTitle, 'http://www.netpiac.hu' + MovieAddress);
+    end;
+  until LineNr = -1;
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('NetPiac.hu import', 'Kérem adja meg a film címét:', MovieName) then
+    begin
+      AnalyzePage('http://www.netpiac.hu/display/index.phtml?limit=50&style=1&do=talalatok&do2=gyors&ujkereses=1&hol=3&szoveg='+AddHTML(MovieName));
+    end;
+  end else
+  ShowMessage('Ehhez a scripthez legalább 3.5.0-as verziójú Ant Movie Catalog szükséges!');
+end.
+

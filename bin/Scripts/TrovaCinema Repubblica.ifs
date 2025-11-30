@@ -1,0 +1,143 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=MrObama (2018)
+Title=TrovaCinema Repubblica
+Description=Get movie info from TrovaCinema Repubblica
+Site=http://trovacinema.repubblica.it
+Language=IT
+Version=1.0.0 - 17.02.2018
+Requires=4.2.1
+Comments=**First release**
+License=*  The source code of the script can be used in   |*  another program only if full credits to              |*  script author and a link to Ant Movie Catalog  |*  website are given in the About box or in       |*  the documentation of the program               |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program TrovaCinemaRepubblicaIt;
+
+uses
+  Stringutils7552;
+
+var
+  MovieNameInput: string;
+
+const
+  PATHLOG = 'c:\ProgramData\Ant Movie Catalog\Log\TrovaCinema\';
+
+// --------------------------------------------------
+
+// Analizza la pagina e ricava i dati
+procedure AnalyzeFilmPage(htmlPage: string);
+var
+  json, value: string;
+begin
+
+// Titoli
+  json := TextBetween(htmlPage, '<script type="application/ld+json">', '</script>');
+  value := UTF8Decode(TextBetween(json, '"name": "', '"'));
+  if value <> '' then SetField(fieldTranslatedTitle, value);
+  if value <> '' then SetField(fieldOriginalTitle, value);
+  value := TextBetween(json, '"url": "', '"');
+  if value <> '' then SetField(fieldURL, value);
+  value := TextBetween(json, '"director"', '}');
+  value := UTF8Decode(TextBetween(value, '"name": "', '"'));
+  if value <> '' then SetField(fieldDirector, value);
+  value := TextBetween(json, '"image"', '}');
+  value := TextBetween(value, '"url": "', '"');
+  GetPicture(value);
+  value := UTF8Decode(RemoveHTML(FullTrim(TextBetween(htmlPage, '<span class="mm-weight-500">Con</span>', '<span class="mm-weight-500">'))));
+  if value <> '' then SetField(fieldActors, value);
+  value := RemoveHTML(trim('<' + TextBetween(htmlPage, '<span class="mm-weight-500">Anno</span>: <', '<')));
+  if value <> '' then SetField(fieldYear, value);
+  value := UTF8Decode(FullTrim(RemoveHTML(TextBetween(htmlPage, '<div class="schedine-separa"></div>', '<div class="mm-container">'))));
+  if value <> '' then SetField(fieldDescription, value);
+  value := UTF8Decode(trim(TextBetween(htmlPage, '<span class="mm-weight-500">Nazione</span>:', '</li>')));
+  if value <> '' then SetField(fieldCountry, value);
+  value := trim(TextBetween(htmlPage, '<span class="mm-weight-500">Durata</span>: ', ' '));
+  if value <> '' then SetField(fieldLength, value);
+  value := TextBetween(htmlPage, '<li><span class="mm-weight-500">Titolo originale', '/li>');
+  if value <> '' then
+    begin
+      value := UTF8Decode(trim(TextBetween(value, '>:', '<')));
+      if value <> '' then SetField(fieldOriginalTitle, value);
+    end;
+  value := UTF8Decode(trim(TextBetween(htmlPage, '<span class="mm-weight-500">Produzione</span>:', '</li>')));
+  if value <> '' then SetField(fieldProducer, value);
+  value := UTF8Decode(RemoveHTML(trim(TextBetween(htmlPage, '<span class="mm-weight-500">Genere</span>:', '</a>'))));
+  if value <> '' then SetField(fieldCategory, value);
+end;
+
+
+// Analizza il contenuto della pagina con i risultati di ricerca
+procedure AnalyzeResultPage(MovieName: string);
+
+var
+  strPage, strHtmlMovie, MovieAddr, MovieTitle : string;
+  TagPos: Integer;
+
+begin
+  // Riceve la pagina
+  MovieAddr := 'http://trovacinema.repubblica.it/cerca/archivio/?dove=film&cosa='+ UrlEncode(MovieName);
+  strPage := GetPage(MovieAddr);
+
+  TagPos:= Pos('<span class="ucase">Cerca su TrovaCinema</span>', strPage);
+  if TagPos > 0 then
+    begin
+      ShowMessage('Film non trovato !');
+      exit;
+    end;
+
+  // Controllare che ci siano film o se siamo stati rediretti sulla pagina dell'unico film trovato
+  TagPos:= Pos('<span>Risultato ricerca</span>', strPage);
+  if (TagPos < 1) then AnalyzeFilmPage(strPage) // Ha trovato un unico film e sono già nella pagina di quel film
+  else  // Lista di film
+    begin
+      PickTreeClear;
+      PickTreeAdd('Risultati ricerca per "' + MovieName + '":', '');
+
+      strPage := TextBetween(strPage, '<span>Risultato ricerca</span>', '</html>') + '</html>';
+      TagPos := Pos('<div class="clear5"></div>', strPage);
+      while TagPos > 0 do
+        begin
+          strHtmlMovie := TextBetween(strPage, 'href=', '<div class="clear5">');
+          strPage := TextBetween(strPage, '<div class="clear5"></div>', '</html>') + '</html>';
+          MovieAddr := TextBetween(strHtmlMovie, '"', '"');
+          MovieTitle := trim(TextBetween(strHtmlMovie, '<div class="mm-left titolo-accordion">', '</div>'));
+
+          // Add to listbox
+          PickTreeAdd(MovieTitle, MovieAddr);
+
+          // Restart the process
+          TagPos := Pos('<div class="clear5"></div>', strPage);
+        end;
+
+      // Visualizza la lista e fa scegliere
+      if (PickTreeExec(MovieAddr)) then
+        begin
+          strPage := GetPage(MovieAddr);
+          AnalyzeFilmPage(strPage);
+        end;
+    end;
+end;
+
+// -------------------- main
+
+begin
+  if (CheckVersion(4,2,1)) and (StringUtils1_Version > 5) then
+    begin
+      MovieNameInput := GetMovieName();
+      Input('TrovaCinema Import', 'Titolo del film:', MovieNameInput);
+      if MovieNameInput <> '' then AnalyzeResultPage(MovieNameInput);
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.1) and StringUtils1 version 6');
+end.

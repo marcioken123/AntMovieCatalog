@@ -1,0 +1,542 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Draco31.fr
+Title=DiscountManga
+Description=Site de vente Manga, DVD, CD & Goodies
+Site=http://www.discountmanga.com
+Language=FR
+Version=0.2 du 03/06/2007
+Requires=3.5
+Comments=Ce script nécessite les fichiers StringUtils1.pas & ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Lancement automatique sur l'adresse web
+Type de recherche=0|4|0=  Tout|23=Mangas|1=     Mangas VF|2=     Mangas Occaz|34=   Pack|20=   BD Manga|3=     Manga X|12=   Mangas Jap|24=DVD|4=     DVD Animés|5=     DVD Occaz|7=     DVD X|10=   Films Asiatiques|25=Produits dérivés|18=   Cosplay|16=   Goodies|9=     Figurines|13=   T Shirt|27=   Pin's|28=   Peluche|33=   Accessoires|29=Artbook|8=     Artbook Jap|30=   Artbook Français|26=CD|14=   CD-Animé (OST)|17=   CD-DVD JPOP|22=Cartes à Jouer|21=Jeux Vidéo|19=Vente Flash
+Affiche=1|1|0=Prend la petite affiche|1=Prend la grande affiche (plus disponible)
+Format du Titre=3|3|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule|4=Formatage identique au site d'origine
+
+***************************************************)
+
+program DiscountManga;
+//uses
+//  ScorEpioNCommonScript, StringUtils1;
+
+const
+  VersionScript = '0.1 du 02/07/2006';
+  NomScript = 'DiscountManga';
+  urlDomain = 'http://www.discountmanga.com';
+  urlDMSearch = 'http://www.discountmanga.com/categories.php?cId=';
+  // cPath=1  pour les Manga VF
+  // cPath=12 pour les Manga Jap
+  // cPath=8  pour les Artbook
+  // cPath=4  pour les DVD
+
+  urlDMSearchGo = '&search=';
+  timetosleep = 500;
+
+var
+  MovieName, Resume, Titre, urlTitre, APage, CPage, Comments,sTypeR : string;
+  CxNote, compteur, premiereExecution, numTemp, lien_URL, Critique, TypeR : Integer;
+  NoteC, NoteM, Note, NumPage: real;
+  listeResultat : TStringList;
+
+
+//--OK--------------------------------------------------------------------------
+// ANALYSE RESULTAT DE RECHERCHE
+//------------------------------------------------------------------------------
+
+procedure AnalyzeSearchPage(urlSearch: string);
+var
+  Line, PageNo, temp : string;
+  nbchoix, i : integer;
+begin
+  Line := GetPage(urlSearch);
+  nbchoix := 0;
+  PageNo := '';
+  if Pos('Votre recherche n''a donné aucun résultat.',Line) > 0 Then
+    ShowInformation('Aucun titre correspondant à "'+MovieName+'" !'+#13#10+'Relancez le script en donnant un autre mot clé !')
+  else
+  begin
+    PickTreeClear;
+    temp := '';
+    i := 0;
+    urlTitre := '';
+    Titre := '';
+   // Récupère le numéro de la page en cours depuis l'url
+    temp := copy(urlSearch,Pos('&page=',urlSearch)+6,length(urlSearch));
+    i := StrToInt(temp,0);
+    NumPage := i;
+    temp := '';
+    i := 0;
+   // Supprimme le haut de la page
+    Delete(Line,1,Pos('Résultat de votre recherche',Line));
+   // Test si existe page suivante
+    i := Pos('[Suivante&nbsp;&gt;&gt;]',Line);
+    if ( i > 0 ) Then
+    begin
+      temp := Line;
+      delete(temp,i+33,length(temp));
+      temp := copy(temp,LastPos('<a href="',temp)-1,length(temp));
+      urlTitre := MonFindInfo('<a href="','" class="pageResults" title=" Page Suivante "><u>[Suivante&nbsp;&gt;&gt;]</u></a>',temp,0);
+      PickTreeMoreLink(urlTitre);
+      PageNo := ' (Page N°'+FloatToStr(NumPage)+')';
+      temp := '';
+    end
+    else
+    begin
+     // Test si qu'une seule page de résultats
+      if (NumPage = 1) Then
+      PageNo := ''
+      else
+      PageNo := ' (Dernière Page)';
+     end
+
+   // Initialise la fenêtre de résultat
+    PickTreeAdd('Résultat trouvé pour : '+MovieName+PageNo,'');
+   // Condition pour fin de la liste de résultats
+    While (Pos('<div class="catProductsContener prodWrapper odd">',Line) > 0) do
+    begin
+      Delete(Line,1,Pos('<div class="catProductDetails">',Line));
+      TraiteInfo(Line);
+      PickTreeAdd(Titre,urlTitre);
+      nbchoix := nbchoix+1;
+    end
+    if ( NumPage > 1) Then
+    PickTreeAdd('Page Précédente',Copy(urlSearch,1,Pos('&page=',urlSearch)+5)+FloatToStr(NumPage-1));
+    
+//    else
+//    begin
+//      if (nbchoix = 1) Then
+//    begin
+//      AnalyzeMoviePage(urlTitre);
+//      nbchoix := 0;
+//    end
+//  end
+
+   // Affiche la liste de choix puis verifie qu'il y a une selection
+//    if (nbchoix <> 0) Then
+//    begin
+    if (PickTreeExec(urlTitre)) then
+    begin
+     // Si choisie, lance la recherche sur la page suivante
+      if (pos(urlDMSearch,urlTitre) > 0) Then
+      begin
+        nbchoix := 0;
+        AnalyzeSearchPage(urlTitre);
+      end
+      else
+     // Analyse la page du film selectionné
+      AnalyzeMoviePage(urlTitre);
+    end
+  end
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// TRAITE L'INFO : SEPARE L'URL DU TITRE
+//------------------------------------------------------------------------------
+
+procedure TraiteInfo(infos: string);
+var
+  temp1, temp2 : string;
+begin
+  urlTitre := '';
+  Titre := '';
+  temp2 := '';
+  urlTitre := MonFindInfo('<p class="catProductName" ><a href="','">',infos,0);
+  temp1 := MonFindInfo('<p class="catProductName" >','<li class="pInfoDelivery" >',infos,0);
+//  HTMLDecode(temp1);
+  NoHTML(temp1);
+  temp1 := StringReplace(temp1,#13#10#13#10#13#10#13#10#13#10,' ');
+  temp1 := StringReplace(temp1,'Sortie le ',' / Sortie le');
+  temp1 := StringReplace(temp1,'Toute la série','');
+  temp1 := StringReplace(temp1,#13#10,' / ');
+  If Pos('Sortie le',temp1) = (length(temp1) - 9) Then
+    temp1 := Copy(temp1, 1, Pos(' / Sortie le',temp1) - 1);
+  Titre := temp1;
+end;
+
+
+//------------------------------------------------------------------------------
+// ANALYSE LA PAGE DU "FILM"
+//------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(url : string);
+var
+  t1, t2, t3, annee, temp, Line, comment : string;
+begin
+  temp := '';
+  Comments := '';
+  Line := GetPage(url);
+// Supprimme les parties inutiles
+  Delete(Line,1,Pos('<p class="pInfoName">',Line)-1);
+
+//------------------------------------------------------------------------------
+// Stoque l'url
+  Setfield(fieldURL,url);
+
+//------------------------------------------------------------------------------
+// Prend le titre traduit
+  temp := MonFindInfo('<p class="pInfoName">','</p>',Line,0);
+  temp := StringReplace(temp,#13#10,'');
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  if (GetOption('Recherche sur le titre') = 1) and (GetField(fieldOriginalTitle) <> '') Then
+  SetField(fieldOriginalTitle,FormatTitre(Trim(temp),GetOption('Format du Titre')))
+  else
+  SetField(fieldTranslatedTitle,FormatTitre(Trim(temp),GetOption('Format du Titre')));
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend le genre
+  temp := MonFindInfo('<p class="pInfoGenre">','</p>',Line,0);
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  SetField(fieldCategory,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend le réalisateur/directeur
+  temp := MonFindInfo('<p class="pInfoAuthor"><span id="prefix">de</span> ','</p>',Line,0);
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  SetField(fieldDirector,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend l'année
+  temp := MonFindInfo('<li class="pInfoDates odd"><span class="detailTitle">Sortie le </span><span class="detailData">','</span></li>',Line,0);
+  annee := copy(temp,length(temp)-3,length(temp));
+  SetField(fieldYear,Annee);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend l'éditeur/producteur
+  temp := MonFindInfo('<li class="pInfoManufacturer even"><span class="detailTitle">Editeur</span><span class="detailData">','</span></li>',Line,0);
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  SetField(fieldProducer,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend la zone (DVD)
+//  temp := MonFindInfo('<li class="pInfoZone odd"><span class="detailTitle">Zone</span><span class="detailData">','</span></li>',Line,0);
+//  NoHTML(temp);
+//  While pos(' ',temp) = 1 do
+//    temp := copy(temp,2,length(temp));
+//  if temp <> 'N/A' Then
+//  SetField(field ???? ,temp);
+//  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend la langue (DVD)
+  temp := MonFindInfo('<li class="pInfoLang odd"><span class="detailTitle">Langue</span><span class="detailData">','</span></li>',Line,0);
+//  NoHTML(temp);
+//  While pos(' ',temp) = 1 do
+//    temp := copy(temp,2,length(temp));
+  if temp <> 'N/A' Then
+  SetField(fieldLanguages,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend le nombre de disque/volume
+  temp := MonFindInfo('<li class="pInfoVolume even"><span class="detailTitle">Nbr de volumes</span><span class="detailData">','</span></li>',Line,0);
+//  NoHTML(temp);
+//  While pos(' ',temp) = 1 do
+//    temp := copy(temp,2,length(temp));
+  if temp <> 'N/A' Then
+  SetField(fieldDisks,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend la note
+  temp := MonFindInfo('<li class="pInfoRating" ><span class="detailTitle">','</li>',Line,0);
+  if Pos('Pas encore de note',temp) = 0 Then
+  begin
+    t1 := MonFindInfo('<div id="rateIcons" title="',' sur 5 étoiles" >',temp,0);
+    SetField(fieldRating,FloatToStr(StrToFloat(t1)*2));
+  end
+  temp := '';
+  t1 := '';
+
+//------------------------------------------------------------------------------
+// Stoque l'image si necessaire
+  if CanSetPicture then
+  begin
+    //if (Pos('<li class="pInfoZoom">',Line) > 0) and (GetOption('Affiche') = 1) Then
+    //begin
+    //  temp := MonFindInfo('<li class="pInfoZoom"><div class="showinfo" style="position:relative;cursor:pointer;"  onclick="infoImage(',''')">Agrandir</div></li>',Line,0);
+    //  temp := copy(temp,pos(',''images/',temp)+2,length(temp));
+    //  if pos(',images/',temp) > 0 Then
+    //  temp := copy(temp,1,pos(',images/',temp));
+    //  GetPicture(urlDomain+'/'+temp);
+    //end
+    //else
+    GetPicture(urlDomain+'/'+MonFindInfo('<img class="productImage transferItem" src="','" alt=',Line,0));
+  end
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend les infos complémentaires (champ acteurs)
+  temp := MonFindInfo('<p class="pInfoBonus">','</p>',Line,0);
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  temp := StringReplace(temp,#13#10#13#10,#13#10);
+  SetField(fieldActors,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend le résumé
+  temp := MonFindInfo('<p class="pInfoDesc">','<p>',Line,0);
+  NoHTML(temp);
+  While pos(' ',temp) = 1 do
+    temp := copy(temp,2,length(temp));
+  SetField(fieldDescription,temp);
+  temp := '';
+
+//------------------------------------------------------------------------------
+// Prend les avis
+  comment := '';
+  if pos('Aucun internaute n''a encore proposé de commentaires pour cet article.',Line) = 0 Then
+  begin
+    Delete(Line,1,Pos('<div class="reviewsDesc">',Line));
+    While Pos('<blockquote class="review">',Line) > 0 do
+    begin
+      temp := MonFindInfo('<blockquote class="review">','</blockquote>',Line,0);
+      t1 := StringReplace(MonFindInfo('<cite>','</cite>',Line,0),#13#10,'');
+      NoHTML(t1);
+      While pos(' ',t1) = 1 do
+        t1 := copy(t1,2,length(t1));
+      t1 := FormatTitre(t1,3);
+      t2 := MonFindInfo('<div class="reviewsStars"><img src="tpl/dmadvanced/img/icons/small_star_icon.gif" alt="','" />',Line,0);
+      t3 := MonFindInfo('<p class="review">','</p>',temp,0);
+      NoHTML(t3);
+      comment := comment+t1+' (Note : '+t2+' sur 5)'+#13#10+t3+#13#10#13#10#13#10;
+      Delete(Line,1,pos('</blockquote>',Line));
+      temp := '';
+      t1 := '';
+      t2 := '';
+      t3 := '';
+    end
+    SetField(fieldComments,comment);
+  end
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Supprimme les balises HTML
+//------------------------------------------------------------------------------
+
+procedure NoHTML(var page: string);
+var
+  temp : string;
+begin
+  HTMLDecode(page);
+  page := StringReplace(page,'<br>',#13#10);
+  page := StringReplace(page,'<b>','');
+  page := StringReplace(page,'</b>','');
+  page := StringReplace(page,'<i>','');
+  page := StringReplace(page,'</i>','');
+  page := StringReplace(page,'<u>','');
+  page := StringReplace(page,'</u>','');
+  page := StringReplace(page,'<br />',#13#10);
+  While Pos('<',page) > 0 Do
+  begin
+    temp := MonFindInfo('<','>',page,1);
+    page := StringReplace(page,temp,'');
+    temp := '';
+  end
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// TROUVE LA CHAINE VOULUE (Merci ScorEpioN)
+// option = 1 : Garde début et fin
+// option = 0 : NE garde PAS début et fin
+//------------------------------------------------------------------------------
+
+function MonFindInfo(Debut, Fin, Line : string ; option : integer) : string;
+var
+   infos : String;
+   BeginPos, EndPos : Integer;
+begin
+   infos := '';
+   BeginPos := pos(Debut, Line);
+   if BeginPos > 0 then
+   begin
+    if (option = 1) then
+// Garde 'Debut' et 'Fin'
+    begin
+      delete(Line, 1, BeginPos-1);
+      EndPos := pos(Fin, Line);
+      infos := copy(Line,0,EndPos+length(Fin)-1);
+    end
+    else
+// Supprimme 'Debut' et 'Fin'
+// Vérifie si paramètre 'option' n'est pas invalide
+    if (option = 0) then
+    begin
+      delete(Line, 1, BeginPos+length(Debut)-1);
+      EndPos := pos(Fin, Line);
+      infos := copy(Line,0,EndPos-1);
+    end
+   end
+   result := Trim(infos);
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Formatte les textes (Merci ScorEpioN)
+//------------------------------------------------------------------------------
+
+procedure Format(name : string);
+var
+  option: integer;
+begin
+  option := GetOption('Format du Titre');
+  name := formatTitre(name,option);
+end;
+
+
+//------------------------------------------------------------------------------
+// MET LE TITRE AU BON FORMAT (merci ScorEpioN)
+//------------------------------------------------------------------------------
+
+function formatTitre(titre2 : String; option : Integer) : string;
+begin
+  if (option = 0) then
+  begin
+     titre2 := AnsiLowerCase(titre2);
+  end else if (option = 1) then
+  begin
+     titre2 := AnsiUpperCase(titre2);
+  end else if (option = 2) then
+  begin
+     //titre := AnsiLowerCase(titre);
+     titre2 := AnsiUpFirstLetter(titre2);
+  end else if (option = 3) then
+  begin
+     titre2 := AnsiLowerCase(titre2);
+     titre2 := AnsiMixedCase(titre2,' -''(');
+  end else if (option = 4) then
+  begin
+     titre2 := titre2;
+  end;
+  titre2 := StringReplace(titre2, 'Usa', 'USA');
+  result := titre2;
+end;
+
+
+//------------------------------------------------------------------------------
+// RECHERCHE SUR LE TITRE ORIGINAL OU TRADUIT (Merci ScroEpioN)
+//------------------------------------------------------------------------------
+
+function recupTitreRecherche(option : Integer) : string;
+var
+  NomFilm : String;
+begin
+if (option = 0) then
+    begin
+      NomFilm := GetField(fieldTranslatedTitle);
+      if NomFilm = '' then
+        NomFilm := GetField(fieldOriginalTitle);
+    end else
+    if (option = 1) then
+    begin
+      NomFilm := GetField(fieldOriginalTitle);
+      if NomFilm = '' then
+        NomFilm := GetField(fieldTranslatedTitle);
+    end;
+//    NomFilm := cleanTitle(NomFilm);
+    result := NomFilm;
+end;
+
+
+//------------------------------------------------------------------------------
+// LastPos ***** Like the Pos function, but returns the last occurence instead of the first one *****
+// => cf StringUtils.pas
+
+function LastPos(ASearch: string; AText: string): Integer;
+var
+  CurPos, PrevPos: Integer;
+begin
+  PrevPos := 0;
+  CurPos := Pos(ASearch, AText);
+  while CurPos > 0 do
+  begin
+    if PrevPos = 0 then
+      PrevPos := CurPos
+    else
+      PrevPos := PrevPos + CurPos + Length(ASearch) - 1;
+    Delete(AText, 1, CurPos + Length(ASearch) - 1);
+    CurPos := Pos(ASearch, AText);
+  end;
+  Result := PrevPos;
+end;
+
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    NumPage := 1;
+    Comments := '';
+    TypeR := GetOption('Type de recherche');
+    sTypeR := FloatToStr(TypeR);
+    If sTypeR = '0' Then
+      sTypeR := '';
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+   // Choix du lancement
+   // Demande du titre
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' par draco31.fr', 'Entrez le titre du film :',MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+        begin
+          typeR := -1;
+          AnalyzeMoviePage(MovieName);
+        end
+        else
+        AnalyzeSearchPage(urlDMSearch+stypeR+urlDMSearchGo+urlEncode(MovieName)+'&page='+FloatToStr(NumPage));
+      end
+    end
+    else
+    begin
+     // Ne demande pas le titre
+      if (GetOption('Type de Lancement') = 1) then
+      AnalyzeSearchPage(urlDMSearch+stypeR+urlDMSearchGo+urlEncode(MovieName)+'&page='+FloatToStr(NumPage))
+      else
+      begin
+       // Directement sur l'adresse web
+        if (GetOption('Type de Lancement') = 2) then
+        begin
+          urlTitre := GetField(fieldURL);
+          if Pos(urlDomain,urlTitre) > 0 Then
+          begin
+            typeR := -1;
+            AnalyzeMoviePage(urlTitre);
+          end
+          else
+          ShowError('L''adresse web ne correspond pas à une page web de DiscountManga !');
+        end
+      end
+    end
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

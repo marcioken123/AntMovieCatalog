@@ -1,0 +1,370 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Planeta Comic
+Description=
+Site=www.planetacomic.net
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ 
+
+ program PlanetaComic;
+
+
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos(' Resultados B&uacute;squeda</title>', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('<A href="dvd_detalle.asp?Id=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('">', strPage);
+          MovieId := Copy(strPage,+28, EndPos-28);
+          MovieAddr := 'http://www.planetacomic.net/dvd_detalle.asp?Id=' + MovieId;
+          BeginPoss := Pos('&cat=',strPage);
+          EndPoss := Pos('</td>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle , '>', '</a> ');
+          MovieTitle  := AnsiUpFirstLetter(MovieTitle);
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('<A href="dvd_detalle.asp?Id=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<td class="TextoNegroNegrita11"><A ', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('href="dvd_detalle.asp?Id=',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '">', '</a>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+ end;
+  // Titulo Original
+  LineNr := FindLine('<em>Título original</em>:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<em>Título original</em>:', '');
+    DeleteTags (Item);
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+  // productor
+  LineNr := FindLine('<em>Productora</em>: <strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<em>Productora</em>: <strong>', '');
+    DeleteTags (Item);
+    Item  := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+  // Categoria
+  LineNr := FindLine('class="titulo">Género:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="titulo">Género:</span>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '/">', '</div>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+   // pais
+  LineNr := FindLine('<em>Nacionalidad</em>:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<em>Nacionalidad</em>:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>', '</strong><br>');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCountry, Trim (Item));
+  end;
+   // director
+  LineNr := FindLine('<em>Dirección</em>: <strong>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<em>Dirección</em>: <strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<em>Dirección</em>: <strong>', '</strong><br>');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+
+
+  // Duracion
+  LineNr := FindLine('<em>Duración</em>:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<em>Duración</em>:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<em>Duración</em>:', 'min.');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+  // Calificación
+  LineNr := FindLine('<div id="calificacion">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<div id="calificacion">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<div class="voto">', '</div>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '  ', '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldRating, Trim (Item));
+  end;
+
+ 
+  // Reparto
+  LineNr := FindLine('<em>Actuación</em>: <strong>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<em>Actuación</em>: <strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<em>Actuación</em>: <strong>', '</strong><br>');
+    //Item  := StringReplace(Item , ', ',#13#10);
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+
+ 
+  // sinopsis
+ LineNr := FindLine('<span class="TextoAzulNegrita11">Información', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<span class="TextoAzulNegrita11">Información',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</span><br><br>', '</td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+  // comentarios
+ LineNr := FindLine('class="titulo">Premios:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="titulo">Premios:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'class="cuerpo">', '<a class=');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    Item  := StringReplace(Item , 'Más', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldComments, Trim (Item));
+  end;
+  // Caratula
+  LineNr := FindLine('<td valign="top"><img src="imagenes/dvd/', Page, 0);
+  if LineNr <> -1 then
+     begin
+       Line := Page.GetString(LineNr);
+       Busca := FindLine('<td valign="top"><img src="imagenes/dvd/', Page, 0);
+       if Busca <> -1 then
+          begin
+            Item := TextBetween (Line, 'src="', '" width');
+            GetPicture ('http://www.planetacomic.net/'+Item);
+          end
+       else
+          begin
+            Item := TextBetween (Line, 'src="', '" alt');
+            GetPicture ('http://www.planetacomic.net/'+Item);
+          end
+     end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Planeta Comic', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('Planeta Comic', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.planetacomic.net/resultados.asp?CboBuscador=pcTitulo&IdSeccion=7&ValorBuscado=' + UrlEncode(MovieName));
+end.

@@ -1,0 +1,237 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Trottel
+Title=kfilmu.net
+Description=Importuje data ze kfilmu.net
+Site=http://film.kfilmu.net/
+Language=CZ
+Version=0.1
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+findByOriginalTitle=1|1|0=Vyhledávat pomocí Pøeložených názvù|1=Vyhledávat pomocí Pùvodních názvù
+
+***************************************************)
+
+program kfilmu_net;
+
+const
+  BaseAdress = 'http://film.kfilmu.net/';
+
+var
+  MovieName: string;
+
+function FindLine(Pattern: String; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function iPos (Substr: String; S: String): Integer;
+begin
+  Substr := AnsiLowerCase(Substr);
+  S := AnsiLowerCase(S);
+  Result := Pos(Substr, S);
+end;
+
+function FormatText(T: String): String;
+var
+  BeginPos: Integer;
+begin
+  BeginPos := iPos('  ', T);
+  while (BeginPos > 0 ) do
+  begin
+    Delete(T, BeginPos, 1);
+    BeginPos := iPos('  ', T);
+  end;
+
+  T := StringReplace(T, #13#10, '');
+  T := StringReplace(T, '</p>', #13#10#13#10);
+  T := StringReplace(T, '</P>', #13#10#13#10);
+  T := StringReplace(T, '<br>', #13#10);
+  T := StringReplace(T, '<BR>', #13#10);
+  Result := T;
+end;
+
+// ***** Analyzuje stranku s vysledky hledani *****
+procedure AnalyzeResultPage(Address: String);
+var
+  Line, iLine, aLine, MovieTitle, MovieAddress: string;
+  BeginPos, EndPos: Integer;
+begin
+  Line := GetPage(Address);
+  PickTreeClear;
+  PickTreeAdd('Nalezené filmy:', '');
+  BeginPos := iPos('<a href="filmy.php?tema=premiery&akce=podrobnosti&film', Line);
+  while (BeginPos > 0 ) do
+  begin
+    Line := Copy(Line, BeginPos, Length(Line));
+    EndPos := iPos('</a>', Line);
+    iLine := Copy(Line, 0, EndPos-1);
+    Line := Copy(Line, EndPos, Length(Line));
+    BeginPos := iPos('"', iLine);
+    aLine := Copy(iLine, BeginPos+1, Length(iLine));
+    EndPos :=  iPos('"', aLine);
+    aLine := Copy(iLine, BeginPos+1, EndPos-1);
+    MovieAddress := BaseAdress + 'filmy.php?tema=premiery&akce=podrobnosti&film=' + aLine;
+    BeginPos := iPos('>', iLine);
+    MovieTitle := Trim(Copy(iLine, BeginPos+1, Length(iLine)));
+    PickTreeAdd(MovieTitle, MovieAddress);
+    BeginPos := iPos('<a href="filmy.php', Line);
+  end;
+    if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+end;
+
+// ***** Analyzuje stranku obsahujici informace o filmu *****
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value, Value1 : String;
+  BeginPos, EndPos : Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  //Prelozeny nazev
+  LineNr := FindLine('Èeský název:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Èeský název: <i>',Line) +17;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</i>',Line)-1);
+    SetField(fieldTranslatedTitle, Value);
+
+  //Puvodni nazev
+  LineNr := FindLine('Originální název:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Originální název: <i>',Line) +22;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</i>',Line)-1);
+    SetField(fieldOriginalTitle, Value);
+
+  //Reziser
+  LineNr := FindLine('Režie:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('">',Line) +2;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</a>',Line)-1);
+    SetField(fieldDirector, Value);
+
+  //Distributor
+  LineNr := FindLine('Distributor:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('">',Line) +2;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</a>',Line)-1);
+    SetField(fieldProducer, Value);
+
+  //Delka
+  LineNr := FindLine('Délka:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Délka: <i>',Line) +10;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos(' minut',Line)-1);
+    SetField(fieldLength, Value);
+
+  //Kategorie
+  LineNr := FindLine('Žánr:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Žánr: <i>',Line) +9;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</i>',Line)-1);
+    Value := AnsiMixedCase(Value, '/');
+    Value := StringReplace(Value, '/', ' / ');
+    SetField(fieldCategory, Value);
+
+  //Herci
+  LineNr := FindLine('Hrají:', Page, 0);
+    Line := Page.GetString(LineNr);
+    Value:='';
+      While Pos('a href', Line)>0 do
+        begin
+          BeginPos:=Pos('">',Line) +2;
+          Line:=copy(Line, BeginPos, Length(Line));
+          Value1:=Copy(Line, 1, Pos('</a>',Line)-1);
+          if Value <> '' then
+            Value := Value + ', ';
+          Value := Value + Value1;
+        end;
+      SetField(fieldActors, Value);
+      
+  //Stat
+  LineNr := FindLine('Natoèeno:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Natoèeno:<i>',Line) +13;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</i>',Line)-6);
+    Value := StringReplace(Value, '/', ' / ');
+    SetField(fieldCountry, Value);
+
+  //Rok
+  LineNr := FindLine('Natoèeno:', Page, 0);
+    Line := Page.GetString(LineNr);
+    BeginPos:=Pos('Natoèeno:<i>',Line) +13;
+    Delete(Line, 1, BeginPos);
+    BeginPos:=Pos(' ',Line) +1;
+    Line:=copy(Line, BeginPos, Length(Line));
+    Value:=Copy(Line, 1, Pos('</i>',Line)-1);
+    SetField(fieldYear, Value);
+
+  //Obrazek
+  LineNr := FindLine('<img src="obrazky/plakaty/', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('<img src="obrazky/plakaty/', Line) + 10;
+      if BeginPos > 10 then
+        begin
+          EndPos := pos('" align=', Line);
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          GetPicture(Value);
+        end;
+    end;
+
+  //Popis - zatim nefunguje
+
+  //URL
+  SetField(fieldURL, Address);
+end;
+
+// Spusteni vlastniho programu
+begin
+  //kontrola jestli je verze programu vyssi nez 3.5.0
+  if CheckVersion(3,5,0) then
+  begin
+    //vem prelozene jmeno filmu
+    MovieName := GetField(fieldTranslatedTitle);
+    //pokud je prelozene jmeno prazdne
+    if MovieName = '' then
+      //vem originalni jmeno
+      MovieName := GetField(fieldOriginalTitle);
+    //zadavani nazvu hledaneho filmu
+    if Input('Import dat z kfilmu.net', 'Zadej název hledaného filmu:', MovieName) then
+    begin
+      //analyzuj stranku http://film.kfilmu.net/uzivatele.php?......=premiery&co=jmeno_filmu
+      AnalyzeResultPage(BaseAdress+'uzivatele.php?PHPSESSID=5aac567e3e98994452a187e2ae3a74a1&akce=megasearch&PHPSESSID=&tema=premiery&co=' + UrlEncode(MovieName));
+    end;
+  end
+  else
+  ShowMessage('Tento skript vyžaduje novìjší verzi programu Ant Movie Catalog (nejménì verzi 3.5.0)');
+end.

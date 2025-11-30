@@ -1,0 +1,964 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=PeQuE, GlandeMan,
+Title=Cineol (+Culturalia y/o Alpacine) (ES)
+Description=Movie importation script for Cineol (picture from Culturalia and/or Alpacine).
+Site=http://www.cineol.net + http://www.culturalianet.com + http://www.alpacine.com
+Language=ES
+Version=2.0beta3
+Requires=3.5.1
+Comments=Se presentan dos alternativas para la imagen, ya que la de Cineol es bastante pequeña.|- Culturalianet: La imagen la coje de Culturalia mediante Culturalia+IMDB.ifs, mas grande y hay muchísimas. |Hay código del script de FilmAffinity (ES).ifs. Los autores de ambos son David Arenillas, Antoine Potten and |J.M. Folgueira, de Culturalia+IMDB.ifs y aviloria  (aviloria@yahoo.com) de FilmAffinity (ES).ifs|- Alpacine: La imagen la coje de Alpacine mediante Alpacine.ifs. Autor: Legrad.
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+
+[Options]
+ModoBusquedaCaratula=1|1|0=Auto. Se recupera carátula de Cineol si es grande. Si es pequeña, se recupera de Alpacine.|1=Se recupera carátula de Cineol. Las películas más recientes tienen carátula grande. Las otras tiene carátula muy pequeña.|2=Se recupera carátula de Culturalianet. Son medianas.|3=Se recupera carátula de Alpacine. Son enormísimas. Algunas de más de 1 Mb.
+ModoBatch=0|0|0=Modo normal|1=Modo automático (batch). No pregunta nada ni muestra mensajes
+FiltradoAnyo=1|1|0=No se filtran las búsquedas de carátulas en Culturalianet y en Alpacine por año. Esto es especialmente interesante en el caso en que el año de estreno de una película en Cineol sea diferente al que aparece en Culturalianet o Alpacine (por ejemplo, 300).|1=Se filtran las búsquedas de carátulas en Culturalianet y Alpacine. Sólo se muestran las películas encontradas entre el año anterior y el siguiente al del estreno según Cineol.|2=Se filtran las búsquedas de carátulas en Culturalianet y Alpacine. Sólo se muestran las películas encontradas cuyo estreno es igual al de Cineol.
+
+***************************************************)
+
+(***********************************************************************
+Que hay de nuevo, viejo:
+
+v 1.1 (28-Enero 2006)
+---------------------
+-Adaptado a nuevo formato de Cineol
+-Recupera la pequeña carátula que tiene Cineol. Igualmente luego la intenta buscar
+ en Culturalia (configurable por parámetro BuscarMiniCaratula).
+-Se recupera Recaudación y Estreno en campo Comentarios.
+-Si hay mas de un director/productor etc también se recuperan
+
+por Icecubix
+************************************************************************)
+
+{
+v 1.2 (10-Febrero 2008)
+---------------------
+- Obtengo el listado entero de premios
+
+v 1.3 (19-Julio 2008)
+---------------------
+- Adaptacion al nuevo formato de Titulo traducido
+- Adaptacion al nuevo formato de Interpretes
+- Adaptacion al nuevo formato de Curiosidades
+- Evito la busqueda de Caratula en Culturalia ya que dejó de funcionar.
+
+v 1.4 (03-Agosto 2008)
+---------------------
+- Adaptacion al nuevo formato de Id pelicula (URL)
+
+por GlandeMan (JXO)
+
+v 1.5 (03-Febrero 2009)
+-----------------------
+¡IMPORTANTE! Debido al uso de la función GetPicture2, es necesario AMC 3.5.1 o superior.
+
+- Reactivación de la búsqueda de carátula en Culturalianet. Buscamos en la página oficial, 
+y usamos GetPicture2 debido a las restricciones (403 por referrer) de Culturalianet.
+- No he encontrado la manera de comprobar si una url existe o devuelve un 404. Hay películas que 
+existen en la bbdd de Culturalianet, pero no tienen imagen asociada, por lo que en estos casos, el 
+script dará un error 404 al final, y se quedará con la minicarátula de Cineol. Es un poco tocawinflis
+en modobatch... pero tampoco he encontrado la manera de evitar que salga este error.
+- Desactivada la búsqueda de Premios. No aparecen en Cineol ahora mismo.
+- Adaptacion al nuevo formato de Recaudaciones. Ahora una bbdd exportada a .xml debería funcionar 
+en MyFilms (MediaPortal).
+
+por PeQuE
+
+v 1.6 (04-Febrero 2009)
+-----------------------
+
+- La versión anterior sólo analizaba la primera página de resultados de Culturalianet. Ahora se
+analizan todas.
+
+por PeQuE
+
+v 1.9beta (16-Febrero 2009)
+-----------------------
+
+He tocado tantas cosas desde la 1.6 (y encima soy un desastre como programador) que no tengo muy claros los
+cambios, pero vamos a intentarlo:
+
+- Añadida búsqueda de carátula en Alpacine. ¡Son enormes!. Se puede seleccionar cual de las 3 opciones (o cualquier
+combinación) de carátula se quiere bajar, modificando las variables oportunas: BuscaMiniCaratula, BuscaCaratula y
+BuscaGranCaratula.
+- La variable FiltradoAnyo controla el nivel de filtrado que se quiere aplicar a las búsquedas de carátulas en
+Culturalianet y en Alpacine. Esto es así porque la base de datos de películas de Cineol no siempre coincide en
+cuanto a año de estreno con las de Culturalianet o Alpacine:
+      0 : No se filtra por año las películas encontradas.
+      1 : Se filtra de los resultados cualquier película que no se haya estrenado el año de estreno según Cineol,
+          el anterior, o el siguiente. Recomendado. Salen menos resultados, y es bastante probable que la película
+          esté entre ellos.
+      2 : Se filtra de los resultados cualquier película que no se haya estrenado el año de estreno según Cineol,
+          sin excepciones. Mucho más restrictivo, puede que no se muestren películas que en realidad sí que están.
+          En ese caso, se puede optar por bajar el nivel a 1 o 0.
+- En ModoBatch, la búsqueda de carátulas en Culturalianet y Alpacine está filtrada en modo 2 SIEMPRE, para evitar
+falsos "matches" al buscar carátulas de películas.
+- Reescrito el procedimiento AnalyzePage_Alpacine desde cero. El original mostraba carácteres extraños en alguna
+ocasión (Amelie, por ejemplo).
+- Modificado el paso del nombre de película a AnalyzePage_Alpacine. El script original no encuentra películas con
+acentos.
+- Cambiada la URL de consulta a Alpacine. Es mejor buscar en la página normal (no en tipo=2 y todo=1), ya que los
+resultados salen ordenados por coincidencia. En caso de haber más de 10 resultados, se muestra la opción de buscar
+todos los resultados. En ese caso, aparecerán por orden alfabético.
+- Mejorado el parseo de la página de resultados de Culturalianet. A veces aparecían opciones vacías.
+- Paginación de resultados de Culturalianet y Alpacine. Así sólo se hace un GetPage y el script es más rápido. 
+- Añadida opción para recuperar TODAS las curiosidades de una película en Cineol. Se controla con la variable
+MasCuriosidades. En caso de dejarla a 0, baja una curiosidad al azar (la que aparece en la página de la película
+en Cineol).
+- Añadida opción para recuperar los ERRORAMAS. Se controla con la variable Erroramas. Se añaden al final, en el
+campo "Comentarios".
+
+Seguro que he cometido errores, y aunque he hecho bastantes pruebas (gracias z3us por ayudarme con ellas), es posible
+que no todo funcione perfectamente. Cualquier problema, por favor avisadme a peque@idecnet.com.
+
+por PeQuE
+
+v 2.0beta1 (08-Septiembre 2009)
+-----------------------
+
+- Cineol cambió totalmente la estructura de su web, y por lo tanto el script dejó de funcionar. Después de contactar
+su webmaster (billyberjas) y proponerle la creación de un pequeño API de acceso a su base de datos, accedió sin
+problemas. La ventaja es clara: los cambios de estructura en su web no afectarán al script a partir de ahora. La
+otra ventaja es que el API está basado en xml, es muchísimo más sencillo el parseo de la información. El script
+debería ir ahora mucho más rápido, ya que se baja textos en formato .xml, en vez de toda el código html.
+- Por el camino hemos perdido el parseo de los erroramas y comentarios. A cambio, se parsea la url para poder acceder
+a los mismos en la web de Cineol, siempre actualizados. Me parece una buena solución .
+- He simplificado el tema de las carátulas. Ahora sólo hay una variable de control, cuyos valores están bastante explicados, y te permiten
+fijar la descarga de la carátula de Cineol, Culturalianet o Alpacine. Comentar que gracias a la colaboración de billyberjas, el script tiene
+acceso tanto a la carátula pequeña que hasta ahora se descargaba, y también a una carátula más grande, no disponible en todas las películas, pero
+sí en las más modernas.
+
+por PeQuE
+
+v 2.0beta2 (01-Octubre 2009)
+-----------------------
+
+- Si la recaudación es igual a cero, la omitimos.
+
+por PeQuE
+
+v 2.0beta3 (06-Diciembre 2009)
+---------------------
+- Se da la posibilidad de en vez de insertar la URL de las curiosidades, Insertar el listado de todas ellas al final de los comentarios.
+  Nueva funcion "CINEOL_RecuperarCuriosidades".
+- Tabulo el listado de Interpretes en vez separarlos por comas. (Se respeta la posibilidad antigua)
+  
+por GlandeMan (JXO)
+
+
+
+}
+
+program Cineol;
+
+uses
+  StringUtils1;
+
+const
+
+  //PeQuE: Buscamos en la página oficial, no en BUS.
+  BaseURLCulturalia = 'http://www.culturalianet.com/bus/resu.php?texto=';
+
+  BaseURLCineol = 'http://www.cineol.net/api/busquedapeliculas.php';
+  
+  BaseURLAlpacine = 'http://www.alpacine.com/buscar/?buscar=';
+  BaseURLAlpacine_Caratula = 'http://www.alpacine.com/pelicula/';
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+  Title: string;
+  i, FiltradoAnyo, ModoBusquedaCaratula: integer;
+  s11: string;
+  ModoBatch: Boolean;
+  Page, Pagecur: TStringList;
+
+function MiTextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+  a,b: string;
+begin
+  a := ansiLowerCase(StartTag);
+  b := AnsiLowerCase(S);
+
+  InitialPos := Pos(AnsiLowerCase(StartTag), AnsiLowerCase(S));
+  Delete(S, 1, InitialPos + Length(StartTag) - 1);
+  InitialPos := Pos(AnsiLowerCase(EndTag), AnsiLowerCase(S));
+  result := copy(S, 1, InitialPos - 1);
+  Delete(S, 1, InitialPos + 1);
+end;
+
+(* PeQuE: estas funciones no tocan la variable original donde se busca, y devuelven cadena vacía si alguno
+de los tags no es encontrado *)
+
+function MiTextBetween_2(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+  a: string;
+begin
+  a := S;
+  InitialPos := Pos(AnsiLowerCase(StartTag), AnsiLowerCase(a));
+  if InitialPos = 0 then
+  begin
+      result := '';
+      exit;
+  end
+  Delete(a, 1, InitialPos + Length(StartTag) - 1);
+  InitialPos := Pos(AnsiLowerCase(EndTag), AnsiLowerCase(a));
+  if InitialPos = 0 then
+  begin
+      result := '';
+      exit;
+  end
+  result := copy(a, 1, InitialPos - 1);
+end;
+
+
+function MiTextAfter(var S: string; StartTag: string): string;
+var
+  InitialPos: Integer;
+  a: string;
+begin
+  a := S;
+  InitialPos := Pos(AnsiLowerCase(StartTag), AnsiLowerCase(a));
+  if InitialPos = 0 then
+  begin
+      result := '';
+      exit;
+  end
+  Delete(a, 1, InitialPos + Length(StartTag) - 1);
+  result := a;
+end;
+
+//------------------------------------------------------------------------------------
+
+function EliminaInicio(S: string; CR: string): string;
+begin
+  result := S;
+  while Pos(CR, result) = 1 do
+  begin
+    Delete(result, 1, Length(CR));
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+
+
+function Caracter(str1: string) :string;
+begin
+          str1 := StringReplace(str1, 'Ã¡' , 'á');
+          str1 := StringReplace(str1, 'Ã©' , 'é');
+          str1 := StringReplace(str1, 'Ã­',  'í');
+          Str1 := StringReplace(Str1, 'Ã³', 'ó');
+          str1 := StringReplace(str1, 'Ãº' , 'ú');
+          str1 := StringReplace(str1, 'Ã±' , 'ñ');
+          str1 := StringReplace(str1, 'Ã', 'Á');
+          str1 := StringReplace(str1, 'Ã‰', 'É');
+          str1 := StringReplace(str1, 'Ã', 'Í');
+          str1 := StringReplace(str1, 'Ã“', 'Ó');
+          str1 := StringReplace(str1, 'Ãš', 'Ú');
+          str1 := StringReplace(str1, 'Ã‘', 'Ñ');
+          str1 := StringReplace(str1, 'Â', '');
+          //v 2.0beta3 - JXO
+          str1 := StringReplace(str1, 'â€œ', '"');
+          str1 := StringReplace(str1, 'â€', '"');
+          str1 := StringReplace(str1, 'â€“', '"');
+result := str1;
+end;
+
+
+
+function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+      if c = #9 then
+         c := ' ';
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+function SansAccents(AvecAccent : String): String;
+var
+  accent, noaccent : String;
+  i : integer;
+begin
+  accent := 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÿÑñÇç';
+  noaccent := 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuyNnCc';
+    for i := 1 to Length(accent) do
+    AvecAccent := StringReplace(AvecAccent,copy(accent, i, 1),copy(noaccent, i, 1)); // Supprime tous les accents pour la recherche cinéfil
+  result := AvecAccent;
+end;
+
+//------------------------------------------------------------------------------------
+
+
+
+procedure BuscarCaratulaCulturalia;
+var
+  strTemp: string;
+  Articles: array of string;
+  Index: integer;
+begin
+  SetArrayLength(Articles,11);
+  Articles[0]:='Lo ';
+  Articles[1]:='La ';
+  Articles[2]:='Le ';
+  Articles[3]:='Uno ';
+  Articles[4]:='Una ';
+  Articles[5]:='Un ';
+  Articles[6]:='El ';
+  Articles[7]:='Los ';
+  Articles[8]:='Las ';
+  Articles[9]:='Unos ';
+  Articles[10]:='Unas ';
+
+  // Eliminate spanish article if exists
+  for Index := 0 to 10 do
+  begin
+   if Pos(Articles[Index], MovieName) <> 0 then
+   MovieName := copy(MovieName, length(Articles[Index]), length(MovieName));
+  end;
+
+  // Eliminate point(s) at final of MovieName before search
+  strTemp := MovieName;
+  if Copy(strTemp, Length(strTemp), Length(strTemp)) = '.' then
+    MovieName := Copy(strTemp, 1, Length(strTemp) -1);
+   
+  AnalyzePageCulturalia(BaseURLCulturalia + UrlEncode(MovieName) + '&donde=1',0);
+end;
+
+procedure AnalyzePageCulturalia(Address: string; todas_pags: integer);
+var
+  Page: TStringList;
+  LineNr, Fin, pags, curr_pag: Integer;
+  Code, Tit, Year, Linea: string;
+  TitleFound, multipagina: Boolean;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if Pos('No se ha encontrado ningún artículo por título', Page.Text) = 0 then
+  begin
+    if not ModoBatch then
+    begin
+       //PeQuE: Si tenemos que parsear todas las páginas de resultados, buscamos el número de páginas, si no, sólo parseamos la primera.
+
+       pags := 0;
+       LineNr := 0;
+       while LineNr > -1 do
+       begin
+            pags := pags + 1;
+            LineNr := FindLine('muestro=' + IntToStr(pags), Page, 0);
+       end
+       
+       if pags > 1 then
+       begin
+              multipagina := true;
+       end else multipagina := false;
+
+       if todas_pags = 0 then pags := 1;
+       
+       PickTreeClear;
+       PickTreeAdd('CULTURALIANET: Resultados de la búsqueda:', '');
+
+       //PeQuE: Analizamos todas las páginas de la búsqueda.
+       curr_pag := 1;
+       while curr_pag <= pags do
+       begin
+
+          //PeQuE: La primera página ya la hemos bajado antes. Nos ahorramos volverla a bajar.
+          if curr_pag > 1 then
+          begin
+            Page.Free;
+            Page := TStringList.Create;
+            Page.Text := GetPage(Address + '&muestro=' + IntToStr(curr_pag - 1));
+          end
+          
+          //PeQuE: Buscamos la primera línea con resultados.
+          LineNr := FindLine('<b>RESULTADOS ', Page, 0);
+          //PeQuE: Buscamos la última línea con resultados.
+          Fin := FindLine('Se han encontrado', Page, 0);
+          Fin := FindLine('Se han encontrado', Page, Fin+1);
+          while LineNr < Fin do
+          begin
+              //PeQuE: Extraemos code, título y año. No hace falta nada más.
+              LineNr := FindLine(' (', Page, LineNr+1);
+              if LineNr <> -1 then
+              begin
+                  Linea := Page.GetString(LineNr);
+                  Year := MiTextBetween(Linea, ' (', ')');
+                  Linea := Page.GetString(LineNr-1);
+                  Code := MiTextBetween(Linea, '../art/ver.php?art=', '''');
+                  Tit:= MiTextBetween(Linea, ' target=''_top''>', '.</a></b></td>');
+
+                  //Sólo asociamos el "Code" a cada una de las opciones encontradas. No hace falta nada más.
+                  //PickTreeAdd(Tit + ' (' + Year + ')', BaseURLCulturalia + '?catalogo=1&codigo=' + Code);
+                  if FiltradoAnyo = 0 then PickTreeAdd(Tit + ' (' + Year + ')', Code);
+                  if FiltradoAnyo = 1 then
+                  begin
+                        if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) - 1 then PickTreeAdd(Tit + ' (' + Year + ')', Code);
+                        if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) then PickTreeAdd(Tit + ' (' + Year + ')', Code);
+                        if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) + 1 then PickTreeAdd(Tit + ' (' + Year + ')', Code);
+                  end
+                  if FiltradoAnyo = 2 then
+                        if Year = getfield(fieldYear) then PickTreeAdd(Tit + ' (' + Year + ')', Code);
+              end else LineNr := Fin;
+          end;
+          curr_pag := curr_pag + 1;
+       end;
+       Page.Free;
+
+       // PeQuE: Si sólo mostramos la primera página pero hay más, añadimos la opción de mostrar todas.
+       if (todas_pags = 0) and (multipagina) then
+       begin
+               PickTreeAdd('Más resultados', '');
+               PickTreeAdd('  >> MOSTRAR TODOS LOS RESULTADOS >>', Address);
+       end
+
+       if PickTreeExec(Code) then
+         //  PeQuE: Si la respuesta no es un "Code", volvemos a ejecutar esta función indicando el parseo de todas las páginas de resultados.
+         if Pos('culturalianet',Code) > 0 then
+         begin
+                AnalyzePageCulturalia(Address,1);
+         // PeQuE: Debemos usar la nueva función GetPicture2 del AMC 3.5.1 para poder configurar Culturalianet
+         //        como Referrer al bajar la carátula. De otro modo, Culturalianet prohibe el acceso (error 403).
+         end else GetPicture2('http://www.culturalianet.com/imatges/articulos/' + Code + '-1.jpg','http://www.culturalianet.com');
+    end else
+    begin
+       //PeQuE: En caso de modobatch, buscamos la primera línea con resultados en que coincida el año y listos.
+       LineNr := FindLine('<b>RESULTADOS ', Page, 0);
+       TitleFound := True;
+       Linea := Page.GetString(LineNr);
+       Code := MiTextBetween(Linea, '../art/ver.php?art=', '''');
+       if TitleFound then
+         GetPicture2('http://www.culturalianet.com/imatges/articulos/' + Code + '-1.jpg','http://www.culturalianet.com');
+       Page.Free;
+    end;
+  end else
+  if not ModoBatch then
+    ShowError('CULTURALIANET: No se ha encontrado ninguna coincidencia para "'+ MovieName +'"');
+end;
+
+
+
+procedure AnalyzePage_Alpacine(Address: string);
+var
+  MovieAddr, Year, Line,Item: string;
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  LineNr := FindLine('<div class="titulo">Pel', Page, 0);
+  if(LineNr > -1)then
+  begin
+       Line := Page.GetString(LineNr);
+       Line := MiTextBetween_2(Line,'<ul>','</ul>');
+       if not ModoBatch then
+       begin
+              PickTreeClear;
+              PickTreeAdd('ALPACINE: Resultados de la búsqueda:', '');
+       end
+       repeat
+              Item := MiTextBetween_2(Line,'<li>','</li>');
+              if Item = '' then
+              begin
+                  Item := MiTextBetween_2(Line,'<li class="mas">','</li>');
+                  PickTreeAdd('Más resultados', '');
+                  PickTreeAdd('  >> MOSTRAR TODOS LOS RESULTADOS >>', Address + '&todo=1&tipo=2');
+                  Line := MiTextAfter(Line,'</li>');
+              end else
+              begin
+                  MovieAddr := BaseURLAlpacine_Caratula + MiTextBetween_2(Line,'/pelicula/','/') + '/';
+                  Year := MiTextAfter(Item,'</a>');
+                  Year := MiTextBetween_2(Year,'(',')');
+                  HTMLRemoveTags(Item);
+                  Item := Caracter(Item);
+                  if not ModoBatch then
+                  begin
+                    if FiltradoAnyo = 0 then PickTreeAdd(Item, MovieAddr);
+                    if FiltradoAnyo = 1 then
+                    begin
+                          if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) - 1 then PickTreeAdd(Item, MovieAddr);
+                          if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) then PickTreeAdd(Item, MovieAddr);
+                          if StrtoInt(Year,0) = StrtoInt(getfield(fieldYear),0) + 1 then PickTreeAdd(Item, MovieAddr);
+                    end
+                    if FiltradoAnyo = 2 then
+                           if Year = getfield(fieldYear) then PickTreeAdd(Item, MovieAddr);
+                    Line := MiTextAfter(Line,'</li>');
+                  end else
+                  begin
+                    if Year = getfield(fieldYear) then
+                    begin
+                           AnalyzeMoviePage_Alpacine(MovieAddr);
+                           Line := '';
+                    end else Line := MiTextAfter(Line,'</li>');
+                  end
+              end
+       Until Pos('<li',Line) = 0;
+       if not ModoBatch then
+       begin
+              PickTreeExec(Address);
+              if Pos('&todo=1&tipo=2',Address) > 0 then
+              begin
+                    AnalyzePage_Alpacine(Address);
+              end else AnalyzeMoviePage_Alpacine(Address);
+       end
+  end else if not ModoBatch then ShowError('ALPACINE: No se ha encontrado ninguna coincidencia para "'+ MovieName +'"');
+  Page.Free;
+end;
+
+
+
+procedure AnalyzeMoviePage_Alpacine(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Busca: integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Caratula
+  LineNr := FindLine('src="http://img.alpacine.com/carteles/', Page, 0);
+  if LineNr <> -1 then
+     begin
+       Line := Page.GetString(LineNr);
+       Busca := FindLine('id="ampliar">', Page, 0);
+       if Busca <> -1 then
+          begin
+            Item := TextBetween (Line, 'src="', '.jpg');
+            Item  := StringReplace(Item , '-150', '');
+            GetPicture (Item+'.jpg');
+          end
+       else
+          begin
+            Item := TextBetween (Line, 'src="', '" alt');
+            GetPicture (Item);
+          end
+     end;
+end;
+
+
+
+procedure CINEOL_BuscarInformacion;
+var url: String;
+  Articles: array of string;
+  Index: integer;
+begin
+  SetArrayLength(Articles,11);
+  Articles[0]:='Lo ';
+  Articles[1]:='La ';
+  Articles[2]:='Le ';
+  Articles[3]:='Uno ';
+  Articles[4]:='Una ';
+  Articles[5]:='Un ';
+  Articles[6]:='El ';
+  Articles[7]:='Los ';
+  Articles[8]:='Las ';
+  Articles[9]:='Unos ';
+  Articles[10]:='Unas ';
+
+  // Eliminate spanish article if exists
+  for Index := 0 to 10 do
+  begin
+   if Pos(Articles[Index], MovieName) = 1  then
+   MovieName := copy(MovieName, length(Articles[Index]), length(MovieName));
+  end;
+
+  MovieName := StringReplace(MovieName,'.',' ');
+  MovieName := StringReplace(MovieName,' - ',' ');
+  MovieName := SansAccents(MovieName);
+  url := CINEOL_ListaBusqueda(BaseURLCineol, URLEncode('apiKey=cfdvkFD&search=' + MovieName));
+
+  if url <> '' then
+    CINEOL_RecuperarInformacionPelicula(url + '&apiKey=cfdvkFD');
+    
+end;
+
+
+function CINEOL_ListaBusqueda(Address, params: String): string;
+var
+  Titulo, url, texto, resultados: string;
+  cont: integer;
+  encontradoParaBatch: boolean;
+begin
+  resultados := GetPage(Address + '?' + params);
+  resultados := Caracter(resultados);
+  resultados := MiTextBetween_2(resultados,'<resultados>','</resultados>');
+
+  if Pos('<pelicula>', resultados) > 0 then
+  begin
+       PickTreeClear;
+       PickTreeAdd('CINEOL: Resultados de la búsqueda:', '');
+       encontradoParaBatch := true;
+       cont := 0;
+       while Pos('<pelicula>', resultados) > 0 do
+       begin
+            texto := MiTextBetween_2(resultados,'<pelicula>','</pelicula>');
+            Titulo := MiTextBetween_2(texto,'<titulo>','</titulo>');
+            Titulo := Titulo + ' | (' + MiTextBetween_2(texto,'<anio>','</anio>') + ')';
+            url:= MiTextBetween_2(texto,'<xmlurl>','</xmlurl>');
+            if ModoBatch and (AnsiLowerCase(Titulo) = AnsiLowerCase(MovieName)) then
+            begin
+                  encontradoParaBatch := true;
+                  Break;
+            end
+            PickTreeAdd(Titulo, url);
+            resultados := MiTextAfter(resultados,'</pelicula>');
+            cont := cont + 1;
+       end
+       if ModoBatch then
+       begin
+              if encontradoParaBatch or (cont  = 1) then
+              result := url;
+       end
+       else
+       begin
+            if PickTreeExec(Address) then result := Address
+                                    else result := '';
+       end
+  end else
+  if not ModoBatch then
+    ShowError('CINEOL: No se ha encontrado ninguna coincidencia para "'+ MovieName +'"');
+end;
+
+procedure CINEOL_RecuperarInformacionPelicula(Address: String);
+var
+  resultados, s_aux, item, comentarios: string;
+
+begin
+
+  resultados := GetPage(Address);
+  resultados := Caracter(resultados);
+
+  SetField(fieldURL, MiTextBetween_2(resultados,'<url>','</url>'));
+  SetField(fieldTranslatedTitle, MiTextBetween_2(resultados,'<titulobonito>','</titulobonito>'));
+  SetField(fieldOriginalTitle, MiTextBetween_2(resultados,'<title>','</title>'));
+  SetField(fieldCategory, MiTextBetween_2(resultados,'<genero>','</genero>'));
+  SetField(fieldCountry, MiTextBetween_2(resultados,'<pais>','</pais>'));
+  SetField(fieldLength, MiTextBetween_2(resultados,'<duracion>','</duracion>'));
+  SetField(fieldYear, MiTextBetween_2(resultados,'<anio>','</anio>'));
+  SetField(fieldRating, MiTextBetween_2(resultados,'<nota>','</nota>'));
+  
+  // Director
+
+  s_aux := MiTextBetween_2(resultados,'<Directores>','</Directores>');
+  item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+  s_aux := MiTextAfter(s_aux,'</Director>');
+  while Pos('<Director>', s_aux) > 0 do
+  begin
+    item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+    s_aux := MiTextAfter(s_aux,'</Director>');
+  end
+  SetField(fieldDirector, item);
+
+  // Productor
+
+  s_aux := MiTextBetween_2(resultados,'<Productores>','</Productores>');
+  item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+  s_aux := MiTextAfter(s_aux,'</Productor>');
+  while Pos('<Productor>', s_aux) > 0 do
+  begin
+    item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+    s_aux := MiTextAfter(s_aux,'</Productor>');
+  end
+  SetField(fieldProducer, item);
+  
+  //Interpretes
+
+  s_aux := MiTextBetween_2(resultados,'<Actores>','</Actores>');
+  //v 2.0beta3 - JXO: Para volver al listado separado por comas, cambiar la linea comentada por la actual.
+  item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>') + ' (' + MiTextBetween_2(s_aux,'<Info>','</Info>') + ')' +#13#10;
+  //item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>') + ' (' + MiTextBetween_2(s_aux,'<Info>','</Info>') + ')';
+  s_aux := MiTextAfter(s_aux,'</Actor>');
+  while Pos('<Actor>', s_aux) > 0 do
+  begin
+    //v 2.0beta3 - JXO: Para volver al listado separado por comas, cambiar la linea comentada por la actual.
+    item := item + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>') + ' (' + MiTextBetween_2(s_aux,'<Info>','</Info>') + ')' +#13#10;
+    //item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>') + ' (' + MiTextBetween_2(s_aux,'<Info>','</Info>') + ')';
+    s_aux := MiTextAfter(s_aux,'</Actor>');
+  end
+  SetField(fieldActors, item);
+
+  // Sinopsis
+  
+  item := MiTextBetween_2(resultados,'<sinopsis>','</sinopsis>');
+  item := StringReplace(item, #13#10#13#10, #13#10);
+  item := StringReplace(item, #13#10#13#10, #13#10);
+  item := StringReplace(item, '“','"');
+  item := StringReplace(item, '”','"');
+  item := StringReplace(item, '‘','''');
+  item := StringReplace(item, '’','''');
+  item := StringReplace(item, '–','-');
+  item := StringReplace(item, '—','-');
+  item := StringReplace(item, '[i]','');
+  item := StringReplace(item, '[/i]','');
+  HTMLDecode(item);
+  HTMLRemoveTags(item);
+  SetField(fieldDescription, item);
+
+  // Comentarios
+  
+  comentarios := '';
+
+  s_aux := MiTextBetween_2(resultados,'<Guionistas>','</Guionistas>');
+  if s_aux <> '' then
+  begin
+    item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+    s_aux := MiTextAfter(s_aux,'</Guionista>');
+    while Pos('<Guionista>', s_aux) > 0 do
+    begin
+      item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+      s_aux := MiTextAfter(s_aux,'</Guionista>');
+    end
+    comentarios := comentarios + 'Guión: ' + #9#9 + item + #13#10;
+  end
+
+  s_aux := MiTextBetween_2(resultados,'<Musicos>','</Musicos>');
+  if s_aux <> '' then
+  begin
+    item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+    s_aux := MiTextAfter(s_aux,'</Musico>');
+    while Pos('<Musico>', s_aux) > 0 do
+    begin
+      item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+      s_aux := MiTextAfter(s_aux,'</Musico>');
+    end
+    comentarios := comentarios + 'Música: ' + #9#9 + item + #13#10;
+  end
+
+  s_aux := MiTextBetween_2(resultados,'<Fotografos>','</Fotografos>');
+  if s_aux <> '' then
+  begin
+    item := MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+    s_aux := MiTextAfter(s_aux,'</Fotografo>');
+    while Pos('<Fotografo>', s_aux) > 0 do
+    begin
+      item := item + ', ' + MiTextBetween_2(s_aux,'<Nombre>','</Nombre>');
+      s_aux := MiTextAfter(s_aux,'</Fotografo>');
+    end
+    comentarios := comentarios + 'Fotografía: ' + #9 + item + #13#10;
+  end
+
+  s_aux := MiTextBetween_2(resultados,'<recaudacionspain>','</recaudacionspain>');
+  if s_aux <> '' then
+    if s_aux <> '0' then comentarios := comentarios + 'Recaudación Esp.: ' +#9+ s_aux + ' euros' + #13#10;
+  s_aux := MiTextBetween_2(resultados,'<recaudacionusa>','</recaudacionusa>');
+  if s_aux <> '' then
+    if s_aux <> '0' then comentarios := comentarios + 'Recaudación USA: ' +#9+ s_aux + ' dolares' + #13#10;
+
+  s_aux := MiTextBetween_2(resultados,'<fecha_estreno_españa>','</fecha_estreno_españa>');
+  if s_aux <> '' then comentarios := comentarios + 'Estreno España: ' + #9 + s_aux + #13#10;
+  s_aux := MiTextBetween_2(resultados,'<fecha_estreno_origen>','</fecha_estreno_origen>');
+  if s_aux <> '' then comentarios := comentarios + 'Estreno Mundial: ' + #9 + s_aux + #13#10;
+
+  comentarios := comentarios + ' _________________________________________________'#13#10#13#10;
+
+  s_aux := MiTextBetween_2(resultados,'<Erorramas>','</Erorramas>');
+  if s_aux <> '' then comentarios := comentarios + 'Erorramas: ' + #9 + s_aux + #13#10;
+
+  s_aux := MiTextBetween_2(resultados,'<Frases>','</Frases>');
+  if s_aux <> '' then comentarios := comentarios + 'Frases: ' + #9#9 + s_aux + #13#10;
+
+  s_aux := MiTextBetween_2(resultados,'<Cameos>','</Cameos>');
+  if s_aux <> '' then comentarios := comentarios + 'Cameos: ' + #9#9 + s_aux + #13#10;
+
+  s_aux := MiTextBetween_2(resultados,'<Curiosidades>','</Curiosidades>');
+  if s_aux <> '' then
+  //v 2.0beta3 - JXO: Para insertar unicamente la URL, cambiar la linea comentada por la otra.
+  comentarios := comentarios + CINEOL_RecuperarCuriosidades(s_aux);
+  //comentarios := comentarios + 'Curiosidades: ' + #9 + s_aux + #13#10;
+  //v 2.0beta3 + JXO
+  
+  setField(fieldComments, comentarios);
+
+  //Carátula
+  if ModoBusquedaCaratula = 1 then
+  begin
+    s_aux := MiTextBetween_2(resultados,'<CartelGrande>','</CartelGrande>');
+    if s_aux <> '' then
+    begin
+      GetPicture(s_aux);
+    end else GetPicture(MiTextBetween_2(resultados,'<Cartel-150x90>','</Cartel-150x90>'));
+  end;
+  
+  if ModoBusquedaCaratula = 0 then
+  begin
+    s_aux := MiTextBetween_2(resultados,'<CartelGrande>','</CartelGrande>');
+    if s_aux <> '' then
+    begin
+      GetPicture(s_aux);
+    end else
+    begin
+      GetPicture(MiTextBetween_2(resultados,'<Cartel-150x90>','</Cartel-150x90>'));
+      ModoBusquedaCaratula := 3;
+    end
+  end;
+
+
+end;
+
+//v 2.0beta3 - JXO
+function CINEOL_RecuperarCuriosidades(Address: String) :string;
+var
+  resultados, s_aux, comentarios, s_aux2: string;
+
+begin
+
+  resultados := GetPage(Address);
+  resultados := Caracter(resultados);
+
+  // Curiosidades
+
+  s_aux := MiTextBetween_2(resultados,'<div class="item"><p>','<hr class="oculto" />');
+  
+  //JXO: Limpio simbolos y formatos
+  s_aux := StringReplace(s_aux, #13#10 , '');
+  s_aux := StringReplace(s_aux, '<strong>','');
+  s_aux := StringReplace(s_aux, '</strong>','');
+  s_aux2 := MiTextBetween_2(s_aux,'<a href="','" >');
+  while (s_aux2 <> '') do
+    BEGIN
+      s_aux := StringReplace(s_aux, s_aux2,'');
+      s_aux := StringReplace(s_aux, '<a href="" >','');
+      s_aux2 := MiTextBetween_2(s_aux,'<a href="','" >');
+    END;
+  s_aux := StringReplace(s_aux, '<a href="" >','');
+  s_aux := StringReplace(s_aux, '</A>','');
+  
+  //JXO: Organizo y separo los resultados
+  s_aux := StringReplace(s_aux, '<br /></p></div>' , '');
+  s_aux := StringReplace(s_aux, '<br />' , '');
+  s_aux := StringReplace(s_aux, '</p></div>' , '');
+  s_aux := StringReplace(s_aux, '<div class="item"><p>' , #13#10 +'----------------------------------------'+#13#10);
+  s_aux := StringReplace(s_aux, '<div class="item-par"><p>' , #13#10 +'----------------------------------------'+#13#10);
+  s_aux := StringReplace(s_aux, '</div>' , ' ');
+  comentarios := ' _________________________________________________'#13#10;
+  comentarios := comentarios + #13#10 +'CURIOSIDADES: ' + #13#10 + s_aux;
+
+  result := comentarios;
+
+end;
+//v 2.0beta3 + JXO
+
+
+function buscaCampo2(patronInicial, patronFinal: String; offset: integer; ini, fin: string): String;
+var
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  s: string;
+  hayMasDeUno: Boolean;
+  finalLinea: Integer;
+begin
+  Result := '';
+  LineNr := FindLine(patronInicial, Page, 0);
+  if LineNr > 0 then
+  begin
+    LineNr := LineNr + offset;
+    Line := Page.GetString(LineNr);
+    if offset = 0 then
+       Line := copy(Line, pos(patronInicial ,Line)+length(patronInicial), length(Line));
+    if patronFinal <> '' then
+       Line := copy(Line, 1, pos(patronFinal ,Line));
+
+    Item := MiTextBetween (Line, ini, fin);
+    hayMasDeUno := false;
+ 
+    While trim(Item) <> '' do
+    begin
+       if hayMasDeUno then s := s + ' / ';
+       hayMasDeUno := true;
+       s := s + Item;
+       Line := copy(Line, pos(Item ,Line)+length(Item), length(Line));
+       Item := MiTextBetween (Line, ini, fin);
+    end;
+    HTMLDecode(s);
+    result := Trim(s);
+  end;
+end;
+
+function buscaCampo(patron: String; offset: integer; ini, fin: string): String;
+begin
+  result := buscaCampo2(patron, '', offset, ini, fin);
+end;
+
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+
+
+begin
+  ModoBusquedaCaratula  := getOption('ModoBusquedaCaratula');
+  FiltradoAnyo          := getOption('FiltradoAnyo');
+  ModoBatch             := getOption('ModoBatch') = 1; //OJO: SI EL TITULO DE
+                 //LA PELICULA NO COINCIDE NO MOSTRARA INFORMACIÓN, POR QUE LOS
+                 //RESULTADOS DE LA BUSQUEDA NO LOS ORDENA POR ORDEN DE SEMEJANZA
+
+  { Un modo mas cómodo de asignar las variables es marcando el check de la caratula y
+    del titulo traducido, en los "campos modificables". Si me desmarca la imagen no la buscaré
+    y si me marca el titulo traducido(por ejemplo) serà un proceso batch.:
+   
+    BuscarCaratula        := CanSetPicture();
+    ModoBatch             := not CanSetField(fieldTranslatedTitle);
+   }
+
+  if CheckVersion(3,5,1) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+     
+    if (MovieName = '') or not (ModoBatch) then
+      if not Input('Importar de CINeol + Culturalia y/o Alpacine', 'Introduzca el titulo de la pelicula:', MovieName) then
+        Exit;
+
+    if (MovieName <> '') then
+    begin
+         CINEOL_BuscarInformacion; // El titulo a buscar siempre está en MovieName
+
+         if ModoBusquedaCaratula = 2 then BuscarCaratulaCulturalia;
+         if ModoBusquedaCaratula = 3 then
+         begin
+              MovieName := SansAccents(MovieName);
+              MovieName := StringReplace(MovieName, ' ', '+');
+              AnalyzePage_Alpacine(BaseURLAlpacine + UrlEncode(MovieName));
+
+         end
+    end;
+  end
+  else
+    ShowMessage('Este script requiere una version mas reciente de Ant Movie Catalog (por lo menos la version 3.5.1)');
+end.

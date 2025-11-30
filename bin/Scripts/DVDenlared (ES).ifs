@@ -1,0 +1,359 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=DVDenlared
+Description=
+Site=www.dvdenlared.com
+Language=ES
+Version=1.1
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DVDenlared;
+var
+  MovieName: string;
+  MovieURL: string;
+  //---------------------------------------------------------------------
+function Acentos(Acento: string) :string;
+begin
+          Acento := StringReplace(Acento, 'Ã-' , 'á');
+          Acento := StringReplace(Acento, 'Ã' ,  'á');
+          Acento := StringReplace(Acento, 'ã¡' , 'á');
+          Acento := StringReplace(Acento, 'iã³', 'á');
+          Acento := StringReplace(Acento, 'Ã?' , 'á');
+          Acento := StringReplace(Acento, 'ã',   'á');
+          Acento := StringReplace(Acento, 'Ã©',  'é');
+          Acento := StringReplace(Acento, 'ã©' , 'é');
+          Acento := StringReplace(Acento, 'ãª',  'é');
+          Acento := StringReplace(Acento, 'Ã­',  'í');
+          Acento := StringReplace(Acento, 'ã­',  'í');
+          Acento := StringReplace(Acento, 'Ã³',  'ó');
+          Acento := StringReplace(Acento, 'ã³',  'ó');
+          Acento := StringReplace(Acento, 'á³',  'ó');
+          Acento := StringReplace(Acento, 'Ãº',  'ù');
+          Acento := StringReplace(Acento, 'Ã±',  'ñ');
+          Acento := StringReplace(Acento, 'ã±',  'ñ');
+          Acento := StringReplace(Acento, 'Âº',  'º');
+          Acento := StringReplace(Acento, '&#',   '');
+          Acento := StringReplace(Acento, '39;',  '');
+          Acento := StringReplace(Acento, 'Â',    '');
+result := Acento;
+end;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('http://dvd.es/dvd/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" class', strPage);
+          MovieId := Copy(strPage,+18, EndPos-18);
+          MovieAddr := 'http://dvd.es/dvd/' + MovieId;
+          BeginPoss := Pos('<em>',strPage);
+          EndPoss := Pos('- DVDenlared:', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle  := TextBetween(MovieTitle ,'<em>', '- DVDenlared:');
+          DeleteTags (MovieTitle);
+          HTMLDecode(MovieTitle);
+          MovieTitle := UTF8Decode(MovieTitle);
+          MovieTitle  := Acentos(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('http://dvd.es/dvd/', strPage);
+          if(Pos('Todo acerca de Google', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeSort;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  Busca: integer;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  LineNr := FindLine('<title>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<title>', '-');
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Titulo Original
+  LineNr := FindLine('<strong>Titulo original</strong>:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<strong>Titulo original</strong>:', '<br>');
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+ 
+   // director
+  LineNr := FindLine('<strong>Director</strong> :', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Director</strong> :',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'delayhidemenu()">', '</a>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+ 
+  // Reparto
+  LineNr := FindLine('<strong>Interpretes</strong>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Interpretes</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'delayhidemenu()">', '<strong>Formatos');
+    Item := StringReplace(Item , #13#10, '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldActors, Trim (Item));
+  end;
+
+   // sinopsis
+ LineNr := FindLine('align="left">&nbsp;Acerca de</td>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('align="left">&nbsp;Acerca de</td>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'style="padding:6px;text-align:justify">', '</td>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '  ', '');
+    DeleteTags (Item);
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDescription, Trim (Item));
+  end;
+
+  // Categoria
+  LineNr := FindLine('<strong>Género </strong><br>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Género </strong><br>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>Género </strong><br>', '<br>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+
+  // Productor
+  LineNr := FindLine('<strong>Distribuidora </strong><br>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Distribuidora </strong><br>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>Distribuidora </strong><br>', '<br>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldProducer, Trim (Item));
+  end;
+ 
+  // año
+ LineNr := FindLine('año</strong><br>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('año</strong><br>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, ' /', '<br>');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+
+   // pais
+  LineNr := FindLine('<strong>Pais y año</strong><br>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '<strong>Pais y año</strong><br>', '/');
+    HTMLDecode(Item);
+    Item  := StringReplace(Item , 'EE.UU.', 'USA');
+    SetField(fieldCountry, Trim (Item));
+  end;
+ 
+  // Duracion
+  LineNr := FindLine('class="titulo">Duración:', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('class="titulo">Duración:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</span>', 'minutos');
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+
+   // Caratula
+  LineNr := FindLine('src="/data/dvd/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, 'src="/data/dvd/', '" class');
+     GetPicture ('http://www.dvdenlared.com/data/dvd/'+Item);
+  end;
+
+  // Caratula
+  LineNr := FindLine('href="/delr/abrir_multimedia.jpg.php?i=', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, 'href="/delr/abrir_multimedia.jpg.php?i=', '" rel="');
+     GetPicture ('http://www.dvdenlared.com/delr/abrir_multimedia.jpg.php?i='+Item);
+  end;
+
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('DVDenlared', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('DVDenlared', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?hl=es&as_qdr=all&num=100&q=' + UrlEncode(MovieName)+'+site%3Ahttp%3A%2F%2Fdvd.es&btnG=Buscar&meta=lr%3Dlang_es');
+end.

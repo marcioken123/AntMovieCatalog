@@ -1,0 +1,1891 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAABDCwAAQwsAABAAAAAQAAAAAAAAABEREQAzMzMAVAAAAJgAAAD/ZWUAqqqqAMzMzADu7u4A////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJmZmZmZmZmZAAAAAAAAAAAGZmZmZmZmcAZ3d3d3d3eABnd3d3d3d4AGd3d3d3d3gAAREREREREgABERERERESAAERERERERIAAREREREREgA0RERERERFADREREREREUANERERERERQBFVVVVVVVVAAAAAAAAAAAJmZmZmZmZmZ
+Name=Estonian
+LocalName=Eesti
+Encoding=windows-1257
+Version=3.5.1
+VersionFormat=4.2.2
+Comments=Kohandanud Junose tõlkefailist Tiit Pääsukene
+Authors=com7|com7@hot.ee|Junos|junos@junos.pri.ee|
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Uus kataloog
+ActionFileNew.Hint=Uus|Loo uus kataloog
+ActionFileOpen.Caption=&Ava...
+ActionFileOpen.Hint=Ava...|Ava fail
+ActionFileOpenNoRecent.Caption=Fail puudub
+ActionFileSave.Caption=&Salvesta
+ActionFileSave.Hint=Salvesta kataloog|Salvesta avatud fail
+ActionFileSaveAs.Caption=Salvesta &uuena...
+ActionFileSaveAs.Hint=Salvesta uuena...|Salvesta avatud fail teise nime all
+ActionFilePrint.Caption=&Trüki...
+ActionFilePrint.Hint=Trüki nimekiri|Trüki avatud kataloogi nimekiri/sisu
+ActionFileImport.Caption=&Impordi...
+ActionFileImport.Hint=Impordi...|Impordi andmeid teisest faili formaadist
+ActionFileExport.Caption=&Ekspordi...
+ActionFileExport.Hint=Ekspordi...|Ekspordi kataloog teise faili formaati
+ActionFileProperties.Caption=&Parameetrid...
+ActionFileProperties.Hint=Parameetrid...|Kuva faili parameetrid ja kataloogi informatsioon
+
+ActionExit.Caption=&Välju
+ActionExit.Hint=Välju|Programmist väljumine
+ActionOptions.Caption=&Omadused...
+ActionOptions.Hint=Omadused...|Kuva programmi omaduste aken
+ActionLanguage.Caption=Keel...
+ActionLanguage.Hint=Keel...|Muuda keel
+ActionLoan.Caption=&Laenutajad...
+ActionLoan.Hint=Laenud...|Kuvab hetkel välja laenatud filmide nimekirja
+ActionToolsScripting.Caption=M&akrod...
+ActionToolsScripting.Hint=Makrod...|Käivitab makro (valitud filmidega)
+ActionToolsGrid.Caption=K&uvab tabelina
+ActionToolsGrid.Hint=Kuvab tabelina|Kuvab filmide nimekirja suure tabelina
+  ActionStretchList.Caption=Stretch &list
+  ActionStretchList.Hint=Stretch list|Stretch the list to the right
+  ActionDisplayHTML.Caption=&Display HTML
+  ActionDisplayHTML.Hint=Display HTML|Display movie information according to HTML template
+  ActionSelectHTML.Caption=&Select HTML
+  ActionSelectHTML.Hint=Select HTML|Select HTML template
+  ActionDisplayThumbnails.Caption=Display as &thumbnails
+  ActionDisplayThumbnails.Hint=Display as thumbnails|Display the movie list as thumbnails
+  ActionSortAscend.Caption=Ascending
+  ActionSortAscend.Hint=|Sort in ascending order
+  ActionSortDescend.Caption=Descending
+  ActionSortDescend.Hint=|Sort in descending order
+  ActionSortAdvanced.Caption=Advanced...
+  ActionSortAdvanced.Hint=|Advanced sort
+ActionGroupNone.Caption=< puudub >
+ActionGroupNone.Hint=|Ei grupeeri filme
+  ActionManageFields.Caption=Manage &fields...
+  ActionManageFields.Hint=Manage fields...|Manage custom fields of current catalog
+  ActionManagePictures.Caption=Manage p&ictures...
+  ActionManagePictures.Hint=Manage pictures...|Manage pictures of current catalog
+  ActionHTMLEditor.Caption=&HTML editor...
+  ActionHTMLEditor.Hint=HTML editor...|Edit HTML templates
+
+ActionHelpIndex.Caption=&Abi info
+ActionHelpIndex.Hint=Abi info|Avab abi info faili
+ActionHelpAbout.Caption=&Programm...
+ActionHelpAbout.Hint=Programm...|Kuvab info programmi kohta
+ActionHelpVersion.Caption=&Versioonid...
+ActionHelpVersion.Hint=Versioonid...|Kuvab versioonide informatsiooni
+
+ActionMovieAdd.Caption=&Lisa uus film...
+ActionMovieAdd.Hint=Lisa...|Lisa kataloogi uus film
+ActionMovieUndo.Caption=&Tühista muudatused
+ActionMovieUndo.Hint=Tühista muudatused|Tühista filmiga tehtud muudatused
+ActionMovieDelete.Caption=&Kustuta
+ActionMovieDelete.Hint=Kustuta|Kustuta film kataloogist
+ActionMovieCopy.Caption=&Kopeeri
+ActionMovieCopy.Hint=Kopeeri|Kopeeri filmi info lõikelauale
+ActionMoviePaste.Caption=&Kleebi
+ActionMoviePaste.Hint=Kleebi|Kleebi filmi info lõikelaualt
+ActionMovieRenumber.Caption=&Uuenda Numbrid...
+ActionMovieRenumber.Hint=Uuenda Numbrid...|Uuendab filmide numeratsiooni, alates 1'st suurenevas järjekorras
+ActionMovieFind.Caption=&Otsi filmi...
+ActionMovieFind.Hint=Otsi...|Otsi filmi kasutades selleks mingi välja väärtusi
+ActionFindFindNext.Caption=Otsi järgmist
+ActionFindFindNext.Hint=|Otsi järgmist filmi, mis vastab otsingu parameetritele
+ActionFindWholeField.Caption=Ainult terve väli
+ActionFindWholeField.Hint=|Lisab filmi ainult juhul, kui välja väärus on võrdne otsingus kasutatava väljaga
+  ActionFindReverse.Caption=&Reverse results
+  ActionFindReverse.Hint=|Reverse search results
+ActionFindDisplay.Caption=Kuva resultaat
+ActionFindDisplay.Hint=|Kuvab kõik filmid, mis vastavad otsingu kriteeriumitele (filtreeritud vaade)
+LField.Caption=Otsi väljalt:
+LValue.Caption=Otsi väärtust:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Muuda järjekorra &numbrit...
+ActionMovieNumber.Hint=Muuda järjekorra numbrit...|Muuda filmi numbrit
+ActionMovieStats.Caption=&Statistika...
+ActionMovieStats.Hint=Statistika...|Kuva statistikat antud kataloogi ja filmide kohta
+ActionMovieImportFiles.Caption=&Failist...
+ActionMovieImportFiles.Hint=Informatsiooni lugemine failist...|... failist
+ActionMovieImportScript.Caption=Internetist kasutades &makrosi
+ActionMovieImportScript.Hint=Otsi infot makro abil Internetist|Otsib infot makro abil Internetist
+ActionMovieSearch.Caption=&Otsi internetist
+ActionMovieSearch.Hint=Otsi informatiooni internetist|Otsi filmi kohta infot internetist
+  ActionMovieRandom.Caption=&Random
+  ActionMovieRandom.Hint=Random|Random selection
+ActionMoviePictureShow.Caption=Kuva &pilt
+ActionMoviePictureShow.Hint=Kuva või peida filmi pilt|Kuva või peida filmi pildi aken
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Vali...
+ActionPicSelect.Hint=Vali pilt...|Vali pilt impordiks
+ActionPicDelete.Caption=&Kustuta
+ActionPicDelete.Hint=Kustuta|kustuta see pilt
+ActionPicUndock.Caption=Liida/&Lahuta
+ActionPicUndock.Hint=Liida/Lahuta|Pildi aken: Liida (integreeri põhiaknaga) or Lahuta (Eraldi aknana)
+ActionPicSaveAs.Caption=&Salvesta uuena...
+ActionPicSaveAs.Hint=Salvesta pilt uuena...|Salvesta koopia pildist uue pildina
+ActionPicCopy.Caption=&Kopeeri
+ActionPicCopy.Hint=Kopeeri lõikelauele|Kopeeri pilt lõikelauale
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  ActionMovieUrl.Caption=URL
+  ActionMovieUrl.Hint=URL|Movie URL
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=&Kataloogid
+ActionMenuMovie.Caption=Fil&m
+  ActionMenuDisplay.Caption=&Display
+ActionMenuTools.Caption=&Tööriistad
+ActionMenuHelp.Caption=&Abi
+ActionMenuPicture.Caption=P&ilt
+ActionMenuPicture.Hint=Filmi pilt|Filmi pildi käsud
+ActionMenuGet.Caption=&Informatsioon
+ActionMenuGet.Hint=Informatsioon|Ammuta filmi informatsiooni...
+  ActionMenuGridFields.Caption=Grid &fields
+  ActionMenuGridFields.Hint=Grid fields|Select grid fields to show or hide
+  ActionMenuSort.Caption=&Sort by
+  ActionMenuSort.Hint=Sort movies|Sort by a specified field the movies of the list
+ActionMenuGroup.Caption=&Grupeeri
+ActionMenuGroup.Hint=Grupeeri filmid|Grupeeri filmid etteantud väärtuste alusel
+ActionRefresh.Caption=&Värskenda
+ActionRefresh.Hint=Värskenda nimekirja|Värskenda filmide nimekirja
+  ActionMenuGroupsFormat.Caption=Groups f&ormatting
+  ActionMenuGroupsFormat.Hint=Format the group names|Format the group names depending on the chosen option
+  ActionGroupsFormatNone.Caption=< &none >
+  ActionGroupsFormatNone.Hint=|Do not format group names
+  MnuGpf1L.Caption=Extract first letter
+  MnuGpf2L.Caption=Extract two first letters
+  MnuGpf3L.Caption=Extract three first letters
+  MnuGpf4L.Caption=Extract four first letters
+  MnuGpf5L.Caption=Extract five first letters
+  MnuGpfDateY.Caption=Extract the year of dates
+  MnuGpfDateYM.Caption=Extract the year and month of dates
+  MnuGpfRound0001.Caption=Round numbers to thousandths
+  MnuGpfRound001.Caption=Round numbers to hundredth
+  MnuGpfRound01.Caption=Round numbers to tenth
+  MnuGpfRound1.Caption=Round numbers to unit
+  MnuGpfRound10.Caption=Round numbers to ten
+  MnuGpfRound100.Caption=Round numbers to hundred
+  MnuGpfRound1000.Caption=Round numbers to thousand
+  MnuGpfRoundType.Caption=&Kind of rounding
+  MnuGpfRoundDown.Caption=Round &down
+  MnuGpfRoundNearest.Caption=Round to &nearest
+  MnuGpfRoundUp.Caption=Round to &up
+
+  MnuSelect.Caption=Select
+  ActionMovieSelGroup.Caption=Whole group
+ActionMovieSelGroup.Hint=Märgista terve grupp
+  ActionMovieSelCheck.Caption=Checked
+ActionMovieSelCheck.Hint=Valib märgistatud
+  ActionMovieSelUncheck.Caption=Unchecked
+ActionMovieSelUncheck.Hint=Valib ainult mittemärgistatud filmid
+
+  MnuSelected.Caption=Selected movies
+  ActionMovieCheck.Caption=Check
+ActionMovieCheck.Hint=Märgista|Märgista selekteeritud filmid
+  ActionMovieUncheck.Caption=Uncheck
+ActionMovieUncheck.Hint=Kustuta märgistus|Märgista selekteeritud filmid
+
+ActionDisplayPictureToolbar.Caption=&Pildi Tööriistariba
+ActionDisplayPictureToolbar.Hint=Kuva pildi tööriistaba|Kuva või peida pildi tööriistariba
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=&Põhi Tööriistariba
+ActionDisplayMainToolbar.Hint=Kuva põhi tööriistariba|Kuva või peida põhi tööriistariba
+ActionDisplayStatusBar.Caption=&Jalus
+ActionDisplayStatusBar.Hint=Kuva jalus|Kuva või peida jalus
+
+ActionURLOpen.Caption=Ava URL
+ActionURLOpen.Hint=|Ava URL või valitud fail
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+ActionURLBrowse.Caption=Otsi...
+ActionURLBrowse.Hint=|Otsi faili nime järgi
+
+  MnuHtmlCopy.Caption=Copy
+  MnuHtmlCopy.Hint=|Copy text selected
+  MnuHtmlEdit.Caption=Edit...
+  MnuHtmlEdit.Hint=|Edit HTML template
+  MnuTlsBrowseHTML.Caption=Browse...
+
+ToolbarMenu.Caption=Menüü riba
+ToolbarMain.Caption=Peamine Tööriistariba
+ToolbarPicture.Caption=Pildi Tööriistariba
+ToolbarPictureWindow.Caption=Pilt
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Otsi
+
+Listview1.HeaderSections.Item[0].Text=Nr
+Listview1.HeaderSections.Item[1].Text=Pealkiri
+
+MoviePicture.Hint=|Pildi täissuuruses nägemiseks kliki siia
+
+  ThumbsSizer.Hint=|Change size of pictures
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display movie title
+
+Messages.Strings.String[0]=Kas sa ikkagi tahad kustutada filmi %s : %s ?
+Messages.Strings.String[1]=Kas taastame selle filmi vana informatsiooni?
+  Messages.Strings.String[2]=%d movies
+  Messages.Strings.String[3]=(%0:d selected, %1:d checked, %2:d visible)
+Messages.Strings.String[4]=Kataloogi on muudetud: tahad sa muudatused salvestada?
+Messages.Strings.String[5]=Ära küsi enam kinnitust
+Messages.Strings.String[6]=Muudetud
+Messages.Strings.String[7]=Pilt
+Messages.Strings.String[8]=Salvesta pildi koopia uude faili
+Messages.Strings.String[9]=Impordib %s...
+Messages.Strings.String[10]=Salvestab %s...
+Messages.Strings.String[11]=Laen %s...
+Messages.Strings.String[12]=Vali pilt
+Messages.Strings.String[13]=See võib kustutada pildi. Oled sa kindel ?
+Messages.Strings.String[14]=Ei saa kasutada seda pilti: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=KB
+Messages.Strings.String[16]=Vali failid kust infot võtta
+Messages.Strings.String[17]=Otsi informatsiooni %0:s|Otsi informatsiooni %0:s filmi kohta
+Messages.Strings.String[18]=Pole hiljutist faili
+Messages.Strings.String[19]=Selles kataloogis on salvestatud pildid. Salvestades kataloogi XML formaati peavad olema pildid eraldi failidena| Kui soovid salvestada faili XML fomaati, vajuta OK piltide konvertimiseks või Eira kui sa ei taha neid säilitada (lingitud pildid jäävad).|Piltide nimed saavad määratud „Piltide nimetamine” järgi „Piltide informatsiooni” lehel „Eelistuste” lehel.
+Messages.Strings.String[20]=|Grupeeri %s
+Messages.Strings.String[21]=< puudub >
+Messages.Strings.String[22]=Kas lisaks pildi lingi eemaldamisele tahad kustutada pildi ka arvutist ? (%s)
+Messages.Strings.String[23]=See film on juba  seotud pildiga. Kui seod uue pildiga, kas tahad vana pildi arvutist kustuda? (%s)
+Messages.Strings.String[24]=Pilti ei saa kopeerida kataloogiga sama nimega, palun  salvesta see kuskile mujale ja proovi uuesti.
+Messages.Strings.String[25]=Salvestatud kataloogi %s nime all
+Messages.Strings.String[26]=Väline fail: %s
+Messages.Strings.String[27]=%.0n baiti
+Messages.Strings.String[28]=Laen trüki eelvaadet
+Messages.Strings.String[29]=Otsin printereid
+Messages.Strings.String[30]=Vali fail määratlemaks URL väli
+Messages.Strings.String[31]=< muud >
+Messages.Strings.String[32]=Kõik
+  Messages.Strings.String[33]=|Sort by %s
+  Messages.Strings.String[34]=Movie Fields
+  Messages.Strings.String[35]=Custom Fields
+  Messages.Strings.String[36]=File "%s" doesn't exist
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+  Messages.Strings.String[38]=Get information from files...
+  Messages.Strings.String[39]=Select same color tag|Select only the movies that have the same color tag
+  Messages.Strings.String[40]=Mark selected with a color tag|Mark selected movies with a color tag
+  Messages.Strings.String[41]=All Fields
+  Messages.Strings.String[42]=You have choosen to replace an existing catalog. Do you want to delete the old copied pictures of this catalog?
+  Messages.Strings.String[43]=Copy/paste on movie "%s"
+  Messages.Strings.String[44]=Delete old copied pictures...
+  Messages.Strings.String[45]=Copy pictures into a subfolder pictures
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Number
+Fields.Strings.String[1]=Märgitud
+  Fields.Strings.String[2]=Color Tag
+Fields.Strings.String[3]=Plaadi Tähis
+Fields.Strings.String[4]=Plaadi Tüüp
+Fields.Strings.String[5]=Allikas
+Fields.Strings.String[6]=Lisatud
+Fields.Strings.String[7]=Laenaja
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Hinnang
+Fields.Strings.String[11]=Originaal Pealkiri
+Fields.Strings.String[12]=Tõlgitud Pealkiri
+Fields.Strings.String[13]=Formaaditud Pealkiri
+Fields.Strings.String[14]=Lavastaja
+Fields.Strings.String[15]=Produtsent
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=Näitlejad
+Fields.Strings.String[19]=Riik
+Fields.Strings.String[20]=Aasta
+Fields.Strings.String[21]=Pikkus
+Fields.Strings.String[22]=Kategooria
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Kirjeldus
+Fields.Strings.String[26]=Kommentaarid
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Video Formaat
+Fields.Strings.String[29]=Video Kvaliteet
+Fields.Strings.String[30]=Audio Formaat
+Fields.Strings.String[31]=Audio Kvaliteet
+Fields.Strings.String[32]=Resolutsioon
+Fields.Strings.String[33]=Kaadri sagedus
+Fields.Strings.String[34]=Keeled
+Fields.Strings.String[35]=Subtiitrid
+Fields.Strings.String[36]=Mahud
+Fields.Strings.String[37]=Kettaid
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+  Media.Strings.String[0]=Volume Label
+  Media.Strings.String[1]=File Path
+  Media.Strings.String[2]=Path + File Name
+  Media.Strings.String[3]=Path + File Name + Extension
+  Media.Strings.String[4]=File Name
+  Media.Strings.String[5]=File Name (Filtered)
+  Media.Strings.String[6]=File Name + Extension
+  Media.Strings.String[7]=Folder Name
+  Media.Strings.String[8]=Folder Name (Filtered)
+  Media.Strings.String[9]=File Extension
+  Media.Strings.String[10]=File Extension (Without dot)
+  Media.Strings.String[11]=Size (String - "650+530")
+  Media.Strings.String[12]=Size (Sum - "1180")
+  Media.Strings.String[13]=Disks
+  Media.Strings.String[14]=Picture
+  Media.Strings.String[15]=Length
+  Media.Strings.String[16]=Resolution ("Width x Height")
+  Media.Strings.String[17]=Resolution (Width)
+  Media.Strings.String[18]=Resolution (Height)
+  Media.Strings.String[19]=Framerate
+  Media.Strings.String[20]=Video Codec
+  Media.Strings.String[21]=Video Bitrate
+  Media.Strings.String[22]=Audio Codec
+  Media.Strings.String[23]=Audio Channels
+  Media.Strings.String[24]=Audio Codec + Audio Channels
+  Media.Strings.String[25]=Audio Bitrate
+  Media.Strings.String[26]=Languages
+  Media.Strings.String[27]=Subtitles
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Hoiatus!
+Captions.Strings.String[1]=Viga!
+Captions.Strings.String[2]=Infoks!
+Captions.Strings.String[3]=Küsimus
+Captions.Strings.String[4]=&Jah
+Captions.Strings.String[5]=&Ei
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Tühista!
+Captions.Strings.String[8]=&Katkesta!
+Captions.Strings.String[9]=&Korda!
+Captions.Strings.String[10]=&Eira!
+Captions.Strings.String[11]=&Kõik!
+Captions.Strings.String[12]=Ei kõigile
+Captions.Strings.String[13]=Jah kõigile
+Captions.Strings.String[14]=&Abi
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=OK
+btn1.Caption=Tühista
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=Infot kohta
+btn3.Caption=Sule
+btn2.Caption=Versioonid
+btn1.Caption=Kasutatud
+Messages.Strings.String[0]=%s : versioon %s (kompileeritud %s)
+Messages.Strings.String[1]=(vajuta Ctrl+C kui tahad seda kopeerida lõikelauale)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Filmi numbri valik
+btn2.Caption=OK
+btn1.Caption=Tühista
+LEnterNumber.Caption=Sisesta filmi number:
+btnFindNum.Hint=Find an available number|
+grpNotUnique.Caption=Sellise numbriga film on juba olemas...
+grpNotUnique.Items.String[0]=&Nõustun korduvaga
+grpNotUnique.Items.String[1]=&Anna teine number olemasolevale filmile
+grpNotUnique.Items.String[2]=&Tõsta numbreid, kuni ei ole enam korduvaid
+CBDoNotAsk.Caption=Ära küsi enam, kasuta automaatset nummerdust
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=OK
+btn1.Caption=Tühista
+Caption=Kataloogi parameetrid
+LHOwnerInfo.Caption=Info Omaniku kohta
+LFileName.Caption=Fail:
+LFileSize.Caption=Suurus:
+LFileVersion.Caption=Formaat:
+LHXMLHeader.Caption=XML Päis
+LEncoding.Caption=Kodeerimine:
+LOwnerName.Caption=Nimi:
+LOwnerMail.Caption=e-Mail:
+LOwnerSite.Caption=Koduleht:
+LDescription.Caption=Kirjeldus:
+EOwnerMail.ButtonHint=Saada kiri
+EOwnerSite.ButtonHint=Käivita URL
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Laenutajad
+btn2.Caption=Sule
+btn1.Caption=Abi
+
+ActionBorrowerAdd.Caption=Lisa...
+ActionBorrowerAdd.Hint=Lisa laenaja|Lisa nimekirja uus laenaja
+ActionBorrowerDel.Caption=Kustuta
+ActionBorrowerDel.Hint=Kustuta laenaja|Kustuta see laenaja nimekirjast
+ActionCheckOut.Caption=Välja laenatud
+ActionCheckOut.Hint=Välja laenatud|Lisa see film laenajale laenatute nimekirja
+ActionCheckIn.Caption=Tagastatud
+ActionCheckIn.Hint=Tagastatud|Eemalda see film laenajale laenatute nimekirjast
+ActionMovieGetBorrower.Caption=Vali Laenaja
+ActionMovieGetBorrower.Hint=Vali laenaja|Leia, laenajate nimekirjast, selle filmi laenaja
+ActionMovieFindNext.Caption=Otsi järgmist
+ActionMovieFindNext.Hint=Otsi järgmist|Otsi järgmist filmi mille pealkirjas sisaldub see tekst
+ActionOptions.Caption=&Valikud
+ActionOptions.Hint=Valikud|valikute tegemine
+ActionOptionsIncNum.Caption=Kaasa filmid mis on sama &numbriga
+ActionOptionsIncNum.Hint= Kaasa filmid mis on sama numbriga
+ActionOptionsIncLab.Caption= Kaasa filmid mis on sama n&imega
+ActionOptionsIncLab.Hint= Kaasa filmid mis on sama nimega
+
+LvMovies.HeaderSections.Item[0].Text=Nr
+LvMovies.HeaderSections.Item[1].Text=Label
+LvMovies.HeaderSections.Item[2].Text=Pealkiri
+LvMovies.HeaderSections.Item[3].Text=Laenaja
+LvNames.HeaderSections.Item[0].Text=Laenaja
+LvNames.HeaderSections.Item[1].Text=Kogus
+LvLent.HeaderSections.Item[0].Text=Nr
+LvLent.HeaderSections.Item[1].Text=Label
+LvLent.HeaderSections.Item[2].Text=Pealkiri
+
+Messages.Strings.String[0]=See eemaldab "%s" laenajate nimekirjast, ja märgib "tagastatuks" kõik filmid mis on laenatud sellele isikule.
+Messages.Strings.String[1]=Loen nimekirja...
+Messages.Strings.String[2]=See film on juba laenatud kellelegi teisele
+Messages.Strings.String[3]=Palun sisestage nimi
+Messages.Strings.String[4]= See film on juba laenatud kellelegi teisele:
+;Messages.Strings.String[5]
+Messages.Strings.String[6]=Sisestage nimi
+Messages.Strings.String[7]=Uus laenaja
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Ekspordi teise faili-formaati
+lvFormat.Columns.Item[0].Caption=Toetatud faili vormingud
+Btn3.Caption=Ekspordi...
+Btn2.Caption=Sule
+Btn1.Caption=Abi
+grpImages.Caption=Pildid
+CBCopyPictures.Caption=Kopeeri ekportfaili
+CBCopyPictures.Hint=Kopeeri samasse kataloogi
+  CBCopyPicturesInPicDir.Caption=Into a subfolder
+  CBCopyPicturesInPicDir.Hint=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Ainult siis, kui veel pole
+CBCopyPicturesNew.Hint=Kopeeri siis, kui pilte veel (i.e. ei kirjuta üle)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Palun valige formaat...
+
+LCSVDelimiter.Caption=Välja delimiter:
+ECSVDelimiter.Hint=|
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Teksti välja delimiter:
+ECSVBloc.Hint=|
+LCSVLinebreaks.Caption=Asenda reapoolitused:
+ECSVLinebreaks.Hint=|
+CBCSVColumnTitles.Caption=Lisa tulbale pealkiri
+LSQLTableName.Caption=Tabeli nimi:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Uuenda" asemel, "Lisa"
+LSQLCommands.Caption=Lisa SQL käsud:
+LSQLLinebreaks.Caption=Asenda reavahetused:
+LOrigonsLink.Caption=See formaat lubab sul panna oma filmi nimekirja Origons.com lehele<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Eksporditavad väljad:
+FieldsSQL.LSelected.Caption=Eksporditavad väljad:
+  LAMCNote.Caption=You can also export to AMC (without export options) from the main window using the File -> Save As command, then select AMC as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+LXMLNote.Caption=You can also export to XML (without export options) from the main window using the File -> Save As command, then select XML as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Sorteeri nimekirja...
+Messages.Strings.String[1]=Ekspordib %s...
+Messages.Strings.String[2]=Kopeerib faile...
+Messages.Strings.String[3]=Ekspordi HTML faili
+Messages.Strings.String[4]=Ekspordi CSV faili
+Messages.Strings.String[5]=Expordi SQL formaati
+Messages.Strings.String[6]=Ekspordi pildid
+Messages.Strings.String[7]=Ekspordi Origons.com kasutavaks failiks
+  Messages.Strings.String[8]=Export to AMC
+  Messages.Strings.String[9]=Export to XML
+  Messages.Strings.String[10]=You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Impordi teisest faili vormingust
+  Btn3.Caption=&Import...
+  Btn2.Caption=Close
+Btn1.Caption=&Abi
+lvFormat.Columns.Item[0].Caption=Toetatud formaadid
+  lvFormat.Items.Item[5].Caption=Media files
+  Messages.Strings.String[0]=Searching for media files...
+  Messages.Strings.String[1]=Media files found:
+  Messages.Strings.String[2]=Importing media info...
+  Messages.Strings.String[3]=Importing from %s...
+  Messages.Strings.String[4]=Some files or folders cannot be scanned because they contains not supported characters:
+
+[TImportFrame]
+lblLink.Caption=Siit saad importida %s
+grpSettings.Caption=Seadistus
+chkAllowDup.Caption=Luba korduvaid numbreid
+  chkAllowClear.Caption=Allow to clear fields when new value is empty
+chkAutoAssign.Caption=Ürita täita väljad automaatselt
+lblPictures.Caption=Pildi importimise meetod:
+  cmbPictures.Items.String[0]=1 - Store into catalog
+  cmbPictures.Items.String[1]=2 - Copy to catalog folder and make relative link
+  cmbPictures.Items.String[2]=3 - Copy to catalog folder only if it was not stored
+  cmbPictures.Items.String[3]=4 - Copy to pictures folder and make relative link
+  cmbPictures.Items.String[4]=5 - Copy to pictures folder only if it was not stored
+  cmbPictures.Items.String[5]=6 - Make absolute links to current pictures
+  cmbPictures.Items.String[6]=7 - Make relative links to current pictures
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=Valitud fail
+btnBrowse.Hint=Browse...|Otsi importimiseks faili
+btnReload.Caption=&Loe uuesti
+grpPreview.Caption=Eelvaade
+lblPreview.Caption=Kliki tulba päisele sorteerimikas valiku järgi  ActionListCheck.Caption=&Märgista valitud
+btnFieldsLoad.Hint=|Le väljad
+btnFieldsSave.Hint=|Salvesta väljad
+  btnFieldsAutoLoad.Hint=Reload fields automatically|Reload automatically field-column links that was previously saved
+  btnColumnsAutoResize.Hint=Resize columns automatically|Resize columns automatically
+ActionListCheck.Caption=&Check selected
+ActionListCheck.Hint= Märgista valitud
+ActionListUncheck.Caption=&Tühista märgistus
+ActionListUncheck.Hint= Tühista märgistus
+ActionListAll.Caption=Märgista kõik
+ActionListAll.Hint= Märgista kõik
+ActionListNone.Caption=Check &none
+ActionListNone.Hint=Uncheck all|Uncheck all items
+  ActionListCheckExists.Caption=Check existing movies
+  ActionListCheckExists.Hint=Check existing movies|Check existing movies in current catalog
+  ActionListUncheckExists.Caption=Uncheck existing movies
+  ActionListUncheckExists.Hint=Uncheck existing movies|Uncheck existing movies in current catalog
+  ActionSortAscend.Caption=Sort ascending
+  ActionSortAscend.Hint=Sort ascending|Sort column values into ascending order
+  ActionSortDescend.Caption=Sort descending
+  ActionSortDescend.Hint=Sort descending|Sort column values into descending order
+  ActionDefineKeyField.Caption=Define as key field
+  ActionDefineKeyField.Hint=|Use this key field to compare movies
+ActionHeaderNoImport.Caption=Ära impordi seda välja  Messages.Strings.String[0]=Puudub film importimiseks
+  MnuMov.Caption=Movie Fields
+  MnuMovCF.Caption=Custom Fields
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=No movie to import
+Messages.Strings.String[1]=Sa ei valinud ühtegi välja. Klõpsa tulba päisel valikuks
+Messages.Strings.String[2]=Selleks importimise mooduseks peab kataloogil olema nimi, palun salvesta see kuskile mujale ja proovi uuesti
+  Messages.Strings.String[3]=Select a folder:
+  Messages.Strings.String[4]=%s movie(s) found!
+  Messages.Strings.String[5]=%s movie(s) added!
+  Messages.Strings.String[6]=%s movie(s) updated!
+  Messages.Strings.String[7]=The values of key field are not unique in current catalog.|A movie in the list could match with several movies in current catalog.
+  Messages.Strings.String[8]=To do this action, you must first select a key field to compare movies (click on a column header of the list).
+  Messages.Strings.String[9]=Importing movies into current catalog...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Esimene rida sisaldab päist  lblDelim.Caption=Välja delimiter:
+lblDelim.Caption=Field delimiter:
+edtDelim.Hint=|Character delimiting fields values
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Teksti välja delimiter:
+edtQuote.Hint=|Teksti väli (jäta tühjaks, kui pole valitud)
+lblLinebreaks.Caption=Ridade poolitus:
+edtLinebreaks.Hint=|Ridade pooltus
+
+[TImportFrameQuery]
+grpQuery.Caption=Query käivitamiseks
+btnQueryExec.Hint=Käivita query
+
+[TImportFrameDir]
+  Messages.Strings.String[10]=Source folder
+  Messages.Strings.String[11]=Browse...|Browse for a folder to scan
+  Messages.Strings.String[12]=&Scan folder
+  lblExtractProcess.Caption=Extract process:
+  cmbExtractProcess.Items.String[0]=1 - Extract advanced media info during scanning
+  cmbExtractProcess.Items.String[1]=2 - Only extract advanced media info during final import
+  cmbExtractProcess.Items.String[2]=3 - Do not extract advanced media info
+  chkInternalAVI.Caption=Use internal engine for AVI importation (faster)
+  chkMultiDisks.Caption=Merge info of media in multi parts/disks
+  lblDiskTag.Caption=Disk Tag:
+  edtDiskTag.Hint=|E.g. choose tag 'cd' for names like 'moviename.cd1', 'moviename.cd2',...
+  lblBrowseDepth.Caption=Browse subfolders with depth of:
+  edtBrowseDepth.Hint=|0 = none, * = browse all
+  edtBrowseDepth.Left=244
+  btnFilterFileName.Caption=Filter the file name
+  lblExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+  Caption=Movies importation method
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LMsg1.Caption=You have selected a key field to compare checked movies of the list with movies in current catalog.
+  LMsg2.Caption=You will import all checked movies of the list in current catalog. To check if movies do not already exist, you can define a key field to compare them click on a column header of the list.
+  grpImportMethod.Caption=What do you want to do ?
+  grpImportMethod.Items.String[0]=Import all movies
+  grpImportMethod.Items.String[1]=Import only new movies
+  grpImportMethod.Items.String[2]=Update only existing movies
+  grpImportMethod.Items.String[3]=Import new movies and update existing movies
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Omadused
+Btn3.Caption=OK
+Btn2.Caption=Tühista
+Btn1.Caption=Abi
+
+LvCat.Items.Item[0].Text=Üldvälimus
+LHToolbar.Caption=Tööriistaribad ja Menüüd
+LIconSet.Caption=Ikoonide valik:
+LColorType.Caption=Värvide tüübid:
+cbxColorType.Items.String[0]=Automaatne
+cbxColorType.Items.String[1]=Hall kui pole aktiivne
+cbxColorType.Items.String[2]=Sulata heledaks kui pole aktiivne
+cbxColorType.Items.String[3]=Sulata tumedaks kui pole aktiivne
+cbxColorType.Items.String[4]=Alati värviline
+CBOfficeXP.Caption=Office XP style
+CBMenuImages.Caption=Pildid menüüs
+LHMainWindow.Caption=Üld väljanägemine
+CBSoftBorders.Caption=Kergete raamidega Filmi nimekiri, Filmi Informatsiooni Paneel ja Pildi kast
+  CBNatCmp.Caption=Use natural comparison (detect numbers automatically) to sort strings
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+  CBAutoFocus.Hint=|Give focus to component when the mouse pointer moves over it
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Käivitumine
+CBLogo.Caption=Näitab logo
+
+LvCat.Items.Item[1].Text=Tööriistariba käepäraseks
+LHCustomizeToolbar.Caption=Valige ikoonid mis peaksid olema Põhi tööriistaribal
+
+LvCat.Items.Item[2].Text=Failid
+LHSaving.Caption=Kataloogid
+CBBackup.Caption=Tee alati varukoopia
+CBAutoLoad.Caption=Käivitamisel automaatselt ava järgnev kataloogi fail, vastasel juhul tee tühi kataloog:
+EAutoLoad.ButtonHint=Vali...|Vali fail
+CBAutoLoadLast.Caption=Ava viimane kasutatud fail
+  CBAutoLoadCF.Caption=Automatically import custom fields from following file for new catalogs:
+  EAutoLoadCF.ButtonHint=Browse...|Select file
+LRecentFiles.Caption=Hiljutiste failide arv, mida kuvatakse menüüs:
+LRepairAssociations.Caption=Ühendamaks .amc faili laiendi, Ant Movie Catalog'iga, Vajuta all nuppu:
+BtnRepairAssoc.Caption=Paranda failide ühendust
+LHHistory.Caption=Laenutajate ajalugu
+CBHistory.Caption=Salvesta laenutajate ajalugu järgnevas failis (kasutades tab-piiranguga formaati):
+EHistoryFile.ButtonHint=Vali...|Vali fail
+  LHHTMLTemplate.Caption=HTML Template
+  EHTMLTemplate.ButtonHint=Browse...|Select file
+
+LvCat.Items.Item[3].Text=Filmide nimekiri
+LHDisplay.Caption=Kuva
+  CBCheckboxes.Caption=Checkboxes (right click to change movie color tag)
+  CBCheckboxesInThumbs.Caption=Checkboxes in thumbnails display
+  CBCheckboxesColor.Caption=Checkboxes with background color associated to movie color tag
+  CBLinesColor.Caption=Lines with background color associated to movie color tag
+CBHotTrack.Caption=Kuu
+CBEnhScrollbars.Caption=Täiustatud kerimisnupud
+CBMovieNumColumn.Caption="Filmi Number" tulp
+  LGridTextSize.Caption=Number of characteres per column in grid mode (0 = no limit):
+  LGridTextSize.Hint=|The columns FormatedTitle, OriginalTitle and TranslatedTitle are not affected
+  CBAutoStretchListGrid.Caption=Auto stretch list in grid mode view
+  CBAutoStretchListThumbs.Caption=Auto stretch list in thumbnails view
+LHOperations.Caption=Tegevused
+CBDelete.Caption=Küsi kustutamisel nõusolekut
+CBUndo.Caption=Küsi tühistamisel nõusolekut
+LHShortcut.Caption=Kiirklahvid
+LShortcutPrev.Caption=Eelmine film
+LShortcutNext.Caption=Järgmine film
+
+LvCat.Items.Item[4].Text=Pealkirja formaat
+LHFormatting.Caption=Formaatimine
+LTitleColumn.Caption=Kuva pealkiri:
+cbxTitle.Items.String[0]=Originaal pealkiri
+cbxTitle.Items.String[1]=Tõlgitud pealkiri
+cbxTitle.Items.String[2]=Originaal pealkiri (Tõlgitud pealkiri)
+cbxTitle.Items.String[3]=Tõlgitud pealkiri (Originaal pealkiri)
+cbxTitle.Items.String[4]=Plaadi tähis
+  cbxTitle.Items.String[5]=Custom title
+  LTitleTemplate.Caption=Template of title:
+  BtnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+CBPrefixes.Caption=Pane järgnevad eessõnad pealkirja lõppu:
+LPrefixes1.Caption=Ainult sõnad millele järgnevad tühikud või eraldajad, tuntakse pealkirjas ära.
+LPrefixes2.Caption=Sisesta nad nimekirja igaüks eraldi reale, jättes ära vahed ja eraldajad
+
+LvCat.Items.Item[5].Text=Grupeerimine
+LHGrouping.Caption=Groups
+CBGroupCount.Caption=Kuvab Gruppide arvu
+CBGroupExpand.Caption=Vaikimisi täismahtuvus
+  CBGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBGroupMulti.Hint=|For multi fields such as Category, Actors, Languages, Subtitles...
+  EGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBGroupMultiRmAllP.Caption=Remove values between parentheses for all multi fields
+  CBGroupMultiRmAllP.Hint=|Field Actors by default + Others multi fields
+  CBGroupMultiAddPatch.Caption=Add patch to ignore parenthesis of (I, (II, (II, (IV... (XXX values
+  CBSortGroupsByCount.Caption=Sort groups by groups count
+  LHCommonGroups.Caption=Common groups
+lblGroupLocation.Caption=Asukoht:
+  RBGroupsAbove.Caption=Groups above common groups
+  RBGroupsBelow.Caption=Groups below common groups
+CBGroupUnique.Caption=Put in a special common group items that would have been alone in their group
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Lisa uus film
+CBAskNumber.Caption=Küsi numbrit
+CBFirstAvailable.Caption=Kasuta esimest võimalikku numbrit s.t suurim number + 1
+CBAddOpenScript.Caption=Ava "Saa infot makroga" aken
+CBAddOpenFiles.Caption=Ava "Saa infot failist" aken
+LDefaultValues.Caption=Muutmaks vaikimisi väärtusi uue filmi puhul, vajuta all olevat nuppu:
+BtnDefaultValues.Caption=Muuda vaikimisi filmi väärtusi
+  CBSetCurrentDate.Caption=Fill field "Date Added" with current date instead of specified date
+  CBChecked.Caption=Checked
+  LColorTag.Caption=Color Tag:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Rating
+CBRatingTrunc.Caption=Ära näita komasid vaates, ekspordis ja printimisel
+LHPictureWindow.Caption=Pilt
+LPictureBackground.Caption=Tausta värv:
+CBFitPicture.Caption=Pilt täidab kogu akna
+CBShowPicInfo.Caption=Näita pildi suurust, formaati ja asukohta pildi täisvaate aknas
+  LHMovieFrame.Caption=Frame movie fields
+  LMovieFrameBackground.Caption=Background color:
+
+LvCat.Items.Item[8].Text=Valik kastid
+LHComboBoxItems.Caption=Muutujad
+CBComboSameForAll.Caption=Samad väärtused kõikidele nimekirjadele (ei muuda nimekirjade sisu)
+LListOptions.Caption=Toimingud nimekirjas:
+CBComboSort.Caption=Automaatne väärtuste sorteerimine
+CBComboAutoComplete.Caption=Automaatne lõpetamine kirjutamise järgi%n
+CBComboCatalogValues.Caption=Kasuta väärtusi sellest kataloogist vastasel juhul eelnevalt defineeritud nimekirja
+CBComboAutoAdd.Caption=Automaatselt lisa väärtused mida ei ole nimekirjas
+LListEdit.Caption=Muuda väärtusi:
+
+LvCat.Items.Item[9].Text=Meedia failide import
+LHVideoDragDrop.Caption=Vea && Lohista / Saa infot failist
+CBDNDMediaLabel.Caption=Import media label
+CBDNDFileName.Caption=Impordi failinimi pealkirjana
+  btnFilterFileName.Caption=Filter the file name
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Impordi faili nimi URL väljaks
+CBDNDSize.Caption=Impordi suurus:
+RBDNDString.Caption=Teeb stringi, näit. "650+530"
+RBDNDSum.Caption=Summeeri need näit  "1180"
+LDNDSizeUnit.Caption=Ühik:
+cbxDNDSizeUnit.Items.String[0]=Baiti
+cbxDNDSizeUnit.Items.String[1]=Kilobaitides (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabaiti (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabaitides (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Impordi pikkus
+  CBDNDAllowClear.Caption=Allow to clear fields when new value is empty
+CBDNDInternalAVI.Caption=Kasuta importimisel sisemist mootorit MediaInfo DLL for AVI importation (kiirem)
+  LExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+LHGetInfoVideo.Caption=Info võetud video striimilt
+CBDNDResolution.Caption=Impordi resolutsioon
+CBDNDFramerate.Caption=Impordi kaadri sagedus
+CBDNDVideoCodec.Caption=Impordi video koodek
+CBDNDVideoBitrate.Caption=Impordi video kvaliteet
+LHGetInfoAudio.Caption=Info võetud audio striimilt
+CBDNDAudioCodec.Caption=Impordi audio koodek
+  CBDNDAudioChannels.Caption=Import audio channels
+CBDNDAudioBitrate.Caption=Impordi audio kvaliteet
+CBDNDLanguages.Caption=Impordi keeled
+CBDNDSubtitles.Caption=Impordi subtiitlid
+
+LvCat.Items.Item[10].Text=Piltide importimine
+LHImportPic.Caption=Piltide importimine
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=Lohistamiseks / Võta informatsioon failist
+CBPicImportGetInfoNoAsk.Caption=Ära küsi pildi importimise meetodit, kasuta alati ülaltoodud valikut
+PicImportScripting.grp.Caption=Interneti makrod
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Notes: Kui pildi nimi on juba võetud teise filmi poolt, genereeritakse suvaline nimi. Kui originaalset nime ei leita, kasutatakse filmi tiitlit
+
+LvCat.Items.Item[11].Text=Otsi internetist
+LHSearch.Caption=Otsi internetist
+LSearchEdit.Caption=Muuda valitud rida:
+btnSearchAdd.Hint=Lisa|Lisa uus väli praeguse kohale
+btnSearchDel.Hint=Kustuta|Kustuta muutuja
+btnSearchUp.Hint=Liiguta üles|Liiguta muutujat üles
+btnSearchDown.Hint=Liiguta alla|Liiguta muutujat alla
+LSearchNotes.Caption=Märkused:
+LSearchNote1.Caption=- Nimi peab olema unikaalne
+LSearchNote2.Caption=- Aadressis, kirjutage %s sinna kuhu programm lisab filmi pealkirja
+LSearchNote3.Caption=- Eraldaja lisamiseks nimekirja, tee (unikaalne) nimi, mis algaks miinusega "-"
+
+LvCat.Items.Item[12].Text=Makrod
+LHScript.Caption=Makrode seadistus
+CBAutorunScript.Caption=Autokäivitus viimasele makrole kasutatud "Võta informatsiooni makrost"
+LScriptPicImport.Caption=Piltide importimise seadistust vaata <LINK>Piltide Importimine</LINK> lehelt
+LHConnection.Caption=Interneti ühendus
+CBProxy.Caption=Kasuta proxy't, et internetiga ühendust saada:
+LProxyServer.Caption=Server:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Kasutaja tunnus:
+LProxyPassword.Caption=Parool:
+CBKeepConnection.Caption=Hoia ühendust aktiivsena
+CBHTTP10.Caption=Restrict to HTTP 1.0 (needed by some proxy servers)
+
+LvCat.Items.Item[13].Text=Eksport
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Automaatselt uuendab viimati kasutatud Vormi
+LLineBreaks.Caption=Reavahetused asendatakse järgmise väärtusega:
+ELineBreaks.Hint=|Jäta see väli tühjaks kui sa ei taha asendada reavahetusi
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Jäta tühjaks kui sa ei taha jõuga peale suruda laiuse väärtust
+EForcePicSizeH.Hint=|Jäta tühjaks kui sa ei taha jõuga peale suruda kõrguse väärtust
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Kuupäeva formaat (lisa spets märgid ülakomade vahele):
+ESQLDate.Hint=|Jättes tühjaks kasutab Windows'i vaikimisi formaati
+LHExportFileNames.Caption=Failinimed
+CBLastFileName.Caption=Mäletab viimase eksporditva faili failinime
+CBOpenExportedFile.Caption=Ava eksporitud fail nii pea, kui eksport lõppeb
+ExpFileNamingFrame.grp.Caption=Üksiku filmi, lehtede ja piltide failinime formaat
+LExpFileExt.Caption=Laiendi lisamine:
+EExpFileExt.Hint=|Jäta tühjaks, et kasutada sama laiendit kui põhivormi failinimel
+LHPictures.Caption=Pildid
+CBCopyPictures.Caption=Kopeeri pildid samasse kausta, eksporditava failiga
+  CBCopyPicturesInPicDir.Caption=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Kopeeri ainult siis kui siht faili ei eksisteeri
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Kaustad
+LHFoldersDialogs.Caption=Dialoogi boksid
+LFolderToUse.Caption=Kaust kasutamiseks...
+cbxWindow.Items.String[0]=Kataloogide laadimiseks/salvestamiseks
+cbxWindow.Items.String[1]=Filmi piltide lugemiseks
+cbxWindow.Items.String[2]=Eksportimiseks
+cbxWindow.Items.String[3]=Vormide laadimiseks/salvestamiseks
+cbxWindow.Items.String[4]=Importimiseks
+cbxWindow.Items.String[5]=Informatsiooni saamiseks failidest
+cbxWindow.Items.String[6]=Graafikute salvestamiseks
+cbxWindow.Items.String[7]=Makrode laadimiseks/salvestamiseks
+  cbxWindow.Items.String[8]=Load/save custom fields
+  cbxWindow.Items.String[9]=Load/save filters
+RBFolderDefault.Caption=Windows' harilik (resultaat sõltub Windows'i versioonist)
+RBFolderRemember.Caption=Kasuta viimast kasutatud kausta
+RBFolderSpecified.Caption=Kasuta seda kausta:
+EFolderSpecified.ButtonHint=Vali...|Vali fail
+CBSameForAll.Caption=Sama kaust kõikidele akendele
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Muuda vaikimisi filmi parameetrid
+Btn3.Caption=Vaikimisi
+Btn3.Hint=|Taasta vaikimisi väärused
+Btn2.Caption=OK
+Btn1.Caption=Tühista
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Vaikimisi
+Btn3.Hint=|Taasta vaikimisi väärused
+Btn2.Caption=OK
+Btn1.Caption=Tühista
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Vali keel
+Btn2.Caption=OK
+Btn1.Caption=Tühista
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Nimi
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Kohalik Nimi
+LanguageFrame.lblVersion.Caption=Versioon:
+LanguageFrame.lblMadeBy.Caption=Tõlkija:
+LanguageFrame.lblComments.Caption=Muu:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Professionaalsed sorteerimise seaded
+Fields.LSelected.Caption=Sorteerimiseks kaasatud väljad:
+  BtnSortOrder.Hint=Invert sort order|Invert sort order of selected field
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Statistika
+btn1.Caption=Sule
+ActionSaveAs.Caption=Salvesta uuena...
+ActionSaveAs.Hint=Salvesta uuena...|Salvesta pilt faili
+ActionCopy.Caption=Kopeeri
+ActionCopy.Hint=Kopeeri|Kopeeri pilt lõikelauale
+ActionCopyWMF.Caption=Metafailina
+ActionCopyWMF.Hint=Kopeeri Metafailina|Kopeeri pilt lõikelauale metafailina (suurendatav)
+ActionCopyBMP.Caption=Rasterfailina
+ActionCopyBMP.Hint=Kopeeri Rasterfailina|Kopeeri pilt lõikelauale rasterfailina
+ActionOptions.Caption=Omadused
+ActionOptions.Hint=Omadused|Muuda mõningaid graafikute omadusi
+ActionOptionsLegend.Caption=Legend
+ActionOptionsLegend.Hint=Kuva legend|Kuva legend graafikust paremale
+ActionOptionsLabels.Caption=Tähised
+ActionOptionsLabels.Hint=Kuva tähised|Kuva tähised graafikule
+ActionOptionsEmpty.Caption=Tühjad kuud
+ActionOptionsEmpty.Hint=Kuvab tühjad kuud|Kuvab tühjad kuud, kus graafikul kokku on Null
+ActionOptionsGroup.Caption=Grupeeri väärtused
+ActionOptionsGroup.Hint=Group väärtused
+Messages.Strings.String[0]=%.1f minutit
+Messages.Strings.String[1]=< puudub >
+Messages.Strings.String[2]=Salvesta graafik
+Messages.Strings.String[3]=%d päeva %d tundi %d minutit
+  Messages.Strings.String[4]=< others >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+  Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Kokku on filme
+lstGeneral.Items.Item[1].Caption=Keskmine filmi pikkus
+lstGeneral.Items.Item[2].Caption=Kogupikkus
+lstGeneral.Items.Item[3].Caption=Filmide suurus kokku
+lstGeneral.Items.Item[4].Caption=Plaate kokku
+lstCategories.Items.String[0]=Üld informatsioon
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Makrode kasutamine filmi informatsiooni saamiseks
+btn2.Caption=&Sulge
+btn1.Caption=Abi
+ActionFileNew.Caption=Uus makro
+ActionFileNew.Hint=Uus|Tee uus makro
+ActionFileOpen.Caption=Ava...
+ActionFileOpen.Hint=Ava...|Ava makro fail
+ActionFileNoRecent.Caption=Pole hiljutist faili
+ActionFileSave.Caption=Salvesta
+ActionFileSave.Hint=Salvesta|Salvesta hetkel avatud makro
+ActionFileSaveAs.Caption=Salvesta uuena...
+ActionFileSaveAs.Hint=Salvesta uuena...|Salvestab hetkel avatud makro, uue nime all
+ActionFileProperties.Caption=Omadused...
+ActionFileProperties.Hint=Omadused..
+ActionDebugRun.Caption=Käivita
+ActionDebugRun.Hint=Käivita makro|Käivita makro
+ActionDebugStop.Caption=Peata
+ActionDebugStop.Hint=Peata makro|Peata makro töö
+ActionDebugBreakpoint.Caption=Stoppunkt
+ActionDebugBreakpoint.Hint=T
+ActionDebugBreakpointClear.Caption=Kustuta stoppunktid
+ActionDebugBreakpointClear.Hint=
+ActionDebugStep.Caption=Hüppa üle
+ActionDebugStep.Hint=Hüppa üle|Mine järgmisel koodi reale
+ActionDebugRunToCursor.Caption=Käivita kursorini
+ActionDebugRunToCursor.Hint=Käivita kursorini|Käivitab programmi kuni hetkeseisuni
+ActionDebugEval.Caption=Paljunda...
+ActionDebugEval.Hint=Evaluate variable...|Show the content of the selected variable
+ActionDebugWatchAdd.Caption=Add watch
+ActionDebugWatchAdd.Hint=Add variable watch|Add selected variable to watch list
+ActionDebugWatchRemove.Caption=Eemalda
+ActionDebugWatchRemove.Hint=Remove variable watch|Remove selected variable from watch list
+ActionDebugWatchClear.Caption=Tühjenda loetelu
+ActionDebugWatchClear.Hint=Tühjendab loetelu|Remove all variables from watch list
+ActionListCheck.Caption=&Check selected
+ActionListCheck.Hint= Märgista valitud
+ActionListUncheck.Caption=&Tühista märgistus
+ActionListUncheck.Hint= Tühista märgistus
+ActionListAll.Caption=Märgista kõik
+ActionListAll.Hint= Märgista kõik
+ActionListNone.Caption=Check &none
+ActionListNone.Hint=Uncheck all|Uncheck all items
+ActionDisplayScripts.Caption=Makrod
+ActionDisplayScripts.Hint=Vali makro|Kuva võimalikud makrod
+ActionDisplayEditor.Caption=Toimetaja
+ActionDisplayEditor.Hint=Makro toimetaja|Kuvab makro toimetaja
+ActionViewFilter.Caption=&Keele filter
+ActionViewFilter.Hint=Keele filter|Filter valitud keelte peitmiseks
+ActionViewList.Caption=Loetelu
+ActionViewList.Hint=Loetelu|Näitab makrode loetelu
+ActionViewDetailed.Caption=Detailne
+ActionViewDetailed.Hint=Detailne vaade|Näitab makrosid kahes tulbas (koos selgitustega)
+ActionOptionsEdit.Caption=Muuda...
+ActionOptionsEdit.Hint=Muuda väärtus...
+ActionOptionsDefault.Caption=Vaikimisi väärtused
+ActionOptionsDefault.Hint=Vaikimisi väärtused|taastab algsed väärtused
+lstScripts.Hint=|Vali makro ja vajuta "Käivita", või tee topeltklõps makro nimel, vajuta F9 või Enter.
+lstScripts.Columns.Item[0].Caption=Tiitel
+lstScripts.Columns.Item[1].Caption=Selgitus
+ActionEditUndo.Caption=&Tühista
+ActionEditCut.Caption=&Lõika
+ActionEditCopy.Caption=&Kopeeri
+ActionEditPaste.Caption=Kl&eebi
+ActionEditDelete.Caption=&Kustuta
+ActionEditSelectAll.Caption=Vali  &Kõik
+ActionEditFind.Caption=Otsi...
+ActionEditfind.Hint=Otsi|Otsi tekstist stringi
+ActionEditFindNext.Caption=Otsi järgmist
+ActionEditFindNext.Hint=Otsi järgmist|Otsi tekstist järgmist sobivat string
+DockpanelExec.Caption=Käivitumis moodused
+CBShowResults.Caption=Näita &tulemuste akent
+CBShowResults.Hint=Näitab iga filmi vanu ja ka uusi väljade väärtusi käsitsi valikuteks
+CBCloseThis.Caption=Sulge see aken lõpetades
+CBCloseThis.Hint=Sulge see aken kui makro on edukalt toimetanud
+CBAllowClear.Caption=&Luba väljade tühjendamist
+CBAllowClear.Hint=Luba makrol täita tühjad väärtused kui makro seda määratleb
+DockpanelOptions.Caption=Makro omadused
+DockpanelOptions.Hint=|Topelt klõps omadustel nende muutmiseks. Märkus: omadused salvestatakse ainult makro käivitamisel.
+  DockpanelParameters.Caption=Script parameters
+  DockpanelParameters.Hint=|Double-click on a parameter to change it. Note: parameters are saved only when executing the script.
+DockpanelLimitations.Caption=Makro piirangud
+grpLimitFields.Caption=Muudetavad väljad
+lstLimitFields.Hint=|Märkus: väljade määratlused salvestatakse ainult makro käivitamisel.
+grpScriptInfo.Caption=Informatsioon
+tabScriptInfo.Tabs.String[0]=Peamine
+tabScriptInfo.Tabs.String[1]=Kommentaarid
+tabScriptInfo.Tabs.String[2]=Litsents
+DockpanelWatch.Caption=Watch list
+
+Messages.Strings.String[0]=Makro viga "%s": %s  %d real
+Messages.Strings.String[1]=Makrot on muudetud, soovid sa muudatused salvestada?
+Messages.Strings.String[2]=Teadmata
+Messages.Strings.String[3]=Nõustun
+Messages.Strings.String[4]=Makro väärtustega filmi pole leitud (%s: %s)
+Messages.Strings.String[5]=Kas sa tahad katkestada makro töö ?
+Messages.Strings.String[6]=Muudetud
+Messages.Strings.String[7]=Väärtus "%s"
+  Messages.Strings.String[8]=Value for parameter "%s"
+Messages.Strings.String[9]=Otsi
+Messages.Strings.String[10]=Sisesta otsitav tekst:
+Messages.Strings.String[11]=Pole rohkem sobivaid sõnu "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Filmi valik
+btnView.Caption=Vaata lehte
+btnView.Hint=Käivita weebi brauser|
+btn3.Caption=OK
+btn2.Caption=Otsi veel
+btn1.Caption=Tühista
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Kirjelduse valik
+btn2.Caption=OK
+btn1.Caption=Tühista
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+  Caption=Script properties, options and parameters
+btn3.Caption=&Salvesta
+btn2.Caption=&Tühista
+btn1.Caption=&Abi
+lstProperties.TitleCaptions.String[0]=Omadus
+lstProperties.TitleCaptions.String[1]=Väärtus
+grpOptions.Caption=Tegevus
+btnOptionAdd.Hint=Lisa|Lisa uus tegevus
+btnOptionDel.Hint=KustutaKustuta valitud tegevus
+  btnOptionUp.Hint=Move up|Move up selected option
+  btnOptionDown.Hint=Move down|Move down selected option
+grpValues.Caption=Võimalikud väärtused valitud tegevusele
+lblValueDefault.Caption=Vaikimisi:
+  btnValueAdd.Hint=Add|Add a new value
+  btnValueDel.Hint=Delete|Delete selected value
+  btnValueUp.Hint=Move up|Move up selected value
+  btnValueDown.Hint=Move down|Move down selected value
+  grpParameters.Caption=Parameters
+  btnParameterAdd.Hint=Add|Add a new parameter
+  btnParameterDel.Hint=Delete|Delete selected parameter
+  btnParameterUp.Hint=Move up|Move up selected parameter
+  btnParameterDown.Hint=Move down|Move down selected parameter
+
+Messages.Strings.String[0]=Makro autorid:
+Messages.Strings.String[1]=Makro tiitel:
+Messages.Strings.String[2]=Selgitus:
+Messages.Strings.String[3]=Web address:
+Messages.Strings.String[4]=Webi keel:
+Messages.Strings.String[5]=Makro versioon:
+Messages.Strings.String[6]=Nõutud vähemalt:
+Messages.Strings.String[7]=Kommentaarid:
+Messages.Strings.String[8]=Makro litsens:
+Messages.Strings.String[9]=Tõmba infot webist:
+  Messages.Strings.String[10]=Requires movies:
+Messages.Strings.String[11]=Väärtus:
+Messages.Strings.String[12]=Selgitus:
+Messages.Strings.String[13]=See võib kustutada väärtuse "%s":
+Messages.Strings.String[14]=Väärtuse nimi:
+  Messages.Strings.String[15]=Rename the option "%s"
+  Messages.Strings.String[16]=An option with the name "%s" already exist!
+  Messages.Strings.String[17]=Name
+  Messages.Strings.String[18]=Default value
+  Messages.Strings.String[19]=Description
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Makro toimetamise tulemused
+btn4.Caption=&Salvesta
+btn4.Hint=|Salvesta informatsioon selle filmi kohta
+btn3.Caption=s&alvesta kõik
+btn3.Hint=|Salvesta kõik
+btn2.Caption=S&kip
+btn2.Hint=|Jäta see film vahele
+btn1.Caption=&Loobu
+btn1.Hint=|Loobu makro tööst
+listValues.HeaderSections.Item[0].Text=Väli
+listValues.HeaderSections.Item[1].Text=Eelmine väärtus
+listValues.HeaderSections.Item[2].Text=Uus väärtus
+ActionListCheck.Caption=&Check selected
+ActionListCheck.Hint= Märgista valitud
+ActionListUncheck.Caption=&Tühista märgistus
+ActionListUncheck.Hint= Tühista märgistus
+ActionListAll.Caption=Märgista kõik
+ActionListAll.Hint= Märgista kõik
+ActionListNone.Caption=Check &none
+ActionListNone.Hint=Uncheck all|Uncheck all items
+Messages.Strings.String[0]=Makro tulemused "%s" filmi %d kohta
+Messages.Strings.String[1]=Suurus: %.0n KB, klõpsa vaatamiseks
+Messages.Strings.String[2]=Tahad sa meelde jätta, millised väljad valida järgmiseks korraks? (kui vastad Ei, muudetakse kõiki välju, mida makro kasutab)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Filmide uuesti nummerdamine
+SortBy.grp.Caption=Enne numbrite uuendamist sorteeri!
+btn2.Caption=OK
+btn1.Caption=Tühista
+
+Messages.Strings.String[0]=Filmide uuesti nummerdamine...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=Trüki...
+btn2.Caption=Sule
+btn1.Caption=Abi
+ActionFileLoad.Caption=Lae vorm...
+ActionFileLoad.Hint=Lae vorm|Lae teine vorm
+ActionFileDesigner.Caption=Kujundaja...
+ActionFileDesigner.Hint=Ava kujundaja|Ava aruande kujundaja
+ActionPrint.Caption=Trüki...
+ActionPrint.Hint=Tüki|Trüki see aruanne
+ActionPreviewRefresh.Caption=Värskenda
+ActionPreviewRefresh.Hint=Värskenda eelvaadet|Värskenda eelvaadet
+ActionPreviewPageFirst.Caption=Esimene leht
+ActionPreviewPageFirst.Hint=Esileht|Mine esilehele
+ActionPreviewPagePrevious.Caption=Eelnev leht
+ActionPreviewPagePrevious.Hint=Eelnev leht|Mine eelnevale lehele
+ActionPreviewPageNext.Caption=Järgnev leht
+ActionPreviewPageNext.Hint=Järgnev leht|Mine järgnevale lehele
+ActionPreviewPageLast.Caption=Viimane leht
+ActionPreviewPageLast.Hint=Viimane leht|Mine viimasele lehele
+ActionPreviewPageFull.Caption=Terve leht
+ActionPreviewPageFull.Hint=Terve leht|Suurendab tervele lehele
+ActionPreviewPageTwo.Caption=Kaks lehte
+ActionPreviewPageTwo.Hint=Kaks lehte|Suurenda kahele lehele
+ActionPreviewPageWidth.Caption=Lehe laius
+ActionPreviewPageWidth.Hint=Mahuta lehe laius|Suurenda leht lehe laiuseks
+ActionPreviewZoomOut.Caption=Suurendus välja
+ActionPreviewZoomOut.Hint=Suurendus välja|Vähendab suurendus tegurit
+ActionPreviewZoomIn.Caption=Suurenda sisse
+ActionPreviewZoomIn.Hint=Suurendus sisse|Suurenda suurendus tegurit
+LvScripts.Columns.Item[0].Caption=Võimalikud vormid
+Messages.Strings.String[0]=Trüki - %s
+Messages.Strings.String[1]=<pole faile valitud>
+Messages.Strings.String[2]=Ei ole võimalik laadida vormi eevaate jaoks: %s
+Messages.Strings.String[3]=Ei leia Aruande kujundajat. %s peab olema samas kaustas kus Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Pildi importimine
+Btn3.Caption=OK
+Btn2.Caption=Tühista
+Btn1.Caption=&Abi
+CBDoNotAsk.Caption=Ära küsi enam, jäta mu seadistused meelde
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+  Caption=Custom fields manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  btnDel.Hint=Delete field|Delete custom field
+  btnClearAll.Hint=Clear all fields|Clear all custom fields
+  btnImport.Hint=Import fields|Import custom fields
+  btnExport.Hint=Export fields|Export custom fields
+  LField.Caption=Field:
+  LTag.Caption=Tag:
+  LName.Caption=Name:
+  LExt.Caption=Extension:
+  LType.Caption=Type:
+  LDefaultValue.Caption=Default value:
+  LTemplate.Caption=Template:
+  btnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+  LMediaInfo.Caption=Import media info:
+  LMultiValues.Caption=Multiple values:
+  EMultiValues.Hint=|Make groups with multiple field values
+  LMultiValuesSep.Caption=Separator:
+  LMultiValuesRmp.Caption=Del. Parentheses:
+  EMultiValuesRmp.Hint=|Delete values between parentheses
+  LMultiValuesPatch.Caption=Patch:
+  EMultiValuesPatch.Hint=|Apply path to ignore some parentheses
+  LListValues.Caption=List values:
+  EListSort.Caption=Auto-sort items
+  EListAutoComplete.Caption=Auto-complete while typing
+  EListCatalogValues.Caption=Use values of current catalog instead of predefined list
+  EListAutoAdd.Caption=Automatically add values that are not in list
+  Messages.Strings.String[0]=Import custom fields
+  Messages.Strings.String[1]=Export custom fields
+  Messages.Strings.String[2]=Add field|Add custom field
+  Messages.Strings.String[3]=Change tag|Change custom field tag
+  Messages.Strings.String[4]=--- New Field ---
+  Messages.Strings.String[5]=String
+  Messages.Strings.String[6]=Integer
+  Messages.Strings.String[7]=Real (1 decimal)
+  Messages.Strings.String[8]=Real (2 decimals)
+  Messages.Strings.String[9]=Real (3 decimals)
+  Messages.Strings.String[10]=Boolean
+  Messages.Strings.String[11]=List
+  Messages.Strings.String[12]=Date
+  Messages.Strings.String[13]=Text
+  Messages.Strings.String[14]=URL
+  Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+  Caption=Filter
+  LNote1.Caption=Notes: This filter replaces each expression string by associated replace string in list order.
+  LNote2.Caption=You can use regular expression if you start expression with string '::>'.
+  LNote3.Caption=To see an example with regular expressions, press button 'Default'.
+  LNote4.Caption=For more details on regular expressions syntax, see help on website regexpstudio.com
+  LExprString.Caption=Expression string
+  LReplaceString.Caption=Replace string
+  btn1.Caption=Cancel
+  btn2.Caption=OK
+  btn3.Caption=Default
+  btn3.Hint=Default|Restore default filter
+  btnClearAll.Hint=Clear all|Clear all expressions
+  btnImport.Hint=Import|Import filter
+  btnExport.Hint=Export|Export filter
+  btnAdd.Hint=Add|Add a new expression below selected expression
+  btnDel.Hint=Delete|Delete selected expression
+  btnUp.Hint=Move up|Move up selected expression
+  btnDown.Hint=Move down|Move down selected expression
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+  Caption=Pictures manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+
+  Messages.Strings.String[0]=Applying changes on movie pictures...
+  Messages.Strings.String[1]=Unable to apply changes on picture of movie "%0:s": %1:s
+  Messages.Strings.String[2]=After applying this changes, the current catalog must be saved to remain consistent! Do you want to save catalog automatically after applying this changes?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+  Caption=HTML templates editor
+  Btn2.Caption=&Close
+  Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Plaadi Tähis:
+LMediaType.Caption=Plaadi Tüüp:
+LSource.Caption=Allikas:
+LDate.Caption=Lisatud:
+LBorrower.Caption=Laenaja:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Hinnang:
+LOriginalTitle.Caption=Originaal Pealkiri:
+LTranslatedTitle.Caption=Tõlgitud Pealkiri:
+LDirector.Caption=Lavastaja:
+LProducer.Caption=Produtsent:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Riik:
+LCategory.Caption=Kategooria:
+  LCertification.Caption=Certification:
+LYear.Caption=Aasta:
+LLength.Caption=Pikkus:
+LLengthMin.Caption=min.
+LActors.Caption=Näitlejad:
+LURL.Caption=URL:
+LDescription.Caption=Kirjeldus:
+LComments.Caption=Kommentaarid:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Video Formaat:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Audio Formaat:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Resolutsioon:
+LFramerate.Caption=Kaadrisagedus:
+LFramerateFPS.Caption=fps
+LSize.Caption=Mahud:
+LDisks.Caption=Kettaid:
+LLanguages.Caption=Keeled:
+LSubtitles.Caption=Subtiitrid:
+
+EMedia.Hint=|Plaadi tähis, number või ribakood
+EMediaType.Hint=|Plaadi tüüp
+ESource.Hint=|Allikas (kust/kuidas on see film hangitud)
+EDate.Hint=|Kuupäev millal see film lisati nimekirja
+EBorrower.Hint=|Laenaja
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Hinnang, 0'st ..10'ni
+EOriginalTitle.Hint=|Originaal pealkiri
+ETranslatedTitle.Hint=|Tõlke pealkiri
+EDirector.Hint=|Lavastaja
+EProducer.Hint=|Produtsent
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Tootja Riik
+ECategory.Hint=|Kategooria
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Aasta
+ELength.Hint=|Pikkus (minutit)
+EActors.Hint=|Näitlejate nimekiri
+EURL.Hint=|Weebi leht
+EDescription.Hint=|Kirjeldus
+EComments.Hint=|Kommentaarid
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Video formaat/Koodek
+EVideoBitrate.Hint=|Video kvaliteet
+EAudioFormat.Hint=|Audio formaat/koodek
+EAudioBitrate.Hint=|Audio kvaliteet
+EResolution.Hint=|Video resolutsioon
+EFramerate.Hint=|Video framerate
+ESize.Hint=|Mahud
+EDisks.Hint=|Plaatide arv
+ELanguages.Hint=|Keeled
+ESubtitles.Hint=|Subtiitrid
+
+[TMovieFrameCustom]
+  ActionAddCustomField.Caption=Add a custom field
+  ActionAddCustomField.Hint=|Add a custom field
+  ActionModifyCustomField.Caption=Modify custom field
+  ActionModifyCustomField.Hint=|Modify custom field
+  ActionDeleteCustomField.Caption=Delete custom field
+  ActionDeleteCustomField.Hint=|Delete custom field
+  ActionMoveResizeCustomFields.Caption=Move custom fields
+  ActionMoveResizeCustomFields.Hint=|Move and resize custom fields
+  ActionDefaultPositioning.Caption=Default positioning
+  ActionDefaultPositioning.Hint=|Retore default positioning of custom fields
+  ActionAutoStretchWidth.Caption=Auto stretch width
+  ActionAutoStretchWidth.Hint=Auto stretch field width on resize
+  ActionAutoStretchHeight.Caption=Auto stretch height
+  ActionAutoStretchHeight.Hint=Auto stretch field height on resize
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Võimalikud väljad:
+LSelected.Caption=Valitud väljad:
+BtnAdd.Hint=Lisa|Lisa see väli
+BtnRem.Hint=Eemalda|Eemalda see väli
+BtnAddAll.Hint=Lisa kõik|Lisa kõik väljad
+BtnRemAll.Hint=Eemalda kõik|Eemalda kõik väljad
+BtnUp.Hint=Liiguta üles|Liiguta muutujat üles
+BtnDown.Hint=Liiguta alla|Liiguta muutujat alla
+
+[TSortByFrame]
+grp.Caption=Sorteeri
+BtnAdvSort.Caption=Täpsemalt...
+EOrderBy.Items.String[4]=Profesionaalsed sorteerimis seaded...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=videod kaasamiseks
+rbtAll.Caption=Kõik
+rbtSelected.Caption=Valitud
+rbtChecked.Caption=Märgitud
+rbtVisible.Caption=Nähtavad
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Pildi impotimise meetod
+rbtStorePic.Caption=&Salvesta pilt sinu Catalog faili
+  rbtCopyPicInCatDir.Caption=Copy picture to &catalog folder, and link it to catalog
+  rbtCopyPicInPicDir.Caption=Copy picture to &pictures folder of catalog, and link it to catalog
+rbtLinkPic.Caption=Ainult pildi &link
+chkLinkRelative.Caption=Loo teine teekond kui võimalik
+
+[TPictureOperationFrame]
+  grp.Caption=Pictures operation
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInCatDirIfCopied.Caption=Copy picture to catalog folder only if picture is copied in pictures folder
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtCopyInPicDirIfCopied.Caption=Copy picture to pictures folder only if picture is copied in catalog folder
+  rbtRenameIfCopied.Caption=Rename picture if it is copied in catalog or pictures folder
+  rbtAbsToRelLink.Caption=Transform absolute link to relative link if possible if picture is only linked
+  rbtRelToAbsLink.Caption=Transform relative link to absolute link if picture is only linked
+  rbtDelete.Caption=Delete picture (and picture file if it is copied in catalog or pictures folder)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+  grp.Caption=Pictures exportation method
+  rbtNoChangeAMC.Caption=Same as current catalog
+  rbtNoChangeXML.Caption=Same as current catalog (stored pictures will be lost)
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtDelete.Caption=Delete picture
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Uus näidis
+ActionHTMLNew.Hint=Uus näidis|Moodusta uus näidis
+ActionHTMLOpen.Caption=Lae
+ActionHTMLOpen.Hint=Lae...|Loe olemasolevast näidisest
+ActionHTMLNoRecent.Caption=Pole hiljutist faili
+ActionHTMLSave.Caption=Salvesta
+ActionHTMLSave.Hint=Salvesta|Salvesta avatud näidis
+ActionHTMLSaveAs.Caption=Salvesta uuena...
+ActionHTMLSaveAs.Hint=Salvesta uuena...|Salvesta avatud näidis uue nime all
+ActionInsertTag.Caption=&Lisa eri list
+ActionInsertTag.Hint=|Lisa eri väärtus see võib asendada informatsiooni kataloogist või filmist
+ActionEditUndo.Caption=&Tühista
+ActionEditCut.Caption=&Lõika
+ActionEditCopy.Caption=&Kopeeri
+ActionEditPaste.Caption=Kl&eebi
+ActionEditDelete.Caption=&Kustuta
+ActionEditSelectAll.Caption=Vali &kõik
+ActionExportBoth.Caption=Ekspordi mõlemad
+ActionExportBoth.Hint=|Ekspordi mõlemad "kõik" ja "üksik" näited
+ActionExportSelected.Caption=Ekspordi märgitud
+ActionExportSelected.Hint=|Ekpordi ainult märgitud näited
+ActionDisplayFull.Caption=Kõik
+ActionDisplayFull.Hint=Kuva Kogu nimekirja näidis|Kuvab HTML lehe mida võib kasutada filmi nimekirjana
+ActionDisplayIndividual.Caption=Üksik
+ActionDisplayIndividual.Hint=Kuvab üksiku filmi näite|Kuvab HTML lehe mida võib kasutada individuaalselt filmi lehena
+
+MnuGen.Caption=&Üldine
+MnuGenDte.Caption=Kuupäev Hetkel
+MnuGenTme.Caption=Kell Hetkel
+MnuCat.Caption=&Kataloog
+MnuCatNme.Caption=Faili Nimi
+MnuCatPth.Caption=Faili nimi koos teega
+MnuCatNbr.Caption=Filmide arv
+MnuCatDsk.Caption=Plaatide arv
+MnuOwnNam.Caption=Omaniku nimi
+MnuOwnEml.Caption=Omaniku e-Mail
+MnuOwnWeb.Caption=Omaniku kodulehe aadress
+MnuCatDsc.Caption=Kirjeldus
+MnuMovBeg.Caption=Nimekirja algus
+MnuMovEnd.Caption=Nimekirja lõpp
+MnuMovRec.Caption=Kirje number
+MnuMovInd.Caption=Üksiku filmi faili nimi
+
+  MnuMov.Caption=&Movie fields
+  MnuMovCF.Caption=&Custom fields
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Pilt
+MnuMovPfn.Caption=Pildi faili nimi
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+  MnuMovR04.Caption=Rating (0 to 4 without decimal)
+  MnuMovR10.Caption=Rating (0 to 10 without decimal)
+  MnuMovApp.Caption=Appreciation (0 to 4 stars)
+  MnuMovA10.Caption=Appreciation (0 to 10 stars)
+  MnuMovFT1.Caption=Formatted Title: Original (Translated)
+  MnuMovFT2.Caption=Formatted Title: Translated (Original)
+  MnuMovHtm.Caption=Color Tag (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+  MnuLab.Caption=&Labels movie fields
+  MnuLabCF.Caption=&Labels custom fields
+  MnuLabExtras.Caption=&Labels extra fields
+  MnuLabPic.Caption=Picture
+  MnuLabUAF.Caption=Unit audio bitrate
+  MnuLabUVF.Caption=Unit video bitrate
+  MnuLabUFS.Caption=Unit file size
+  MnuLabUFP.Caption=Unit framerate
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Ei saa salvestada faili "%s": %s
+Messages.Strings.String[1]=Ei saa lugeda faili "%s": %s
+  Messages.Strings.String[2]=HTML template has been modified. Do you want to save it?
+Messages.Strings.String[3]=HTML näidist "kogu" nimekirja jaoks on muudetud. Kas sa tahad seda salvestada ?
+Messages.Strings.String[4]=HTML näidist "üksiku" filmi jaoks on muudetud. Kas sa tahad seda salvestada ?

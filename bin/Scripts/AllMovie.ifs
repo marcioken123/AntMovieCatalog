@@ -1,0 +1,554 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=scorpion7552
+Title=AllMovie
+Description=film or TV infos from  AllMovie / Normal/Batch mode: see Comments tab 
+Site=www.allmovie.com
+Language=EN
+Version=1.1
+Requires=3.5.0
+Comments=batch mode: 2 possible modes: from the memorized url (AllMovie only) or from movie name + director (results not guaranted!)|Don't forget to save your database before executing the batch mode, sort the titles by number and select a reasonable number of movies at a time|At the end of each round, a log file is created (informations and errors - beware: this file is re-create each time you run the batch mode)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+Mode=0|0|0=normal mode|1=batch mode (url)|2=batch mode (name + director)
+InfoType=0|0|0=only movies|1=movies or DVD's|2=only DVD's
+Cover=1|1|0=no cover|1=import cover
+Review=1|1|0=no import|1=import review (or chapters for DVD)
+Cast=1|1|0=no import|1=import cast
+Rating=0|0|0=0 to 10|1=0 to 5 by half point
+Category=0|0|0=1st one only|1=all categories
+FormatTitle=0|0|0=leave titles asis|1=all in lower cases|2=all in upper cases|3=1st letter in upper case|4=all 1st letters in upper cases
+
+***************************************************)
+
+// needs the following units
+// BatchCommon7552.pas (which includes StringUtils1.pas and StringUtils7552.pas)
+//
+// V1.0 : first release
+// v1.1 : option to list DVD's too 
+
+program AllMovie;
+uses
+	BatchCommon7552;
+	
+const
+	debug = False;            // debug mode on/off
+	debugrep = 'c:\temp\';    // directory where to save files (must be created)
+//
+	AllMovieUrl = 'http://www.allmovie.com';       // base url
+	id_AllMovie = 'AllMovie';
+// tabs idents
+	id_movie = 'Movie';
+	id_dvd = 'DVD';
+	id_overview = 'Overview';
+	id_name = 'Name';
+
+var
+	MovieName, firstcall: String;
+	Pheader, Ptabs, Pcontents, Psidebar, pageType: String;
+	FormatTitle, InfoType: Integer;
+	memo: TstringList;
+	pageko, movieok: boolean;
+
+//------------------------------------------------------------------------------
+// list of movies or DVD's matching MovieName
+//------------------------------------------------------------------------------
+procedure GetList;   
+var
+	Address, Table, Line, Value, Page, PageNext, PagePrev, urlmovie, name: String;
+	pagenum, i, ndx, k: Integer;
+	found, postp: Boolean;
+
+begin
+	pagenum := 0;                                             // page counter
+	batchList := TStringList.Create;                          // init batch list
+  postp := True;                                     // 'postpage' indicator
+// init address for 1st research 
+	Address := AllMovieUrl+'/cg/avg.dll'; 
+	repeat
+	PageNext := '';
+	PagePrev := '';
+	pageType := '';
+	found := False;
+// current page
+	pagenum := pagenum + 1;
+	PickTreeClear;                                                    // init list
+// 1st time, it's a postpage
+// after, it's a getpage (pagenext/pageprev selected last time)
+	if postp then      
+  begin
+    postp := False;
+  	Page := PostPage(Address, 'sql='+UrlEncode(MovieName)+'&p=avg&opt1=12');
+  end 
+  else
+    Page := Getpage(Address);
+// check ident of the received page (active tab)
+  getPageType(Page); 
+  if pageType = id_overview then
+  begin
+// sometimes we are directly on the movie page (supposed exact match)
+// but it's better to list the film(s)
+// the url is before the string 'wrong Result? more matches HERE' and before the last '<a '
+    Address := GetUrlBefore(Page, 'wrong Result? more matches HERE', AllMovieUrl);
+    if Address = '' then Page := ''    // no address = no list: quite impossible
+    else
+    begin
+      Page := GetPage(Address);
+      getPageType(Page);                              // go to Movie or DVD page
+    end;
+  end;
+// check if the pageType is what we want
+  pageko := True;
+  if pageType = id_name then
+  begin
+// result = name of actor/director: nothing interesting here
+// get the 'movie list' or 'DVD's list': may be we can found something there
+    Page := TextBetween(Page, '<!--Start Tabs -->', '<!--End Tabs -->');
+    if InfoType = 2 then Value := id_dvd
+    else Value := id_movie;
+    Address := GetUrlBefore(Page, Value, AllMovieUrl);
+    if Address = '' then Page := ''    // no address = no list: quite impossible
+    else
+    begin
+      Page := GetPage(GetUrlBefore(Page, Value, AllMovieUrl));
+      getPageType(Page);
+    end; 
+  end;
+ 	case InfoType of
+  0: if pageType = id_movie then pageko := False;     // only Movies
+  1: if (pageType = id_movie) or (pageType = id_dvd) then pageko := False;  // Movies or DVD's
+  2: if pageType = id_dvd then pageko := False;       // only DVD's
+  end;                       {case}
+	if debug then
+		DumpPage(debugrep+id_AllMovie+' choice'+IntToStr(pagenum)+'.txt', Page);    // debug
+	if pageko then
+	begin
+    if (pageType <> id_movie) and (pageType <> id_dvd) then 
+     	LogMessage(id_AllMovie+': Error while reading selection page'+' (id page="'+pageType+'")')
+    else
+     	LogMessage(id_AllMovie+': nothing found according to the InfoType option'+' (something found in "'+pageType+'")');
+		batchList.Free;
+		exit;
+	end;
+  if pageType = id_movie then
+    PickTreeAdd('Movies (AllMovie)', '')
+  else
+    PickTreeAdd('DVD''s (AllMovie)', '');
+// it's here where we should memorize PagePrev/PageNext
+// at this moment, there's only one page 
+	if PagePrev <> '' then           
+		PickTreeAdd('<<< previous page', PagePrev); 
+// memo movies/dvd's on this page (if any)
+// selection table
+// note: the list is sorted by relevance (good choice, so don't use PickTreeSort;)
+	Table := TextBetween(Page, '<!--Begin Search Results-->', 'End of List');
+	memo := TStringList.Create;
+	memo.Text := StringReplace(Table, '</tr>', crlf);            // separate lines
+	urlmovie := 'href="/cg/avg.dll';            // url to search
+ 	if pageType = id_movie then k := 8
+ 	else k := 7; 
+	for i := k to memo.Count-1 do               // list of movies/DVD's (skip headers)
+	begin 	
+  	Value := memo.GetString(i);                                  // current line
+  	Value := StringReplace(Value, '</td>', '</TD>');          // separate fields with </td> and </TD>
+  	parseToken(Value, '</TD>'); 
+  	if pageType = id_movie then ndx := 2
+  	else ndx := 1;
+		Address := GetUrl(token.GetString(ndx), urlmovie, AllMovieUrl);   // get url of movie page
+		if Address = '' then continue;                     // no url: header or empty line
+		name := FormatLine(token.GetString(ndx));        
+		if name = '' then continue;
+// year / director (or studio)/ category
+    if BatchMode = 0 then
+      PickTreeAdd(name+' ('+FormatLine(token.GetString(ndx+2)+' - '+token.GetString(ndx+3)+' - '+token.GetString(ndx+4))+') ', Address)
+  	else
+	    batchList.Add(Address+sepchar1+name+sepchar1+FormatLine(token.GetString(ndx+3))+sepchar1);
+    token.Free;
+		found := True;
+	end;         {for i}
+	memo.Free;
+ 	if PageNext <> '' then           
+		PickTreeAdd('>>> next page', PageNext);
+	if not found then                       // nothing found for moviename
+	begin
+   	LogMessage(id_AllMovie+': nothing found for "'+MovieName+'"');
+		batchList.Free;
+		exit;
+	end;
+	if BatchMode > 0 then
+	begin               
+// *** batch mode : look for best weight   
+// note: if there is a page next, 2 solutions
+// 1) work only with the actual list
+// 2) continue to valorize batchList with the other pages
+// actually I stop here (easy, because there's only one page...)                  
+		LookBest;
+		if bestWeight > 0 then                            // we have found something
+				AnalyzeMoviePage(bestAddr);                                 // page film	
+		break;                                                              // leave
+	end else
+// *** normal mode
+	begin                   
+		if PickTreeExec(Address) then
+		begin
+			if (Address <> PageNext) and (Address <> PagePrev) then
+			begin
+				AnalyzeMoviePage(Address);                          // selected movie
+				break;                                              // and it's finished
+			end;   
+			if Address = PagePrev then pagenum := pagenum -2;  // we are at least on page 2
+		end else
+			LogMessage(id_AllMovie+': no movie selected'); 			
+	end;
+	until (Address = '');           {repeat}
+	batchList.Free;
+end;
+
+//------------------------------------------------------------------------------
+// ANALYZE MOVIE PAGE
+//------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+	Value, Value2, titleo, titlet, title2, extratitle, castAddr, id_cast, reviewAddr, id_review: String;
+	i, i1, i2: Integer;
+	j: Real;
+
+begin
+	ParsePage(Address, id_overview);         
+  if pageko then exit;                                                // page KO
+
+	SetField(fieldURL, Address);
+// is it a movie or a DVD ? (cf batch mode (url))
+// don't use getPageType here because we are on the Overview page
+  if Pos('&sql=16:', Address) > 0 then
+  begin                                                // DVD
+    pageType := id_DVD;
+    id_cast := '';
+    id_review := 'Chapters';
+  end else
+  begin                                                // Movie
+    pageType := id_movie; 
+    id_cast := 'Cast';
+    id_review := 'Review'; 
+  end;
+ 	movieok := True;
+// memorize url of the other pages
+// cast and review (or chapters) 
+// they are in the Ptabs section 
+  castAddr := '';
+  reviewAddr := '';
+	memo := TStringList.Create;
+  memo.Text := Ptabs;
+	for i := 0 to memo.Count-1 do    
+	begin 
+		Value := memo.GetString(i);                          // extract current line
+		if castAddr = '' then
+		  castAddr := GetUrlBefore(Value, id_cast, AllMovieUrl);
+		if reviewAddr = '' then
+		  reviewAddr := GetUrlBefore(Value, id_review, AllMovieUrl);
+	end;            {for i}
+	memo.Free;
+// original and translated titles 
+// major title may be the translated one (it is in the Pheader section)) 
+	titlet := TextBetween(Pheader, '<span class="title">', '</span>');
+	titleo := '';
+	title2 := '';
+// look if there are other names (AKA field in the Psidebar section)
+  Value := TextBetween(Psidebar, '<span>AKA</span>', '</table>');
+  if Value <> '' then
+  begin                         // yes, look if there is the original title here
+  	memo := TStringList.Create;
+		Value := StringReplace(Value, '</li>', crlf);          // separate names
+  	memo.Text := FormatLine(Value);      
+  	for i := 0 to memo.Count-1 do    
+	  begin 
+      Value := memo.GetString(i);
+      extratitle := AnsiLowerCase(TextBetween(Value, '(', ')'));
+      if (extratitle <> '') and (Pos('title', extratitle) > 0) then
+      begin
+        Value := TextBefore(Value, '(', '');                     // remove extra
+// remove useless 'titles'
+        if Pos('working', extratitle) > 0 then continue;
+        if Pos('promotional', extratitle) > 0 then continue;
+        if Pos('episode', extratitle) > 0 then continue;
+        if Pos('alt.', extratitle) > 0 then continue;
+        if Pos('u.k.', extratitle) > 0 then continue;
+        if Pos('tv', extratitle) > 0 then continue;
+        if Pos('video', extratitle) > 0 then continue;
+// may be there is something here
+        if extratitle = 'original foreign title' then
+        begin
+          titleo := Value;                       // sure it's the original title
+          break;                                               // leave        
+        end;
+        if (extratitle = 'eng. translation title') or (Pos('u.s.', extratitle) > 0) then
+        begin
+          titleo := titlet;
+          titlet := Value;                     // sure it's the translated title
+          break;                                               // leave        
+        end;
+// may be it's the original title (some_country title)
+// memorize in titleo and wait for real original (if any)
+        titleo := Value;
+       end
+      else begin
+// memorize the 1st name 
+        if title2 = '' then title2 := Value;
+      end;
+  	end;            {for i}
+    memo.Free;    
+  end;
+  if titleo = '' then             // no original title found
+  begin                                    
+    titleo := titlet;             // so titlet was the original title   
+    titlet := title2;             // and may be this one is the translated or ''                   
+  end;
+// don't remove brackets in titles
+  if titleo = titlet then titlet := '';                          // no duplicate
+	SetField(fieldOriginalTitle, TranslateText(FormatLine(titleo), FormatTitle));
+	SetField(fieldTranslatedTitle, TranslateText(FormatLine(titlet), FormatTitle));
+// the following fields are in the Psidebar section
+// AMG rating  (<img src="/img/st_rX.gif"  with X = rating: 1=1 star to 9=5 stars)
+// X=1 (1) x=2 (1.5) ... x=9 (5) ==> rating = (x+1) for 0 to 10
+	Value := TextBetween(Psidebar, '<img src="/img/st_r', '.gif"'); 
+  if Value <> '' then
+  begin 
+    i := StrToInt(Value, 0);
+    j := (i + 1);                                       // rating from 0 to 10
+    if GetOption('Rating') > 0 then                     // or rating from 0 to 5 
+      j := (i + 1) /2;
+  	SetField(fieldRating, FloatToStr(j));
+	end;
+// countries (+ MPAA rating) 
+  if pageType = id_movie then Value2 := '<span>MPAA Rating</span>'
+  else Value2 := '<span>Countries</span>';
+	Value := TextBetween(Psidebar, Value2, '</table>');
+  Value := TextBefore(Value, '</A></td>', '');             // end of countries
+  Value := StringReplace(FormatLine(Value), '/', crlf);    // separate countries
+  SetField(fieldCountry, ReorderList(Value, ' / '));       // and reorder
+// categories 
+  Value := TextBetween(Psidebar, '<span>Genre / Type</span>', '</table');
+  if GetOption('Category') = 0 then
+  	Value := TextBefore(Value, '</A>', '')                // keep 1st only
+  else
+    Value := StringReplace(Value, '</A>', crlf);          // separate categories
+	SetField(fieldCategory, ReorderList(FormatLine(Value), ' / '));  
+// release date ('month year' 'month day, year' or 'year') + run time (in minutes)
+	Value := TextBetween(Psidebar, '<span>Run Time</span>', '</table>'); 
+	Value2 := TextBefore(Value, '</a>', '');                 // year
+	Value := RemainingText;                                  // run time
+	Value2 := FormatLine(Value2);
+	i := LastPos(' ', Value2);                               // extract year only
+	if i > 0 then Value2 := Copy(Value2, i+1, length(Value2)); 
+	SetField(fieldYear, Value2);
+  Value := FormatLine(Value);                              // with or without 'min' text
+	if Pos('min', Value) > 0 then Value := TextBefore(Value, 'min', '');
+	SetField(fieldLength, Trim(Value));
+// director (or studio)
+  if pageType = id_movie then Value2 := '<span>Director</span>'
+  else Value2 := '<span>Studio</span>';
+	Value := TextBetween(Psidebar,Value2, '</table>');
+	SetField(fieldDirector, FormatLine(Value));
+// producer
+	Value := TextBetween(Psidebar,'<span>Produced by</span>', '</table>');
+	SetField(fieldProducer, FormatLine(Value));
+// picture = cover 
+	Value := TextBetween(Psidebar, '<!--Begin Album Photo-->', '<!--End Album Photo-->');  
+  Value := TextBetween(Value, 'img src="', '"'); 
+  if Pos('no_cover', Value) > 0 then Value := '';  
+	if (GetOption('Cover') > 0) and (Value <> '') and CanSetPicture then
+		GetPicture(Value);
+// description = synopsis (movie) or features,etc (DVD) (in the Pcontents section)
+	memo := TStringList.Create;
+	Value := Pcontents;
+	if pageType = id_movie then
+  begin                                                                // movies
+    Value2 := '<table width="100%" cellpadding="0" cellspacing="0">';
+   	Value := StringReplace(Value, '</td>', ' ');
+  end else
+  begin                                                                // DVD's
+    Value2 := '<td class="large-list-title" style="padding-top: 13px;padding-bottom: 1px;">';
+   	Value := StringReplace(Value, '</td>', sepchar1);
+    Value := StringReplace(Value, '</li>', sepchar1); 
+  end;
+  Value := StringReplace(Value, crlf, '');
+ 	parseToken(Value, Value2);                             // separate each tables
+ 	for i := 0 to token.Count-1 do
+ 	begin
+  	Value := token.GetString(i);                                 // current table
+  	Value := StringReplace(Value, sepchar1, crlf);
+  	Value := FormatText(Value);
+  	if Value = '' then continue;
+  	Value2 := TextBefore(Value, crlf, '');       // test header
+    if pageType = id_movie then
+    begin
+      if Pos('Synopsis', Value2) = 0 then continue;       // movie: synopsis only
+    end else
+    begin
+      if Pos('See Also', Value2) > 0 then continue;       // DVD: all but 'See also...'
+    end;
+    Value := '*** '+Value;
+    if memo.Count > 0 then memo.Add('');
+    memo.Add(Value);
+ 	end;                 {for i}
+  SetField(fieldDescription, memo.Text);
+  memo.Free;
+  token.Free;
+// actors (if asked and available)
+  if (castAddr <> '') and (GetOption('Cast') > 0) and CanSetField(fieldActors) then
+  begin
+  	ParsePage(castAddr, id_cast);         
+    if not pageko then 
+    begin
+      Value := Pcontents;
+      if pageType = id_DVD then  // actually nothing for DVD's but keep the code
+      begin
+       	Value := StringReplace(Value, '</td>', crlf);
+        Value := StringReplace(Value, '</li>', crlf); 
+        Value := StringReplace(Value, '<td class="large-list-title" style="padding-top: 13px;padding-bottom: 1px;">', '*** ');
+        Value := 'xxxxxx'+crlf+Value;  
+      end else
+      begin
+        Value := StringReplace(Value, '</i>', crlf);      
+      end;
+      SetField(fieldActors, FormatText(Value));
+    end;
+  end;
+// review or chapters(if asked and available)
+  if (reviewAddr <> '') and (GetOption('Review') > 0) and CanSetField(fieldComments) then
+  begin
+  	ParsePage(reviewAddr, id_review);         
+    if not pageko then
+    begin 
+      Value := Pcontents;
+      if pageType = id_DVD then  
+      begin
+       	Value := StringReplace(Value, '</td>', crlf);
+        Value := StringReplace(Value, '</li>', crlf); 
+        Value := StringReplace(Value, '<td class="large-list-title" style="padding-top: 13px;padding-bottom: 1px;">', '*** ');
+        Value := 'Chapters'+crlf+Value;  
+      end else
+      begin
+        Value := StringReplace(Value, '<td>', ' ');      
+      end;
+      SetField(fieldComments, FormatText(Value));      
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// Getpage, test if this is the good one and finally parse usefull infos
+// ParsePage(url, text_to_look_for)
+// pageko = True if error
+//------------------------------------------------------------------------------
+procedure ParsePage(Address, str: string);
+var
+  Page, Line: String;
+
+begin
+// get the requested page
+	Page := GetPage(Address);         
+	if debug then
+		DumpPage(debugrep+id_AllMovie+' '+str+'.txt', Page);                // debug
+// check page: str must be in the active tab
+  Line := TextBetween(Page, '<td class="tab_on" nowrap="nowrap">', '</td>');
+  pageko := (Pos(str, Line) = 0);
+  if pageko then                                       // wrong page
+  	LogMessage(id_AllMovie+': error while reading '+str+' page')
+  else
+  begin
+// OK, let's go. Parse usefull infos in specific sections
+    Pheader := TextBetween(Page, '<!--Begin Section Header-->', '<!--End Section Header-->');
+    Ptabs := TextBetween(Page, '<!--Start Tabs -->', '<!--End Tabs -->'); 
+    Pcontents := TextBetween(Page, '<!--Begin Center Content-->', '<!--End Center Content-->');
+    Psidebar := TextBetween(Page, '<!--Begin Left SideBar-->', '<!--End Left SideBar-->');
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// getPageType(page_to_analyse);
+// pageType = text of the active tab contained in Page
+//------------------------------------------------------------------------------
+procedure getPageType(str: String);
+begin
+  pageType := TextBetween(str, '<td class="tab_on" nowrap="nowrap">', '</td>');
+  pageType := FormatLine(pageType);
+end;
+
+//------------------------------------------------------------------------------
+// process batch mode
+//------------------------------------------------------------------------------
+procedure AllMovieBatch;
+begin
+	SetField(fieldChecked, '');                        // init movie in treatement
+	initBatchLook;                                     // test and init 
+	if batchLookOK then
+	begin;
+  	case BatchMode of
+	  1: AnalyzeMoviePage(GetField(fieldUrl));                   // search by url
+  	2: 
+      begin;
+      	MovieName := GetMovieName;
+        GetList;                                       // search by name/director
+      end;
+  	end;      {case}
+    if movieok then
+		  SetField(fieldChecked, 'x');                    // movie ok = checked  
+  end; 
+// wait a little: don't stress the site and so we can cancel the script         
+  Sleep(500);                    
+end;
+	
+//------------------------------------------------------------------------------
+// process normal mode
+//------------------------------------------------------------------------------
+procedure AllMovieNorm;
+begin
+	MovieName := GetMovieName;    
+	repeat
+	if not Input('AllMovie.com Import', 'Enter movie name', MovieName) or (MovieName = '') then exit;
+	GetList;
+	until movieok;
+end;
+	
+//------------------------------------------------------------------------------
+//  start here
+//------------------------------------------------------------------------------                                               
+begin
+	if batchAbort <> '' then exit;                           // batch mode aborted
+	if firstcall <> 'done' then
+	begin                                             // 1st call: init parameters
+		firstcall := 'done';
+		if not CheckVersion(3,5,0) then
+		begin
+			ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');		
+			batchAbort := 'y';
+			exit;
+		end;	
+// get user's parms (used more than once)
+		BatchMode := GetOption('Mode');
+		FormatTitle := GetOption('FormatTitle');
+		InfoType := GetOption('InfoType');
+//
+		batchCaller := 'AllMovie';
+		batchUrl := AllMovieUrl;
+//
+		if BatchMode > 0 then                      // batch mode: confirm the choice
+		begin
+			initBatchLog('EN');                                            // init log
+			if batchAbort <> '' then exit;
+		end;
+	end;
+// let's go
+  movieok := False;
+	if BatchMode = 0 then
+		AllMovieNorm
+	else
+		AllMovieBatch; 
+end.

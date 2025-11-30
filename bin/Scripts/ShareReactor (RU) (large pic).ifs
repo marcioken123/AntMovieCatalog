@@ -1,0 +1,319 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=m a x
+Title=Sharereactor.ru
+Description=Import data & picture from Sharereactor.ru
+Site=Sharereactor.ru
+Language=RU
+Version=1.05
+Requires=3.5.0
+Comments=Based on the script made for version 3.x by AIG (corrected by KoSeA & Leonid_Z & m a x).||Год фильма в окне "результаты поиска" (neodelit).
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ShowYear=1|1|0=Не показывать год фильма в окне результаты поиска|1=Показывать год фильма в окне результаты поиска
+
+***************************************************)
+
+program Sharereactorru;
+var 
+  MovieName: string; 
+ 
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer; 
+var 
+  i: Integer; 
+begin 
+  result := -1; 
+  if StartAt < 0 then 
+    StartAt := 0; 
+  for i := StartAt to List.Count-1 do 
+    if Pos(Pattern, List.GetString(i)) <> 0 then 
+    begin 
+      result := i; 
+      Break; 
+    end; 
+end; 
+ 
+procedure AnalyzePage(Address: string); 
+var 
+  Page: TStringList; 
+  LineNr: Integer; 
+begin 
+  Page := TStringList.Create; 
+  Page.Text := GetPage(Address); 
+   
+    PickTreeClear; 
+    LineNr := 0; 
+    LineNr := FindLine('По вашему запросу отобрано', Page, LineNr); 
+    if LineNr > -1 then 
+    begin 
+      PickTreeAdd('По вашему запросу отобрано', ''); 
+      AddMoviesTitles(Page, LineNr); 
+    end; 
+   
+    if PickTreeExec(Address) then 
+     begin 
+       Page.Free; 
+       Page := TStringList.Create; 
+       Page.Text := GetPage(Address); 
+       SetField(fieldURL, Address); 
+       AnalyzeMoviePage(Page) 
+     end 
+ Page.Free; 
+end; 
+ 
+procedure AnalyzeMoviePage(Page: TStringList); 
+var 
+  Line, Value, value1, cuchr: string; 
+  LineNr, i: Integer; 
+  BeginPos, EndPos: Integer; 
+ 
+begin 
+ 
+  // Original Title & TranslatedTitle & Year 
+
+//Русское название
+   LineNr := FindLine('<td><H1>', Page, 0);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('<H1>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 4; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos-22 ); 
+    HTMLDecode(Value); 
+    SetField(fieldTranslatedTitle, Value); 
+   end 
+ 
+//Оригинальное название 
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    HTMLDecode(Value); 
+    SetField(fieldOriginalTitle, Value); 
+   end 
+ 
+//Год выхода 
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    SetField(fieldYear, Value); 
+   end; 
+ 
+//Жанр
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    HTMLDecode(Value); 
+    SetField(fieldCategory, Value); 
+   end; 
+ 
+//Продолжительность
+   LineNr := FindLine('&nbsp', Page, LineNr+1);  
+   Line := Page.GetString(LineNr);  
+   if LineNr > -1 then  
+   begin  
+    BeginPos := pos('</B>', Line);  
+    if BeginPos > 0 then  
+      BeginPos := BeginPos + 5;  
+    EndPos := Length(Line);  
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 );  
+    HTMLDecode(Value);  
+    SetField(fieldLength, IntToStr(StrToInt(copy(Value, 1, 1), 0) * 60+StrToInt(copy(Value, 3, 2), 0)));
+   end;  
+
+//Режисcер
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    HTMLDecode(Value); 
+    SetField(fieldDirector,Value); 
+   end 
+ 
+//Актеры 
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    HTMLDecode(Value); 
+    HTMLRemoveTags(Value); 
+    SetField(fieldActors,value); 
+   end; 
+
+//Описание   
+   LineNr := FindLine('&nbsp', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B>', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := Length(Line); 
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+    HTMLDecode(Value); 
+    SetField(fieldDescription, Value); 
+   end; 
+ 
+//Продюссер
+//   LineNr := FindLine('&nbsp', Page, LineNr+1); 
+//   Line := Page.GetString(LineNr); 
+//   if LineNr > -1 then 
+//   begin 
+//    BeginPos := pos('</B>', Line); 
+//    if BeginPos > 0 then 
+//      BeginPos := BeginPos + 5; 
+//    EndPos := Length(Line); 
+//    Value := copy(Line, BeginPos, EndPos - BeginPos+1 ); 
+//    HTMLDecode(Value); 
+//    SetField(fieldProducer, Value); 
+//   end; 
+ 
+
+//Комментарии
+   LineNr := FindLine('Примечания', Page, LineNr+1);
+   Line := Page.GetString(LineNr);
+   if LineNr > -1 then
+   begin
+    BeginPos := pos('</B>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 5;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos+1 );
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value)
+    SetField(fieldComments, Value);
+   end;
+
+//Оценка
+   LineNr := FindLine('Оценка пользователей:', Page, LineNr+1);
+   Line := Page.GetString(LineNr); 
+   if LineNr > -1 then 
+   begin 
+    BeginPos := pos('</B> ', Line); 
+    if BeginPos > 0 then 
+      BeginPos := BeginPos + 5; 
+    EndPos := pos('/10', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos ); 
+    SetField(fieldRating, Value);
+//    IntToStr(Round(StrToFloat(Value))));
+   end; 
+
+//Язык
+   LineNr := FindLine('Звук', Page, LineNr+1);
+   Line := Page.GetString(LineNr);
+   if LineNr > -1 then
+   begin
+    BeginPos := pos('</B>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 5;
+//    EndPos := Length(Line);
+//    Value := copy(Line, BeginPos, EndPos - BeginPos+1 );
+    EndPos := pos('; ', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos );
+    HTMLDecode(Value);
+    SetField(fieldLanguages, Value);
+   end;
+
+//Картинка
+     LineNr := FindLine('<TD VALIGN="TOP"><IMG SRC=', Page, 0);
+     Line := Page.GetString(LineNr);
+     if LineNr > -1 then begin
+        BeginPos := pos('http://', Line);
+        EndPos:=pos(' alt', Line);
+        if BeginPos<>0 then
+           Value := copy(Line, BeginPos, EndPos - BeginPos - 1)
+        else
+           Value := 'http://sharereactor.ru' + copy(Line, BeginPos + 30, EndPos - BeginPos - 31);
+              GetPicture(Value);
+            end
+
+//  DisplayResults; 
+end; 
+ 
+ 
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer); 
+var 
+  Line: string; 
+  MovieTitle, MovieAddress: string; 
+  StartPos,EndPos,AddPos: Integer; 
+begin 
+ 
+    LineNr := LineNr + 10; 
+    Line := Page.GetString(LineNr); 
+    StartPos := pos('<A', Line); 
+ 
+repeat 
+ 
+     
+    if StartPos > 0 then 
+    begin 
+      StartPos:=StartPos+8; 
+      EndPos := Length(Line); 
+      Line:=copy(Line,StartPos,EndPos - StartPos); 
+      MovieAddress := copy(Line, 2, pos('">', Line) -2 ); 
+      StartPos := pos('">', Line) + 2; 
+      MovieTitle := copy(Line, StartPos, pos('</A>', Line) - StartPos); 
+   //год фильма в списке найденных фильмов (neodelit)
+      if (GetOption('ShowYear')=1) and (Length(MovieTitle)>0) then
+         begin
+           MovieTitle := MovieTitle+' ('+copy(Line, pos('</TD>     <TD>', Line) + 14,4)+')';
+         end
+      HTMLDecode(Movietitle); 
+      PickTreeAdd(MovieTitle, 'http://sharereactor.ru' + MovieAddress); 
+    end; 
+ 
+    StartPos := Length(Movietitle)+StartPos; 
+ 
+    StartPos := pos('<A', Line); 
+ 
+  until  StartPos <= 0; 
+end; 
+ 
+begin 
+  if CheckVersion(3,5,0) then 
+  begin 
+    MovieName := GetField(fieldOriginalTitle); 
+    if MovieName = '' then 
+      MovieName := GetField(fieldTranslatedTitle); 
+    if Input('Sharereactor.ru Import', 'Введите название фильма:', MovieName) then 
+    begin 
+      AnalyzePage('http://sharereactor.ru/cgi-bin/mzsearch.cgi?search='+UrlEncode(MovieName)); 
+    end; 
+  end else 
+    ShowMessage('Для работы скрипта требуется более новая версия Ant Movie Catalog (не ниже 3.5.0)'); 
+end. 

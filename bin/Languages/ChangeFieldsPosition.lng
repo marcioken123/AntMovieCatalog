@@ -1,0 +1,35 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAzCwAAMwsAABAAAAAQAAAAAAAAAFAAAABmAAAAmAAAAK4AAACYMgAA/QAyAP9mMwAAAJgAAAC0AAAA/QBlZf8AmZmZAP//mQD//8sA////AP//////////AAAAAAAAAAAJUSLIjCIVkAHqQ+quNK1gAj6j6q4642ACM+rqrq4zYAzu7uqu7u7gCKqqqqqqqrAIqqqqqqqqsAzu7uqu7u7gAjTq6q6uM2ACPqPqrjrjYAHqQ+quM65gCXZm675mZrAAAAAAAAAAAP//////////
+Name=*Change fields position*
+LocalName=Example
+Encoding=windows-1252
+Version=4.2.2
+VersionFormat=4.2.2
+Comments=Example to change position, size and resize properties of some fields. This "language" file need to be loaded at startup of AMC to change fields position correctly. You can also copy the content of this file after [TMovieFrame] in your language file at the same place.
+Authors=Mickaël Vanneufville|mickael.vanneufville@gmail.com
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+
+; Change fields resize by code
+;PanelMain.Tag=0 : Resize by code fields Description, Comments, Category and Certification (by default)
+;PanelMain.Tag=1 : Resize by code fields Description and Comments only
+;PanelMain.Tag=2 : Resize by code fields Category and Certification only
+;PanelMain.Tag=3 : No resize by code for all fields
+PanelMain.Tag=3
+
+; Change fields resize properties
+ECategory.Anchors=[akTop, akLeft, akRight]
+ECertification.Anchors=[akTop, akRight]
+LCertification.Anchors=[akTop, akRight]
+EDescription.Anchors=[akTop, akLeft, akRight, akBottom]
+
+; Change fields position and size
+LDescription.Top=223
+EDescription.Top=219
+EDescription.Height=0
+LComments.Top=225
+EComments.Top=221
+EComments.Height=45

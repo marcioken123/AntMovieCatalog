@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html dir="ltr">
+<head>
+<title>$$OWNER_NAME's Movie catalog</title>
+<style TYPE="text/css">
+  text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+  HR { color: black; }
+  A:link { COLOR: #003399; background: white; }
+  A:visited { COLOR: #003399; background: white; }
+  A:hover { COLOR: #CC0000; background: white; }
+  A:active { COLOR: #CC0000; background: white; }
+  td.blk { color: white; background: black; border: solid; border-color: black; }
+  table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+  table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  p.title { font-size: 18pt; font-weight: bold; }
+</style></head><body>
+<Center><B><U><font size=+3>$$OWNER_NAME's Movie catalog</B></U></FONT></CENTER><br>
+Updated on $$DATE<BR>
+<Center>
+<table>
+<TR>
+<TD><a href=javascript:hidedvd();>Hide DVD Movies</A></TD>
+<TD width=30>&nbsp;</TD>
+<TD><a href=javascript:hidevcd();>Hide SVCD and VCD Movies</A></TD>
+<TD width=30>&nbsp;</TD>
+<TD><a href=javascript:hidesmr();>Hide SMR and ASF Movies</A></TD>
+<TD width=30>&nbsp;</TD>
+<TD><a href=javascript:hidedivx();>Hide DivX Movies</A></TD>
+<TD width=30>&nbsp;</TD>
+<TD><a title='No images, descriptions and Actors - good for printing!' href=javascript:hideimg();>Short List</A></TD>
+</TR></TABLE>
+</Center><script language=javascript>
+function hidedvd() {
+  var table = document.all ? document.all.aTable :
+              document.getElementById('aTable');
+    for (var r = 0; r < table.rows.length; r++)
+		if (table.rows[r].movie == 'DVD'){
+    	table.rows[r].style.display = 'none';
+			}
+}
+function hidesmr() {
+  var table = document.all ? document.all.aTable :
+              document.getElementById('aTable');
+    for (var r = 0; r < table.rows.length; r++) {
+		if (table.rows[r].movie == 'SMR'){
+    	table.rows[r].style.display = 'none';
+			}
+		if (table.rows[r].movie == 'ASF'){
+    	table.rows[r].style.display = 'none';
+			}
+   }
+}
+function hidevcd() {
+  var table = document.all ? document.all.aTable :
+              document.getElementById('aTable');
+    for (var r = 0; r < table.rows.length; r++) {
+		if (table.rows[r].movie == 'VCD'){
+    	table.rows[r].style.display = 'none';
+			}
+		if (table.rows[r].movie == 'SVCD'){
+    	table.rows[r].style.display = 'none';
+			}
+   }
+}
+function hidedivx() {
+  var table = document.all ? document.all.aTable :
+              document.getElementById('aTable');
+    for (var r = 0; r < table.rows.length; r++)
+		if (table.rows[r].movie == 'DivX'){
+    	table.rows[r].style.display = 'none';
+			}
+}
+function hideimg() {
+  var table = document.all ? document.all.aTable :
+              document.getElementById('aTable');
+    for (var r = 0; r < table.rows.length; r++)
+      for (var k = 0; k < table.rows[r].cells.length; k++) {
+		    if (table.rows[r].cells[k].what == 'image'){
+    	   table.rows[r].cells[k].style.display = 'none';
+        }
+		    if (table.rows[r].cells[k].what == 'text'){
+    	   table.rows[r].cells[k].style.display = 'none';
+			   }
+      }
+}
+
+</script>
+
+<table id="aTable" class="blk" border="1" cellspacing="0" cellpadding="5"><tr>
+<td width=12% class="blk" nowrap>Number</td>
+<td width=30% class="blk" nowrap>Title</td>
+<td width=18% class="blk" nowrap>Director</td>
+<td width=10% class="blk" nowrap>Format</td>
+<td width=30% class="blk" nowrap>Translated Title</td>
+</tr>$$ITEM_BEGIN
+<tr style=display:"" movie=$$ITEM_VIDEOFORMAT>
+	<td class="lgt"><strong>$$ITEM_NUMBER&nbsp;$$ITEM_APPRECIATION</strong></td>
+	<td class="lgt" dir="ltr"><strong>$$ITEM_ORIGINALTITLE&nbsp;</strong></td>
+	<td class="lgt" dir="ltr">Director: $$ITEM_DIRECTOR&nbsp;</td>
+	<td class="lgt" dir="ltr">$$ITEM_VIDEOFORMAT&nbsp;</td>
+	<td class="lgt" dir="ltr">$$ITEM_TRANSLATEDTITLE&nbsp;</td>
+</tr>
+
+<tr style=display:""  movie=$$ITEM_VIDEOFORMAT>
+	<td style=display:"" what=image rowspan="2" class="lgt">$$ITEM_PICTURE<br>$$ITEM_DATEADD</td>
+	<td style=display:"" what=text colspan="4" class="lgt" dir="ltr">$$ITEM_DESCRIPTION&nbsp;</td>
+</tr>
+
+<tr style=display:""  movie=$$ITEM_VIDEOFORMAT>
+	<td style=display:"" what=text colspan="4" class="lgt" dir="ltr">Cast: $$ITEM_ACTORS&nbsp;</td>
+</tr>
+
+<tr style=display:""  movie=$$ITEM_VIDEOFORMAT>
+	<td colspan="5" class="blk"></td>
+</tr>
+$$ITEM_END
+</table>
+<p><strong>Total - $$TOTALMOVIES Movies</strong></p></body></html>
+

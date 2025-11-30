@@ -1,0 +1,279 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=kolia (kolia@mailbox.gr)
+Title=Cine.GR
+Description=Import from www.cine.gr (appends info)
+Site=www.cine.gr
+Language=EL
+Version=2.0
+Requires=3.5.0
+Comments=Based on the script made for version 3.5.0 by kolia (kolia@mailbox.gr). Since 2010/11 site has changed and UTF8 was used. This means that you have to set your windows locale to Greek if you want this to work ;)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+GetCinegrPicture=0|0|0=Do not import Picture|1=Import Picture
+GetSyntelestes=0|0|0=Do not import Syntelestes|1=Import Syntelestes
+GetCinegrComment=1|1|0=Don't import greek comment|1=You need to download another page (slower)
+
+***************************************************)
+
+program CineGR;
+
+uses StringUtils7552; // for UTF8Decode
+
+const
+  ImportCINEGR = True;
+
+var
+  MovieName: string;
+
+// CINEGR Loads and analyses page from internet (list of movies or direct hit)
+procedure AnalyzePageCineGr(Address: string);
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+//  Page.LoadFromFile('c:\testcine3.html');
+  Page.Text := GetPage(Address);
+  Page.Text := UTF8Decode(Page.Text);
+  // check for error
+  if Pos('Η αναζήτηση δεν βρήκε κάτι σχετικό', Page.Text) > 0 then begin
+    if Input('Cine.GR Import', 'Enter the title of the movie:'+#13#10+'(if not found Press Cancel and No to continue)', MovieName) then
+      AnalyzePageCineGr('http://www.cine.gr/results.asp?term='+UrlEncode(MovieName)+'&type=film');
+  // refine search
+  end else if Pos('Eμφανίζονται τα 50 πιθανότερα.', Page.Text) > 0 then begin
+    ShowMessage('Sorry, there is too many possible matches, please adjust your search.');
+    if Input('All Movie Import', 'Enter the title of the movie:', MovieName) then
+      AnalyzePageCineGr('http://www.cine.gr/results.asp?term='+UrlEncode(MovieName)+'&type=film');
+  // movie list
+  end else if Pos('Η αναζήτηση βρήκε', Page.Text) > 0 then begin
+    PickTreeClear;
+    PickTreeAdd('Search results from cine.gr for ' + MovieName, '');
+    AddMoviesTitlesCineGR(Page);
+//    if PickTreeExec(Address) then AnalyzePageCineGr(Address+'&page=2'); //***  does not go directly to page 2 to get summary because it does not exist for all movies
+    if PickTreeExec(Address) then AnalyzePageCineGr(Address);
+  // direct hit
+  end else begin
+    AnalyzeMoviePageCineGr(Page);
+  end;
+end;
+
+// Adds movie titles from search results to tree
+procedure AddMoviesTitlesCineGR(ResultsPage: TStringList);
+var
+  Page: string;
+  MovieTitle, MovieAddress: string;
+begin
+  Page := ResultsPage.Text;
+  // Every movie entry begins with string "film.asp?id="
+  while Pos('film.asp?id=', Page) > 0 do begin
+    CutBefore(Page, 'film.asp?id=');
+//    CutBefore(Page, 'href="http://www.cine.gr/film.asp?');
+    MovieAddress := 'http://www.cine.gr/film.asp?' + GetStringFromHTML(Page, 'film.asp', '?', '">');
+    MovieTitle := GetStringFromHTML(Page, 'film.asp', '">', '</');
+    MovieTitle := StringReplaceAll(MovieTitle, #13#10, ' ');//replace returns with spaces
+    MovieTitle := StringReplaceAll(MovieTitle, '  ', ' ');//replace multiple spaces
+    CutAfter(Page, '</');
+    // add movie to list
+//    ShowMessage('MovieTitle= '+MovieTitle+' MovieAddress= '+MovieAddress);
+    PickTreeAdd(MovieTitle, MovieAddress);
+  end;
+end;
+
+// simple string procedures
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+// Extracts single movie detail (like director, genre) from page
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  // recognition tag - if present, extract detail from page, otherwise assume detail is not present
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    // optional cut tag helps finding right string in html page
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    // movie detail copied with html tags up to end string
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    // remove html tags and decode html string
+    HTMLRemoveTags(Result);
+    HTMLDecode(Result);
+//  ShowMessage('DEBUG: GetStringFromHTML - StartTag "'+StartTag+'", CutTag "'+CutTag+'", EndTag "'+EndTag+'", Result "'+Result+'" ___ '+Page);
+  end;
+end;
+
+// Extracts movie details from page
+procedure AnalyzeMoviePageCineGr(MoviePage: TStringList);
+var
+  Page, Page1, Value, Value2, FullValue, Perigrafh: string;
+begin
+  Page := MoviePage.Text;
+  //Page := UTF8Decode(Page);
+  
+  //URL
+    Value := GetStringFromHTML(Page, '<div class="boxtitle">Περιεχόμεν', 'film.asp?id=', '&amp;');
+    if Length(Value) > 0 then
+    begin
+	    SetField(fieldDescription, 'URL: ( http://www.cine.gr/film.asp?id='+Value+' )'#13#10+#13#10+GetField(fieldDescription));
+    end;
+
+{  //Cine.gr URL Import
+    Γενικές Πληροφορίες
+    if Length(MovieAddress) > 0 then
+    begin
+      SetField(fieldComments, GetField(fieldComments)+'Cine.gr URL:('+MovieAddress+')');
+    end;
+}
+  //Cinegr Picture
+    if GetOption('GetCinegrPicture') = 1 then
+    begin
+      Value := GetStringFromHTML(Page, 'FilmImages', 'FilmImages/', '"');
+      Value := 'http://www.cine.gr/FilmImages/'+Value;
+      if Length(Value) > 0 then
+      begin
+        GetPicture(Value);
+      end;
+    end;
+
+  //Μεταφρασμένος Τίτλος
+    Value := GetStringFromHTML(Page, '- Μεταφρασμένος Τίτλος:', '<div class="bold">', '</div>');
+    if Length(Value) > 0 then
+    begin
+      SetField(fieldTranslatedTitle, GetField(fieldTranslatedTitle)+' ['+Value+']');
+    end;
+
+  //Υπότιτλος:
+    Value := GetStringFromHTML(Page, '<h4>- Υπότιτλος:', '</h4>', '<br/>');
+    if Length(Value) > 0 then
+    begin
+      Value := StringReplace(Value, #13#10, ' ');//replace returns with spaces
+      SetField(fieldDescription, 'Υπότιτλος: '+Value+#13#10+#13#10+GetField(fieldDescription));
+    end;
+
+  //Πρεμιέρα στην Ελλάδα
+    Value := GetStringFromHTML(Page, 'Πρεμιέρα στην Ελλάδα:', '">', '</a>');
+    if Length(Value) > 0 then
+    begin
+      SetField(fieldDescription, 'Πρεμιέρα στην Ελλάδα: '+Value+#13#10+#13#10+GetField(fieldDescription));
+    end;
+
+  //Συντελεστές
+  if GetOption('GetSyntelestes') = 1 then
+  begin
+  if Pos('<h4>- Συντελεστές :</h4>', Page) > 0 then begin
+    Page1 := Copy(Page, Pos('Συντελεστές :', Page), Length(Page));//gia na mhn alazei to page
+    //CutBefore(Page, 'Συντελεστές :');
+    //CutAfter(Page, 'Περισσότεροι Συντελεστές...');
+    while Pos('people.asp?name=', Page1) > 0 do begin
+      CutBefore(Page1, 'people.asp?name='); //Recognition Tag
+      //CutBefore(Page1, '">');//Start Tag
+      Page1 := Copy(Page1, Pos('">', Page1) + 2, Length(Page1));//copy after the string
+      Value := Copy(Page1, 0, Pos('</', Page1) - 1);
+      Page1 := Copy(Page1, Pos('</td><td>', Page1) + 9, Length(Page1));//copy after the string
+      Perigrafh := Copy(Page1, 0, Pos('</', Page1) - 1);
+
+      ShowMessage('Value: '+Value+#13#10+'Perigrafh: '+Perigrafh+#13#10+'Page1: '+Page1);
+
+      case Perigrafh of
+        'Ηθοποιός':
+          begin
+            Page1 := Copy(Page1, Pos('>....', Page1) + 5, Length(Page1));//copy after the string
+            Value2 := Copy(Page1, 0, Pos('</', Page1) - 1);
+            if FullValue <> '' then FullValue := FullValue + #13#10;
+            FullValue := FullValue+Value+' ... '+Value2;
+            // remove html tags and decode html string
+            HTMLRemoveTags(FullValue);
+            HTMLDecode(FullValue);
+            SetField(fieldActors, FullValue);
+          end;
+        'Σκηνοθετης':
+          begin
+            SetField(fieldDirector, Value);
+          end;
+        'Σεναριογράφος':
+          begin
+            SetField(fieldProducer, Value+' (Σεναριογράφος)');
+          end;
+      end;
+    end;
+    end;
+  end;
+
+  //Υπόθεση & Παραλειπόμενα (δεν αλλάζει το Page γιατί το έβαλα από την αρχή να παίρνει αυτή τη σελίδα)
+    if GetOption('GetCinegrComment') = 1 then
+    begin
+      Value := GetStringFromHTML(Page, 'Υπόθεση &amp; Παραλειπόμενα', 'film.asp?id=', '&amp;');
+      if Length(Value) > 0 then
+      begin
+        Value := 'http://www.cine.gr/film.asp?id='+Value+'&page=2';
+        
+        Page1 := GetPage(Value);
+        Page1 := UTF8Decode(Page1);
+
+      	Value := GetStringFromHTML(Page1, 'Πλοκή:', '											'+#13#10, '<br/><br/>');
+  
+        Value := StringReplaceAll(Value, '&#8230;', '...');
+        Value := StringReplaceAll(Value, '¶', 'Ά');
+        Value := StringReplaceAll(Value, '&#8211;', '-');
+        Value := StringReplaceAll(Value, '&#8216;', #39);
+        Value := StringReplaceAll(Value, '&#8217;', #39);
+        Value := StringReplaceAll(Value, '&#8220;', #34);
+        Value := StringReplaceAll(Value, '&#8221;', #34);
+        Value := StringReplaceAll(Value, '…', '...');
+        Value := StringReplaceAll(Value, '  ', ' ');
+        Value := StringReplaceAll(Value, #13#10+' ', #13#10);
+  
+        if Length(Value) > 0 then
+        begin
+          SetField(fieldDescription, 'Πλοκή:'+#13#10+' '+Value+#13#10+GetField(fieldDescription));
+        end;
+      end;
+    end;
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+      MovieName := GetField(fieldTranslatedTitle);
+    if (MovieName = '') then
+      MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      if not Input('IMDb Import', 'Enter the title of the movie:', MovieName) then
+        Exit;
+    if ImportCINEGR then
+     begin
+        if Pos('[', MovieName) > 0 then
+        begin
+          MovieName := Copy(MovieName, 0, Pos('[', MovieName) - 2);
+          SetField(fieldTranslatedTitle,MovieName);//8a mpoyn pali apo to cine gr
+        end;
+        if Pos('(', MovieName) > 0 then
+          MovieName := Copy(MovieName, 0, Pos('(', MovieName) - 2);
+        AnalyzePageCineGr('http://www.cine.gr/results.asp?term='+UrlEncode(MovieName)+'&type=film');
+     end;
+//      DisplayResults;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

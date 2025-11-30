@@ -1,0 +1,297 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=dmitry501,Pavel Uher,Chetan Rao,Deadeye
+Title=DVDEmpire.com
+Description=Import script for DVD Empire
+Site=https://www.dvdempire.com
+Language=EN
+Version=2.2.8
+Requires=4.2.1
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+MediaType=0|0|0=All Products|1=DVD|2=Blu-ray
+PictureType=0|1|0=Large Picture|1=Small Picture
+ClearCheckMark=0|1|0=No|1=Yes
+
+[Parameters]
+
+***************************************************)
+
+program DVDEmpire;
+
+uses
+  StringUtils1;
+const
+  LF = #13#10;
+var
+  MovieName: String;
+  MediaType: String;
+  UpdateFile: TStringList;
+
+//
+// ********** Get multiple values from a string **********
+// ********** Returns string with comma or linefeed between each item **********
+//
+function GetMultiValues(Line : String; StartTag : String; EndTag : String; UseCommaDelimiter : Boolean): String;
+var
+  Value     : String;
+  Delimiter : String;
+begin
+  Result := '';
+
+  if (UseCommaDelimiter) then
+    Delimiter := ', '
+  else
+    Delimiter := LF;
+
+  while(true) do
+  begin
+    Value := TextBetween(Line, StartTag, EndTag);
+    if Value = '' then
+      break
+    else
+    begin
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      if Pos(Value, Result) = 0 then     // if not a duplicate
+      begin
+        if (Length(Result) > 0) then
+          Result := Result + Delimiter;
+     
+        Result := Result + Value;
+      end;
+      Line := RemainingText;
+    end;
+  end;
+end;
+
+//
+// ********** Gets the specific movie info **********
+//
+procedure GetMovieInfo(Address: String);
+var
+  PageText, Value, TempValue: String;
+  hours, mins: Integer;
+begin
+  PageText := GetPage(Address);
+
+  // URL
+  SetField(fieldURL, Address);
+
+  // Picture
+  Value := TextBetween(PageText, 'Label="toggle_boxcover"', '"front-cover"');
+  if Value = '' then
+  begin
+    Value := TextBetween(PageText, '<div id="Boxcover"', '"front-cover"');
+  end;
+  Value := TextBetween(Value, '<a href="', '" id=');
+  if Value <> '' then
+  begin
+    if GetOption('PictureType') = 1 then
+      Value := StringReplace(Value, '/500/', '/135/');
+    GetPicture(Value);
+  end;
+  
+  // Original Title
+  Value := FullTrim(TextBetween(PageText, 'START Title --><h1>', '</h1>'));
+  SetField(fieldOriginalTitle, Value);
+
+  // Media Type
+  Value := FullTrim(TextBetween(PageText, 'spacing-bottom"><h2 class="border-bottom-default">', '<div class="hover'));
+  SetField(fieldMediaType, Value);
+
+  // Description
+  Value := TextBetween(PageText, 'spacing-bottom text-dark synopsis">', '</h4>');
+  Value := StringReplace(Value, '</p><p>', LF);
+  Value := StringReplace(Value, 'Â®', '®');
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := FullTrim(Value);
+  SetField(fieldDescription, Value);
+
+  // Length
+  Value := TextBetween(PageText, 'datetime="PT', 'M');
+  SetField(fieldLength, Value);
+
+  // Rating
+  Value := 'Rating: ' + Trim(TextBetween(PageText, '<span itemprop="contentRating"> ', '</span>'));
+  SetField(fieldComments, Value);
+
+  // Year
+  Value := FullTrim(TextBetween(PageText, 'Production Year</strong>', '</li>'));
+  SetField(fieldYear, Value);
+
+  // Number of Discs
+  Value := FullTrim(TextBetween(PageText, 'Number of Discs</strong>', '</li>'));
+  SetField(fieldDisks, Value);
+
+  // Subtitles
+  Value := FullTrim(TextBetween(PageText, 'Subtitles</strong>', '</li>'));
+  SetField(fieldSubtitles, Value);
+
+  // Video format
+  Value := FullTrim(TextBetween(PageText, 'Video</strong><br />', '</li>'));
+  Value := RemoveSpaces(Value, true);
+  Value := StringReplace(Value, '<br />', ' ');
+  SetField(fieldVideoFormat, Value);
+
+  // Audio
+  TempValue := FullTrim(TextBetween(PageText, 'Audio</strong><br />', '</li>'));
+  if TempValue <> '' then
+  begin
+    TempValue := RemoveSpaces(TempValue, true);
+    Value := TextBetween(TempValue, ' ', '<br />');
+    SetField(fieldAudioFormat, Value);
+
+    // Languages
+    Value := '<br />' + TempValue;
+    Value := GetMultiValues(Value, '<br />', ' ', true);
+    SetField(fieldLanguages, Value);
+  end;
+
+  // Actors
+  Value := FullTrim(TextBetween(PageText, 'Cast</h2>', '</ul>'));
+  Value := GetMultiValues(Value, '">', '</a>', false);
+  SetField(fieldActors, Value);
+
+  // Producer(s)
+  Value := FullTrim(TextBetween(PageText, 'Production</h2>', '</ul>'));
+  Value := GetMultiValues(Value, '<span itemprop="name">', '</span>', true);
+  SetField(fieldProducer, Value);
+
+  // Director(s)
+  Value := FullTrim(TextBetween(PageText, 'Director</h2>', '</ul>'));
+  Value := GetMultiValues(Value, '">', '</a>', true);
+  SetField(fieldDirector, Value);
+
+  // Clear Check Mark
+  if GetOption('ClearCheckMark') = 1 then
+    SetField(fieldChecked, 'false');
+end;
+
+//
+// ********** Gets the movie titles/addresses from the search results page **********
+//
+procedure AnalyzePage(Address: string);
+var
+  LineNr, L: Integer;
+  SCount: String;
+  PageText, MovieText: String;
+  MovieAddress, MovieTitle, MovieYear: String;
+begin
+  PickTreeClear;
+  PageText := GetPage(Address);
+  SCount := TextBetween(PageText, '<span class="matches-found"><strong>', '</strong> Matches Found');
+  SCount := StringReplace(SCount, ',', '');
+  L := StrToInt(SCount,1);
+  PageText := RemainingText;
+  if L > 0 then
+  begin
+    if L > 50 then
+    begin
+      PickTreeAdd('First 50 results of ' + IntToStr(L), '');
+      L := 50;
+    end
+    else
+    begin
+      PickTreeAdd(IntToStr(L)+' Matches found', '');
+    end;
+
+    repeat
+      // Get the info of one result
+      MovieText := TextBetween(PageText, '<h3><small>', '<ul class="item-details spacing-bottom-alt">');
+      PageText := RemainingText;
+     
+      // find the link
+      MovieAddress := 'https://www.dvdempire.com' + TextBetween(MovieText, '<a href="', '"');
+      MovieText := RemainingText;
+
+      // find the movie name
+      MovieTitle := TextBetween(MovieText, 'title="', '"');
+      MovieText := RemainingText;
+
+      // find the year
+      MovieYear := FullTrim(TextBetween(MovieText, '&nbsp;<small>(', ')</small>'));    // movie release year
+      if MovieYear <> '' then
+        MovieTitle := MovieTitle + ' [' + MovieYear + ']';
+
+      // add it to the tree
+      HTMLDecode(MovieTitle);
+      HTMLRemoveTags(MovieTitle);
+      PickTreeAdd(MovieTitle, MovieAddress);
+
+      // decrement counter
+      L := L - 1;
+    until L = 0;
+  end;
+  if PickTreeExec(Address) then
+    GetMovieInfo(Address);
+end;
+
+
+//
+// ********** Begin program **********
+//
+begin
+  // Check StringUtils1 version and update if < version 7
+  if StringUtils1_Version < 7 then
+  begin
+    if ShowWarning('Old version of file "Stringutils1.pas" detected: v' + IntToStr(StringUtils1_Version) + LF + 'The script requires at least version 7.' + LF + 'Download and install latest version now ?') = True then
+    begin
+      UpdateFile := TStringList.Create;
+      UpdateFile.Text := GetPage('http://update.antp.be/amc/scripts/StringUtils1.pas');
+      UpdateFile.SaveToFile(dirScripts + 'StringUtils1.pas');
+      UpdateFile.Free;
+      ShowInformation('StringUtils1 has been updated. Please restart the DVD Empire script now. Thank you.');
+      Exit;
+    end
+    else
+    begin
+      ShowInformation('You can download latest version of "StringUtils1.pas" using script "update scripts" or via http://update.antp.be/amc/scripts');
+      Exit;
+    end;
+  end;
+
+  // Check for current AMC version
+  if CheckVersion(4,2,1) then
+  begin
+    PickListClear;
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if not Input('Import from DVD Empire', 'Enter the title or the URL of the movie:', MovieName) then
+      Exit;
+    if Pos('dvdempire.com', MovieName) > 0 then
+    begin
+      GetMovieInfo(MovieName);
+      Exit;
+    end
+    else
+    begin
+      MovieName := AnsiLowerCase(MovieName);
+      MovieName := StringReplace(MovieName, '’', '');
+      MovieName := StringReplace(MovieName, Chr(39), '');
+      MovieName := StringReplace(MovieName, ' ', '+');
+      MovieName := StringReplace(MovieName, '&', '%26');
+      MovieName := StringReplace(MovieName, ':', '%3A');
+
+      MediaType := 'allsearch';
+      // DVD
+      if GetOption('MediaType')=1 then MediaType := 'dvd';
+      // Blu-ray
+      if GetOption('MediaType')=2 then MediaType := 'blu-ray';
+
+      AnalyzePage('https://www.dvdempire.com/' + MediaType + '/search?exactMatch=' + MovieName + '&q=' + MovieName + '&sort=score&pageSize=50&view=list');
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least version 4.2.1)');
+end.

@@ -1,0 +1,338 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Tuspelis
+Description=
+Site=www.tuspelis.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Tuspelis;
+var
+  MovieName: string;
+  MovieURL: string;
+  //------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+
+//--------------------------------------------------------------------------------
+
+            function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end;
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('smallText">Viendo del <b>', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('<td class="productListing-data">&nbsp;<b><a href="http://www.tuspelis.com/-', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+     
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" clas', strPage);
+          MovieId := Copy(strPage,+75, EndPos-75);
+          MovieId := TextBetween (MovieId, '.com/-', 'html');
+          MovieAddr := 'http://www.tuspelis.com/-' + MovieId+'html';
+          BeginPoss := Pos('.html',strPage);
+          EndPoss := Pos('</b>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle := TextBetween (MovieTitle, '">', '</a>');
+          MovieTitle  := UpFirstLetterWord(MovieTitle );
+          DeleteTags(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          PickTreeSort;
+          BeginPos := Pos('<td class="productListing-data">&nbsp;<b><a href="http://www.tuspelis.com/-', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  BaseURL2: string;
+  Beginpos: string;
+  titre_film: string;
+  EndPos: string;
+  Item1: string;
+  Item2: string;
+   Movie: string;
+begin
+  Description := '';
+
+ // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+   //Título Original
+ LineNr := FindLine('<font color="E4B700">TÍTULO ORIGINAL:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">TÍTULO ORIGINAL:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    Item  := UpFirstLetterWord(Item );
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+      end;
+     
+  //Título Traducido
+ LineNr := FindLine('<td><table border="0" width="100%" cellspacing="0" cellpadding="0">', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<td><table border="0" width="100%" cellspacing="0" cellpadding="0">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<td valign="top"><h1>', '<br><span');
+    Item := StringReplace(Item , #13#10, ' ');
+    DeleteTags(Item);
+    Item  := UpFirstLetterWord(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldTranslatedTitle, trim (Item));
+      end;
+     
+  // Director
+  LineNr := FindLine('<font color="E4B700">DIRECTOR:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">DIRECTOR:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldDirector, trim (Item));
+      end;
+     
+   // Año
+  LineNr := FindLine('<font color="E4B700">AÑO:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">AÑO:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldYear, trim (Item));
+      end;
+     
+   // Actores
+  LineNr := FindLine('<font color="E4B700">INTÉRPRETES:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">INTÉRPRETES:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+    Item := StringReplace(Item ,#13#10, '');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldActors, trim (Item));
+      end;
+     
+  //Duracion
+  LineNr := FindLine('DURACIÓN:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('DURACIÓN:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', 'min');
+    Item := StringReplace(Item ,#13#10, '');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+  SetField(fieldLength, Trim (Item));
+  end;
+
+   //sinopsis
+  LineNr := FindLine('<p><font color="E4B700">SINOPSIS:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<p><font color="E4B700">SINOPSIS:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<font color="');
+  Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags(Item);
+  HTMLDecode(Item);
+    SetField(fieldDescription, trim (Item));
+    end;
+   
+    //Nacionalidad
+  LineNr := FindLine('<font color="E4B700">NACIONALIDAD:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">NACIONALIDAD:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+  Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags(Item);
+  HTMLDecode(Item);
+  SetField(fieldCountry, trim (Item));
+ end;
+
+   // Productor
+  LineNr := FindLine('<font color="E4B700">PRODUCTORA:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<font color="E4B700">PRODUCTORA:',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font>', '<br>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', ' ');
+    Item  := Trim(Item );
+    DeleteTags(Item)
+    HTMLDecode(Item);
+    SetField(fieldProducer, trim (Item));
+  end;
+
+  // Caratula
+  LineNr := FindLine('src="images/imagecache', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, 'src="images/imagecache','" border');
+   GetPicture ('http://www.tuspelis.com/images/'+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Tuspelis', 'Buscar:', MovieName);
+
+     if(GetOption('No se ha encontrado') = 0) then  Input('Tuspelis', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.tuspelis.com/advanced_search_result.php?keywords=' + UrlEncode(MovieName)+'&search_in_description=1');
+
+end.

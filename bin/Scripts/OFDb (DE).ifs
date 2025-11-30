@@ -1,0 +1,478 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fabian Filipczyk, bad4u, yeti, gnuffmaster, U. Pollaehne
+Title=OFDb
+Description=OUTDATED: please use "OFDb-mobi-IMDb" instead|Online-Filmdatenbank (OFDb) import with small picture (DE)
+Site=http://www.ofdb.de
+Language=DE
+Version=1.0.19
+Requires=4.2.1
+Comments=
+License=This script will probably not be updated any more. Please use "OFDb-mobi-IMDb" instead with replaces it.|This program is free software; you can redistribute it and/or modify it under the|terms of the GNU General Public License as published by the Free Software Foundation;|either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+ReformatDescription=1|1|0=Do not reformat. Add the description as on OFDB|1=Reformat the description. Remove all Linefeeds and make a long flow text.
+AskForMovieTitle=1|0|0=Only ask for movie title input when there is no title on Original or Translated Title fields|1=Always ask for movie title input (default)
+
+[Parameters]
+
+***************************************************)
+
+(***************************************************
+1.0.19 (20/05/2018) by U. Pollaehne
+- Chg: No UTF-8 encoding for movie title
+
+1.0.18 (20/05/2017) by U. Pollaehne
+- Chg: Adapted to SSL, ssl.ofdb.de
+
+1.0.17 (04/01/2013) by gnuffmaster
+- Fix: <span> Tags in Category field
+- Fix: Rating value
+
+1.0.16 (15/04/2011) by gnuffmaster (gnuffmaster@gmx.net)
+- Fix: Picture import broken
+
+1.0.15 (27/01/2010) by TheIgel69
+- Chg: ofdb have a new field (Typ). I merged it with the entries from genre.
+
+1.0.14 (21/08/2008) by gnuffmaster (gnuffmaster@gmx.net)
+- Fix: Year import broken (also since 1.0.12 but not noticed before)
+
+1.0.13 (24/07/2008) by bad4u
+- Chg: Added option for handling movie title input
+
+1.0.12 (21/06/2008) by gnuffmaster (gnuffmaster@gmx.net)
+- Fix: Actor, Director and Country import broken
+- Fix: Special characters in URL (ä,ö,ü..)
+
+1.0.11 (24/05/2008) by gerol
+- Fix: Missing results on movie names with german special characters inside
+
+1.0.10 (28/04/2008) by bad4u
+- Fix: Description import broken if short summary exceeds one row
+
+1.0.9 (20/03/2008) by bad4u
+- Fix: OFDb code change (UTF8), special characters did not work anymore (ä,ö,ü..)
+
+1.0.8 (01/03/2008) by gnuffmaster (gnuffmaster@gmx.net)
+- Fix: Picture import broken again
+
+1.0.7 (16/02/2008) by bad4u
+- Fix: Picture import broken
+
+1.0.6 (09/02/2008) by bad4u
+- Fix: some titles were missing on the results list because URLEncode does not convert the
+  '&' symbol (i.e. In & Out)
+
+1.0.5 (08/02/2008) by bad4u
+- Fix: description import broken on some films, because different formats of [mehr] links
+- Fix: results list missed some films, because different formats of movie links
+
+1.0.4 (02/12/2007) by DarkS
+- Fix: Parse correct URL for movie address (with no onmouseover part)
+- Fix: if the movie description on the first ofdb page has no [mehr]-Link, the
+  script adds an empty string only
+
+1.0.3 (06/11/2007) by yeti (yeti@gmx.info)
+- Fix: if the actors list on the first ofdb page have no [mehr]-Link, the
+  script adds an empty string only (thx DarkS)
+
+1.0.2 (03/06/2007) by yeti (yeti@gmx.info)
+- Chg: Code cleanup
+- New: Option to import the description as is, include all line feeds.
+  Standard is reformat as before.
+- Fix: The last change in actors loading from the cast/crew details page
+  reads the crew names too :( Hope I've finally fixed this now.
+
+1.0.1 (03/04/2007) by yeti (yeti@gmx.info)
+- Chg: Added stringUtils1-Lib and removed FindLine(), Code cleanup (not completed yet)
+- Fix: If the actor-name in the details view is clickable to view the actors
+  profile, the name was not imported.
+
+1.0.0 (03/03/2007) by yeti (yeti@gmx.info)
+- Fix/Chg: Ratingimport changed to 2 digits (rounded)
+  Rating 6.49 -> Old: 7 -> New: 6.5
+- Chg: Removed old code
+- New: Version number 1.0.0 added for better distinction between versions
+***************************************************)
+
+program OFDB_DE;
+
+uses
+  stringUtils1;
+
+const
+  CRLF = #13#10;
+  BASEURL = 'https://ssl.ofdb.de/';
+
+var
+  MovieName: string;
+
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('<title>OFDb - Suchergebnis', Page.Text) = 0 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page)
+  end else
+  begin
+    PickTreeClear;
+    LineNr := FindLine('<b>Titel:</b>', Page, 0);
+    if LineNr > 0 then
+    begin
+      PickTreeAdd('Filme :', '');
+      AddMoviesTitles(Page, LineNr);
+      if PickTreeExec(Address) then
+         AnalyzePage(Address);
+    end;
+  end;
+  Page.Free;
+end;
+
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Temp, Value: string;
+  LineNr, LineNrTmp, IntValue, LineNrType: Integer;
+  BeginPos, EndPos: Integer;
+
+begin
+  // Picture
+  LineNr := FindLine('src="images/film/', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Value := TextBetween(Line, '<img src="', '" alt=');
+    if Value <> '' then
+      GetPicture(BASEURL + Value);
+  end;
+
+  // Original Title
+  LineNr := Findline('Originaltitel:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    Line := UTF8Decode(Line);
+    HTMLRemoveTags(Line);
+    Line := Trim(Line);
+    if Line <> '' then SetField(fieldOriginalTitle, Line);
+  end;
+
+  // Translated Title
+  LineNr := Findline('sans-serif" size="3"><b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := UTF8Decode(Line);
+    HTMLRemoveTags(Line);
+    Line := Trim(Line);
+    if Line <> '' then SetField(fieldTranslatedTitle,Line);
+  end;
+
+  // Country
+  LineNr := Findline('Herstellungsland:', Page, 0);
+  if LineNr > -1 then
+  begin
+    LineNr := LineNr + 2;
+    Line:= Page.GetString(LineNr);
+    Delete(Line, 1, Pos('<a', Line) - 1);
+    Line := StringReplace(Line, '<br><a', ', <br><a');
+    Line := UTF8Decode(Line);
+    HTMLRemoveTags(Line);
+    SetField(fieldCountry, Line);
+  end;
+
+  // Year
+  LineNr := Findline('Erscheinungsjahr:', Page, 0);
+  if LineNr > -1 then
+  begin
+    LineNr := LineNr + 2;
+    Line:= Page.GetString(LineNr);
+    Delete(Line, 1, Pos('<a', Line) - 1);
+    Value := TextBetween(Line, '">', '</a></b>');
+    if Value <> '' then SetField(fieldYear, Value);
+  end;
+
+  // Category
+  LineNr := Findline('Genre(s):', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value:= '';
+    LineNr := LineNr + 2;
+    Line:= Page.GetString(LineNr);
+    repeat
+      Line := TextAfter(Line, '<a');
+      Temp := TextBetween(Line, '">', '</a><br>');
+      if Temp <> '' then Value := Value + ', ' + Temp ;
+    until (Temp = '');
+
+   //Typ
+    LineNrType := Findline('Typ:', Page, 0);
+    if LineNrType > -1 then
+    begin
+      LineNrType := LineNrType + 2;
+      Line:= Page.GetString(LineNrType);
+      repeat
+        Line := TextAfter(Line, '<a');
+        Temp := TextBetween(Line, '">', '</a><br>');
+        if Temp <> '' then Value := Value + ', ' + Temp ;
+      until (Temp = '');
+
+    end;
+    Value:= Copy(Value, 3, Length(Value) - 1);
+    Value := UTF8Decode(Value);
+    HtmlRemoveTags(Value);
+    SetField(fieldCategory, Value);
+  end;
+
+  // Actors
+  LineNr := Findline('Darsteller', Page, 0);
+  if LineNr > -1 then
+  begin
+     LineNr := LineNr + 2;
+     Line:= Page.GetString(LineNr);
+     Delete(Line, 1, Pos('<a', Line) - 1);
+
+     if Pos('">[mehr]', Line) > 0 then
+     begin
+       BeginPos := Pos('<a href="view.php?page=film_detail', Line) + 9;
+       EndPos := Pos('">[mehr]', Line);
+       Value := Copy(Line, BeginPos, EndPos - BeginPos);
+       GetOFDBActors(Value);
+     end else
+     begin
+       Line := StringReplace(Line, '<br><a', ', <br><a');
+       Line := UTF8Decode(Line);
+       HTMLRemoveTags(Line);
+       SetField(fieldActors, Line);
+     end;
+  end;
+
+  // Director
+  LineNr := Findline('Regie', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := '';
+    LineNr := LineNr + 2;
+    Line := Page.GetString(LineNr);
+    Delete(Line, 1, Pos('<a', Line) - 1);
+    Line := StringReplace(Line, '<br><a', ', <br><a');
+    Line := UTF8Decode(Line);
+    HTMLRemoveTags(Line);
+    SetField(fieldDirector, Line);
+  end;
+
+  // Description
+  LineNr := Findline('<b>Inhalt:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Value := TextBetween(Line, '<b>Inhalt:</b>', '</p></font></td>');
+    if Pos('</p></font></td>', Line) = 0 then
+      begin
+        Value := TextAfter(Line, '<b>Inhalt:</b>');
+        LineNr := LineNr + 1;
+        Line := Page.GetString(LineNr);
+        while Pos('</p></font></td>', Line) = 0 do
+          begin
+            Value := Value + ' ' + Line;
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+          end;
+        Value := Value + ' ' + TextBefore(Line, '</p></font></td>', '');
+      end;
+    Value := UTF8Decode(Value);
+    if (Pos('<a href="plot/', Line) > 0) or (Pos('<a href="view.php?page=inhalt', Line) > 0) then
+      begin //"[mehr]" part exists
+        if Pos('<a href="plot/', Line) > 0 then
+          BeginPos := Pos('<a href="plot/', Line) + 9;
+        if Pos('<a href="view.php?page=inhalt', Line) > 0 then
+          BeginPos := Pos('<a href="view.php?page=inhalt', Line) + 9;
+        EndPos := Pos('"><b>[mehr]', Line);
+        Value := Copy(Line, BeginPos, EndPos - BeginPos);
+        GetDescriptions(Value);
+      end
+        else
+          begin
+            Value := TextBefore(Value, '<', '');
+            HTMLRemoveTags(Value);
+            SetField(fieldDescription, FullTrim(Value));
+          end;
+  end;
+
+  // Rating
+  LineNr := Findline('Note: <span itemprop="ratingValue">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line:= Page.GetString(LineNr);
+    BeginPos := Pos('Note: <span itemprop="ratingValue">',Line) + 35;
+
+    // I had to add 0.1 here to make the rounding more precise
+    Value := IntToStr(Round((StrToInt(Copy(Line, BeginPos+2, 2), 0) + 0.1) / 10));
+
+    if StrToInt(Value,0) > 9 then
+      Value := IntToStr(StrToInt(StrGet(Line, BeginPos),0) + 1) + '.0'
+    else
+      Value := StrGet(Line, BeginPos) + '.' + Value;
+    SetField(fieldRating, Value);
+  end;
+end;
+
+
+procedure GetOFDBActors(Address: string);
+var
+  Line,Temp, Value: string;
+  LineNr, EndLine: Integer;
+  Page: TStringList;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(BASEURL + Address);
+  LineNr := Findline('Darsteller', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value:= '';
+
+    EndLine := FindLine('/table', Page, LineNr);  // Find the end of the cast-table
+    repeat
+      LineNr := Findline('<a href="view.php?page=', Page, LineNr + 1);
+      if LineNr >= EndLine then LineNr := -1;     // Cast-Table ended, leave loop
+      if LineNr > -1 then
+      begin
+        Line := Page.GetString(LineNr);
+        Delete(Line, 1, pos('<a href="view.php?page=', Line) + 22);
+        Temp := TextBefore(Line, '=', '');
+        if (Temp = 'person&id') Or (Temp = 'liste&Name') then
+        begin
+          Temp := TextBetween(Line, '">', '</a>');
+          HTMLRemoveTags(Temp);
+          if Temp <> '' then Value := Value + ', ' + Temp;
+        end;
+      end;
+    until (LineNr < 0);
+
+    Value:= copy(Value, 3,length(Value)-1);
+    Value := UTF8Decode(Value);
+    SetField(fieldActors, Value);
+  end;
+  Page.Free;
+
+end;
+
+
+procedure GetDescriptions(Address: string);
+var
+  Line, Value, Temp: string;
+  LineNr: Integer;
+  Page: TStringList;
+  Reformat: Boolean;
+
+begin
+  Value := '';
+  if GetOption('ReformatDescription') = 1 then Reformat := True else Reformat := False;
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(BASEURL + Address);
+  LineNr := FindLine('Eine Inhaltsangabe von', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := TextAfter(Line, '</b><br><br>');
+    while (Pos('<br />', Line) > 0) do
+    begin
+      Temp := TextBefore(Line, '<br />', '');
+      if Not Reformat then
+      begin
+        Value := Value + Temp + CRLF;
+      end else
+      begin
+        if Temp <> '' then Value := Value + Temp + ' ';
+      end
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+    end;
+    Value := Value + TextBefore(Line, '</font></p>', '');
+    Value := UTF8Decode(Value);
+    SetField(fieldDescription, Value);
+  end;
+  Page.Free;
+end;
+
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress, CutMark, CutMarkAddress: string;
+  StartPos, EndPos: Integer;
+
+begin
+  Line := Page.GetString(LineNr);
+  repeat
+    CutMark := '">';
+    CutMarkAddress := '" ';
+    StartPos := Pos('<a href="view.php?page=film&fid=', Line);
+    if StartPos = 0 then
+    begin
+      StartPos := Pos('<a href="film/', Line);
+    end;
+    if StartPos = 0 then
+    begin
+      StartPos := Pos('<a href=''view.php?page=film&fid=', Line);
+      CutMark := '''>';
+      CutMarkAddress := ''' ';
+    end;
+    if StartPos = 0 then
+    begin
+      StartPos := Pos('<a href=''film/', Line);
+    end;
+    if StartPos > 0 then
+    begin
+      Delete(Line, 1, StartPos + 8);
+      MovieAddress := TextBefore(Line, CutMarkAddress, '');
+      MovieTitle := TextBetween(Line, CutMark, '</a>');
+      MovieTitle := UTF8Decode(MovieTitle);
+      HTMLRemoveTags(MovieTitle);
+      if (MovieAddress <> '') And (MovieTitle <> '') then
+      begin
+        //MovieAddress := MovieAddress + '&full=1';
+        MovieAddress := UTF8Decode(MovieAddress);
+        PickTreeAdd(MovieTitle , BASEURL + MovieAddress);
+      end else
+        StartPos := -1; // Error - Leave the Loop
+    end;
+  until (StartPos < 1);
+end;
+
+
+begin
+	if AcceptLicense(1) then
+	begin
+	  if CheckVersion(4,2,1) then
+	  begin
+		MovieName := GetField(fieldOriginalTitle);
+		if MovieName = '' then
+		  MovieName := GetField(fieldTranslatedTitle);
+		if (MovieName = '') or (GetOption('AskForMovieTitle') = 1) then
+		  if not Input('OFDb', 'Bitte Titel eingeben :', MovieName) then
+			Exit;
+		begin
+		  MovieName := StringReplace(MovieName,'.',' ');
+		  AnalyzePage(BASEURL + 'view.php?page=suchergebnis&Kat=Titel&SText='+StringReplace(UrlEncode(MovieName),'&%','%26%'));
+		end;
+	  end else
+		ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.1)');
+	end;
+end.

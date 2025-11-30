@@ -1,0 +1,104 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=scorpion7552
+Title=ClearField
+Description=efface un champ/clear a field
+Site=
+Language=EN,FR
+Version=1.0
+Requires=3.5.0
+Comments=Remise à blanc d'un champ (si modifiable)/Clear a field (if modifiable)
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=0
+
+[Options]
+
+***************************************************)
+program ClearField;
+var
+   abort: string;
+   fld1: integer;
+
+//------------------------------------------------------------------------------
+// creates fields list and returns the selected field number
+//------------------------------------------------------------------------------
+function SelectField :integer;
+var
+   fld: string;
+
+begin
+   PickTreeClear;
+   PickTreeAdd('Sélectionner le champ à effacer/Select the field to clear', '')
+// create list
+   AddFieldToList(fieldMedia, 'Label du support/Media label');
+   AddFieldToList(fieldMediaType, 'Type de support/Media Type');
+   AddFieldToList(fieldSource, 'Origine/Media Source');
+   AddFieldToList(fieldBorrower, 'Emprunté par/Borrower');
+   AddFieldToList(fieldRating, 'Note/Rating');
+   AddFieldToList(fieldOriginalTitle, 'Titre original/Original Title');
+   AddFieldToList(fieldTranslatedTitle, 'Titre Traduit/Translated Title');
+   AddFieldToList(fieldDirector, 'Réalisateur/Director');
+   AddFieldToList(fieldProducer, 'Producteur/Producer');
+   AddFieldToList(fieldCountry, 'Pays/Country');
+   AddFieldToList(fieldCategory, 'Catégorie/Category');
+   AddFieldToList(fieldActors, 'Acteurs/Actors');
+   AddFieldToList(fieldYear, 'Année/Year');
+   AddFieldToList(fieldLength, 'Durée/Length');
+   AddFieldToList(fieldUrl, 'Adresse  Web/URL');
+   AddFieldToList(fieldDescription, 'Description');
+   AddFieldToList(fieldComments, 'Commentaires/Comments');
+   AddFieldToList(fieldVideoFormat, 'Format vidéo/Video format');
+   AddFieldToList(fieldVideoBitrate, 'Video bitrate');
+   AddFieldToList(fieldAudioFormat, 'Format audio/Audio format');
+   AddFieldToList(fieldAudioBitrate, 'Audio bitrate');
+   AddFieldToList(fieldResolution, 'Résolution/Resolution');
+   AddFieldToList(fieldFrameRate, 'Fréquence/Frame rate');
+   AddFieldToList(fieldLanguages, 'Langues/Languages');
+   AddFieldToList(fieldSubtitles, 'Sous-titres/Subtitles');
+   AddFieldToList(fieldSize, 'Taille/Size');
+   AddFieldToList(fieldDisks, 'Disques/Disks');
+//
+   PickTreeExec(fld);
+   result := StrToInt(fld,0);
+end;
+
+//------------------------------------------------------------------------------
+// add a field to the selection list
+// AddFieldToList(fieldnumber, text_for_display);
+//------------------------------------------------------------------------------
+procedure AddFieldToList(fldn: integer; str:string);
+begin
+// if fieldnumber is modifiable
+   if CanSetField(fldn) then
+      PickTreeAdd(str, IntToStr(fldn));
+end;
+
+//------------------------------------------------------------------------------
+//  start here
+//------------------------------------------------------------------------------ 
+begin
+   if abort = 'o' then                             // selection has been canceled
+      exit;
+   if fld1 = 0 then                          // first time: select field to clear
+// note: number = 0 = fieldNumber: not selectable here
+   begin
+      if not CheckVersion(3,5,0) then
+      begin
+         ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');      
+         abort := 'o';
+         exit;
+      end;
+      fld1 := SelectField;
+      if fld1 = 0 then
+      begin
+         abort := 'o';                                              // no selection
+         exit;
+      end;
+   end;
+// clear the field for the current item
+   SetField(fld1, '');
+end.

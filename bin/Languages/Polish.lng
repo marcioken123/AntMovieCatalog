@@ -1,0 +1,1893 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAzCwAAMwsAABAAAAAQAAAAAAAAAAAAqgAAAP0AZWX/AKqqqgDMzMwA7u7uAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHd3d3d3d3d3AAAAAAAAAAABERERERERIAEiIiIiIiIwASIiIiIiIjABIiIiIiIiMAEiIiIiIiIwASIiIiIiIjAEVVVVVVVVYARVVVVVVVVgBFVVVVVVVWAEVVVVVVVVYARVVVVVVVVgBWZmZmZmZmAAAAAAAAAAAHd3d3d3d3d3
+Name=Polish
+LocalName=Polski
+Encoding=windows-1250
+Version=4.2.0
+VersionFormat=4.2.2
+Comments=Wszelka pomoc i konstruktywne uwagi odnoúnie t≥umaczenia bÍdπ mile widziane.
+Authors=Adam Malich|adam_malich@gizycko.mm.pl|Korekta - Bogdan Kwietniak|bogdanka@free.pl|Marburg|marburg82@gmail.com
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Nowy
+ActionFileNew.Hint=Nowy|Tworzy nowy katalog filmÛw
+ActionFileOpen.Caption=&OtwÛrz...
+ActionFileOpen.Hint=OtwÛrz...|Otwiera plik
+ActionFileOpenNoRecent.Caption=Nie ostatni plik
+ActionFileSave.Caption=&Zapisz
+ActionFileSave.Hint=Zapisz|Zapisuje aktualny plik
+ActionFileSaveAs.Caption=Zapisz &jako...
+ActionFileSaveAs.Hint=Zapisz jako...|Zapisuje aktualny plik pod innπ nazwπ
+ActionFilePrint.Caption=&Drukuj...
+ActionFilePrint.Hint=Drukuj listÍ|Drukuje listÍ zawartoúci aktualnego katalogu
+ActionFileImport.Caption=&Importuj...
+ActionFileImport.Hint=Importuj...|Importuje bazÍ filmÛw z innego formatu plikÛw
+ActionFileExport.Caption=&Eksportuj...
+ActionFileExport.Hint=Eksportuj...|Eksportuje bazÍ filmÛw do innego formatu plikÛw
+ActionFileProperties.Caption=&W≥aúciwoúci...
+ActionFileProperties.Hint=W≥aúciwoúci...|Pokazuje w≥aúciwoúci pliku i informacje zawarte w katalogu
+
+ActionExit.Caption=Z&amknij
+ActionExit.Hint=Zamknij|Zamyka program
+ActionOptions.Caption=&Preferencje...
+ActionOptions.Hint=Preferencje...|Zmiana ustawieÒ programu
+ActionLanguage.Caption=J&Ízyk...
+ActionLanguage.Hint=JÍzyk...|Zmiana jÍzyka interfejsu uøytkownika
+ActionLoan.Caption=&Poøyczone...
+ActionLoan.Hint=Poøyczone...|Wykaz filmÛw, ktÛre sπ aktualnie wypoøyczone
+ActionToolsScripting.Caption=S&krypty...
+ActionToolsScripting.Hint=Skrypty...|Zastosuj skrypty do pobrania informacji o wybranych filmach z Internetu
+ActionToolsGrid.Caption=P&okaø w w formie tabeli
+ActionToolsGrid.Hint=Pokaø w formie tabeli|Pokazuje listÍ wszystkich filmÛw w formie tabeli
+ActionStretchList.Caption=&Rozciπgnij listÍ
+ActionStretchList.Hint=Rozciπgnij listÍ|Rozciπga listÍ w prawo
+ActionDisplayHTML.Caption=&Pokaø HTML
+ActionDisplayHTML.Hint=Pokaø HTML|Wyúwietla informacje o filmie na podstawie szablonu HTML
+ActionSelectHTML.Caption=&Wybierz HTML
+ActionSelectHTML.Hint=Wybierz HTML|Wybierz szablon HTML
+ActionDisplayThumbnails.Caption=Pokaø jako &miniatury
+ActionDisplayThumbnails.Hint=Pokaø jako miniatury|Wyúwietla listÍ filmÛw w postaci miniatur
+ActionSortAscend.Caption=Rosnπco
+ActionSortAscend.Hint=|Sortuje w porzπdku rosnπcym
+ActionSortDescend.Caption=Malejπco
+ActionSortDescend.Hint=|Sortuje w porzπdku malejπcym
+ActionSortAdvanced.Caption=Zaawansowane...
+ActionSortAdvanced.Hint=|Sortowanie zaawansowane
+ActionGroupNone.Caption=< nie zgrupowane >
+ActionGroupNone.Hint=|Usuwa grupowanie filmÛw
+ActionManageFields.Caption=&Zarzπdzanie polami...
+ActionManageFields.Hint=Zarzπdzanie polami...|Zarzπdzaj niestandardowymi polami w aktualnym katalogu
+ActionManagePictures.Caption=Zarzπdzanie o&brazkami...
+ActionManagePictures.Hint=Zarzπdzanie obrazkami...|Zarzπdzanie obrazkami aktualnego katalogu
+ActionHTMLEditor.Caption=Edytor &HTML...
+ActionHTMLEditor.Hint=Edytor HTML...|Edytowanie szablonÛw HTML
+
+ActionHelpIndex.Caption=&Indeks pomocy
+ActionHelpIndex.Hint=Indeks pomocy|Uruchamia program pomocy
+ActionHelpAbout.Caption=&O programie...
+ActionHelpAbout.Hint=O programie...|Info o programie
+ActionHelpVersion.Caption=&Wersje...
+ActionHelpVersion.Hint=Wersje...|Pokazuje informacje o wersjach plikÛw
+
+ActionMovieAdd.Caption=&Dodaj...
+ActionMovieAdd.Hint=Dodaj...|Dodaje nowπ pozycjÍ w katalogu
+ActionMovieUndo.Caption=&Cofnij zmiany
+ActionMovieUndo.Hint=Cofnij zmiany|Cofa bieøπce zmiany, ktÛre zosta≥y wprowadzone w katalogu
+ActionMovieDelete.Caption=&UsuÒ
+ActionMovieDelete.Hint=UsuÒ|Usuwa aktualnπ pozycjÍ
+ActionMovieCopy.Caption=&Kopiuj
+ActionMovieCopy.Hint=Kopiuj|Kopiuje informacje o filmie do schowka
+ActionMoviePaste.Caption=&Wklej
+ActionMoviePaste.Hint=Wklej|Wkleja informacje o filmie ze schowka
+ActionMovieRenumber.Caption=&ZmieÒ numeracjÍ filmÛw...
+ActionMovieRenumber.Hint=ZmieÒ numeracjÍ...|Przed zmianπ numeracji sortuj filmy wg.:
+ActionMovieFind.Caption=&Znajdü...
+ActionMovieFind.Hint=Znajdü...|Odnajduje film na podstawie okreúlonych parametrÛw
+ActionFindFindNext.Caption=Znajdü &nast.
+ActionFindFindNext.Hint=|Szuka nastÍpnego filmu pasujπcego do parametrÛw wyszukiwania 
+ActionFindWholeField.Caption=&Tylko ca≥e pole
+ActionFindWholeField.Hint=|Pokazuje filmy tylko wtedy, gdy ca≥e pole rÛwna siÍ poszukiwanej wartoúci
+ActionFindReverse.Caption=Odw&rÛÊ wyniki
+ActionFindReverse.Hint=|Odwraca wyniki wyszukiwania
+ActionFindDisplay.Caption=&Pokaø wynik
+ActionFindDisplay.Hint=|Pokazuje wszystkie filmy pasujπce do kryteriÛw przeszukiwania (widok filtrowany)
+LField.Caption=&Wyszukaj w polu:
+LValue.Caption=Szukaj &wartoúci:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=ZmieÒ &numer...
+ActionMovieNumber.Hint=ZmieÒ numer|Zmienia numer filmu
+ActionMovieStats.Caption=&Statystyki...
+ActionMovieStats.Hint=Statystyki...|Pokazuje rÛøne dane o filmach znajdujπcych siÍ w katalogu
+ActionMovieImportFiles.Caption=z &plikÛw...
+ActionMovieImportFiles.Hint=Pobierz informacje z plikÛw...|Pobiera informacje o filmach z plikÛw
+ActionMovieImportScript.Caption=z Internetu za pomocπ skryptu...
+ActionMovieImportScript.Hint=Pobierz informacje z Internetu za pomocπ skryptu...|Pobiera informacje z internetu za pomocπ skryptu.
+ActionMovieSearch.Caption=&Szukaj w Internecie
+ActionMovieSearch.Hint=Szukaj informacji w Internecie|Szukaj informacji na temat filmu w Internecie
+ActionMovieRandom.Caption=&Losowy
+ActionMovieRandom.Hint=Losowy|Wybiera losowy film
+ActionMoviePictureShow.Caption=&Pokaø obrazek
+ActionMoviePictureShow.Hint=Pokaø lub ukryj obrazek|Pokazuje lub ukrywa obrazek dla filmu w oknie
+ActionMovieExtrasShow.Caption=Pokaø &dodatki
+ActionMovieExtrasShow.Hint=Pokaø lub ukryj dodatki dla filmu|Pokazuje lub ukrywa okno dodatkÛw dla filmu
+ActionPicSelect.Caption=&Wybierz...
+ActionPicSelect.Hint=Wybierz obrazek...|Wybiera obrazek do importu, albo ≥πczy go z aktualnym filmem
+ActionPicDelete.Caption=&UsuÒ
+ActionPicDelete.Hint=UsuÒ|Usuwa aktualny obrazek
+ActionPicUndock.Caption=Dokuj/&Oddokuj
+ActionPicUndock.Hint=Dokuj/&Oddokuj|Okno obrazka: Dokuj - zintegrowane z g≥Ûwnym oknem oraz Oddokuj - "p≥ywajπce" okno
+ActionPicSaveAs.Caption=&Zapisz jako...
+ActionPicSaveAs.Hint=Zapisz obrazek jako...|Zapisuje kopiÍ obrazka pod innπ nazwπ
+ActionPicCopy.Caption=&Kopiuj
+ActionPicCopy.Hint=Kopiuj do schowka|Kopiuje obrazek do schowka
+ActionPicPaste.Caption=&Wklej
+ActionPicPaste.Hint=Wklej ze schowka|Wkleja obrazek ze schowka
+ActionMovieUrl.Caption=URL
+ActionMovieUrl.Hint=URL|URL filmu
+ActionMovieFilePath.Caption=åcieøka pliku
+ActionMovieFilePath.Hint=åcieøka pliku|åcieøka do pliku z filmem
+
+ActionMenuFile.Caption=&Plik
+ActionMenuMovie.Caption=&Film
+ActionMenuDisplay.Caption=&Wyúwietlaj
+ActionMenuTools.Caption=&NarzÍdzia
+ActionMenuHelp.Caption=&Pomoc
+ActionMenuPicture.Caption=Obraz&ki
+ActionMenuPicture.Hint=Menu obrazkÛw|Polecenia zwiπzane z obrazkiem filmu
+ActionMenuGet.Caption=&Pobierz informacje
+ActionMenuGet.Hint=Pobierz informacje|Pobiera informacje o filmie
+ActionMenuGridFields.Caption=&Pola tabeli
+ActionMenuGridFields.Hint=Pola tabeli|Wybierz pola tabeli, ktÛre chcesz pokazaÊ lub ukryÊ
+ActionMenuSort.Caption=&Sortuj wg
+ActionMenuSort.Hint=Sortuj filmy|Sortuje wed≥ug okreúlonego pola filmu z listy
+ActionMenuGroup.Caption=&Grupuj wg
+ActionMenuGroup.Hint=Grupuj filmy|Grupuje filmy wed≥ug wybranego pola
+ActionRefresh.Caption=&Odúwieø
+ActionRefresh.Hint=Odúwieø listÍ|Odúwieøa listÍ filmÛw
+ActionMenuGroupsFormat.Caption=F&ormatowanie grup
+ActionMenuGroupsFormat.Hint=Formatowanie nazw grup|Formatowanie nazw grup, w zaleønoúci od wybranej opcji
+ActionGroupsFormatNone.Caption=< &brak >
+ActionGroupsFormatNone.Hint=|Bez formatowania nazw grup
+MnuGpf1L.Caption=WyodrÍbnij pierwszπ literÍ
+MnuGpf2L.Caption=WyodrÍbnij dwie pierwsze litery
+MnuGpf3L.Caption=WyodrÍbnij trzy pierwsze litery
+MnuGpf4L.Caption=WyodrÍbnij cztery pierwsze litery
+MnuGpf5L.Caption=WyodrÍbnij piÍÊ pierwszych liter
+MnuGpfDateY.Caption=WyodrÍbnij rok z dat
+MnuGpfDateYM.Caption=WyodrÍbnij rok i miesiπc z dat
+MnuGpfRound0001.Caption=Zaokrπglij liczby do tysiÍcznych
+MnuGpfRound001.Caption=Zaokrπglij liczby do setnych
+MnuGpfRound01.Caption=Zaokrπglij liczby do dziesiÍtnych
+MnuGpfRound1.Caption=Zaokrπglij liczby do jednoúci
+MnuGpfRound10.Caption=Zaokrπglij liczby do dziesiÍciu
+MnuGpfRound100.Caption=Zaokrπglij liczby do stu
+MnuGpfRound1000.Caption=Zaokrπglij liczby do tysiπca
+MnuGpfRoundType.Caption=SposÛb zao&krπglania
+MnuGpfRoundDown.Caption=Zaokrπglaj w &dÛ≥
+MnuGpfRoundNearest.Caption=Zaokrπglaj do &najbliøszego
+MnuGpfRoundUp.Caption=Zaokrπglaj w &gÛrÍ
+
+MnuSelect.Caption=Wybierz
+ActionMovieSelGroup.Caption=Ca≥π grupÍ
+ActionMovieSelGroup.Hint=Wybierz grupÍ|Wybiera wszystkie filmy z danej grupy
+ActionMovieSelCheck.Caption=Zaznaczone
+ActionMovieSelCheck.Hint=Wybierz zaznaczone|Wybiera tylko te filmy, ktÛre sπ zaznaczone
+ActionMovieSelUncheck.Caption=Niezaznaczone
+ActionMovieSelUncheck.Hint=Wybierz niezaznaczone|Wybiera tylko te filmy, ktÛre sπ niezaznaczone
+
+MnuSelected.Caption=Wybrane filmy
+ActionMovieCheck.Caption=Zaznacz
+ActionMovieCheck.Hint=Zaznacz wybrane|Zaznacza wybrane filmy
+ActionMovieUncheck.Caption=Odznacz
+ActionMovieUncheck.Hint=Odznacz wybrane|Odznacza wybrane filmy
+
+ActionDisplayPictureToolbar.Caption=&NarzÍdzia obrazkÛw
+ActionDisplayPictureToolbar.Hint=Pokaø narzÍdzia obrazkÛw|Pokazuje lub ukrywa pasek narzÍdziowy obrazkÛw
+ActionDisplayExtrasToolbar.Caption=Pokaø narzÍdzia doda&tkÛw
+ActionDisplayExtrasToolbar.Hint=Pokaø narzÍdzia dodatkÛw|Pokazuje lub ukrywa pasek narzÍdziowy dodatkÛw
+ActionDisplayMainToolbar.Caption=&G≥Ûwny pasek narzÍdziowy
+ActionDisplayMainToolbar.Hint=Pokaø g≥Ûwny pasek narzÍdziowy|Pokazuje lub ukrywa g≥Ûwny pasek narzÍdziowy
+ActionDisplayStatusBar.Caption=&Pasek stanu
+ActionDisplayStatusBar.Hint=Pokaø pasek stanu|Pokazuje lub ukrywa pasek stanu
+
+ActionURLOpen.Caption=OtwÛrz URL
+ActionURLOpen.Hint=|OtwÛrz okreúlony w polu URL lub plik
+ActionURLExplore.Caption=OtwÛrz folder
+ActionURLExplore.Hint=|OtwÛrz okreúlony w polu folder zawierajπcy plik
+ActionURLCopy.Caption=Kopiuj URL
+ActionURLCopy.Hint=|Kopiuj okreúlony w polu adres URL lub pliku
+ActionURLBrowse.Caption=Przeglπdaj...
+ActionURLBrowse.Hint=|Przeglπdanie nazw plikÛw do wstawienia w pole
+
+MnuHtmlCopy.Caption=Kopiuj
+MnuHtmlCopy.Hint=|Kopiuje wybrany tekst
+MnuHtmlEdit.Caption=Edytuj...
+MnuHtmlEdit.Hint=|Edytowanie szablonu HTML
+MnuTlsBrowseHTML.Caption=Przeglπdaj...
+
+ToolbarMenu.Caption=Pasek menu
+ToolbarMain.Caption=Pasek narzÍdziowy
+ToolbarPicture.Caption=Pasek narzÍdziowy obrazkÛw
+ToolbarPictureWindow.Caption=Obrazki
+ToolbarExtrasWindow.Caption=Dodatki
+ToolbarFind.Caption=Znajdü
+
+Listview1.HeaderSections.Item[0].Text=Nr
+Listview1.HeaderSections.Item[1].Text=Tytu≥
+
+MoviePicture.Hint=|Kliknij, aby zobaczyÊ obrazek w naturalnej wielkoúci
+
+ThumbsSizer.Hint=|ZmieÒ rozmiar obrazka
+ThumbsDisplayTitle.Caption=Tytu≥
+ThumbsDisplayTitle.Hint=|Wyúwietlaj tytu≥ filmu
+
+Messages.Strings.String[0]=Jesteú pewien, øe chcesz usunπÊ ten film o nr %s: %s?
+Messages.Strings.String[1]=Jesteú pewien, øe chcesz wrÛciÊ do poprzedniego stanu informacji o tym filmie?
+Messages.Strings.String[2]=%d filmÛw
+Messages.Strings.String[3]=(%d wybranych, %d zaznaczonych, %d widocznych)
+Messages.Strings.String[4]=Aktualny plik zosta≥ zmodyfikowany. Chcesz zapisaÊ zmiany?
+Messages.Strings.String[5]=Nie pytaj ponownie o potwierdzenie zmian
+Messages.Strings.String[6]=Modyfikacja
+Messages.Strings.String[7]=Obrazek
+Messages.Strings.String[8]=Zapisz kopiÍ obrazka do nowego pliku
+Messages.Strings.String[9]=Importowanie %s...
+Messages.Strings.String[10]=Zapisywanie %s...
+Messages.Strings.String[11]=Wczytywanie %s...
+Messages.Strings.String[12]=Wybierz obrazek.
+Messages.Strings.String[13]=Jesteú pewien, øe chcesz usunπÊ ten obrazek z bazy?
+Messages.Strings.String[14]=Nie moøna uøyÊ tego obrazka: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Info dla wybranych plikÛw z
+Messages.Strings.String[17]=Poszukiwanie informacji na %0:s|Poszukaj informacji o filmie na %0:s
+Messages.Strings.String[18]=Nie ostatni plik
+Messages.Strings.String[19]=Ten katalog ma obrazki zapisane w swoim pliku. Øeby zapisaÊ katalog do XML obrazki muszπ byÊ w indywidualnych plikach.|Jeúli chcesz zapisaÊ plik do XML, kliknij "OK", aby wyciπgnπÊ te obrazki lub "Ignoruj", jeúli nie chcesz ich zachowaÊ (zlinkowane obrazki bÍdπ zachowane).|Nazwa obrazka bÍdzie opiera≥a siÍ o wartoúci "Preferencji nazw obrazkÛw" z zak≥adki "Import obrazkÛw" w oknie Preferencji.
+Messages.Strings.String[20]=|Grupuj wg %s
+Messages.Strings.String[21]=< nie zgrupowane >
+Messages.Strings.String[22]=Chcesz usunπÊ z dysku obrazek (%s) wraz z linkiem do niej?
+Messages.Strings.String[23]=Ten film jest aktualnie po≥πczony z obrazkiem. Chcesz zastπpiÊ to po≥πczenie innym obrazkiem i usunπÊ plik (%s) starego obrazka z dysku?
+Messages.Strings.String[24]=Obrazek nie moøe zostaÊ skopiowany do folderu katalogu dopÛki katalog ma nazwÍ; proszÍ zapisaÊ go gdzie indziej i sprÛbowaÊ ponownie.
+Messages.Strings.String[25]=Przechowuj w katalogu jako %s
+Messages.Strings.String[26]=ZewnÍtrzny plik: %s
+Messages.Strings.String[27]=%.0n bajtÛw
+Messages.Strings.String[28]=WczytujÍ podglπd wydruku
+Messages.Strings.String[29]=Szukam drukarek
+Messages.Strings.String[30]=Wybierz plik z odniesienia w polu URL
+Messages.Strings.String[31]=< inne >
+Messages.Strings.String[32]=Wszystko
+Messages.Strings.String[33]=|Sortowanie wg %s
+Messages.Strings.String[34]=Pola filmu
+Messages.Strings.String[35]=Pola niestandardowe
+Messages.Strings.String[36]=Plik "%s" nie istnieje
+Messages.Strings.String[37]=Ten katalog zawiera pola niestandardowe i/lub dodatki. Jeúli zapiszesz katalog do AMC 3.5 pola niestandardowe i/lub dodatki zostanπ utracone. Na pewno chcesz zapisaÊ katalog do AMC 3.5?
+Messages.Strings.String[38]=Pobierz informacje o filmie z pliku...
+Messages.Strings.String[39]=Wybierz oznaczenia o tym samym kolorze|Wybiera tylko takie filmy, ktÛre sπ oznaczone takim samym kolorem
+Messages.Strings.String[40]=Zaznacz z wybranym kolorem oznaczenia|Zaznacza tylko takie filmy, ktÛre sπ oznaczone takim samym kolorem
+Messages.Strings.String[41]=Wszystkie pola
+Messages.Strings.String[42]=Wybrane, aby zastπpiÊ istniejπce w katalogu. Czy chcesz usunπÊ stare, skopiowane obrazki tego katalogu?
+Messages.Strings.String[43]=Kopiuj/Wklej film "%s"
+Messages.Strings.String[44]=Usuwanie starych skopiowanych obrazkÛw...
+Messages.Strings.String[45]=Kopiuj obrazki do podfolderu obrazkÛw
+Messages.Strings.String[46]=Dodatki
+Messages.Strings.String[47]=Ten katalog zawiera dodatki. Jeúli zapiszesz katalog do AMC 4.1 dodatki zostanπ utracone. Na pewno chcesz zapisaÊ katalog do AMC 4.1?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Numer
+Fields.Strings.String[1]=Zaznaczone
+Fields.Strings.String[2]=Kolor oznaczenia
+Fields.Strings.String[3]=Etykieta filmu
+Fields.Strings.String[4]=Rodzaj noúnika
+Fields.Strings.String[5]=èrÛd≥o
+Fields.Strings.String[6]=Data dodania
+Fields.Strings.String[7]=Poøyczajπcy
+Fields.Strings.String[8]=Data obejrzenia
+Fields.Strings.String[9]=Moja ocena
+Fields.Strings.String[10]=Ocena
+Fields.Strings.String[11]=Tytu≥ oryginalny
+Fields.Strings.String[12]=Tytu≥ polski
+Fields.Strings.String[13]=Tytu≥ sformatowany
+Fields.Strings.String[14]=Reøyser
+Fields.Strings.String[15]=Producent
+Fields.Strings.String[16]=Scenariusz
+Fields.Strings.String[17]=Muzyka
+Fields.Strings.String[18]=Obsada
+Fields.Strings.String[19]=Kraj
+Fields.Strings.String[20]=Rok produkcji
+Fields.Strings.String[21]=Czas trwania
+Fields.Strings.String[22]=Gatunek
+Fields.Strings.String[23]=Certyfikacja
+Fields.Strings.String[24]=Strona WWW
+Fields.Strings.String[25]=Opis filmu
+Fields.Strings.String[26]=Komentarze
+Fields.Strings.String[27]=åcieøka pliku
+Fields.Strings.String[28]=Format wideo
+Fields.Strings.String[29]=Bitrate wideo
+Fields.Strings.String[30]=Format audio
+Fields.Strings.String[31]=Bitrate audio
+Fields.Strings.String[32]=RozdzielczoúÊ
+Fields.Strings.String[33]=Klatek/sekundÍ
+Fields.Strings.String[34]=JÍzyk
+Fields.Strings.String[35]=Napisy
+Fields.Strings.String[36]=Rozmiar filmu
+Fields.Strings.String[37]=IloúÊ CD
+Fields.Strings.String[38]=Status obrazka
+Fields.Strings.String[39]=IloúÊ dodatkÛw
+
+ExtraFields.Strings.String[0]=Numer
+ExtraFields.Strings.String[1]=Zaznaczone
+ExtraFields.Strings.String[2]=Tag
+ExtraFields.Strings.String[3]=Tytu≥
+ExtraFields.Strings.String[4]=Kategoria
+ExtraFields.Strings.String[5]=URL
+ExtraFields.Strings.String[6]=Opis
+ExtraFields.Strings.String[7]=Komentarze
+ExtraFields.Strings.String[8]=Utworzony przez
+ExtraFields.Strings.String[9]=Status obrazka
+
+PictureStatus.Strings.String[1]=1 - Obrazek przechowywany w katalogu
+PictureStatus.Strings.String[2]=2 - Obrazek skopiowany do folderu katalogu
+PictureStatus.Strings.String[3]=3 - Obrazek skopiowany do folderu obrazkÛw
+PictureStatus.Strings.String[4]=4 - Obrazek zewnÍtrzny z ≥πczem relatywnym
+PictureStatus.Strings.String[5]=5 - Obrazek zewnÍtrzny z ≥πczem absolutnym
+PictureStatus.Strings.String[6]=6 - Brak obrazka
+
+Media.Strings.String[0]=Etykieta noúnika
+Media.Strings.String[1]=åcieøka pliku
+Media.Strings.String[2]=åcieøka + Nazwa pliku
+Media.Strings.String[3]=åcieøka + Nazwa pliku + Rozszerzenie
+Media.Strings.String[4]=Nazwa pliku
+Media.Strings.String[5]=Nazwa pliku (filtrowana)
+Media.Strings.String[6]=Nazwa pliku + Rozszerzenie
+Media.Strings.String[9]=Rozszerzenie pliku
+Media.Strings.String[7]=Nazwa folderu
+Media.Strings.String[8]=Nazwa folderu (filtrowana)
+Media.Strings.String[10]=Rozszerzenie pliku (bez kropki)
+Media.Strings.String[11]=Rozmiar (Powiπzanie - "650+530")
+Media.Strings.String[12]=Rozmiar (Suma - "1180")
+Media.Strings.String[13]=Dyski
+Media.Strings.String[14]=Obrazek
+Media.Strings.String[15]=Czas trwania
+Media.Strings.String[16]=RozdzielczoúÊ ("szerokoúÊ x wysokoúÊ")
+Media.Strings.String[17]=RozdzielczoúÊ (szerokoúÊ)
+Media.Strings.String[18]=RozdzielczoúÊ (wysokoúÊ)
+Media.Strings.String[19]=Klatki/sekundÍ
+Media.Strings.String[20]=Kodek wideo
+Media.Strings.String[21]=Przep≥ywnoúÊ wideo
+Media.Strings.String[22]=Kodek audio
+Media.Strings.String[23]=Kana≥y audio
+Media.Strings.String[24]=Kodek audio + Kana≥y audio
+Media.Strings.String[25]=Przep≥ywnoúÊ audio
+Media.Strings.String[26]=JÍzyki
+Media.Strings.String[27]=Napisy
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Ostrzeøenie
+Captions.Strings.String[1]=B≥πd
+Captions.Strings.String[2]=Informacja
+Captions.Strings.String[3]=Potwierdzenie
+Captions.Strings.String[4]=&Tak
+Captions.Strings.String[5]=&Nie
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Anuluj
+Captions.Strings.String[8]=&Przerwij
+Captions.Strings.String[9]=&PonÛw
+Captions.Strings.String[10]=&Ignoruj
+Captions.Strings.String[11]=&Wszystko
+Captions.Strings.String[12]=Nie, odwo≥aj
+Captions.Strings.String[13]=Tak, wszystko
+Captions.Strings.String[14]=&Pomoc
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=OK
+btn1.Caption=Anuluj
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=O programie
+btn3.Caption=Zamknij
+btn2.Caption=&Wersje...
+btn1.Caption=&PodziÍkowania
+Messages.Strings.String[0]=%s: wersja %s (utworzona %s)
+Messages.Strings.String[1]=(wciúnij Ctrl+C, jeúli chcesz skopiowaÊ tÍ informacjÍ do schowka)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=WybÛr &numeru filmu
+btn2.Caption=OK
+btn1.Caption=Anuluj
+LEnterNumber.Caption=Wprowadü numer dla filmu:
+btnFindNum.Hint=Znajduje dostÍpny numer|
+grpNotUnique.Caption=Jest juø film o takim numerze...
+grpNotUnique.Items.String[0]=&Akceptuj duplikat
+grpNotUnique.Items.String[1]=&Nadaj inny numer istniejπcemu filmowi
+grpNotUnique.Items.String[2]=&Przesuwaj numer filmu do czasu, aø nie bÍdzie zduplikowany
+CBDoNotAsk.Caption=Nie pytaj ponownie; uøyj automatycznego numerowania
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=OK
+btn1.Caption=Anuluj
+Caption=W≥aúciwoúci katalogu
+LHOwnerInfo.Caption=Informacje o w≥aúcicielu
+LFileName.Caption=Nazwa:
+LFileSize.Caption=WielkoúÊ:
+LFileVersion.Caption=Format:
+LHXMLHeader.Caption=Nag≥Ûwek XML
+LEncoding.Caption=Kodowanie:
+LOwnerName.Caption=Nick:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=WWW:
+LDescription.Caption=Opis:
+EOwnerMail.ButtonHint=Wyúlij maila
+EOwnerSite.ButtonHint=Idü do strony WWW
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Poøyczone
+btn2.Caption=Zamknij
+btn1.Caption=&Pomoc
+
+ActionBorrowerAdd.Caption=Dodaj...
+ActionBorrowerAdd.Hint=Dodaj poøyczajπcego|Dodaje nowego poøyczajπcego do listy
+ActionBorrowerDel.Caption=UsuÒ
+ActionBorrowerDel.Hint=UsuÒ poøyczajπcego|Usuwa wybranego poøyczajπcego z listy
+ActionCheckOut.Caption=Wypoøyczenia
+ActionCheckOut.Hint=Wypoøyczenia|Dodaje wybrany film do listy poøyczajπcego
+ActionCheckIn.Caption=Zwroty
+ActionCheckIn.Hint=Zwroty|Usuwa wybrany film z listy poøyczajπcego
+ActionMovieGetBorrower.Caption=Znajdü u wypoøyczajπcych
+ActionMovieGetBorrower.Hint=Znajdü u wypoøyczajπcych|Znajdü, na liúcie wypoøyczajacych, poøyczajπcego lub wybrany film
+ActionMovieFindNext.Caption=Znajdü nastÍpny
+ActionMovieFindNext.Hint=Znajdü nastÍpny|Znajduje nastÍpny film z tytu≥em zawierajπcym wyszczegÛlniony tekst
+ActionOptions.Caption=&Opcje
+ActionOptions.Hint=Opcje|Opcje wypoøyczeÒ i zwrotÛw
+ActionOptionsIncNum.Caption=Do≥πcz filmy z tym samym &numerem
+ActionOptionsIncNum.Hint=Do≥πcz filmy z tym samym numerem|Do≥πcza do wypoøyczeÒ i zwrotÛw inne filmy, ktÛre majπ ten sam numer, co juø wczeúniej wybrany.
+ActionOptionsIncLab.Caption=Do≥πcz filmy z tπ samπ &etykietπ
+ActionOptionsIncLab.Hint=Do≥πcz filmy z tπ samπ etykietπ|Do≥πcza do wypoøyczeÒ i zwrotÛw inne filmy, ktÛre majπ tπ samπ etykietÍ, co juø wczeúniej wybrany.
+
+LvMovies.HeaderSections.Item[0].Text=Nr
+LvMovies.HeaderSections.Item[1].Text=Etykieta
+LvMovies.HeaderSections.Item[2].Text=Tytu≥
+LvMovies.HeaderSections.Item[3].Text=Poøyczajπcy
+LvNames.HeaderSections.Item[0].Text=Poøyczajπcy
+LvNames.HeaderSections.Item[1].Text=IloúÊ
+LvLent.HeaderSections.Item[0].Text=Nr
+LvLent.HeaderSections.Item[1].Text=Etykieta
+LvLent.HeaderSections.Item[2].Text=Tytu≥
+
+Messages.Strings.String[0]=Zanim usuniesz "%s" z wykazu poøyczajπcych, sprawdü jakie filmy ma wypoøyczone ta osoba.
+Messages.Strings.String[1]=WczytujÍ listÍ...
+Messages.Strings.String[2]=Ten film juø jest wypoøyczony innej osobie
+Messages.Strings.String[3]=ProszÍ wpisaÊ nazwÍ
+Messages.Strings.String[4]=NastÍpujπce filmy wypoøyczone innym osobom:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Wpisz nick
+Messages.Strings.String[7]=Nowy poøyczajπcy
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Eksport pliku do innego formatu
+lvFormat.Columns.Item[0].Caption=Wspierane formaty plikÛw
+Btn3.Caption=Eksportuj...
+Btn2.Caption=Zamknij
+Btn1.Caption=Pomoc
+grpImages.Caption=Obrazki
+CBCopyPictures.Caption=Kopiuj wraz z eksport. plikiem
+CBCopyPictures.Hint=Kopiuje obrazki do tego sam folderu co eksportowany plik
+CBCopyPicturesInPicDir.Caption=Do podfolderu
+CBCopyPicturesInPicDir.Hint=Kopiuje obrazki do podfolderu obrazkÛw
+CBCopyPicturesNew.Caption=Tylko, jeúli nie istniejπ
+CBCopyPicturesNew.Hint=Kopiuje tylko te obrazki, ktÛre nie istniejπ (tzn. stare nie sπ nadpisywane)
+CBCopyPicturesIncExtras.Caption=Do≥πcz dodatki
+CBCopyPicturesIncExtras.Hint=Do≥πcza dodatkowe obrazki
+LSelectFormat.Caption=Wybierz format...
+
+LCSVDelimiter.Caption=Separator pola:
+ECSVDelimiter.Hint=|Znak oddzielajπcy wartoúci pola
+LCSVDelimExtras.Caption=Separator dodatkÛw:
+ECSVDelimExtras.Hint=|Znak oddzielajπcy wartoúci pola dodatkÛw
+LCSVBloc.Caption=Separator bloku tekstu:
+ECSVBloc.Hint=|Znak wokÛ≥ ciπgÛw tekstowych (zostaw puste miejsce, jeúli nie uøywasz)
+LCSVLinebreaks.Caption=Zastπp ≥amanie linii przez:
+ECSVLinebreaks.Hint=|Znak uøywany jako interpretacja ≥amania linii w opisach i komentarzach
+CBCSVColumnTitles.Caption=Dodaj tytu≥y kolumn
+LSQLTableName.Caption=Nazwa tabeli:
+LSQLTableNameExtras.Caption=Nazwa tabeli dodatkÛw:
+CBSQLUpdate.Caption="Aktualizuj" zamiast "Wstaw"
+LSQLCommands.Caption=Polecenie w≥πczenia SQL:
+LSQLLinebreaks.Caption=Zastπp ≥amanie linii przez:
+LOrigonsLink.Caption=Ten format pozwala na umieszczenie Twojego raportu o filmach bezpoúrednio na stronie internetowej Origons.com<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Pola do eksportu:
+FieldsSQL.LSelected.Caption=Pola do eksportu:
+LAMCNote.Caption=Moøesz rÛwnieø wyeksportowaÊ katalog filmÛw (bez opcji eksportu) za pomocπ polecenia w g≥Ûwnym oknie 'Plik -> Zapisz jako' i wybraÊ AMC, jako format pliku. Plik ten moøe byÊ pÛüniej otwierany i uøywany przez Ant Movie Catalog jak normalny katalog.
+LXMLNote.Caption=Moøesz rÛwnieø wyeksportowaÊ katalog filmÛw do XML wybierajπc w g≥Ûwnym oknie polecenie 'Plik -> Zapisz jako' i wybraÊ XML, jako format pliku. Plik ten moøe byÊ pÛüniej otwierany i uøywany przez Ant Movie Catalog jak normalny katalog.
+PictureOperationExportAMC.Grp.Caption=Metoda eksportu obrazkÛw dla filmÛw
+PictureOperationExportXML.Grp.Caption=Metoda eksportu obrazkÛw dla filmÛw
+ExtraPictureOperationExportAMC.Grp.Caption=Metoda eksportu obrazkÛw dla dodatkÛw
+ExtraPictureOperationExportXML.Grp.Caption=Metoda eksportu obrazkÛw dla dodatkÛw
+
+Messages.Strings.String[0]=PorzπdkujÍ listÍ...
+Messages.Strings.String[1]=EksportujÍ do %s...
+Messages.Strings.String[2]=KopiujÍ pliki...
+Messages.Strings.String[3]=Eksport do HTML
+Messages.Strings.String[4]=Eksport do CSV
+Messages.Strings.String[5]=Eksport do SQL
+Messages.Strings.String[6]=Eksport obrazkÛw
+Messages.Strings.String[7]=Eksport pliku do Origons.com
+Messages.Strings.String[8]=Eksport do AMC
+Messages.Strings.String[9]=Eksport do XML
+Messages.Strings.String[10]=Nie moøna wyeksportowaÊ katalogu do tej samej lokalizacji, w ktÛrej znajduje siÍ aktualny katalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Import pliku z innego formatu
+Btn3.Caption=&Importuj...
+Btn2.Caption=Zamknij
+Btn1.Caption=&Pomoc
+lvFormat.Columns.Item[0].Caption=Wspierane formaty plikÛw
+lvFormat.Items.Item[5].Caption=Pliki multimedialne
+Messages.Strings.String[0]=Wyszukiwanie plikÛw multimedialnych...
+Messages.Strings.String[1]=Znaleziono pliki multimedialne:
+Messages.Strings.String[2]=Importowanie informacji o multimediach...
+Messages.Strings.String[3]=Importowanie z %s...
+Messages.Strings.String[4]=NiektÛre pliki lub foldery nie mogπ byÊ przeskanowane poniewaø zawierajπ nieobs≥ugiwane znaki:
+
+[TImportFrame]
+lblLink.Caption=Pozwala na import filmÛw z %s
+grpSettings.Caption=Ustawienia
+chkAllowDup.Caption=Zezwalaj na duplikowanie numerÛw
+chkAllowClear.Caption=Zezwalaj na czyszczenie pola, gdy nowa wartoúÊ jest pusta
+chkAutoAssign.Caption=PrÛbuj przydzieliÊ automatycznie pole kolumny
+lblPictures.Caption=Metody importu obrazkÛw:
+cmbPictures.Items.String[0]=1 - Przechowuj w katalogu
+cmbPictures.Items.String[1]=2 - Kopiuj do folderu katalogu i utwÛrz po≥πczenie wzglÍdne
+cmbPictures.Items.String[2]=3 - Kopiuj do folderu katalogu tylko wtedy, jeúli nie sπ przechowywane
+cmbPictures.Items.String[3]=4 - Kopiuj do folderu obrazkÛw i utwÛrz po≥πczenie wzglÍdne
+cmbPictures.Items.String[4]=5 - Kopiuj do folderu obrazkÛw tylko wtedy, jeúli nie sπ przechowywane
+cmbPictures.Items.String[5]=6 - UtwÛrz ≥πcza absolutne do aktualnych obrazkÛw
+cmbPictures.Items.String[6]=7 - UtwÛrz ≥πcza relatywne do aktualnych obrazkÛw
+LMovie.Caption=Film
+LExtras.Caption=Dodatki
+grpSourceFile.Caption=Plik ürÛd≥owy
+btnBrowse.Hint=Przeglπdaj...|Wybierz plik do importu
+btnReload.Caption=&Prze≥aduj plik
+grpPreview.Caption=Podglπd
+lblPreview.Caption=Kliknij na nag≥Ûwki kolumn, aby przydzieliÊ im pola
+btnFieldsLoad.Hint=Wczytaj pola|Wczytuje ≥πcze pÛl kolumny, ktÛre poprzednio zosta≥o zapisane
+btnFieldsSave.Hint=Zapisz pola|Zapisuje ≥πcze do bieøπcych pÛl kolumny
+btnFieldsAutoLoad.Hint=Prze≥aduj automatycznie pola|Prze≥adowuje automatycznie po≥πczone pole kolumny, ktÛre zosta≥o wczeúniej zapisane
+btnColumnsAutoResize.Hint=ZmieÒ automatycznie rozmiar kolumn|Zmienia automatycznie rozmiar kolumn
+ActionListCheck.Caption=&Zaznacz wybrane
+ActionListCheck.Hint=Zaznacz wybrane|Zaznacza wybrane elementy
+ActionListUncheck.Caption=&Odznacz wybrane
+ActionListUncheck.Hint=Odznacz wybrane|Odznacza wybrane elementy
+ActionListAll.Caption=Zaznacz &ca≥oúÊ
+ActionListAll.Hint=Zaznacz ca≥oúÊ|Zaznacza wszystkie elementy
+ActionListNone.Caption=O&dznacz wszystko
+ActionListNone.Hint=Odznacz wszystko|Odznacza wszystkie elementy
+ActionListCheckExists.Caption=Zaznacz istniejπce filmy
+ActionListCheckExists.Hint=Zaznacz istniejπce filmy|Zaznacza istniejπce filmy w bazie danych
+ActionListUncheckExists.Caption=Odznacz istniejπce filmy
+ActionListUncheckExists.Hint=Odznacz istniejπce filmy|Odznacza istniejπce filmy w bazie danych
+ActionSortAscend.Caption=Sortuj rosnπco
+ActionSortAscend.Hint=Sortuj rosnπco|Sortuje wartoúci kolumn w porzπdku rosnπcym
+ActionSortDescend.Caption=Sortuj malejπco
+ActionSortDescend.Hint=Sortuj malejπco|Sortuje wartoúci kolumn w porzπdku malejπcym
+ActionDefineKeyField.Caption=Definiuj jako pole kluczowe
+ActionDefineKeyField.Hint=|Uøyj tego pola kluczowego do porÛwnania filmÛw
+ActionHeaderNoImport.Caption=Nie importuj tego pola
+MnuMov.Caption=Pola filmu
+MnuMovCF.Caption=Pola niestandardowe
+MnuMovExtras.Caption=Pola dodatkÛw
+Messages.Strings.String[0]=Øaden film nie zosta≥ importowany
+Messages.Strings.String[1]=Nie przydzieli≥eú pola dla jakiejú kolumny. Kliknij na nag≥Ûwki kolumn, aby to sprawdziÊ.
+Messages.Strings.String[2]=Dla tej metody importu obrazka, katalog musi mieÊ nazwÍ; proszÍ zapisaÊ go gdziekolwiek i sprÛbowaÊ ponownie.
+Messages.Strings.String[3]=Wybierz folder:
+Messages.Strings.String[4]=Znaleziono %s film(Ûw)!
+Messages.Strings.String[5]=Dodano %s film(Ûw)!
+Messages.Strings.String[6]=Zaktualizowano %s film(Ûw)!
+Messages.Strings.String[7]=Wartoúci pola kluczowego nie sπ unikalne w bazie danych.|Film z listy moøe pasowaÊ do kilku filmÛw w bazie danych.
+Messages.Strings.String[8]=Aby wykonaÊ tÍ czynnoúÊ, naleøy najpierw wybraÊ pole kluczowe do porÛwnania filmÛw (kliknij na nag≥Ûwek kolumny).
+Messages.Strings.String[9]=Importowanie filmÛw do aktualnego katalogu...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Pierwsza linia zawiera nag≥Ûwki
+lblDelim.Caption=Separator pola:
+edtDelim.Hint=|Znak oddzielajπcy wartoúci pÛl
+lblDelimExtras.Caption=Separator dodatku:
+edtDelimExtras.Hint=|Znak oddzielajπcy wartoúci dodatkÛw dla danego pola
+lblQuote.Caption=Separator bloku tekst.:
+edtQuote.Hint=|Znak wokÛ≥ ciπgÛw tekstowych (zostaw puste miejsce, jeúli nie uøywasz)
+lblLinebreaks.Caption=Znak ≥amania linii:
+edtLinebreaks.Hint=|Znak uøywany jako interpretacja ≥amania linii w opisach i komentarzach
+
+
+[TImportFrameQuery]
+grpQuery.Caption=Zapytaj, czy wykonaÊ
+btnQueryExec.Hint=Wykonaj|Zapytanie
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Folder ürÛd≥owy
+Messages.Strings.String[11]=Przeglπdaj...|Wybierz folder do skanowania
+Messages.Strings.String[12]=&Skanuj folder
+lblExtractProcess.Caption=Proces wyodrÍbniania:
+cmbExtractProcess.Items.String[0]=1 - WyodrÍbnij zaawansowane informacje o mediach podczas skanowania
+cmbExtractProcess.Items.String[1]=2 - WyodrÍbnij tylko zaawansowane informacje o mediach podczas zakaÒczania importu
+cmbExtractProcess.Items.String[2]=3 - Nie wyodrÍbniaj zaawansowanych informacji o mediach
+chkInternalAVI.Caption=Uøyj wewnÍtrznego silnika do importowania AVI (szybciej)
+chkMultiDisks.Caption=Scal informacje z mediÛw w wielu czÍúciach/dyskach
+lblDiskTag.Caption=Oznacz. dysku:
+edtDiskTag.Hint=|Np. wybierz znacznik 'cd' dla nazw 'nazwafilmu.cd1', 'nazwafilmu.cd2',...
+lblBrowseDepth.Caption=Przeglπdaj podfoldery do g≥Íbokoúci:
+edtBrowseDepth.Hint=|0 = brak, * = przeglπdaj wszystkie
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Filtr nazwy pliku
+lblExtVideo.Caption=Rozszerzenia:
+btnDefaultExtVideo.Caption=Domyúlne
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+Caption=Metoda importu
+btn2.Caption=OK
+btn1.Caption=Anuluj
+LMsg1.Caption=Wybrano pole kluczowe do porÛwnania wybranej listy filmÛw z filmami w aktualnym katalogu.
+LMsg2.Caption=BÍdπ importowane wszystkie zaznaczone filmy na liúcie w aktualnym katalogu. Do sprawdzenia, czy filmy nie istniejπ moøna zdefiniowaÊ pola kluczowe. Aby je porÛwnaÊ naleøy kliknπÊ na nag≥Ûwku kolumny na liúcie.
+grpImportMethod.Caption=Co chcesz zrobiÊ?
+grpImportMethod.Items.String[0]=Importuj wszystkie filmy
+grpImportMethod.Items.String[1]=Importuj tylko nowe filmy
+grpImportMethod.Items.String[2]=Aktualizuj tylko istniejπce filmy
+grpImportMethod.Items.String[3]=Importuj nowe filmy i aktualizuj istniejπce filmy
+chkImportExtrasNew.Caption=Importuj wszystkie dodatki dla nowych filmÛw
+chkImportExtras.Caption=Importuj wszystkie dodatki do istniejπcych filmÛw
+chkDeleteExtras.Caption=UsuÒ wszystkie dodatki istniejπce w filmach przed dodaniem nowych
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Preferencje
+Btn3.Caption=&Zapisz
+Btn2.Caption=Anuluj
+Btn1.Caption=&Pomoc
+
+LvCat.Items.Item[0].Text=Opcje ogÛlne
+LHToolbar.Caption=Menu i Pasek narzÍdziowy
+LIconSet.Caption=Zestaw ikon:
+LColorType.Caption=Schemat kolorowania:
+cbxColorType.Items.String[0]=Automatyczny
+cbxColorType.Items.String[1]=Szare, gdy nieaktywne
+cbxColorType.Items.String[2]=Jasne, gdy nieaktywne
+cbxColorType.Items.String[3]=Ciemne, gdy nieaktywne
+cbxColorType.Items.String[4]=Zawsze widoczne (kolorowanie wy≥πczone)
+CBOfficeXP.Caption=Styl Office XP
+CBMenuImages.Caption=Ikony w menu
+LHMainWindow.Caption=Opcje ogÛlne
+CBSoftBorders.Caption=Ma≥e obramowanie dla listy filmÛw, panelu informacji o filmie i okna ok≥adek
+CBNatCmp.Caption=Uøyj naturalnego porÛwnania (autowykrywanie numerÛw) do sortowania ciπgÛw znakÛw
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+CBAutoFocus.Caption=Uaktywnij skupianie siÍ na liúcie filmÛw, dodatkÛw i przeglπdarce html
+CBAutoFocus.Hint=|Uaktywnia skupianie siÍ na komponencie, gdy wskaünik myszy jest nad nim przesuwany
+CBForceRefresh.Caption=Wymuú odúwieøanie listy filmÛw po kaødej zmianie wartoúci pola
+CBForceRefresh.Hint=|Domyúlnie, naciúnij Enter lub Esc w polu filmu, aby odúwieøyÊ listÍ
+LHStartup.Caption=Podczas uruchamiania
+CBLogo.Caption=Pokazuj logo powitalne
+
+LvCat.Items.Item[1].Text=Ikony Paska narzÍdzi
+LHCustomizeToolbar.Caption=Wybierz ikony, ktÛre chcesz dodaÊ na Pasek narzÍdzi
+
+LvCat.Items.Item[2].Text=Pliki
+LHSaving.Caption=Katalogi
+CBBackup.Caption=Zawsze twÛrz kopiÍ zapasowπ
+CBAutoLoad.Caption=Podczas startu automatycznie otwieraj g≥Ûwny plik i nie twÛrz pliku tymczasowego:
+EAutoLoad.ButtonHint=Przeglπdaj...|Wybierz plik
+CBAutoLoadLast.Caption=Ponowne uruchomienie - otwieraj ostatnio uøywany plik
+CBAutoLoadCF.Caption=Automatycznie importuj niestandardowe pola z poniøszego pliku do nowego katalogu:
+EAutoLoadCF.ButtonHint=Przeglπdaj...|Wybierz plik
+LRecentFiles.Caption=Pokaø w menu liczbÍ ostatnio otwieranych plikÛw:
+LRepairAssociations.Caption=Aby skojarzyÊ pliki z rozszerzeniem .amc z Ant Movie Catalog, kliknij na poniøszy przycisk:
+BtnRepairAssoc.Caption=Skojarz rozszerzenie z AMC
+LHHistory.Caption=Historia wypoøyczeÒ
+CBHistory.Caption=Historia wypoøyczeÒ w nastÍpujπcym pliku (uøyj formatu tab-delimited):
+EHistoryFile.ButtonHint=Przeglπdaj...|Wybierz plik
+LHHTMLTemplate.Caption=Szablon HTML
+EHTMLTemplate.ButtonHint=Przeglπdaj...|Wybierz plik
+
+LvCat.Items.Item[3].Text=Lista filmÛw
+LHDisplay.Caption=Pokaø
+CBCheckboxes.Caption=Pola wyboru (klikajπc PPM moøesz zmieniaÊ kolor oznaczenia filmu)
+CBCheckboxesInThumbs.Caption=Pola wyboru wyúwietlania miniatur
+CBCheckboxesColor.Caption=Skojarz kolor t≥a pÛl wyboru z kolorem oznaczenia filmu
+CBLinesColor.Caption=Skojarz kolor t≥a linii z kolorem oznaczenia filmu
+CBHotTrack.Caption="Gorπca úcieøka" = åledzenie kursora
+CBEnhScrollbars.Caption=Wzbogacony pasek przewijania
+CBMovieNumColumn.Caption=Kolumna "Numer filmu"
+LGridTextSize.Caption=ZnakÛw w poszczegÛlnych sekcjach w trybie tabeli (0 = bez limitu):
+LGridTextSize.Hint=|Nie dotyczy kolumn FormatedTitle, OriginalTitle i TranslatedTitle
+CBAutoStretchListGrid.Caption=Automatycznie rozwijaj listÍ w trybie tabeli
+CBAutoStretchListThumbs.Caption=Automatycznie rozwijaj listÍ w widoku miniatur
+LHOperations.Caption=Operacje
+CBDelete.Caption=Potwierdzaj usuwanie
+CBUndo.Caption=Potwierdzaj cofanie zmian
+LHShortcut.Caption=SkrÛty klawiaturowe
+LShortcutPrev.Caption=Poprzedni film
+LShortcutNext.Caption=NastÍpny film
+
+LvCat.Items.Item[4].Text=Formatowanie tytu≥u
+LHFormatting.Caption=Formatowanie
+LTitleColumn.Caption=Pokaø tytu≥:
+cbxTitle.Items.String[0]=Tytu≥ oryginalny
+cbxTitle.Items.String[1]=Tytu≥ polski
+cbxTitle.Items.String[2]=Tytu≥ oryginalny (Tytu≥ polski)
+cbxTitle.Items.String[3]=Tytu≥ polski (Tytu≥ oryginalny)
+cbxTitle.Items.String[4]=Etykieta filmu
+cbxTitle.Items.String[5]=Tytu≥ niestandardowy
+LTitleTemplate.Caption=Szablon tytu≥u:
+BtnInsertFieldTag.Hint=|Wstaw specjalnπ wartoúÊ, ktÛrπ zostanπ zastπpione wartoúci filmu
+CBPrefixes.Caption=NastÍpujπce prefiksy na koÒcu tytu≥u:
+LPrefixes1.Caption=W tytule bÍdπ rozpoznane tylko te s≥owa, po ktÛrych nastπpi odstÍp lub cudzys≥Ûw.
+LPrefixes2.Caption=Wprowadzajπc prefiks na listÍ, wpisz kaødy w oddzielnej linii, bez spacji i cudzys≥owu.
+
+LvCat.Items.Item[5].Text=Grupowanie
+LHGrouping.Caption=Grupy
+CBGroupCount.Caption=Pokaø iloúÊ w grupie
+CBGroupExpand.Caption=Pe≥ne rozwiniÍcie kaødej grupy
+CBGroupMulti.Caption=Dodaj separator do grupy z polami o wielu wartoúciach:
+CBGroupMulti.Hint=|Dla wielu grup, takich jak Gatunek, Obsada, JÍzyki, Napisy...
+EGroupMultiSep.Hint=|Separator rozdzielajacy rÛøne wartoúci w polach o wielu wartoúciach
+CBGroupMultiRmAllP.Caption=UsuÒ wartoúci w nawiasach w polach o wielu wartoúciach
+CBGroupMultiRmAllP.Hint=|Domyúlne pole aktora + Inne pola z wielokrotnπ wartoúciπ
+CBGroupMultiAddPatch.Caption=Dodaj poprawkÍ do ignorowania wartoúci w nawiasach (I, (II (II (IV... (XXX
+CBSortGroupsByCount.Caption=Sortuj grupy wed≥ug iloúci filmÛw w grupie
+LHCommonGroups.Caption=WspÛlne grupy
+lblGroupLocation.Caption=Rozmieszczenie:
+RBGroupsAbove.Caption=Bez grupy powyøej grup wspÛlnych
+RBGroupsBelow.Caption=Bez grupy poniøej grup wspÛlnych
+CBGroupUnique.Caption=UmieúÊ w specjalnej grupie elementy, ktÛre by≥yby pojedyncze w swojej grupie
+
+LvCat.Items.Item[6].Text=Lista dodatkÛw
+LHExtraDisplay.Caption=Wyúwietlanie
+CBExtraCheckboxes.Caption=Pola wyboru
+CBExtraNumWithTitle.Caption=Pokaø numer dodatku z tytu≥em dodatku
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+CBExtraDelete.Caption=Potwierdzaj usuwanie
+LHExtraGrouping.Caption=Grupy
+CBExtraGroupCount.Caption=Wyúwietlaj iloúÊ w grupie
+CBExtraGroupExpand.Caption=Domyúlnie pe≥ne rozwiniÍcie kaødej grupy
+CBExtraGroupMulti.Caption=TwÛrz grupy z polami o wielu wartoúciach oddzielone:
+CBExtraGroupMulti.Hint=|Dla kategorii z wieloma polami
+EExtraGroupMultiSep.Hint=|Separator rozdzielajacy rÛøne wartoúci w polach o wielu wartoúciach
+CBExtraGroupMultiRmAllP.Caption=UsuÒ wartoúci w nawiasach w polach o wielu wartoúciach
+CBExtraSortGroupsByCount.Caption=Sortuj grupy wed≥ug iloúci w grupie
+LHExtraCommonGroups.Caption=WspÛlne grupy
+lblExtraGroupLocation.Caption=Rozmieszczenie:
+RBExtraGroupsAbove.Caption=Bez grupy powyøej grup wspÛlnych
+RBExtraGroupsBelow.Caption=Bez grupy poniøej grup wspÛlnych
+
+LvCat.Items.Item[7].Text=Film / Dodatkowe informacje
+LHAddMovie.Caption=Dodawanie nowego filmu
+CBAskNumber.Caption=Pytaj o numer
+CBFirstAvailable.Caption=Uøyj pierwszego dostÍpnego numeru zamiast najwyøszego + 1
+CBAddOpenScript.Caption=OtwÛrz okno "Pobierz informacje ze skryptu"
+CBAddOpenFiles.Caption=OtwÛrz okno "Pobierz informacje z plikÛw"
+LDefaultValues.Caption=Aby zmodyfikowaÊ wartoúci domyúlne nowego filmu, kliknij na przycisk poniøej:
+BtnDefaultValues.Caption=Edycja domyúlnych wartoúci filmu...
+CBSetCurrentDate.Caption=Wype≥nij pole "Data dodania" z aktualnπ datπ zamiast okreúlonej daty
+CBChecked.Caption=Zaznaczone
+LColorTag.Caption=Kolor oznacz.:
+LDefaultPicture.Caption=Domyúlny obrazek:
+EDefaultPicture.ButtonHint=Przeglπdaj...|Wybierz obrazek
+LHAddExtra.Caption=Dodawanie nowego dodatku
+BtnExtraDefaultValues.Caption=Edycja domyúlnych wartoúci dodatkÛw...
+CBExtraChecked.Caption=Zaznaczone
+LExtraDefaultPicture.Caption=Domyúlny obrazek dodatku:
+EExtraDefaultPicture.ButtonHint=Przeglπdaj...|Wybierz obrazek
+LHRating.Caption=Ocena
+CBRatingTrunc.Caption=Nie pokazuj u≥amkÛw dziesiÍtnych w oknach: g≥Ûwnym, eksportu i wydruku
+LHPictureWindow.Caption=Obrazek
+LPictureBackground.Caption=Kolor t≥a:
+CBFitPicture.Caption=Dopasuj obrazek do okna
+CBShowPicInfo.Caption=Pokaø rozmiar obrazka, format oraz úcieøkÍ dostÍpu w oknie pe≥nowymiarowego podglπdu
+LHMovieFrame.Caption=Obramowanie pÛl filmu
+LMovieFrameBackground.Caption=Kolor t≥a:
+
+LvCat.Items.Item[8].Text=Listy rozwijane
+LHComboBoxItems.Caption=Elementy
+CBComboSameForAll.Caption=Te same opcje dla wszystkich list (nie oddzia≥ywuje na listÍ zawartoúci)
+LListOptions.Caption=Opcje listy:
+CBComboSort.Caption=Automatyczne sortowanie elementÛw
+CBComboAutoComplete.Caption=Automatyczne uzupe≥nianie podczas wpisywania
+CBComboCatalogValues.Caption=Uøyj wartoúci aktualnego katalogu zamiast pierwotnie zdefiniowanej listy
+CBComboAutoAdd.Caption=Automatycznie dodawaj wartoúci, ktÛre nie wystÍpujπ na listach
+LListEdit.Caption=Edytuj elementy:
+
+LvCat.Items.Item[9].Text=Import plikÛw mulimedialnych
+LHVideoDragDrop.Caption=Przeciπgnij && UpuúÊ / Pobierz  informacje o filmie z pliku
+CBDNDMediaLabel.Caption=Importuj etykietÍ p≥yty
+CBDNDFileName.Caption=Importuj nazwÍ pliku jako tytu≥
+btnFilterFileName.Caption=Filtruj nazwÍ pliku
+CBDNDFileNameFilePath.Caption=Importuj pe≥nπ úcieøkÍ do pola "åcieøka pliku"
+CBDNDFileNameURL.Caption=Importuj pe≥nπ úcieøkÍ do pola URL
+CBDNDSize.Caption=Importuj rozmiar:
+RBDNDString.Caption=RÛb powiπzanie, np. "650+530"
+RBDNDSum.Caption=Sumuj rozmiar, np. "1180"
+LDNDSizeUnit.Caption=Jednostki:
+cbxDNDSizeUnit.Items.String[0]=Bajty
+cbxDNDSizeUnit.Items.String[1]=Kilobajty (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabajty (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabajty (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Importuj czas trwania
+CBDNDAllowClear.Caption=Zezwalaj na wyczyszczenie pÛl, gdy nowa wartoúÊ jest pusta
+CBDNDInternalAVI.Caption=Uøyj wewnÍtrznego silnika MediaInfo DLL do importu AVI (szybciej)
+LExtVideo.Caption=Rozszerzenia:
+btnDefaultExtVideo.Caption=Domyúlne
+LHGetInfoVideo.Caption=Pobierz informacje ze strumienia wideo
+CBDNDResolution.Caption=Importuj rozdzielczoúÊ
+CBDNDFramerate.Caption=Importuj iloúÊ klatek/sek.
+CBDNDVideoCodec.Caption=Importuj kodek wideo
+CBDNDVideoBitrate.Caption=Importuj przep≥ywnoúÊ wideo
+LHGetInfoAudio.Caption=Pobierz informacje ze strumieni audio
+CBDNDAudioCodec.Caption=Importuj kodek audio
+CBDNDAudioChannels.Caption=Importuj kana≥y audio
+CBDNDAudioBitrate.Caption=Importuj przep≥ywnoúÊ audio
+CBDNDLanguages.Caption=Importuj jÍzyki
+CBDNDSubtitles.Caption=Importuj napisy
+
+LvCat.Items.Item[10].Text=Import obrazkÛw
+LHImportPic.Caption=Import obrazkÛw z zewnÍtrznych ürÛde≥ 
+RBPicImport.Caption=Dla filmÛw
+RBExtraPicImport.Caption=Dla dodatkÛw
+PicImportGetInfo.grp.Caption=Przeciπgnij && UpuúÊ / Pobierz  informacje z pliku
+CBPicImportGetInfoNoAsk.Caption=Nie pytaj o metodÍ importu obrazka; zawsze uøywaj powyøszej opcji
+PicImportScripting.grp.Caption=Z Internetu za pomocπ skryptu
+CBPicConvert.Caption=Konwertuj obrazek do JPG i zmieÒ jego rozmiar, gdy jest przechowywany lub kopiowany
+LMaxPicSizeW.Caption=maks. szer.=
+LMaxPicSizeH.Caption=maks. wys.=
+LMaxPicSizeUnit.Caption=w pikselach
+EMaxPicSizeW.Hint=|Pozostaw puste, jeúli nie chcesz okreúlaÊ maksymalnej szerokoúci
+EMaxPicSizeH.Hint=|Pozostaw puste, jeúli nie chcesz okreúlaÊ maksymalnej wysokoúci
+LPicCopyNote.Caption=Uwaga: gdy obrazek jest przechowywany w tym samym folderze co katalog lub w folderze obrazkÛw katalogu, to zostanie usuniÍty, jeúli nie jest juø wykorzystywany w katalogu.
+PicNamingFrame.grp.Caption=Nazywanie obrazka
+LPicNamingNote.Caption=Uwaga: jeúli nazwa obrazka bÍdzie juø zajÍta przez inny film, to zostanie wygenerowana przypadkowa nazwa. Gdy nie ma øadnej oryginalnej nazwy (np. podczas zmiany pliku z formatu .amc do .xml), zostanie uøyty tytu≥ filmu.
+
+LvCat.Items.Item[11].Text=Szukaj w Internecie
+LHSearch.Caption=Szukaj w Internecie
+LSearchEdit.Caption=Edytuj wybranπ pozycjÍ:
+btnSearchAdd.Hint=Dodaj|Dodaje nowπ pozycjÍ ponad wybranπ pozycjπ
+btnSearchDel.Hint=UsuÒ|Usuwa wybranπ pozycjÍ
+btnSearchUp.Hint=W gÛrÍ|Przesuwa wybranπ pozycjÍ do gÛry
+btnSearchDown.Hint=W dÛ≥|Przesuwa wybranπ pozycjÍ w dÛ≥
+LSearchNotes.Caption=Uwaga:
+LSearchNote1.Caption=- Nazwa strony musi byÊ unikalna
+LSearchNote2.Caption=- W adresie URL wpisuj tag %s tam, gdzie program musi byÊ tytu≥ filmu
+LSearchNote3.Caption=- Wstaw separator "-" z kolejnπ cyfrπ, jeúli chcesz rozgraniczyÊ adresy URL
+
+LvCat.Items.Item[12].Text=Skrypty
+LHScript.Caption=Ustawienia skryptÛw
+CBAutorunScript.Caption=Automatycznie uruchom ostatnio uøyty skrypt w "Pobierz informacje ze skryptu"
+LScriptPicImport.Caption=Do ustawienia preferencji importu obrazkÛw wejdü na zak≥adkÍ <LINK>Import obrazkÛw</LINK>
+LHConnection.Caption=Po≥πczenie Internetowe
+CBProxy.Caption=Uøyj proxy podczas po≥πczenia z Internetem:
+LProxyServer.Caption=Serwer:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Login:
+LProxyPassword.Caption=Has≥o:
+CBKeepConnection.Caption=Utrzymuj po≥πczenie
+CBHTTP10.Caption=Ogranicz do HTTP 1.0 (wymagane przez niektÛre serwery proxy)
+
+LvCat.Items.Item[13].Text=Eksport
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Automatycznie wczytuj ostatnio uøywany szablon
+LLineBreaks.Caption=£amanie linii zostanie zastπpione nastÍpujπcym tagiem:
+ELineBreaks.Hint=|Zostaw to pole puste, jeúli nie chcesz zmieniaÊ ≥amania linii
+LForcePicSize.Caption=Wymuú rozmiar obrazka dodajπc atrybuty:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Zostaw puste, jeúli nie chcesz wymusiÊ szerokoúci
+EForcePicSizeH.Hint=|Zostaw puste, jeúli nie chcesz wymusiÊ wysokoúci
+LForceExtraPicSize.Caption=Wymuú rozmiar dodatk. obrazka dodajπc atrybuty:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+EForceExtraPicSizeW.Hint=|Pozostaw puste, jeúli nie chcesz wymusiÊ wartoúci szerokoúci
+EForceExtraPicSizeH.Hint=|Pozostaw puste, jeúli nie chcesz wymusiÊ wartoúci wysokoúci
+LHSQL.Caption=SQL
+LSQLDate.Caption=Format daty (znaki specjalne miÍdzy znakami cudzys≥owu):
+ESQLDate.Hint=|Zostaw puste, jeúli domyúlne Windows
+LHExportFileNames.Caption=Nazwa pliku
+CBLastFileName.Caption=PamiÍtaj nazwÍ ostatnio eksportowanego pliku
+CBOpenExportedFile.Caption=OtwÛrz eksportowany plik po zakoÒczeniu eksportu
+ExpFileNamingFrame.grp.Caption=Indywidualny styl nazw plikÛw stron i obrazkÛw
+LExpFileExt.Caption=Dodaj rozszerz. pliku:
+EExpFileExt.Hint=|Zostaw puste, aby uøyÊ tego samego rozszerzenia nazwy pliku, jak eksportowany plik g≥Ûwnego zbioru
+LHPictures.Caption=Obrazki
+CBCopyPictures.Caption=Kopiuj obrazki do tego samego folderu, co eksportowany plik
+CBCopyPicturesInPicDir.Caption=Kopiuj obrazki do podfolderu obrazkÛw
+CBCopyPicturesNew.Caption=Kopiuj tylko w przypadku, gdy plik docelowy nie istnieje
+CBCopyPicturesIncExtras.Caption=Do≥πcz obrazki dodatkÛw
+
+LvCat.Items.Item[14].Text=Foldery
+LHFoldersDialogs.Caption=Pola dialogowe
+LFolderToUse.Caption=Uøywaj folderu
+cbxWindow.Items.String[0]=Wczytaj/zapisz katalog
+cbxWindow.Items.String[1]=Wczytaj obrazek filmu
+cbxWindow.Items.String[2]=Eksportuj
+cbxWindow.Items.String[3]=Wczytaj/zapisz szablon
+cbxWindow.Items.String[4]=Importuj
+cbxWindow.Items.String[5]=Pobierz informacje z pliku
+cbxWindow.Items.String[6]=Zapisz obrazki
+cbxWindow.Items.String[7]=Wczytaj/zapisz skrypt
+cbxWindow.Items.String[8]=Wczytaj/zapisz pola niestandaedowe
+cbxWindow.Items.String[9]=Wczytaj/zapisz filtry
+RBFolderDefault.Caption=Domyúlny Windows (efekt zaleøny od wersji Windows)
+RBFolderRemember.Caption=PamiÍtaj ostatnio uøywany folder
+RBFolderSpecified.Caption=Uøywaj tego folderu:
+EFolderSpecified.ButtonHint=Przeglπdaj...|Wybierz folder
+CBSameForAll.Caption=Te same opcje dla wszystkich okien
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Edytuj domyúlne wartoúci filmu
+Btn3.Caption=Domyúlne
+Btn3.Hint=|PrzywrÛÊ domyúlne wartoúci
+Btn2.Caption=OK
+Btn1.Caption=Anuluj
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+Caption=Edytuj domyúlne wartoúci dodatkÛw
+Btn3.Caption=Domyúlne
+Btn3.Hint=|PrzywrÛÊ domyúlne wartoúci
+Btn2.Caption=OK
+Btn1.Caption=Anuluj
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Wybierz jÍzyk
+Btn2.Caption=OK
+Btn1.Caption=Anuluj
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Nazwa
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Nazwa lokalizacji
+LanguageFrame.lblVersion.Caption=Wersja:
+LanguageFrame.lblMadeBy.Caption=T≥umaczenie:
+LanguageFrame.lblComments.Caption=Komentarze:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Zaawansowane opcje sortowania
+Fields.LSelected.Caption=Pola do uøycia podczas &sortowania:
+BtnSortOrder.Hint=OdwrÛÊ porzπdek sortowania|Odwraca porzπdek sortowania wybranych pÛl
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Statystyki
+btn1.Caption=Zamknij
+ActionSaveAs.Caption=Zapisz jako...
+ActionSaveAs.Hint=Zapisz jako...|Zapisuje wykres do pliku
+ActionCopy.Caption=Kopiuj
+ActionCopy.Hint=Kopiuj|Kopiuje wykres do schowka
+ActionCopyWMF.Caption=Jako metaplik
+ActionCopyWMF.Hint=Kopiuj jako metaplik|Kopiuje wykres do schowka jako metaplik (skalowalny)
+ActionCopyBMP.Caption=Jako bitmapÍ
+ActionCopyBMP.Hint=Kopiuj jako bitmapÍ|Kopiuje wykres do schowka jako bitmapÍ
+ActionOptions.Caption=&Opcje
+ActionOptions.Hint=Opcje|Zmiana opcji wykresu
+ActionOptionsLegend.Caption=Legenda
+ActionOptionsLegend.Hint=Pokaø legendÍ|Pokazuje legendÍ z prawej strony wykresu
+ActionOptionsLabels.Caption=Etykiety
+ActionOptionsLabels.Hint=Pokaø etykiety|Pokazuje etykiety na wykresie
+ActionOptionsEmpty.Caption=Wolne miesiπce
+ActionOptionsEmpty.Hint=Pokaø wolne miesiπce|Pokazuje na wykresie miesiπce, w ktÛrych nie dodano filmÛw do katalogu
+ActionOptionsGroup.Caption=Grupuj wartoúci
+ActionOptionsGroup.Hint=Grupuj wartoúci|S≥upkowy: Grupuje wartoúci w przedzia≥ach; Ko≥owy: grupuje razem mniejsze wartoúci
+Messages.Strings.String[0]=%.1f minut
+Messages.Strings.String[1]=< brak >
+Messages.Strings.String[2]=Zapisz wykres
+Messages.Strings.String[3]=%d dni %d godzin %d minut
+Messages.Strings.String[4]=< inne >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Ca≥kowita liczba filmÛw
+lstGeneral.Items.Item[1].Caption=åredni czas trwania filmu
+lstGeneral.Items.Item[2].Caption=Czas trwania wszystkich filmÛw
+lstGeneral.Items.Item[3].Caption=Ca≥kowity rozmiar wszystkich plikÛw filmowych
+lstGeneral.Items.Item[4].Caption=Ca≥kowita iloúÊ p≥yt
+lstCategories.Items.String[0]=Informacje ogÛlne
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Skrypty
+btn2.Caption=&Zamknij
+btn1.Caption=&Pomoc
+ActionFileNew.Caption=Nowy
+ActionFileNew.Hint=Nowy|UtwÛrz nowy skrypt
+ActionFileOpen.Caption=OtwÛrz...
+ActionFileOpen.Hint=OtwÛrz...|OtwÛrz skrypt
+ActionFileNoRecent.Caption=Nie ostatni plik
+ActionFileSave.Caption=Zapisz
+ActionFileSave.Hint=Zapisz|Zapisuje aktualny skrypt
+ActionFileSaveAs.Caption=Zapisz jako...
+ActionFileSaveAs.Hint=Zapisz jako...|Zapisuje aktualny skrypt pod innπ nazwπ
+ActionFileProperties.Caption=W≥aúciwoúci...
+ActionFileProperties.Hint=W≥aúciwoúci i opcje...|Edycja w≥aúciwoúci i opcji skryptu
+ActionDebugRun.Caption=Uruchom
+ActionDebugRun.Hint=Uruchom skrypt|Uruchamia wybrany skrypt
+ActionDebugStop.Caption=Zatrzymaj
+ActionDebugStop.Hint=Zatrzymaj skrypt|Zatrzymuje wykonanie skryptu
+ActionDebugBreakpoint.Caption=Punkt przerwania
+ActionDebugBreakpoint.Hint=Prze≥πcznik punktu przerwania|W≥πcza lub wy≥πcza punkt przerwania w bieøπcej linii
+ActionDebugBreakpointClear.Caption=CzyúÊ punkty przerwania
+ActionDebugBreakpointClear.Hint=CzyúÊ punkty przerwania|Usuwa wszystkie punkty przerwania
+ActionDebugStep.Caption=Krok dalej
+ActionDebugStep.Hint=Krok dalej|Uruchamia nastÍpnπ liniÍ kodu ürÛd≥owego
+ActionDebugRunToCursor.Caption=Uruchom do kursora
+ActionDebugRunToCursor.Hint=Uruchom do kursora|Uruchamia skrypt, aø do aktualnej pozycji kursora
+ActionDebugEval.Caption=Analizuj...
+ActionDebugEval.Hint=Analizuj zmienne...|Pokazuje zawartoúÊ wybranej zmiennej
+ActionDebugWatchAdd.Caption=Dodaj úledzenie
+ActionDebugWatchAdd.Hint=Dodaj úledzenie zmiennej|Dodaje wybranπ zmiennπ do listy úledzenia
+ActionDebugWatchRemove.Caption=UsuÒ
+ActionDebugWatchRemove.Hint=UsuÒ úledzenie zmiennej|Usuwa wybranπ zmiennπ z listy úledzenia
+ActionDebugWatchClear.Caption=CzyúÊ listÍ
+ActionDebugWatchClear.Hint=CzyúÊ listÍ úledzenia zmiennych|Usuwa wszystkie zmienne z listy úledzenia
+ActionListCheck.Caption=&Zaznacz wybrany
+ActionListCheck.Hint=Zaznacz wybrany|Zaznacza wybrany element
+ActionListUncheck.Caption=&Odznacz wybrany
+ActionListUncheck.Hint=Odznacz wybrany|Odznacza wybrany element
+ActionListAll.Caption=Zaznacz &wszystko
+ActionListAll.Hint=Zaznacz wszystko|Zaznacza wszystkie elementy
+ActionListNone.Caption=&Odznacz wszystko
+ActionListNone.Hint=Odznacz wszystko|Odznacza wszystkie elementy
+ActionDisplayScripts.Caption=Skrypty
+ActionDisplayScripts.Hint=WybÛr skryptu|Pokazuje dostÍpne skrypty
+ActionDisplayEditor.Caption=Edytor
+ActionDisplayEditor.Hint=Edytor skryptu|Pokazuje edytor skryptÛw
+ActionViewFilter.Caption=&Filtr jÍzykowy
+ActionViewFilter.Hint=Filtr jÍzykowy|Filtr, ktÛry pozwala na ukrycie skryptÛw pobierajπcych informacje w wyszczegÛlnionych jÍzykach
+ActionViewList.Caption=Lista
+ActionViewList.Hint=Podglπd listy|Pokazuje skrypty jako listÍ
+ActionViewDetailed.Caption=SzczegÛ≥owo
+ActionViewDetailed.Hint=Podglπd szczegÛ≥owy|Pokazuje skrypty w dwÛch kolumnach (opis skryptu w drugiej kolumnie)
+ActionOptionsEdit.Caption=ZmieÒ...
+ActionOptionsEdit.Hint=ZmieÒ wartoúÊ...|Zmienia wartoúÊ wybranej opcji
+ActionOptionsDefault.Caption=Domyúlne wartoúci
+ActionOptionsDefault.Hint=Domyúlne wartoúci|Przywracja domyúlne wartoúci opcji
+lstScripts.Hint=|Wybierz skrypt i kliknij na "Uruchom" lub kliknij podwÛjnie na nazwie skryptu, albo wciúnij F9 lub Enter.
+lstScripts.Columns.Item[0].Caption=Tytu≥
+lstScripts.Columns.Item[1].Caption=Opis
+ActionEditUndo.Caption=&Cofnij
+ActionEditCut.Caption=Wy&tnij
+ActionEditCopy.Caption=&Kopiuj
+ActionEditPaste.Caption=&Wklej
+ActionEditDelete.Caption=&UsuÒ
+ActionEditSelectAll.Caption=Wybierz &wszystko
+ActionEditFind.Caption=Znajdü...
+ActionEditfind.Hint=Znajdü|Znajduje ciπg znakÛw w tekúcie
+ActionEditFindNext.Caption=Znajdü nastÍpny
+ActionEditFindNext.Hint=Znajdü nastÍpny|Znajduje nastÍpny zgodny ciπg znakÛw w tekúcie
+DockpanelExec.Caption=Opcje wykonania
+CBShowResults.Caption=Pokaø okno &rezultatÛw
+CBShowResults.Hint=Pokazuje stare i nowe wartoúci pÛl dla filmu. Moøesz wybraÊ, ktÛre pola chcesz utrzymaÊ.
+CBCloseThis.Caption=Zamknij po &zakoÒczeniu
+CBCloseThis.Hint=Zamkyka okno po pomyúlnym zakoÒczeniu wykonania skryptu
+CBAllowClear.Caption=&UwzglÍdnij puste pola
+CBAllowClear.Hint=Dopusza zastπpienie w skrypcie pe≥nych wartoúci przez puste wartoúci, jeúli skrypt to wyszczegÛlnia
+DockpanelOptions.Caption=Opcje skryptu
+DockpanelOptions.Hint=|W celu dokonania zmiany, kliknij podwÛjnie na opcjÍ. Uwaga: opcje sπ tylko wtedy zapisywane, gdy skrypt zostanie uruchomiony.
+DockpanelParameters.Caption=Parametry skryptu
+DockpanelParameters.Hint=|Dwuklik zmienia parametr. Uwaga: parametry sπ zapisywane tylko podczas wykonywania skryptu.
+DockpanelLimitations.Caption=Ograniczenia skryptu
+grpLimitFields.Caption=Pola do modyfikacji
+lstLimitFields.Hint=|Uwaga: wybrane pola sπ zapisywane tylko wtedy, gdy skrypt zostanie uruchomiony.
+grpScriptInfo.Caption=Informacje
+tabScriptInfo.Tabs.String[0]=OgÛlne
+tabScriptInfo.Tabs.String[1]=Komentarze
+tabScriptInfo.Tabs.String[2]=Licencja
+DockpanelWatch.Caption=Lista úledzenia
+
+Messages.Strings.String[0]=B≥πd skryptu "%s" : %s w linii %d
+Messages.Strings.String[1]=Bieøπcy skrypt zosta≥ zmodyfikowany. Czy chcesz zapisaÊ zmiany?
+Messages.Strings.String[2]=nieznany
+Messages.Strings.String[3]=Zgadzam siÍ
+Messages.Strings.String[4]=Nie odnaleziono øadnego filmu dla aktualnych ograniczonych ustawieÒ skryptu (%s: %s)
+Messages.Strings.String[5]=Chcesz przerwaÊ proces uruchamiania pliku wsadowego skryptu?
+Messages.Strings.String[6]=Modyfikacja
+Messages.Strings.String[7]=WartoúÊ dla opcji "%s"
+Messages.Strings.String[8]=WartoúÊ dla parametru "%s"
+Messages.Strings.String[9]=Znajdü
+Messages.Strings.String[10]=Wejdü do tekstu, by znaleüÊ:
+Messages.Strings.String[11]=Brak wiÍcej zestawieÒ dla "% s"
+Messages.Strings.String[12]=*Dodaj dodatki*
+Messages.Strings.String[13]=*UsuÒ dodatki*
+Messages.Strings.String[14]=*Modyfikuj dodatki*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=WybÛr filmu
+btnView.Caption=&Widok strony
+btnView.Hint=OtwÛrz w przeglπdarce WWW|
+btn3.Caption=OK
+btn2.Caption=Znajdü &wiÍcej
+btn1.Caption=Anuluj
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Wybierz opis
+btn2.Caption=OK
+btn1.Caption=Anuluj
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+Caption=W≥aúciwoúci skryptu, opcje i parametry
+btn3.Caption=&Zapisz
+btn2.Caption=&Anuluj
+btn1.Caption=&Pomoc
+lstProperties.TitleCaptions.String[0]=W≥aúciwoúÊ
+lstProperties.TitleCaptions.String[1]=WartoúÊ
+grpOptions.Caption=Opcje
+btnOptionAdd.Hint=Dodaj|Dodaje nowπ opcjÍ
+btnOptionDel.Hint=UsuÒ|Usuwa wybranπ opcjÍ
+btnOptionUp.Hint=PrzesuÒ w gÛrÍ|Przesuwa w gÛrÍ wybranπ opcjÍ
+btnOptionDown.Hint=PrzesuÒ w dÛ≥|Przesuwa w dÛ≥ wybranπ opcjÍ
+grpValues.Caption=DostÍpne wartoúci dla wybranej opcji
+lblValueDefault.Caption=Domyúlna:
+btnValueAdd.Hint=Dodaj|Dodaje nowπ wartoúÊ
+btnValueDel.Hint=UsuÒ|Usuwa wybranπ wartoúÊ
+btnValueUp.Hint=PrzesuÒ w gÛrÍ|Przesuwa w gÛrÍ wybranπ wartoúÊ
+btnValueDown.Hint=PrzesuÒ w dÛ≥|Przesuwa w dÛ≥ wybranπ wartoúÊ
+grpParameters.Caption=Parametry
+btnParameterAdd.Hint=Dodaj|Dodaje nowy parametr
+btnParameterDel.Hint=UsuÒ|UsuÒ wybrany parametr
+btnParameterUp.Hint=PrzesuÒ w gÛrÍ|Przesuwa w gÛrÍ wybrany parametr
+btnParameterDown.Hint=PrzesuÒ w dÛ≥|Przesuwa w dÛ≥ wybrany parametr
+
+Messages.Strings.String[0]=Autor skryptu:
+Messages.Strings.String[1]=Tytu≥ skryptu:
+Messages.Strings.String[2]=Opis:
+Messages.Strings.String[3]=Adres strony:
+Messages.Strings.String[4]=JÍzyk strony:
+Messages.Strings.String[5]=Wersja skryptu:
+Messages.Strings.String[6]=Wymagania:
+Messages.Strings.String[7]=Komentarze:
+Messages.Strings.String[8]=Licencja skryptu:
+Messages.Strings.String[9]=Pobieranie z internetu:
+Messages.Strings.String[10]=Wymagane filmy:
+Messages.Strings.String[11]=WartoúÊ
+Messages.Strings.String[12]=Opis
+Messages.Strings.String[13]=To usunie opcjÍ "%s"
+Messages.Strings.String[14]=Nazwa opcji:
+Messages.Strings.String[15]=Zmiana nazwy opcji "%s"
+Messages.Strings.String[16]=Opcja o nazwie "%s" juø istnieje!
+Messages.Strings.String[17]=Nazwa
+Messages.Strings.String[18]=Domyúlna wartoúÊ
+Messages.Strings.String[19]=Opis
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Rezultaty wykonania skryptu
+btn4.Caption=&Zapisz
+btn4.Hint=|Zapisuje informacje o tym filmie
+btn3.Caption=Zapisz &ca≥oúÊ
+btn3.Hint=|Zapisuje ten film i wszystkie nastÍpne
+btn2.Caption=P&omiÒ
+btn2.Hint=|Pomija tylko ten film
+btn1.Caption=&Przerwij
+btn1.Hint=|Przerywa proces wykonywania skryptu
+listValues.HeaderSections.Item[0].Text=Pole
+listValues.HeaderSections.Item[1].Text=Poprzednia wartoúÊ
+listValues.HeaderSections.Item[2].Text=Nowa wartoúÊ
+ActionListCheck.Caption=&Zaznacz wybrany
+ActionListCheck.Hint=Zaznacz wybrany|Zaznacza wybrany element
+ActionListUncheck.Caption=&Odznacz wybrany
+ActionListUncheck.Hint=Odznacz wybrany|Odznacza wybrany element
+ActionListAll.Caption=Zaznacz &wszystko
+ActionListAll.Hint=Zaznacz wszystko|Zaznacza wszystkie elementy
+ActionListNone.Caption=&Odznacz wszystko
+ActionListNone.Hint=Odznacz wszystko|Odznacza wszystkie elementy
+
+Messages.Strings.String[0]=Wyniki skryptu "%s" dla filmu %d
+Messages.Strings.String[1]=Rozmiar: %.0n KB, kliknij tutaj aby obejrzeÊ
+Messages.Strings.String[2]=Czy chcesz zapamiÍtaÊ, ktÛre pola bÍdπ zapisywane podczas nastÍpnych uruchomieÒ tego skryptu? (jeúli nie odpowiesz NIE, wszystkie zmodyfikowane pola skryptu zostanπ zapisane)
+Messages.Strings.String[3]=*Dodaj dodatki*
+Messages.Strings.String[4]=*UsuÒ dodatki*
+Messages.Strings.String[5]=*Modyfikuj dodatki*
+Messages.Strings.String[6]=Dodane dodatki: %d, kliknij tutaj, aby zobaczyÊ
+Messages.Strings.String[7]=UsuniÍte dodatki: %d, kliknij tutaj, aby zobaczyÊ
+Messages.Strings.String[8]=Zmodyfikowane dodatki: %d, kliknij tutaj, aby zobaczyÊ
+Messages.Strings.String[9]=Zmienione wartoúci: %d, kliknij tutaj, aby zobaczyÊ
+Messages.Strings.String[10]=Plik "%s" nie istnieje.
+
+[ScriptExtrasResultsWin]
+Caption=Wykonanie skryptu dla dodatkÛw
+btn1.Caption=&Zamknij
+btn1.Hint=|Zamknij okno
+listExtras.HeaderSections.Item[0].Text=Dodatek
+listValues.HeaderSections.Item[0].Text=Pole
+listValues.HeaderSections.Item[1].Text=Poprzednia wartoúÊ
+listValues.HeaderSections.Item[2].Text=Nowa wartoúÊ
+ActionListCheck.Caption=Zaz&nacz wybrane
+ActionListCheck.Hint=Zaznacz wybrane|Zaznacz wybrane elementy
+ActionListUncheck.Caption=&Odznacz wybrane
+ActionListUncheck.Hint=Odznacz wybrane|Odznacz wybrane elementy
+ActionListAll.Caption=Zaznacz w&szystko
+ActionListAll.Hint=Zaznacz wszystko|Zaznacz wszystkie elementy
+ActionListNone.Caption=Odz&nacz wszystko
+ActionListNone.Hint=Odznacz wszystko|Odznacz wszystkie elementy
+
+Messages.Strings.String[0]=Wyniki dla skryptu "%0:s" dla filmu %1:d
+Messages.Strings.String[1]=Rozmiar: %.0n KB, kliknij tutaj, aby zobaczyÊ
+Messages.Strings.String[2]=Dodatki
+Messages.Strings.String[3]=Dodane
+Messages.Strings.String[4]=UsuniÍte
+Messages.Strings.String[5]=Zmodyfikowane
+Messages.Strings.String[6]=Plik "%s" nie istnieje.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=ZmieÒ numeracjÍ
+SortBy.grp.Caption=Przed zmianπ numeracji sortuj filmy wg:
+btn2.Caption=OK
+btn1.Caption=Anuluj
+
+Messages.Strings.String[0]=SortujÍ filmy...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=&Drukuj...
+btn2.Caption=&Zamknij
+btn1.Caption=&Pomoc
+ActionFileLoad.Caption=Wczytaj szablon...
+ActionFileLoad.Hint=Wczytaj|Wczytuje inny szablon
+ActionFileDesigner.Caption=&Projektant...
+ActionFileDesigner.Hint=OtwÛrz Projektanta|Otwiera Projektanta raportÛw
+ActionPrint.Caption=Drukuj...
+ActionPrint.Hint=Drukuj|Drukowanie aktualnego raportu
+ActionPreviewRefresh.Caption=&Odúwieø
+ActionPreviewRefresh.Hint=Odúwieø podglπd|Odúwieøa podglπd raportu
+ActionPreviewPageFirst.Caption=Pierwsza strona
+ActionPreviewPageFirst.Hint=Pierwsza strona|Przejdü do pierwszej strony
+ActionPreviewPagePrevious.Caption=Poprzednia strona
+ActionPreviewPagePrevious.Hint=Poprzednia strona|Idü do poprzedniej strony
+ActionPreviewPageNext.Caption=NastÍpna strona
+ActionPreviewPageNext.Hint=NastÍpna strona|Idü do nastÍpnej strony
+ActionPreviewPageLast.Caption=Ostatnia strona
+ActionPreviewPageLast.Hint=Ostatnia strona|Idü do ostatniej strony
+ActionPreviewPageFull.Caption=Ca≥a strona
+ActionPreviewPageFull.Hint=Ca≥a strona|PowiÍkszenie do pe≥nej strony
+ActionPreviewPageTwo.Caption=Dwie strony
+ActionPreviewPageTwo.Hint=Dwie strony|PowiÍkszenie dwÛch stron
+ActionPreviewPageWidth.Caption=SzerokoúÊ strony
+ActionPreviewPageWidth.Hint=Dopasuj do szerokoúci strony|Dopasowuje widok do szerokoúci strony
+ActionPreviewZoomOut.Caption=Pomniejsz
+ActionPreviewZoomOut.Hint=Pomniejsz|Zmniejszanie stopnia powiÍkszenia
+ActionPreviewZoomIn.Caption=PowiÍksz
+ActionPreviewZoomIn.Hint=PowiÍksz|ZwiÍkszanie stopnia powiÍkszenia
+LvScripts.Columns.Item[0].Caption=DostÍpne szablony
+Messages.Strings.String[0]=Drukuj - %s
+Messages.Strings.String[1]=<nie wybrano pliku>
+Messages.Strings.String[2]=Nie jest moøliwy podglπd szablonu: %s
+Messages.Strings.String[3]=Nie moøna znaleüÊ raportu Projektanta. %s musi byÊ w tym samym folderze, co Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Import obrazka
+Btn3.Caption=OK
+Btn2.Caption=Anuluj
+Btn1.Caption=&Pomoc
+CBDoNotAsk.Caption=Nie pytaj ponownie, zapamiÍtaj wybÛr dla nastÍpnych importÛw
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+Caption=Menedøer pÛl niestandardowych
+btn2.Caption=OK
+btn1.Caption=Anuluj
+btnDel.Hint=UsuÒ pole|Usuwa pole niestandardowe
+btnClearAll.Hint=CzyúÊ wszystkie pola|Czyúci wszystkie pola niestandardowe
+btnImport.Hint=Importuj pola|Importuje pola niestandardowe
+btnExport.Hint=Ekportuj pola|Eksportuje pola niestandardowe
+LField.Caption=Pole:
+LTag.Caption=Tag:
+LName.Caption=Nazwa:
+LExt.Caption=Rozszerzenie:
+LType.Caption=Typ:
+LDefaultValue.Caption=WartoúÊ domyúlna:
+LTemplate.Caption=Szablon:
+btnInsertFieldTag.Hint=|Wstaw specjalnπ wartoúÊ, ktÛra zostanie zastπpiona przez wartoúci filmu
+LMediaInfo.Caption=Importuj info o mediach:
+LMultiValues.Caption=WartoúÊ wielocz≥onowa:
+EMultiValues.Hint=|Dodaje grupy z polami o wielu wartoúciach
+LMultiValuesSep.Caption=Separator:
+LMultiValuesRmp.Caption=UsuÒ nawiasy:
+EMultiValuesRmp.Hint=|Usuwa wartoúci wystÍpujπce w nawiasach
+LMultiValuesPatch.Caption=åcieøka:
+EMultiValuesPatch.Hint=|Zastosuj úcieøkÍ do ignorowania niektÛrych nawiasÛw
+LListValues.Caption=Lista wartoúci:
+EListSort.Caption=Automatycznie sortuj elementy
+EListAutoComplete.Caption=Autouzupe≥nianie podczas wpisywania
+EListCatalogValues.Caption=Uøyj wartoúci z bieøπcego katalogu zamiast ze zdefiniowanej listy
+EListAutoAdd.Caption=Automatyczne dodawanie wartoúci, ktÛre nie sπ na liúcie
+Messages.Strings.String[0]=Import pÛl niestandardowych
+Messages.Strings.String[1]=Eksport pÛl niestandardowych
+Messages.Strings.String[2]=Dodaj pole|Dodaje pole niestandardowe
+Messages.Strings.String[3]=ZmieÒ tag|Zmienia domyúlny tag pola niestandardowego
+Messages.Strings.String[4]=--- Nowe pole ---
+Messages.Strings.String[5]=String
+Messages.Strings.String[6]=Integer
+Messages.Strings.String[7]=Real (1 miejsce po przecinku)
+Messages.Strings.String[8]=Real (2 miejsca po przecinku)
+Messages.Strings.String[9]=Real (3 miejsca po przecinku)
+Messages.Strings.String[10]=Boolean
+Messages.Strings.String[11]=List
+Messages.Strings.String[12]=Date
+Messages.Strings.String[13]=Text
+Messages.Strings.String[14]=URL
+Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+Caption=Filtr
+LNote1.Caption=Uwaga: Ten filtr zastÍpuje kaøde wyraøenie przez skojarzenie ≥aÒcucha zastπpieÒ w/g kolejnoúci na liúcie.
+LNote2.Caption=Moøesz uøyÊ wyraøenia regularnego, jeúli zaczynasz ciπg wyraøeÒ '::>'.
+LNote3.Caption=Aby zobaczyÊ przyk≥ady wyraøeÒ regularnych, naciúnij przycisk 'Domyúlne'.
+LNote4.Caption=WiÍcej informacji na temat sk≥adni wyraøeÒ regularnych w pomocy na stronie internetowej regexpstudio.com
+LExprString.Caption=Ciπg wyraøeÒ
+LReplaceString.Caption=ZamieÒ ciπg
+btn1.Caption=Anuluj
+btn2.Caption=OK
+btn3.Caption=Domyúlny
+btn3.Hint=Domyúlny|Przywraca domyúlny filtr
+btnClearAll.Hint=CzyúÊ wszystko|Usuwa wszystkie wyraøenia
+btnImport.Hint=Importuj|Importuje filtr
+btnExport.Hint=Eksportuj|Eksportuje filtr
+btnAdd.Hint=Dodaj|Dodaje nowy wyraz poniøej wybranego wyraøenia
+btnDel.Hint=UsuÒ|Usuwa wybrane wyraøenie
+btnUp.Hint=W gÛrÍ|Przesuwa w gÛrÍ wybrane wyraøenie
+btnDown.Hint=W dÛ≥|Przesuwa w dÛ≥ wybrane wyraøenie
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+Caption=Menedøer obrazkÛw
+btn2.Caption=OK
+btn1.Caption=Anuluj
+
+Messages.Strings.String[0]=Stosowanie zmian w obrazkach filmÛw...
+Messages.Strings.String[1]=Nie moøna wprowadziÊ zmian dla obrazka filmu "%s": %s
+Messages.Strings.String[2]=Po zastosowaniu tej zmiany aktualny katalog musi zostaÊ zapisany, aby zachowaÊ spÛjnoúÊ! Czy chcesz automatycznie zapisaÊ katalog po zastosowaniu tej zmiany?
+Messages.Strings.String[3]=Nie moøna wprowadziÊ zmian dla obrazka dodatku "%0:s": %1:s
+Messages.Strings.String[4]=Uwaga, usuwanie jest nieodwracalne! Czy na pewno chcesz usunπÊ obrazek?
+Messages.Strings.String[5]=Uwaga, zmiana rozmiaru jest nieodwracalna! Czy na pewno chcesz zmieniÊ rozmiar obrazka?
+Messages.Strings.String[6]=Uwaga, zmiana rozmiaru jest nieodwracalna! Czy na pewno chcesz zmieniÊ rozmiar obrazkÛw, rÛwnieø obrazkÛw po≥πczonych?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+Caption=Edytor szablonÛw HTML
+Btn2.Caption=&Zamknij
+Btn1.Caption=&Pomoc
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+Caption=Edycja dodatkÛw
+btn2.Caption=OK
+btn1.Caption=Anuluj
+LPicture.Caption=Obrazek:
+PreviewPicture.Hint=|Kliknij, aby wyúwietliÊ fotos w pe≥nym rozmiarze
+chkPicture.Hint=|Edytuj obrazek
+  
+ActionPicSelect.Caption=&Wybierz...
+ActionPicSelect.Hint=Wybierz obrazek...|Wybierz obrazek do importu lub link dla bieøπcego filmu
+ActionPicDelete.Caption=&UsuÒ
+ActionPicDelete.Hint=UsuÒ|UsuÒ aktualny obrazek
+ActionPicSaveAs.Caption=Zapisz j&ako...
+ActionPicSaveAs.Hint=Zapisz jako...|Zapisz kopiÍ obrazka do nowego pliku
+ActionPicCopy.Caption=K&opiuj
+ActionPicCopy.Hint=Kopiuj do schowka|Kopiuj obrazek do schowka
+ActionPicPaste.Caption=W&klej
+ActionPicPaste.Hint=Wklej ze schowka|Wklej obrazek ze schowka
+  
+ActionURLOpen.Caption=OtwÛrz URL
+ActionURLOpen.Hint=|OtwÛrz URL lub plik okreúlony w polu
+ActionURLExplore.Caption=OtwÛrz folder
+ActionURLExplore.Hint=|OtwÛrz folder zawierajπcy plik okreúlony w polu
+ActionURLCopy.Caption=Kopiuj URL
+ActionURLCopy.Hint=|Kopiuj URL lub plik okreúlony w polu
+ActionURLBrowse.Caption=Przeglπdaj...
+ActionURLBrowse.Hint=|Przeglπdaj w poszukiwaniu nazwy pliku do umieszczenia w polu
+  
+ActionNextExtra.Caption=NastÍpny dodatek
+ActionNextExtra.Hint=NastÍpny dodatek|Pokaø nastÍpny dodatek
+ActionPreviousExtra.Caption=Poprzedni dodatek
+ActionPreviousExtra.Hint=Poprzedni dodatek|Pokaø nastÍpny dodatek
+
+Messages.Strings.String[0]=Zapisz kopiÍ obrazka do nowego pliku
+Messages.Strings.String[1]=Wybierz obrazek
+Messages.Strings.String[2]=Nie moøna uøyÊ tego obrazka: %s
+Messages.Strings.String[3]=Przechowywany w katalogu jako %s
+Messages.Strings.String[4]=Plik zewnÍtrzny: %s
+Messages.Strings.String[5]=%.0n bajtÛw
+Messages.Strings.String[6]=Plik "%s" nie istnieje.
+Messages.Strings.String[7]=Pobierz informacje z plikÛw...
+Messages.Strings.String[8]=Wybierz plik do odniesienia w polu URL
+Messages.Strings.String[9]=Dodatki zosta≥y zmodyfikowane, czy chcesz zapisaÊ zmiany?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+Caption=Zmiana numeracji dodatkÛw
+SortBy.grp.Caption=Przed zmianπ numeracji sortuj dodatki wg
+chkAllMovies.Caption=Sortuj i zmieÒ numeracjÍ dodatkÛw dla wszystkich filmÛw
+btn2.Caption=OK
+btn1.Caption=Anuluj
+
+Messages.Strings.String[0]=Zmiana numeracji dodatkÛw...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Etykieta filmu:
+LMediaType.Caption=Rodzaj noúnika:
+LSource.Caption=èrÛd≥o:
+LDate.Caption=Data dodania:
+LBorrower.Caption=Komu poøyczony:
+LDateWatched.Caption=Data obejrzenia:
+LUserRating.Caption=Moja ocena:
+LRating.Caption=Ocena:
+LOriginalTitle.Caption=&Tytu≥ oryginalny:
+LTranslatedTitle.Caption=T&ytu≥ polski:
+LDirector.Caption=Reøyser:
+LProducer.Caption=Producent:
+LWriter.Caption=Scenariusz:
+LComposer.Caption=Muzyka:
+LCountry.Caption=Kraj:
+LCategory.Caption=Gatunek:
+LCertification.Caption=Certyfikacja:
+LYear.Caption=Rok prod.:
+LLength.Caption=Czas trwania:
+LLengthMin.Caption=min.
+LActors.Caption=Obsada:
+LURL.Caption=Strona WWW:
+LDescription.Caption=Opis filmu:
+LComments.Caption=Komentarze:
+LFilePath.Caption=åcieøka pliku:
+LVideoFormat.Caption=Format wideo:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Format audio:
+LAudioKbps.Caption=kbps
+LResolution.Caption=RozdzielczoúÊ:
+LFramerate.Caption=Klatek/sekundÍ:
+LFramerateFPS.Caption=fps
+LSize.Caption=Rozmiar filmu:
+LDisks.Caption=IloúÊ p≥yt:
+LLanguages.Caption=JÍzyk:
+LSubtitles.Caption=Napisy:
+
+EMedia.Hint=|Etykieta filmu, numer lub kod kreskowy
+EMediaType.Hint=|Na jakim noúniku jest zapisany film
+ESource.Hint=|èrÛd≥o (skπd pochodzi /od kogo dosta≥eú/ ten film)
+EDate.Hint=|Data dodania filmu do katalogu
+EBorrower.Hint=|Kto poøyczy≥ film
+EDateWatched.Hint=|Data, kiedy oglπda≥eú film po raz ostatni
+EUserRating.Hint=|Ocena uøytkownika w skali od 0 do 10
+ERating.Hint=|Ocena filmu w skali od 0 do 10
+EOriginalTitle.Hint=|&Tytu≥ oryginalny
+ETranslatedTitle.Hint=|T&ytu≥ polski
+EDirector.Hint=|Reøyser
+EProducer.Hint=|Producent
+EWriter.Hint=|Scenarzysta
+EComposer.Hint=|Kompozytor
+ECountry.Hint=|Kraj
+ECategory.Hint=|Gatunek filmowy
+ECertification.Hint=|Od ilu lat film jest dozwolony
+EYear.Hint=|Rok produkcji
+ELength.Hint=|D≥ugoúÊ filmu (minuty)
+EActors.Hint=|Lista aktorÛw grajπcych w filmie
+EURL.Hint=|Strona WWW o filmie
+EDescription.Hint=|Opis filmu
+EComments.Hint=|Komentarze
+EFilePath.Hint=|åcieøka do pliku
+EVideoFormat.Hint=|Format wideo/kodek
+EVideoBitrate.Hint=|Przep≥ywnoúÊ wideo w kilobitach na sekundÍ
+EAudioFormat.Hint=|Format audio/kodek
+EAudioBitrate.Hint=|Przep≥ywnoúÊ audio w kilobitach na sekundÍ
+EResolution.Hint=|RozdzielczoúÊ filmu
+EFramerate.Hint=|SzybkoúÊ odtwarzania klatek wideo na sekundÍ
+ESize.Hint=|WielkoúÊ pliku
+EDisks.Hint=|IloúÊ CD lub kaset
+ELanguages.Hint=|JÍzyk
+ESubtitles.Hint=|Napisy
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Dodaj pole niestandardowe
+ActionAddCustomField.Hint=|Dodaje pole niestandardowe
+ActionModifyCustomField.Caption=Modifikuj pole niestandardowe
+ActionModifyCustomField.Hint=|Modifikuje pole niestandardowe
+ActionDeleteCustomField.Caption=UsuÒ pole niestandardowe
+ActionDeleteCustomField.Hint=|Usuwa pole niestandardowe
+ActionMoveResizeCustomFields.Caption=PrzesuÒ pole niestandardowe
+ActionMoveResizeCustomFields.Hint=|Przesuwa i zmienia rozmiar pola niestandardowego
+ActionDefaultPositioning.Caption=Domyúlne pozycjonowanie
+ActionDefaultPositioning.Hint=|Przywraca domyúlne pozycjonowanie pola niestandardowego
+ActionAutoStretchWidth.Caption=Automatycznie rozciπgnij szerkoúÊ
+ActionAutoStretchWidth.Hint=Automatycznie rozciπga szerokoúÊ pola i zmienia rozmiar
+ActionAutoStretchHeight.Caption=Automatycznie rozciπgnij wysokoúÊ
+ActionAutoStretchHeight.Hint=Automatycznie rozciπga wysokoúÊ pola i zmienia rozmiar
+
+[TMovieFrameExtras]
+ActionExtrasImportFiles.Caption=&Importuj...
+ActionExtrasImportFiles.Hint=Importuj...|Import nowych dodatkÛw z plikÛw
+ActionExtrasAdd.Caption=Dod&aj...
+ActionExtrasAdd.Hint=Dodaj...|Dodawanie nowego dodatku
+ActionExtrasEdit.Caption=&Edytuj...
+ActionExtrasEdit.Hint=Edytuj...|Edycja wybranych dodatkÛw
+ActionExtrasDelete.Caption=&UsuÒ
+ActionExtrasDelete.Hint=UsuÒ|Usuwanie wybranych dodatkÛw
+ActionExtraShowPic.Caption=Pokaø o&brazek
+ActionExtraShowPic.Hint=Pokaø obrazek|Pokazuje wybrany dodatkowy obrazek
+ActionExtraURL.Caption=&URL
+ActionExtraURL.Hint=URL|Dodatkowy URL
+ActionExtrasCopy.Caption=&Kopiuj
+ActionExtrasCopy.Hint=Kopiuj|Kopiuje wybrane dodatki
+ActionExtrasPaste.Caption=&Wklej
+ActionExtrasPaste.Hint=Wklej|Wkleja dodatki
+ActionExtrasCheck.Caption=Zaznacz
+ActionExtrasCheck.Hint=Zaznacz dodatki|Zaznacza wybrane dodatki
+ActionExtrasUncheck.Caption=Odznacz
+ActionExtrasUncheck.Hint=Odznacz dodatki|Odznacza wybrane dodatki
+ActionExtrasSelGroup.Caption=Ca≥a grupa
+ActionExtrasSelGroup.Hint=Wybierz grupÍ|Wybierz wszystkie dodatki z tej grupy
+ActionExtrasSelCheck.Caption=Zaznaczone
+ActionExtrasSelCheck.Hint=Wybierz zaznaczone|Wybierz tylko dodatki, ktÛre sπ zaznaczone
+ActionExtrasSelUncheck.Caption=Niezaznaczone
+ActionExtrasSelUncheck.Hint=Wybierz niezaznaczone|Wybierz tylko dodatki, ktÛre sπ niezaznaczone
+ActionExtrasSort.Caption=&Sortuj wg
+ActionExtrasSort.Hint=Sortuj dodatki|Sortuj dodatki wed≥ug okreúlonego pola
+ActionExtrasSortAscend.Caption=Rosnπco
+ActionExtrasSortAscend.Hint=|Sortuj w porzπdku rosnπcym
+ActionExtrasSortDescend.Caption=Malejπco
+ActionExtrasSortDescend.Hint=|Sortuj w porzπdku malejπcym
+ActionExtrasSortAdvanced.Caption=Zaawansowane...
+ActionExtrasSortAdvanced.Hint=|Zaawansowane sortowanie
+ActionExtrasGroup.Caption=&Grupuj wg
+ActionExtrasGroup.Hint=Grupuj dodatki|Grupuj dodatki wg okreúlonych pÛl
+ActionExtrasGroupNone.Caption=< &Brak >
+ActionExtrasGroupNone.Hint=|Nie grupuj dodatkÛw
+ActionExtrasRenumber.Caption=ZmieÒ nume&racjÍ...
+ActionExtrasRenumber.Hint=ZmieÒ numeracjÍ...|ZmieÒ numeracjÍ dodatkÛw...
+ActionURLOpen.Caption=OtwÛrz URL
+ActionURLOpen.Hint=|OtwÛrz URL lub plik okreúlony w polu
+ActionURLExplore.Caption=Eksploruj URL
+ActionURLExplore.Hint=|OtwÛrz folder zawierajπcy plik okreúlony w polu
+ActionURLCopy.Caption=Kopiuj URL
+ActionURLCopy.Hint=|Kopiuj URL lub plik okreúlony w polu
+ActionURLBrowse.Caption=Przeglπdaj...
+ActionURLBrowse.Hint=|Przeglπdaj nazwÍ pliku do umieszczenia w polu
+MnuSelect.Caption=Wybierz
+MnuSelected.Caption=Wybrane dodatki
+ThumbsDisplayTitle.Caption=Tytu≥
+ThumbsDisplayTitle.Hint=|Wyúwietlaj tytu≥ dodatku
+ThumbsDisplayInfo.Caption=Info
+ThumbsDisplayInfo.Hint=|Wyúwietlaj informacje o dodatku
+ToolbarExtras.Caption=Pasek narzÍdziowy dodatkÛw
+
+Messages.Strings.String[0]=Czy na pewno chcesz usunπÊ wybrane dodatki?
+Messages.Strings.String[1]=Nie pytaj ponownie o potwierdzenie
+Messages.Strings.String[2]=|Sortuj wg %s
+Messages.Strings.String[3]=|Grupuj wg %s
+Messages.Strings.String[4]=< Brak >
+Messages.Strings.String[5]=Plik "%s" nie istnieje.
+Messages.Strings.String[6]=Pobierz informacje z plikÛw...
+Messages.Strings.String[7]=Wybierz plik do odniesienia w polu URL
+Messages.Strings.String[8]=Nie moøna uøyÊ tego obrazka: %s
+Messages.Strings.String[9]=Wybierz pliki, aby pobraÊ z nich informacje
+Messages.Strings.String[10]=Numer / Tag:
+Messages.Strings.String[11]=Tytu≥:
+Messages.Strings.String[12]=Kategoria:
+Messages.Strings.String[13]=URL:
+Messages.Strings.String[14]=Opis:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+LNumber.Caption=Numer:
+LTag.Caption=Tag:
+LTitle.Caption=Tytu≥:
+LCategory.Caption=Kategoria:
+LURL.Caption=URL:
+LDescription.Caption=Opis:
+LComments.Caption=Komentarze:
+LCreatedBy.Caption=Utworzony przez:
+ENumber.Hint=|ZmieÒ numer i zmieÒ automatycznie numeracjÍ dodatkÛw po tym numerze
+ETag.Hint=|Tag (umoøliwia bezpoúredni dostÍp do dodatkÛw do drukowania, szablonÛw html...)
+ETitle.Hint=|Tytu≥
+ECategory.Hint=|Kategoria
+EURL.Hint=|URL
+EDescription.Hint=|Opis
+EComments.Hint=|Komentarze
+ECreatedBy.Hint=|Utworzony przez (uøywane przez skrypty)
+chkTag.Hint=|Modyfikuj pole Tag
+chkTitle.Hint=|Modyfikuj pole Tytu≥
+chkCategory.Hint=|Modyfikuj pole Kategoria
+chkURL.Hint=|Modyfikuj pole URL
+chkDescription.Hint=|Modyfikuj pole opis
+chkComments.Hint=|Modyfikuj pole Komentarze
+chkCreatedBy.Hint=|Modyfikuj pole Utworzony przez
+
+[TFieldsFrame]
+LAvailable.Caption=DostÍpne pola:
+LSelected.Caption=Wybrane pola:
+BtnAdd.Hint=Dodaj|Dodaje wybrane pole
+BtnRem.Hint=UsuÒ|Usuwa wybrane pole
+BtnAddAll.Hint=Dodaj wszystko|Dodaje wszystkie pola
+BtnRemAll.Hint=UsuÒ wszystko|Usuwa wszystkie pola
+BtnUp.Hint=W gÛrÍ|Przenosi wybrany element w gÛrÍ
+BtnDown.Hint=W dÛ≥|Przenosi wybrany element w dÛ≥
+
+[TSortByFrame]
+grp.Caption=Sortuj wg
+BtnAdvSort.Caption=Zaawansowane
+EOrderBy.Items.String[4]=Zaawansowane opcje sortowania...
+BtnSortDescend.Hint=|Sortuj w porzπdku malejπcym
+
+[TExtrasSortByFrame]
+grp.Caption=Sortuj wg
+BtnAdvSort.Caption=Zaawansowane...
+EOrderBy.Items.String[3]=Zaawansowane opcje sortowania...
+BtnSortDescend.Hint=|Sortuj w porzπdku malejπcym
+
+[TIncludemovFrame]
+grp.Caption=UwzglÍdnij filmy
+rbtAll.Caption=Wszystkie
+rbtSelected.Caption=Wybrane
+rbtChecked.Caption=Zaznaczone
+rbtVisible.Caption=Widoczne
+
+[TIncludepicFrame]
+grp.Caption=Obrazki do do≥πczenia
+rbtAll.Caption=Wszystkie
+rbtMovie.Caption=Film
+rbtExtras.Caption=Dodatki
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Metody importu obrazkÛw
+rbtStorePic.Caption=&Przechowuj obrazek w katalogu
+rbtCopyPicInCatDir.Caption=&Kopiuj obrazek do folderu katalogu i po≥πcz z katalogiem
+rbtCopyPicInPicDir.Caption=Kopiuj obrazek do folderu &obrazkÛw w katalogu i po≥πcz go z katalogiem
+rbtLinkPic.Caption=Tylko &≥πcze do obrazka
+chkLinkRelative.Caption=Jeúli moøliwe - utwÛrz úcieøkÍ odnoúnika
+
+[TPictureOperationFrame]
+grp.Caption=Dzia≥ania na obrazkach
+rbtStore.Caption=Przechowuj obrazki w katalogu
+rbtStoreIfCopied.Caption=Przechowuj obrazki w katalogu tylko wtedy, jeúli zosta≥y skopiowane do katalogu lub folderu obrazkÛw
+rbtCopyInCatDir.Caption=Kopiuj obrazek do folderu katalogu i po≥πcz go z katalogiem
+rbtCopyInCatDirIfStored.Caption=Kopiuj obrazek do folderu katalogu tylko wtedy, jeúli obrazek przechowywany jest w katalogu
+rbtCopyInCatDirIfCopied.Caption=Kopiuj obrazek do folderu katalogu tylko wtedy, jeúli obrazek zosta≥ skopiowany do folderu obrazkÛw
+rbtCopyInPicDir.Caption=Kopiuj obrazek do folderu obrazkÛw katalogu i po≥πcz go z katalogiem
+rbtCopyInPicDirIfStored.Caption=Kopiuj obrazek do folderu obrazkÛw tylko wtedy, jeúli obrazek przechowywany jest w katalogu
+rbtCopyInPicDirIfCopied.Caption=Kopiuj obrazek do folderu obrazkÛw tylko wtedy, jeúli obrazek zosta≥ skopiowany do folderu katalogu
+rbtRenameIfCopied.Caption=ZmieÒ nazwÍ obrazka, jeúli jest on kopiowany do katalogu lub folderu obrazkÛw
+rbtAbsToRelLink.Caption=Jeúli to moøliwe, przekszta≥Ê po≥πczenie absolutne na relatywne, gdy obrazek jest tylko po≥πczony
+rbtRelToAbsLink.Caption=Przekszta≥Ê po≥πczenie relatywne na absolutne, gdy ≥πcze jest tylko po≥πczone
+rbtDelete.Caption=UsuÒ obrazek (i plik obrazka, jeúli zosta≥ skopiowany do katalogu lub folderu obrazkÛw)
+rbtConvertIfStoredOrCopied.Caption=Konwertuj obrazek do JPG i zmieÒ jego rozmiar, gdy jest przechowywany lub kopiowany 
+rbtConvert.Caption=Konwertuj obrazek do JPG i zmieÒ jego rozmiar nawet jeúli obrazek jest tylko po≥πczony (ostroønie)
+LMaxPicSizeW.Caption=maks. szer.=
+LMaxPicSizeH.Caption=maks. wys.=
+LMaxPicSizeUnit.Caption=w pikselach
+EMaxPicSizeW.Hint=|Pozostaw puste, jeúli nie chcesz okreúlaÊ maksymalnej szerokoúci
+EMaxPicSizeH.Hint=|Pozostaw puste, jeúli nie chcesz okreúlaÊ maksymalnej wysokoúci
+
+[TPictureOperationExportFrame]
+grp.Caption=Metoda eksportu obrazkÛw
+rbtNoChangeAMC.Caption=Taka sama, jak aktualnego katalogu
+rbtNoChangeXML.Caption=Taka sama, jak aktualnego katalogu (przechowywane obrazki zostanπ utracone)
+rbtStore.Caption=Przechowuj obrazki w katalogu
+rbtStoreIfCopied.Caption=Przechowuj obrazki w katalogu tylko wtedy, jeúli obrazek zosta≥ skopiowany do katalogu lub folderu obrazkÛw
+rbtCopyInCatDir.Caption=Kopiuj obrazki do folderu katalogu i po≥πcz go z katalogiem
+rbtCopyInCatDirIfStored.Caption=Kopiuj do folderu katalogu tylko wtedy, jeúli obrazek jest przechowywany w katalogu
+rbtCopyInPicDir.Caption=Kopiuj obrazek do folderu obrazkÛw w katalogu i po≥πcz go z katalogiem
+rbtCopyInPicDirIfStored.Caption=Kopiuj obrazek do folderu obrazkÛw tylko wtedy, gdy obrazek jest przechowywany w katalogu
+rbtDelete.Caption=UsuÒ obrazek
+
+[TFileNamingFrame]
+grp.Caption=Nazywanie pliku
+LPrefix.Caption=Prefiks
+EPrefix.Items.Strings.String[0]=Brak
+EPrefix.Items.Strings.String[1]=Nazwa katalogu
+EPrefix.Items.Strings.String[2]=Nazwa eksportowanego pliku
+LMovieInfo.Caption=Informacje o filmie
+EMovieInfo.Items.Strings.String[0]=Brak
+EMovieInfo.Items.Strings.String[1]=Oryginalna nazwa pliku
+LExtraInfo.Caption=Informacje o dodatku
+EExtraInfo.Items.Strings.String[0]=Brak
+CBMovieNumberAddZeroes.Caption=Dodaj zera przed numerem filmu dla niskich numerÛw
+CBExtraNumberAddZeroes.Caption=Dodaj zera przed numerem dodatku dla niskich numerÛw
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Nowy
+ActionHTMLNew.Hint=Nowy szablon|Tworzy nowy szablon
+ActionHTMLOpen.Caption=Wczytaj
+ActionHTMLOpen.Hint=Wczytaj...|Wczytuje istniejπcy szablon
+ActionHTMLNoRecent.Caption=Nie ostatni plik
+ActionHTMLSave.Caption=Zapisz
+ActionHTMLSave.Hint=Zapisz|Zapisuje aktualny szablon
+ActionHTMLSaveAs.Caption=Zapisz jako...
+ActionHTMLSaveAs.Hint=Zapisz jako...|Zapisuje aktualny szablon pod innπ nazwπ
+ActionInsertTag.Caption=&Wstaw dodatkowy tag
+ActionInsertTag.Hint=|Wstawia dodatkowπ wartoúÊ, ktÛra jest wymieniona w informacji o filmie
+ActionEditUndo.Caption=&Cofnij
+ActionEditCut.Caption=Wy&tnij
+ActionEditCopy.Caption=&Kopiuj
+ActionEditPaste.Caption=&Wklej
+ActionEditDelete.Caption=&UsuÒ
+ActionEditSelectAll.Caption=Wybierz &wszystko
+ActionExportBoth.Caption=Eksportuj oba
+ActionExportBoth.Hint=|Eksportuje oba szablony: 'OgÛlny' i 'Indywidualny'
+ActionExportSelected.Caption=Eksportuj wybrany
+ActionExportSelected.Hint=|Eksportuje tylko wybrany szablon
+ActionDisplayFull.Caption=OgÛlny
+ActionDisplayFull.Hint=Pokaø szablon 'OgÛlny'|Pokazuje szablon HTML, ktÛry jest przeznaczony dla ca≥ej bazy filmowej
+ActionDisplayIndividual.Caption=Indywidualny
+ActionDisplayIndividual.Hint=Pokaø szablon 'Indywidualny'|Pokazuje szablon HTML, ktÛry jest przeznaczony dla pojedynczego filmu
+
+MnuGen.Caption=&OgÛlne
+MnuGenDte.Caption=Aktualna data
+MnuGenTme.Caption=Aktualny czas
+MnuCat.Caption=&Katalog
+MnuCatNme.Caption=Nazwa pliku
+MnuCatPth.Caption=Nazwa pliku z pe≥nπ úcieøkπ
+MnuCatNbr.Caption=IloúÊ filmÛw
+MnuCatDsk.Caption=IloúÊ p≥yt
+MnuOwnNam.Caption=Nick w≥aúciciela
+MnuOwnEml.Caption=E-mail w≥aúciciela
+MnuOwnWeb.Caption=Adres strony WWW w≥aúciciela
+MnuCatDsc.Caption=Opis
+MnuMovBeg.Caption=Poczπtek listy
+MnuMovEnd.Caption=Koniec listy
+MnuMovRec.Caption=Numer wpisu
+MnuMovInd.Caption=Nazwa pliku indywidualnej strony filmu
+
+MnuMov.Caption=&Pola filmu
+MnuMovCF.Caption=&Pola niestandardowe
+MnuMovExtras.Caption=Pola dodatkÛ&w
+MnuMovPic.Caption=Obrazek
+MnuMovPfn.Caption=Nazwa pliku obrazka
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+MnuMovUR04.Caption=Moja ocena (od 0 do 4 bez miejsca po przecinku)
+MnuMovUR10.Caption=Moja ocena (od 0 do 10 bez miejsca po przecinku)
+MnuMovUA04.Caption=Moja ocena (od 0 do 4 gwiazdek)
+MnuMovUA10.Caption=Moja ocena (od 0 do 10 gwiazdek)
+MnuMovR04.Caption=Ocena (od 0 do 4 bez miejsc dziesiÍtnych)
+MnuMovR10.Caption=Ocena (od 0 do 10 bez miejsc dziesiÍtnych)
+MnuMovApp.Caption=Ocena (od 0 do 4 gwiazdek)
+MnuMovA10.Caption=Ocena (od 0 do 10 gwiazdek)
+MnuMovFT1.Caption=Formatowanie tytu≥u: Oryginalny (Polski)
+MnuMovFT2.Caption=Formatowanie tytu≥u: Polski (Oryginalny)
+MnuMovHtm.Caption=Kolor oznaczenia (HTML)
+MnuMovEBeg.Caption=Poczπtek listy
+MnuMovEEnd.Caption=Koniec listy
+MnuMovERec.Caption=Numer wpisu
+MnuMovEPic.Caption=Obrazek
+MnuMovEPfn.Caption=Nazwa pliku obrazka
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+MnuLab.Caption=&Etykiety pÛl filmu
+MnuLabCF.Caption=&Etykiety pÛl niestandardowych
+MnuLabExtras.Caption=Etykiety pÛl dodat&kÛw
+MnuLabPic.Caption=Obrazek
+MnuLabUAF.Caption=Jednostka audio bitrate
+MnuLabUVF.Caption=Jednostka wideo bitrate
+MnuLabUFS.Caption=Jednostka rozmiaru pliku
+MnuLabUFP.Caption=Jednostka klatek/sek.
+MnuLabEPic.Caption=Obrazek
+
+Messages.Strings.String[0]=Nie mogÍ zapisaÊ "%s": %s
+Messages.Strings.String[1]=Nie mogÍ wczytaÊ "%s": %s
+Messages.Strings.String[2]=Szablon HTML zosta≥ zmodyfikowany. Czy chcesz zapisaÊ zmiany?
+Messages.Strings.String[3]=Pe≥ny szablon HTML zosta≥ zmodyfikowany. Czy chcesz zapisaÊ zmiany?
+Messages.Strings.String[4]=Indywidualny szablon HTML zosta≥ zmodyfikowany. Czy chcesz zapisaÊ zmiany?

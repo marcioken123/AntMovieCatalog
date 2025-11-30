@@ -1,0 +1,445 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Peter Varju (<link>varjupe@gmail.com</link>) & bad4u, Zsolt Kovács
+Title=port.hu
+Description=Imports hungarian titles and description from port.hu site
+Site=port.hu
+Language=HU
+Version=4.3
+Requires=3.5.0
+Comments=Last modification: 2021.02.10
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Alapértelmezett nyelv=1|1|1=Nincs alapértelemezett|2=Magyar|3=Angol
+
+[Parameters]
+
+***************************************************)
+
+program PortHU5;
+
+var
+  MovieName, MovieURL: string;
+  BeginPos, EndPos: Integer;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function GetName(Page: TStringList; SearchStr: string): string;
+
+var
+	i: Integer;
+	Line, Value, Temp: string;
+	LineNr: Integer;
+	BeginPos, EndPos: Integer;
+
+begin
+	result := '';
+	Value := '';
+	LineNr := FindLine('<label>' + SearchStr, Page, 0);
+	if LineNr > -1 then	begin
+		repeat
+			LineNr := LineNr + 1;
+			Line := Page.GetString(LineNr);
+			//Showmessage(Line);
+			BeginPos := pos('<span class="itemprop">', Line) + 23;
+			//Showmessage(inttostr(BeginPos));
+			if BeginPos <> 23 then begin
+				EndPos := pos('</span>', Line) - 1;
+				if Value <> '' then Value := Value + ', ';
+				Value := Value + copy(Line, BeginPos, EndPos);
+			end;
+			//Showmessage(inttostr(pos('</li>', Line)));
+		until pos('</li>', Line) <> 0;
+	end;
+    HTMLRemoveTags(Value);
+    result := Value;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  PageStr: string;
+begin
+  Page := TStringList.Create;
+  //PageStr := GetPage(Address);
+  Page.Text := UTF8Decode(GetPage(Address));
+  //Showmessage(PageStr);
+  //Showmessage('AnalyzePage. Address:' + Address);
+  //Page.Text := GetPage(Address);
+  if pos('Nincs ilyen címû film', Page.Text) <> 0 then  // search changed to "like", no error message any more, but I left it as it is.
+     showmessage('Nincs ilyen címû film a PORT adatbázisban.')
+  else begin
+      PickTreeClear;
+      AddMoviesTitles(Page,'<a class="title" href="');
+
+      if PickTreeExec(Address) then begin
+        UrlEncode(Address);
+        Address := StringReplace(Address, '&amp;', 'xxampxx');
+        Address := StringReplace(Address, '&', 'xxampxx');
+        HTMLDecode(Address);
+        Address := StringReplace(Address, 'xxampxx', '&');
+		MovieURL := Address;
+//		Page.Free;
+//		Page := TStringList.Create;
+//		PageStr := GetPage(Address);
+//		if PageStr = '' then
+			Page.Text := GetPage(Address);
+//		else
+//			Page.Text := UTF8Decode(GetPage(Address));
+		AnalyzeMoviePage(Page);
+      end;
+  end;
+  Page.Free;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; Tag: string);
+var
+  Line: string;
+  LineNr: Integer;
+  MovieTitle, OriTitle, MovieAddress, MovieInfo: string;
+  StartPos, EndPos: Integer;
+begin
+  LineNr := FindLine(tag, Page, 0);
+  if LineNr > -1 then
+  begin
+    PickTreeAdd('Találatok:', '');
+    Line := Page.GetString(LineNr);
+    repeat
+		if pos('<section>', Page.GetString(LineNr-1)) = 0 then begin
+			StartPos := pos(Tag, Line) + 22;
+			EndPos := pos(Tag, Line) + 23;
+			Delete(Line, 1, StartPos);
+			MovieAddress := Copy(Line, 1, pos('">', Line) - 1);
+			LineNr := LineNr + 1;
+			Line := Page.GetString(LineNr);
+			MovieTitle := Copy(Line, 40, Pos('</a>', Line) - 41);
+			MovieTitle := trim(MovieTitle);
+			HTMLDecode(MovieTitle);
+		  //Showmessage(MovieAddress);
+		  //Showmessage(Line);
+		  //Showmessage(Movietitle);
+			PickTreeAdd(MovieTitle, 'https://port.hu' + MovieAddress);
+		end;
+		  
+			LineNr := FindLine(tag, Page, LineNr+1);
+			if LineNr > -1 then
+			Line := Page.GetString(LineNr)
+			else
+			Line := '';
+    until Line = '';
+  end;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Line2, Temp, Value, Value2, FullValue, CommentString, Lang: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+  i: Integer;
+  tries: Integer;
+begin
+  //Showmessage('Analyzing...');
+  //URL
+  setField(fieldURL, MovieURL);
+
+  //hungarian title
+  LineNr := FindLine('<h1>', Page, 0);
+  if LineNr > -1 then
+  begin
+	Line := Page.GetString(LineNr + 1);
+    BeginPos := 1;
+    EndPos := pos('<span>', Line);
+	if EndPos = 0 then EndPos := pos('</h1>', Line);
+    Value := UTF8Decode(copy(Line, BeginPos, EndPos - BeginPos));
+    HTMLRemoveTags(Value);
+    SetField(fieldTranslatedTitle, trim(Value));
+    SetField(fieldOriginalTitle, trim(Value));
+  end;
+
+  //original title
+	LineNr := FindLine('<small>', Page, LineNr + 2);
+	if LineNr > 1 then begin
+		Line := Page.GetString(LineNr + 1);
+		BeginPos := 1;
+		EndPos := pos('</small>', Line);
+		Value := UTF8Decode(copy(Line, BeginPos, EndPos - BeginPos));
+		if ( Value<>'') then begin
+			HTMLRemoveTags(Value);
+			SetField(fieldOriginalTitle, trim(Value));
+		end;
+	end;
+
+  //year
+  LineNr := FindLine('perc, ', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('perc, ', Line)+6;
+    Value := UTF8Decode(copy(Line, BeginPos, 4));
+    Value2 := Copy(Value, 1, 2);
+    if (Value2='19') or (Value2='20') or (Value2='18') then
+      SetField(fieldYear, Value);
+  //end;
+
+  //certification
+    BeginPos := pos('title="', Line)+6;
+	EndPos := pos('">', Line);
+    Value := UTF8Decode(copy(Line, BeginPos, EndPos - BeginPos));
+    SetField(fieldCertification, Value);
+  
+  //category, country
+  //LineNr := FindLine('perc, ', Page, 0);
+  //if LineNr > -1 then
+  //begin
+    //Line := Page.GetString(LineNr);
+    BeginPos := pos('<span>', Line) + 6;
+    EndPos := pos('</span>', Line);
+    Value := UTF8Decode(copy(Line, BeginPos, EndPos - BeginPos));
+    Value := stringReverse(Value);
+
+    Value2:=Value;
+
+    //cutting year
+    EndPos := pos(',', Value);
+    Delete(Value, EndPos, Length(Value)-1);
+    Value := stringReverse(Value);
+    Value := Copy(trim(Value), 0, 2);
+    if (Value='19') or (Value='20') or (Value='18') then
+      Value2:=Copy(Value2, 7, Length(Value2));
+
+    //movie length
+    Value := Value2;
+    if Copy(Value,0,5)='crep ' then begin
+      EndPos := pos(',', Value);
+      Value:=Copy(Value, 6, EndPos-7);
+      Value:=stringReverse(Value);
+      SetField(fieldLength, Value);
+    end;
+
+    //cutting time
+    Value := Value2;
+    if Copy(Value,0,5)='crep ' then begin
+      EndPos := pos(',', Value);
+      Delete(Value, 1, EndPos);
+    end;
+    Value := stringReverse(Value);
+
+    //cutting colors
+    if pos('színes, fekete-fehér, ',Value)=1 then begin
+      Delete(Value, 1, 22);
+    end else
+    if (pos('fekete-fehér, ',Value)=1) or (pos('színes, ',Value)=1) then begin
+      EndPos := pos(' ', Value);
+      Delete(Value, 1, EndPos);
+    end;
+
+    //cutting language type
+    if (pos('magyarul beszélõ, ',Value)=1) then begin
+      Delete(Value, 1, 18);
+    end;
+    if (pos('hangalámondásos, ',Value)=1) then begin
+      Delete(Value, 1, 17);
+    end;
+    if (pos('feliratos, ',Value)=1) then begin
+      Delete(Value, 1, 11);
+    end;
+    if (pos('némafilm, ',Value)=1) then begin
+      Delete(Value, 1, 10);
+    end;
+
+    Value2:=Copy(Value,0,pos(' ',Value)-1);
+    Value:=Copy(Value,pos(' ',Value)+1,Length(Value));
+
+    SetField(fieldCategory, AnsiUpFirstLetter(Value));
+    SetField(fieldCountry, AnsiUpFirstLetter(Value2));
+  end;
+
+  //actors
+	LineNr := FindLine('>Szerepl', Page, 0);
+	if LineNr > -1 then begin
+		i:=0;
+		Value := '';
+		LineNr := FindLine('>Szerepl', Page, 0);
+		repeat
+			EndPos := 0;
+			LineNr := FindLine('<div class="role-type actor">', Page, LineNr + 1);
+			if LineNr > -1 then begin
+				LineNr := FindLine('<span>', Page, LineNr + 1);
+				Line := Page.GetString(LineNr);
+				BeginPos := pos('<span>', Line) + 6;
+				EndPos := pos('</span>', Line);
+				Value := Value + UTF8Decode(Copy(Line, BeginPos, EndPos - BeginPos) + ': ');
+			
+				LineNr := FindLine('<div class="role-type character">', Page, LineNr + 1);
+				if LineNr > -1 then begin
+					LineNr := LineNr + 2;
+					Line := Page.GetString(LineNr);
+					EndPos := pos('</span>', Line) - 1;
+					Value := Value + UTF8Decode(trim(Copy(Line, 0, EndPos)) + #13#10);
+				end;
+			end;
+			i:=i+1;
+		until ((EndPos=0) or (i>50));
+		HTMLRemoveTags(Value);
+		SetField(fieldActors, Value);
+	end;
+
+
+  //description
+	Line := '';
+	Value := '';
+	LineNr := FindLine('<!-- description -->', Page, 0);
+	if LineNr > -1 then LineNr := FindLine('<article>', Page, LineNr + 1) + 1;
+	if LineNr > 0 then begin
+		repeat
+			LineNr := LineNr + 1;
+			Line := Page.GetString(LineNr);
+			Value2 := UTF8Decode(Line);
+			HTMLRemoveTags(Value2);
+			if Value <> '' then Value := Value + #13#10;
+			Value := Value + trim(Value2);
+			//debug: Showmessage('1:'+Line);
+			//debug: Showmessage('2:'+inttostr(LineNr));
+			//debug: Showmessage('2:'+inttostr(pos('<span class="txt">', Line)));
+		until pos('</article>', Line) > 0;
+	end;
+	//debug: Showmessage('3:'+Line);
+	SetField(fieldDescription, Value);
+
+  //director
+  SetField(fieldDirector, UTF8Decode(GetName(Page, 'rendez')));
+
+  //producer
+  SetField(fieldProducer, UTF8Decode(GetName(Page, 'producer')));
+
+  //writer
+  Value := UTF8Decode(GetName(Page, 'Ã­rÃ³:'));
+  SetField(fieldWriter, Value);
+  if Value = '' then
+  	SetField(fieldWriter, UTF8Decode(GetName(Page, 'forgat')));
+  
+  //composer
+  SetField(fieldComposer, UTF8Decode(GetName(Page, 'zene')));
+    
+  //comments
+  CommentString := '';
+
+  //comments - writer
+  //Value := GetName(Page, 'író:');
+  //if Value<>'' then
+  //  CommentString := CommentString+'Író: '+Value+#13#10;
+
+  //comments - screenplay
+	Value := UTF8Decode(GetName(Page, 'forgat'));
+	if Value<>'' then
+		CommentString := CommentString+'Forgatókönyvíró: '+Value+#13#10;
+  
+  //comments - cameraman
+  Value := UTF8Decode(GetName(Page, 'operat'));
+  if Value<>'' then
+    CommentString := CommentString+'Operatõr: '+Value+#13#10;
+
+  //comments - ?? designer
+  Value := UTF8Decode(GetName(Page, 'díszlettervez'));
+  if Value<>'' then
+    CommentString := CommentString+'Díszlettervezõ: '+Value+#13#10;
+
+  //comments - costum designer
+  Value := UTF8Decode(GetName(Page, 'jelmeztervez'));
+  if Value<>'' then
+    CommentString := CommentString+'Jelmeztervezõ: '+Value+#13#10;
+
+  //comments - music
+  Value := UTF8Decode(GetName(Page, 'zene:'));
+  if Value<>'' then
+    CommentString := CommentString+'Zene: '+Value+#13#10;
+
+  //comments - executive producer
+  Value := UTF8Decode(GetName(Page, 'executive producer'));
+  if Value<>'' then
+    CommentString := CommentString+'Executive producer: '+Value+#13#10;
+
+  //comments - cutter
+  Value := UTF8Decode(GetName(Page, 'vágó:'));
+  if Value<>'' then
+    CommentString := CommentString+'Vágó: '+Value+#13#10;
+
+  //comments - ??
+  Value := UTF8Decode(GetName(Page, 'látványtervez'));
+  if Value<>'' then
+    CommentString := CommentString+'Látványtervezõ: '+Value+#13#10;
+
+  SetField(fieldComments, CommentString);
+
+  //picture
+  LineNr := FindLine('<meta property="og:image" content="', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+	BeginPos := pos('<meta property="og:image" content="', Line) + 35;
+	EndPos := pos('">', Line);
+    Value := UTF8Decode(copy(Line, BeginPos, EndPos - BeginPos));
+    GetPicture(Value); // False = do not store picture externally ; store it in the catalog file
+  end;
+
+
+  //Default language (if you want)
+//  case GetOption('Alapértelmezett nyelv') of
+//    2: SetField(fieldLanguages, 'Magyar');
+//    3: SetField(fieldLanguages, 'Angol');
+//  end;
+end;
+
+Function stringReverse(S : String): String;
+Var
+   i : Integer;
+Begin
+   Result := '';
+   For i := Length(S) DownTo 1 Do
+   Begin
+     Result := Result + Copy(S,i,1) ;
+   End;
+End;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    // trim the disk number
+    MovieName := GetField(fieldOriginalTitle);
+    MovieName := StringReplace(MovieName,' - cd1','');
+    MovieName := StringReplace(MovieName,' - CD1','');
+    MovieName := StringReplace(MovieName,'-CD1','');
+    MovieName := StringReplace(MovieName,'-cd1','');
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Port.hu import', 'A keresendõ film címe:', MovieName) then
+    begin
+      MovieName := StringReplace(MovieName, '&', 'xxampxx');
+      MovieName := UrlEncode(MovieName);
+      MovieName := StringReplace(MovieName, 'xxampxx', '%26');
+      //AnalyzePage('https://port.hu/kereso?type=all&q=' + MovieName); 
+	  AnalyzePage('https://port.hu/kereso?type=movie&q=' + MovieName);
+    end;
+  end else
+    ShowMessage('A szkript futtatásához szükség van az Ant Movie Catalog legújabb verziójára (De legalább a 3.5.0-esre) !');
+end.

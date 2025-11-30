@@ -1,0 +1,473 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Raulsara
+Title=CartelesmMix (ES)
+Description=Extrae información de la web CartelesMix.com
+Site=www.CartelesMix.com
+Language=ES
+Version=2.0
+Requires=3.5.0
+Comments=Tarda un poco, la web carece de buscador, en consecuencia la busqueda es secuencial y alfabética, imprescindible la primera palabra del título.|Previous version by gilistico
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program CartelesMixImportar;
+
+// Creado por Raulsara
+
+uses
+  StringUtils1;
+
+var
+  Title: string;
+  Titleorig: string;
+  c: Char;
+  Index: Integer;
+
+
+//
+// Función que suprime los acentos
+//
+
+function Sinacento(Conacento : String): String;
+
+var
+  Acento, Noacento : String;
+  i : integer;
+begin
+  Acento := 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÿ';
+  Noacento := 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuy';
+ for i := 1  to Length(Acento) do
+    Conacento := StringReplace(Conacento,copy(Acento, i, 1),copy(Noacento, i, 1));
+  result := Conacento;
+end;
+
+//
+// Quita los espacios, deja el simple espacio.
+//
+
+Function Rs(AText: string; LineBreaksToo: Boolean): string;
+
+  begin
+    Result := Trim(StringReplace(StringReplace(StringReplace(AText, #9, ''), #10, ''), #13, ''));
+      while Pos('  ', Result) > 0 do
+      Result := StringReplace(Result, '  ', ' ');
+  end;
+  
+//
+// Función para convertir a ascii
+//
+
+function Caracter(str1: string) : string;
+begin
+  str1 := StringReplace(str1, 'Ã¡'  , 'á');
+  str1 := StringReplace(str1, 'Ã©' , 'é');
+  str1 := StringReplace(str1, 'Ã­' , 'í');
+  str1 := StringReplace(Str1, 'Ã³' , 'ó');
+  str1 := StringReplace(str1, 'Ãº' , 'ú');
+  str1 := StringReplace(str1, 'Ã±' , 'ñ');
+  str1 := StringReplace(str1, 'Ã‰' , 'É');
+  str1 := StringReplace(str1, 'Ã?' , 'Í');
+  str1 := StringReplace(str1, 'Ã“' , 'Ó');
+  str1 := StringReplace(str1, 'Ãš' , 'Ú');
+  str1 := StringReplace(str1, 'Ã‘' , 'Ñ');
+  str1 := StringReplace(str1, 'Â'  ,  '');
+  str1 := StringReplace(str1, 'Ã¢' , 'â');
+  str1 := StringReplace(str1, 'Ãª' , 'ê');
+  str1 := StringReplace(str1, 'Ã®' , 'î');
+  str1 := StringReplace(str1, 'Ã´' , 'ô');
+  str1 := StringReplace(str1, 'Ã»' , 'û');
+  str1 := StringReplace(str1, 'Ã¨' , 'è');
+  str1 := StringReplace(str1, 'Ã¬' , 'ì');
+  str1 := StringReplace(str1, 'Ã²' , 'ò');
+  str1 := StringReplace(str1, 'Ã¹' , 'ù');
+  str1 := StringReplace(str1, 'Ã¤' , 'ä');
+  str1 := StringReplace(str1, 'Ã«' , 'ë');
+  str1 := StringReplace(str1, 'Ã¯' , 'ï');
+  str1 := StringReplace(str1, 'Ã¶' , 'ö');
+  str1 := StringReplace(str1, 'Ã¼' , 'ü');
+  str1 := StringReplace(str1, 'Ã' , 'Á');
+  str1 := StringReplace(str1, 'Ã' ,  'à');
+  str1 := StringReplace(str1, '¥' ,  'å');
+  str1 := StringReplace(str1 , '&#8220;' , '"'  );
+  str1 := StringReplace(str1 , '&#8221;' , '"'  );
+  str1 := StringReplace(str1 , '&#8217;' , '''' );
+  str1 := StringReplace(str1 , '&#8216;' , '''' );
+  str1 := StringReplace(str1 , '&amp;'   , '&'  );
+  str1 := StringReplace(str1 , '&#8211;' , '-'  );
+  str1 := StringReplace(str1 , '&#038;'  , '&'  );
+  str1 := StringReplace(str1 , '&#8243;' , '"'  );
+  str1 := StringReplace(str1 , '&#8230;' , '...');
+  str1 := StringReplace(str1 , '&nbsp;' , '');
+  Str1 := Sinacento (Str1);
+  result := str1;
+  
+end;
+
+//
+// Quitar tags
+//
+
+function DeleteTags(var S: string): string;
+var
+  n,len, tag: Integer;
+  c: char;
+  t: String;
+begin
+  tag := 0;
+  t := '';
+  len := length(s);
+  for n :=1 to len do
+  begin
+    c := Copy(s,n,1);
+      if c = #9 then
+        c := ' ';
+      if(tag=1) then
+      begin
+        if(c='>') then tag := 0;
+          continue;
+      end
+      else
+      begin
+        if(c='<') then
+        begin
+          tag := 1;
+          continue;
+        end;
+          t := t + c;
+      end;
+  end
+  s := t;
+  result := t;
+end;
+
+//
+// Función que quita el primer espacio del string
+//
+
+function QuitaEspacio (Item: string): string;
+var
+  Item2 : string;
+  
+  begin
+    Item2 := Copy(Item , 1 , 1);
+    If item2 = ' ' then
+      begin
+        Delete (Item , 1 , 1);
+      end;
+     result := Item;
+  end;
+
+//
+// Funcion que borra signos y quita acentos
+//
+
+function PreparaTitulo(T: string): string;
+
+var
+  i: Integer;
+  
+begin
+  HTMLDecode(result);
+  result := AnsiLowerCase(T);
+  result := StringReplace(result, chr(146), '');
+  result := StringReplace(result, chr(39), '');
+  result := StringReplace(result, '´', '');
+  result := StringReplace(result, '`', '');
+  result := StringReplace(result, '"', '');
+  result := StringReplace(result, '¿', '');
+  result := StringReplace(result, '?', '');
+  result := StringReplace(result, '¡', '');
+  result := StringReplace(result, '!', '');
+  result := StringReplace(result, '.', '');
+  result := StringReplace(result, ':', '');
+  result := StringReplace(result, ';', '');
+  result := StringReplace(result, '-', '');
+  result := StringReplace(result, '/', '');
+  result := StringReplace(result, '\', '');
+  result := StringReplace(result, '_', '');
+  result := StringReplace(result, 'á', 'a');
+  result := StringReplace(result, 'Á', 'a');
+  result := StringReplace(result, 'À', 'a');
+  result := StringReplace(result, 'é', 'e');
+  result := StringReplace(result, 'í', 'i');
+  result := StringReplace(result, 'ó', 'o');
+  result := StringReplace(result, 'ú', 'u');
+  result := StringReplace(result, 'ä', 'a');
+  result := StringReplace(result, 'ë', 'e');
+  result := StringReplace(result, 'ï', 'i');
+  result := StringReplace(result, 'ö', 'o');
+  result := StringReplace(result, 'ü', 'u');
+  result := StringReplace(result, 'â€“', '-'  );
+  result := StringReplace(result, 'â€¦', '...');
+  result := Caracter (result);
+end;
+
+//
+// Encuentra el numero de paginas que hay para cada letra
+// El numero de pagina puede estar dividido en 2 lineas, en una la palabra
+// pagina y en la otra el numero de pagina, con esta rutina agrupamos en una
+// linea todas las paginas que pueda haber.
+//
+
+function EncuentraPaginas (Titulo: string): string;
+
+Var
+
+LineNr : Integer;
+Line1, Line2, Line3, Line4, Line5, Pagina, PageDir: string;
+CartelesMixPage, Page: TStringList;
+Bool : Boolean;
+
+begin
+  Pagina := '1';
+  PageDir := GetCartelesMixDir(Titulo , Pagina);
+  CartelesMixPage := TStringList.Create;
+  CartelesMixPage.Text := GetPage(PageDir);
+  LineNr := FindLine('Página', CartelesMixPage , 0);
+  Line1 := CartelesMixPage.GetString(LineNr);
+  Line2 := CartelesMixPage.GetString(LineNr + 1);
+  Line3 := CartelesMixPage.GetString(LineNr + 2);
+  Line4 := CartelesMixPage.GetString(LineNr + 3);
+  Line5 := CartelesMixPage.GetString(LineNr + 4);
+  Line1 := Line1 + Line2 + Line3 + Line4 + Line5;
+  Line1 := StringReplace (Line1 , '&nbsp;' , '');
+  Line1 := DeleteTags (Line1);
+  Line1 := Rs (Line1 , Bool);
+  result := Line1;
+end;
+
+//
+// Funcion que crea la URL para acceder a la web.
+// Primer extrae la primera letra del titulo y despues accede
+// a la web donde están las peliculas que empiezan por esa letra
+// Convierte los numeros de posicion inicial del titulo a letras
+//
+
+function GetCartelesMixDir(MovieTitle: string ; Pagina : string): string;
+
+var
+
+d: string;     // Es la primera letra del titulo
+
+
+begin
+  Movietitle := PreparaTitulo(Movietitle);
+  D:= '';
+  C := copy(MovieTitle, 1, 1);
+  if (C = '0') or (C = '4') or (C = '5') then
+    begin
+      D:= 'c';
+    end;
+  if (C = '1') then
+    begin
+      D:= 'u';
+    end;
+  if (C = '2') then
+    begin
+      D:= 'd';
+    end;
+  if (C = '3') then
+    begin
+    D:= 't';
+    end;
+  if (C = '6') or (C = '7') then
+    begin
+      D:= 's';
+    end;
+  if (C = '8') then
+    begin
+      D:= 'o';
+    end;
+  if (C = '9') then
+    begin
+      D:= 'n';
+    end;
+  If (C < '0') or (C > '9') then
+   begin
+     D:= C;
+   end;
+  begin
+    result:='http://www.cartelesmix.com/lista/carteles_'  + D + Pagina + '.htm';
+  end;
+end;
+
+//
+// Analiza la página donde se muestran todas las peliculas que empiezan por
+// la misma letra que el titulo introducido.
+// Busca todas las peliculas con texto igual al introducido.
+// Al final muestra un cuadro con todas las peliculas que tenga en su
+// descripción el texto de la pelicula introducida para seleccionar la pelicula.
+//
+
+function AnalyzePageCartelesMix(Titulo: string ; Pagina: string): string;
+
+var
+  CartelesMixPage, Page: TStringList;
+  PageDir, MovieDir, Line, Line1, Line2, Line3, TitleWeb, PageWeb, Title, Encontrado: string;
+  EndPos, SubPage,  LineNr, LineMov, Index : Integer;
+  Bool : Boolean;
+begin
+    PageDir := GetCartelesMixDir(Titulo , Pagina); // Crea la web con la primera letra del titulo
+    CartelesMixPage := TStringList.Create;
+    CartelesMixPage.Text := GetPage(PageDir);
+    LineNr := 0;
+    Encontrado := '0';
+    while  (FindLine('../fichas', CartelesMixPage, LineNr) > 0) do
+      begin
+        LineNr := FindLine('../fichas', CartelesMixPage, LineNr);
+        Line3  := CartelesMixPage.GetString(LineNr);      // Linea donde esta la web
+        LineNr := LineNr + 1;
+        Line   := CartelesMixPage.GetString(LineNr + 1);      // Lineas donde esta el titulo
+        Line1  := CartelesMIxPage.GetString(LineNr + 2);      // el original y el año
+        Line2  := CartelesMIxPage.GetString(LineNr + 3);
+        Line   := Line + Line1 + Line2;                       // Crea una linea con el contenido de las 3 lineas
+        Line   := Caracter (Line);
+        EndPos := Pos('</span></a>' , Line);
+        Line   := Copy (Line , 8 , Endpos-8);
+        Line   := Rs (Line , Bool);
+        Pageweb := TextBetween (Line3 , 'href="..' , '">');
+        Pageweb := ('http://www.cartelesmix.com' + Pageweb);  // Web de la pelicula
+        Titleweb := TextBefore (Line , '(' , '');             // Titulo de la pelicula
+        Title  := PreparaTitulo(TitleWeb);
+        Titulo := PreparaTitulo(Titulo);
+        if Pos(Titulo, Title) > 0 then
+          begin
+            PickTreeAdd(Line, PageWeb);                 // Mete en la Picklist las peliculas que contienen
+            Encontrado := '1';                          // el titulo introducido con el titulo original
+            result := Encontrado;                       // y el año
+          end;
+      end;
+end;
+
+//
+// Crea la lista de las peliculas que contengan el titulo introducido
+//
+
+procedure PaginasCartelesMix (Titulo: string);
+
+var
+
+  CartelesMixPage, Page: TStringList;
+  Line3, PageWeb, Pagina, Encontrado, EncuentraTitulo : string;
+  LineNr : Integer;
+
+begin
+    EncuentraTitulo := '0';
+    Encontrado := '0';  // Si encontrado = '0' es que no se encuentra la pelicula
+    PickTreeClear;
+    PickTreeAdd('Resultados de la búsqueda para "' + Titulo + '" (www.CartelesMix.com):', '');
+    Line3 := EncuentraPaginas (Titulo);    // Numero de paginas con la 1ª letra del titulo
+    Pagina := '1';
+    Encontrado := AnalyzePageCartelesMix (Titulo , Pagina); // Busca peliculas con el titulo introducido
+    If Encontrado = '1' then                                // en la primera pagina
+      begin
+        EncuentraTitulo := Encontrado;
+      end;
+    If Pos ('Página 2' , Line3) > 0 then
+      begin
+        Pagina := '2';
+        Encontrado := AnalyzePageCartelesMix (Titulo , Pagina);
+        If Encontrado = '1' then
+          begin
+            EncuentraTitulo := Encontrado;
+          end;
+        If Pos ('Página 3' , Line3) > 0 then
+          begin
+            Pagina := '3';
+            Encontrado := AnalyzePageCartelesMix (Titulo , Pagina);
+            If Encontrado = '1' then
+              begin
+                EncuentraTitulo := Encontrado;
+              end;
+            If Pos ('Página 4' , Line3) > 0 then
+              begin
+                Pagina := '4';
+                Encontrado := AnalyzePageCartelesMix (Titulo , Pagina);
+              end;
+          end;
+      end;
+              
+    if (EncuentraTitulo = '1') then
+      begin
+        if PickTreeExec(pageweb) then
+          begin
+            AnalyzeMoviePage (PageWeb); // Muestra los carteles
+          end
+      end
+   else
+     ShowMessage('Titulo ' + Titulo + ' no encontrado en CartelesMix');
+end;
+
+
+ //
+ // Analiza la pagina de la pelicula y extrae los carteles
+ //
+ 
+procedure AnalyzeMoviePage(PageWeb: string);
+
+var
+   Page: TStringList;
+   Page1: TStringList;
+   LineNr, CartelNum : Integer;
+   Line, PagePicture, Cartel : string;
+
+   //
+   // Muestra caratulas
+   //
+
+begin
+   Page := TStringList.Create;
+   Page.Text := GetPage(PageWeb);
+   RemovePicture;
+   PickTreeClear;
+   PickTreeAdd('Resultados de los carteles en (www.CartelesMix.com):', '');
+   LineNr := 1;
+   CartelNum := 0;
+   while  (FindLine('a href="../../carteles/', Page, LineNr) > 0) do
+     begin
+       LineNr := FindLine('a href="../../carteles/' , Page, LineNr);
+       Line  := Page.GetString(LineNr);
+       PagePicture := 'http://www.cartelesmix.com/' + (TextBetween (Line , '../../' , '">'));
+       CartelNum := CartelNum + 1;
+       LineNr := LineNr + 1;
+       Cartel := 'Cartel ' + (IntToStr(CartelNum));
+       PickTreeAdd (Cartel , PagePicture);
+     end;
+
+   PickTreeExec(PageWeb);
+     begin
+       GetPicture (PageWeb);
+     end;
+end;
+
+//
+// Inicio
+//
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    Title := GetField(fieldTranslatedTitle);
+    if Title = '' then
+      Title := GetField(fieldOriginalTitle);
+      Title := PreparaTitulo(Title);
+    if Input('Importar de Carteles.Mix', 'Por favor, introduce el titulo:', Title) then
+      begin
+        Titleorig := Title;
+        PaginasCartelesMix(Title);
+      end;
+  end else
+    ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

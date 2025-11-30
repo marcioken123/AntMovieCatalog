@@ -1,0 +1,233 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Caratulin.ifs
+Description=Sitio con caratulas DVD
+Site=www.caratulin.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Caratulin;
+
+
+
+ 
+
+var
+  MovieName: string;
+  MovieURL: string;
+//----------------------------------------------------------------------------------
+function Acentos(str1: string) :string;
+begin
+
+
+   str1 := StringReplace(str1, 'En&nbsp;cach√©', '***');
+   str1 := StringReplace(str1, 'Cartel de A - ', '');
+ str1 := StringReplace(str1, 'Cartel de B - ', '');
+ str1 := StringReplace(str1, 'Cartel de C - ', '');
+ str1 := StringReplace(str1, 'Cartel de D - ', '');
+ str1 := StringReplace(str1, 'Cartel de E - ', '');
+ str1 := StringReplace(str1, 'Cartel de F - ', '');
+ str1 := StringReplace(str1, 'Cartel de G - ', '');
+ str1 := StringReplace(str1, 'Cartel de H - ', '');
+ str1 := StringReplace(str1, 'Cartel de I - ', '');
+ str1 := StringReplace(str1, 'Cartel de J - ', '');
+ str1 := StringReplace(str1, 'Cartel de K - ', '');
+ str1 := StringReplace(str1, 'Cartel de L - ', '');
+ str1 := StringReplace(str1, 'Cartel de M - ', '');
+ str1 := StringReplace(str1, 'Cartel de N - ', '');
+ str1 := StringReplace(str1, 'Cartel de — - ', '');
+ str1 := StringReplace(str1, 'Cartel de O - ', '');
+ str1 := StringReplace(str1, 'Cartel de P - ', '');
+ str1 := StringReplace(str1, 'Cartel de Q - ', '');
+ str1 := StringReplace(str1, 'Cartel de R - ', '');
+ str1 := StringReplace(str1, 'Cartel de S - ', '');
+  str1 := StringReplace(str1, 'Cartel de T - ', '');
+ str1 := StringReplace(str1, 'Cartel de U - ', '');
+ str1 := StringReplace(str1, 'Cartel de V - ', '');
+ str1 := StringReplace(str1, 'Cartel de W - ', '');
+ str1 := StringReplace(str1, 'Cartel de X - ', '');
+ str1 := StringReplace(str1, 'Cartel de Y - ', '');
+ str1 := StringReplace(str1, 'Cartel de Z - ', '');
+ str1 := StringReplace(str1, 'Cartel de', '');
+ str1 := StringReplace(str1, 'Poster', '');
+ str1 := StringReplace(str1, '- Caratulas de ...', '');
+ str1 := StringReplace(str1, '- Caratulas de Audio, Cine ...', '');
+ str1 := StringReplace(str1, ' - Caratulas de Audio, Cine, Dvd ...', '');
+ str1 := StringReplace(str1, ' - Caratulas de Audio ...', '');
+ str1 := StringReplace(str1, ' - Caratulas de Audio, Cine, Dvd, Divx ...', '');
+   result := str1;
+end;
+//--------------------------------------------------------------------------------
+
+            function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end;
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.caratulin.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('www.caratulin.com/cine/details.php?image_id=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+     
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" clas', strPage);
+          MovieId := Copy(strPage,+44, EndPos-44);
+          MovieAddr := 'http://www.caratulin.com/cine/details.php?image_id=' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          MovieTitle := TextBetween (MovieTitle, '>', '</a>');
+          DeleteTags(MovieTitle);
+          MovieTitle :=Acentos (MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('www.caratulin.com/cine/details.php?image_id=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+
+begin
+
+  // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+// Caratula
+  LineNr := FindLine('<img src="./data/media/', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(Linenr);
+     Item := TextBetween (Line, '<img src="', '" border');
+     GetPicture (Item);
+  end;
+ end;
+
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Caratulin', 'Buscar:', MovieName);
+
+     if(GetOption('No se ha encontrado') = 0) then  Input('Caratulin', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=+%22' + UrlEncode(MovieName)+'%22+site%3Awww.caratulin.com&btnG=B%C3%BAsqueda&meta=');
+
+end.

@@ -1,0 +1,361 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Raulsara
+Title=CartelesPeliculas (ES)
+Description=Extrae información de la web CartelesPeliculas.com
+Site=www.CartelesPeliculas.com
+Language=ES
+Version=1.1
+Requires=3.5.0
+Comments=Tiene buscador se puede poner cualquier palabra
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program CartelesPeliculasImportar;
+
+//
+// Creado por Raulsara
+// updated by carlosmg2
+//
+
+uses
+  StringUtils1;
+
+var
+  Title: string;
+  Titleorig: string;
+  c: Char;
+  Index: Integer;
+
+
+//
+// Función que suprime los acentos
+//
+
+function Sinacento(Conacento : String): String;
+
+var
+  Acento, Noacento : String;
+  i : integer;
+begin
+  Acento := 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÿ';
+  Noacento := 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuy';
+ for i := 1  to Length(Acento) do
+    Conacento := StringReplace(Conacento,copy(Acento, i, 1),copy(Noacento, i, 1));
+  result := Conacento;
+end;
+
+//
+// Función para convertir a ascii
+//
+
+function Caracter(str1: string) : string;
+begin
+  str1 := StringReplace(str1, 'Ã¡' , 'á');
+  str1 := StringReplace(str1, 'Ã©' , 'é');
+  str1 := StringReplace(str1, 'Ã­' , 'í');
+  str1 := StringReplace(Str1, 'Ã³' , 'ó');
+  str1 := StringReplace(str1, 'Ãº' , 'ú');
+  str1 := StringReplace(str1, 'Ã±' , 'ñ');
+  str1 := StringReplace(str1, 'Ã‰' , 'É');
+  str1 := StringReplace(str1, 'Ã?' , 'Í');
+  str1 := StringReplace(str1, 'Ã“' , 'Ó');
+  str1 := StringReplace(str1, 'Ãš' , 'Ú');
+  str1 := StringReplace(str1, 'Ã‘' , 'Ñ');
+  str1 := StringReplace(str1, 'Â'  ,  '');
+  str1 := StringReplace(str1, 'Ã¢' , 'â');
+  str1 := StringReplace(str1, 'Ãª' , 'ê');
+  str1 := StringReplace(str1, 'Ã®' , 'î');
+  str1 := StringReplace(str1, 'Ã´' , 'ô');
+  str1 := StringReplace(str1, 'Ã»' , 'û');
+  str1 := StringReplace(str1, 'Ã¨' , 'è');
+  str1 := StringReplace(str1, 'Ã¬' , 'ì');
+  str1 := StringReplace(str1, 'Ã²' , 'ò');
+  str1 := StringReplace(str1, 'Ã¹' , 'ù');
+  str1 := StringReplace(str1, 'Ã¤' , 'ä');
+  str1 := StringReplace(str1, 'Ã«' , 'ë');
+  str1 := StringReplace(str1, 'Ã¯' , 'ï');
+  str1 := StringReplace(str1, 'Ã¶' , 'ö');
+  str1 := StringReplace(str1, 'Ã¼' , 'ü');
+  str1 := StringReplace(str1, 'Ã' , 'Á');
+  str1 := StringReplace(str1, 'Ã' ,  'à');
+  str1 := StringReplace(str1, '¥' ,  'å');
+  str1 := StringReplace(str1 , '&#8220;' , '"'  );
+  str1 := StringReplace(str1 , '&#8221;' , '"'  );
+  str1 := StringReplace(str1 , '&#8217;' , '''' );
+  str1 := StringReplace(str1 , '&#8216;' , '''' );
+  str1 := StringReplace(str1 , '&amp;'   , '&'  );
+  str1 := StringReplace(str1 , '&#8211;' , '-'  );
+  str1 := StringReplace(str1 , '&#038;'  , '&'  );
+  str1 := StringReplace(str1 , '&#8243;' , '"'  );
+  str1 := StringReplace(str1 , '&#8230;' , '...');
+  str1 := StringReplace(str1 , '&nbsp;' , '');
+//  Str1 := Sinacento (Str1);
+  result := str1;
+
+end;
+
+
+//
+// Funcion que borra signos y quita acentos
+//
+
+function PreparaTitulo(T: string): string;
+
+var
+  i: Integer;
+
+begin
+  HTMLDecode(result);
+  result := AnsiLowerCase(T);
+  result := StringReplace(result, chr(146), '');
+  result := StringReplace(result, chr(39), '');
+  result := StringReplace(result, '´', '');
+  result := StringReplace(result, '`', '');
+  result := StringReplace(result, '"', '');
+  result := StringReplace(result, '¿', '');
+  result := StringReplace(result, '?', '');
+  result := StringReplace(result, '¡', '');
+  result := StringReplace(result, '!', '');
+  result := StringReplace(result, '.', '');
+  result := StringReplace(result, ':', '');
+  result := StringReplace(result, ';', '');
+  //result := StringReplace(result, '-', '');
+  result := StringReplace(result, '/', '');
+  result := StringReplace(result, '\', '');
+  result := StringReplace(result, '_', '');
+  result := StringReplace(result, 'á', 'a');
+  result := StringReplace(result, 'Á', 'a');
+  result := StringReplace(result, 'À', 'a');
+  result := StringReplace(result, 'é', 'e');
+  result := StringReplace(result, 'í', 'i');
+  result := StringReplace(result, 'ó', 'o');
+  result := StringReplace(result, 'ú', 'u');
+  result := StringReplace(result, 'ä', 'a');
+  result := StringReplace(result, 'ë', 'e');
+  result := StringReplace(result, 'ï', 'i');
+  result := StringReplace(result, 'ö', 'o');
+  result := StringReplace(result, 'ü', 'u');
+  result := StringReplace(result, 'â€“', '-'  );
+  result := StringReplace(result, 'â€¦', '...');
+  result := Caracter (result);
+end;
+
+//
+//
+//   P R O C E D U R E
+//
+//
+
+
+//
+// Crea la lista de las peliculas que contengan el titulo introducido
+//
+
+procedure PaginasCartelesPeliculas (Titulo: string);
+
+var
+
+  CPPage : TStringList;
+  Line, PageWeb, TitleWeb, Encontrado, SwFin, TitleWebSin, Any, PageWebList : string;
+  LineNr, ContPagina, i, j,  PosAny : Integer;
+
+begin
+    Encontrado := '0';  // Si encontrado = '0' es que no se encuentra la pelicula
+    PickTreeClear;
+    PickTreeAdd('Resultados de la búsqueda para "' + Titulo + '" (www.CartelesPeliculas.com):', '');
+    Titulo := UrlEncode (Titulo);
+    PageWeb := 'http://www.cartelespeliculas.com/wp/?s=' + titulo;        // Se crea la URL para ver todas las peliculas que contengan el texto introducido
+    CPPage := TStringList.Create;
+    CPPage.Text := GetPage(PageWeb);
+    CPPage.Text := Caracter (CPPage.Text);
+    LineNr := 1;
+    SwFin := '0';
+    ContPagina := 1;
+    Repeat                                                               // Para cada pelicula que contenga el texto mira a ver si coincide con el titulo
+        If FindLine ('bookmark' , CPPage , LineNr) > 0 then              // Puede haber coincidencias con otros campos de la web (Sinopsis, ...)
+          begin
+            LineNr := FindLine('bookmark', CPPage, LineNr);
+            Line  := CPPage.GetString(LineNr);
+            TitleWeb := TextBetween (Line, 'bookmark">' , '<');          // Estrae el titulo
+            LineNr := LineNr + 1;
+            TitleWebSin := Sinacento(Titleweb);
+            Titulo := UrlDecode (Titulo);
+            TitleWebSin  := PreparaTitulo(TitleWebSin);
+            PageWebList := TextBetween (Line, '<a href="' , '" rel="');    // Extrae la direccion Web
+            if Pos(AnsiLowerCase(Titulo), TitleWebSin) > 0 then                           // Verifica si el titulo de la web coincide con el texto
+              begin
+                LineNr := FindLine('quick-read-more', CPPage, LineNr);
+                Line  := CPPage.GetString(LineNr);
+                Delete (Line, 1, 4);
+                For i := 1 to 5 do                                         // Extrae el año para mostrar en la PickList
+                  begin
+                    PosAny := Pos(',' , Line);
+                    Any := Copy (Line, PosAny - 4 , 4);
+                    If (Any > '0000') and (Any < '9999') then
+                      begin
+                        Any:= ' (' + Any + ')';
+                        break
+                      end
+                    else
+                      begin
+                        Any := '';
+                        Delete (Line , PosAny, 1);
+                        end;
+                  end;
+
+                PickTreeAdd(TitleWeb + Any, PageWebList);                   // Añade el titulo, año y direccion Web
+                Encontrado := '1';
+              end
+            else                                             //si no coincide el titulo miramos el primer AKAS
+            begin
+               LineNr := LineNr - 1;
+               LineNr := FindLine('akas', CPPage, LineNr);
+               Line  := CPPage.GetString(LineNr);
+               TitleWeb := TextBetween (Line, 'alt="akas: ' , ',');          // Estrae el titulo
+               LineNr := LineNr + 1;
+               TitleWebSin := Sinacento(Titleweb);
+               Titulo := UrlDecode (Titulo);
+               TitleWebSin  := PreparaTitulo(TitleWebSin);
+               PageWebList := TextBetween (Line, '<a href="' , '" rel="');    // Extrae la direccion Web
+               if Pos(AnsiLowerCase(Titulo), TitleWebSin) > 0 then                           // Verifica si el titulo de la web coincide con el texto
+                  begin
+                     LineNr := FindLine('quick-read-more', CPPage, LineNr);
+                     Line  := CPPage.GetString(LineNr);
+                     Delete (Line, 1, 4);
+                     For i := 1 to 8 do                                         // Extrae el año para mostrar en la PickList
+                       begin
+                        PosAny := Pos(',' , Line);
+                        Any := Copy (Line, PosAny - 4 , 4);
+                        If (Any > '0000') and (Any < '9999') then
+                          begin
+                           Any:= ' (' + Any + ')';
+                           break
+                          end
+                        else
+                          begin
+                           Any := '';
+                           Delete (Line , PosAny, 1);
+                          end;
+                       end;
+
+
+                  PickTreeAdd(TitleWeb + Any, PageWebList);                   // Añade el titulo, año y direccion Web
+                  Encontrado := '1';
+                  end
+               else
+                  begin
+                     SwFin:= '1';
+                  end
+            end
+        end
+        else
+          begin
+            If FindLine ('Entradas Anteriores' , CPpage, LineNr) > 0 then    // Si 'Entradas Anteriores' es que hay mas paginas con coincidencia
+              begin
+                ContPagina := ContPagina + 1;
+                Titulo := UrlEncode (Titulo);
+                PageWeb := 'http://www.cartelespeliculas.com/wp/page/' + (inttostr(ContPagina)) + '/?s=' + titulo;
+                CPPage := TStringList.Create;                                // Lee las paginas con coincidencia
+                CPPage.Text := GetPage(PageWeb);
+                CPPage.Text := Caracter (CPPage.Text);
+                LineNr := 1;
+              end
+            else
+              begin
+                SwFin := '1';
+              end;
+          end;
+
+     until (SwFin = '1');
+
+    if (Encontrado = '1') then
+      begin
+
+        PickTreeSort;
+
+        if PickTreeExec(pageweb) then                                    // Selecciona que nos interese y va a buscar la caratula
+          begin
+            AnalyzeMoviePage (PageWeb); // Muestra los carteles seleccionados
+          end
+      end
+   else
+     ShowMessage('Titulo ' + Titulo + ' no encontrado en CartelesPeliculas');
+
+end;
+
+//
+// Caratula.
+//
+//Accede a la web para extraer la caratula, Primero va a una web intermedia y despues accede a la caratula
+//
+
+procedure AnalyzeMoviePage(PageWeb: string);
+
+var
+   Page: TStringList;
+   LineNr : Integer;
+   Line : string;
+
+begin
+   Page := TStringList.Create;                                        // Accede a la Web donde están todas las caratulas y los datos de la pelicula
+   Page.Text := GetPage(PageWeb);
+   RemovePicture;
+   LineNr := 1;
+   If FindLine ('./../../pgrande3' , Page , LineNr) > 0 then
+     begin
+       LineNr := FindLine('./../../pgrande3', Page, LineNr);
+       Line  := Page.GetString(LineNr);
+       PageWeb := TextBetween (Line, '<a href="./../../' , '" target');    // Forma la Web con la primera caratula que encuentra
+       PageWeb := 'http://www.cartelespeliculas.com/' + PageWeb;
+       PageWeb := StringReplace(pageWeb , 'amp;'   , '&'  );
+       Page.Free
+       Page := TStringList.Create;                                         // Accede a la Web intermedia
+       Page.Text := GetPage(PageWeb);
+       LineNr := 1;
+       LineNr := FindLine('galeria/albums/', Page, LineNr);
+       If FindLine ('galeria/albums/' , Page , LineNr) > 0 then
+         begin
+           Line  := Page.GetString(LineNr);
+           PageWeb := TextBetween (Line, 'id="imagen" src="' , '" width'); // Forma la Web donde esta la caratula
+           PageWeb := 'http://www.cartelespeliculas.com/' + PageWeb;
+           Getpicture (PageWeb);                                           // Envía la caratula al programa.
+         end
+       else
+         ShowMessage('Titulo no encontrado en CartelesPeliculas')
+     end
+   else
+     ShowMessage('Titulo no encontrado en CartelesPeliculas');
+end;
+
+//
+// Inicio
+//
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    Title := GetField(fieldTranslatedTitle);
+    if Title = '' then
+      Title := GetField(fieldOriginalTitle);
+      Title := PreparaTitulo(Title);
+    if Input('Importar de CartelesPeliculas', 'Por favor, introduce el titulo:', Title) then
+      begin
+        Titleorig := Title;
+        PaginasCartelesPeliculas(Title);
+      end;
+  end
+    else
+      ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

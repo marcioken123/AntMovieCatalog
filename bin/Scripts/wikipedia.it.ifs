@@ -1,0 +1,909 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Fulvio53s03
+Title=wikipedia.it
+Description=import film e serie TV
+Site=http://www.wikipedia.it
+Language=IT
+Version=1.4.1
+Requires=4.2.1
+Comments=puo' essere usato per ricerca informazioni (mode=0) oppure per estrarle direttamente da wikipedia.it (mode=1) inserendo l'URL direttamente. |Inserire il termine (Stagione....) nel titolo tradotto riduce i risultati della ricerca (serie TV)
+License=*  The source code of the script can be used in   |*  another program only if full credits to Fulvio53s03*
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mode=0|0|0=normal mode|1=batch mode (indicare url)
+
+[Parameters]
+
+***************************************************)
+
+program wiki;
+uses
+   StringUtils7552;
+// https://it.wikipedia.org/w/index.php?search=boondock&title=Speciale%3ARicerca&wprov=acrw1_-1&fulltext=1
+//'https://it.wikipedia.org/w/index.php?search=Boondocks%20(film)&title=Speciale%3ARicerca&wprov=acrw1_0'
+
+
+const
+   UrlBase = 'https://it.wikipedia.org';                  // base url
+   debug_search = false;                                  // debug mode on/off su ricerca files
+   debug_film_o_serie = false;                            // debug mode on/off su estrazione dati film_o_serie
+   folder = 'f:\prova\wiki\';                                  // directory where to save files
+   apice  = #39;
+   null  = #09;
+   CRLFspace = CRLF + ' ';
+   tappo_fine_ricerca = '<div class="g">Tappodifinericercadaticongoogle</div><div class="g">';    //2016-02-10
+   MaxItems = 50;
+//film_o_serie=0|0|0=film|1=serie TV                          spostare sotto    [Options]     per ripristinarne l'uso    2024-01-08
+var
+   found, film_o_serieok, estrai_episodi_ok: boolean;
+   BatchMode: Integer;
+//   film_o_serie_option: Integer;
+   i, giri, anno_int: Integer;
+   ctr_loop, position_li, posizione: integer;
+   length_commento: integer;
+   titolo_tradotto, Title_album: String;
+   riga_li, init_li, end_li: String;
+   Titolo_ricerca, strtmp: String;
+   nuovo_anno, mese_anno, solo_anno, data_rilascio, label, stagione: String;
+   Address, Save_address, Credit_address, Readdress, Pagestr, save_pagestr: String;
+   film_o_serieName, trama_skeda: String;
+   file_name, campo_URL: String;
+   Num_run, tipo_ricerca, pag_ricerca, save_value, ordine_lista, Salva_autore: String;
+   value, episodi, lista_episodi, riquadro: string;
+   CharNormal, CharAbNormal: string;
+   titolo_ticerca: string;
+   titolo_e_autore, titolo, autore, durata, cover: String;
+   intestazione: string;                            //per testata picktree
+   pre_comments, save_comments, commento_episodi, commento_skeda, commenti: String;
+   batchlog, Page: TstringList;
+   save_pag, artist, initchar, endchar: string;
+   init_wikinote, end_wikinote, wikinote: string;
+
+Procedure elimina_accenti;
+begin
+   titolo_ricerca := StringReplace(titolo_ricerca, 'à', 'a');
+   titolo_ricerca := StringReplace(titolo_ricerca, 'è', 'e');
+   titolo_ricerca := StringReplace(titolo_ricerca, 'é', 'e');
+   titolo_ricerca := StringReplace(titolo_ricerca, 'ì', 'i');
+   titolo_ricerca := StringReplace(titolo_ricerca, 'ò', 'o');
+   titolo_ricerca := StringReplace(titolo_ricerca, 'ù', 'u');
+end;
+
+//------------------------------------------------------------------------------
+// list of film_o_series
+//------------------------------------------------------------------------------
+procedure GetList;
+begin
+   PickTreeClear;                               // clear list
+   found := false;
+   titolo_ricerca := stringreplace(film_o_serieName, ' ', '+');
+   elimina_accenti;
+
+   Address := 'https://it.wikipedia.org/w/index.php?search=' + Titolo_ricerca;      //1 ricerca esatta
+//   if film_o_serie_option = 0 then
+//      Address := Address + '%20(film)&title=Speciale';
+        Address := Address + '%20&title=Speciale';               //2024-01-07
+   Address := Address + '%3ARicerca&wprov=acrw1_0';
+
+//   costruito:'https://it.wikipedia.org/w/index.php?search=Rambo%20(film)&title=Speciale%3ARicerca&wprov=acrw1_0'    2023-12-31
+//   reale:     https://it.wikipedia.org/w/index.php?search=Rambo%20(film)&title=Speciale%3ARicerca&wprov=acrw1_0                  'https://it.wikipedia.org/w/index.php?search=Rambo%20(film)&title=Speciale%3A"Ricerca&wprov=acrw1_0&title=Speciale%3ARicerca&wprov=acrw1_0'
+   intestazione := 'Risultati ricerca esatta per: "';
+   Num_run := '1';
+   apri_ricerca;
+   crea_lista;
+
+   if not found then               //2 ricerca estesa
+      begin
+      Address := 'https://it.wikipedia.org/w/index.php?search=' + Titolo_ricerca;
+      Address := Address + '&title=Speciale%3ARicerca&profile=advanced&fulltext=1&advancedSearch-current=%7B%7D&ns0=1';
+      intestazione := '"Risultati ricerca generica per: "';
+      Num_run := '2';
+      apri_ricerca;
+      crea_lista;
+      end
+
+   if not found then               //3 ricerca estesa
+      begin
+      Address := stringReplace(Address, '%3A', ':');
+      Num_run := '3';
+      apri_ricerca;
+      crea_lista;
+      end
+
+   if not found then
+   begin
+      LogMessage('Nessuna informazione per  "' + film_o_serieName + '"');
+      exit;
+   end;
+  if PickTreeExec(Address) then
+     begin
+       film_o_serieName := Address;
+       AnalyzeMoviePage;
+     end
+     else
+       LogMessage('Nulla selezionato');
+end;
+
+procedure apri_ricerca;
+begin
+   Page.Text := GetPage(Address);
+   pagestr := Page.Text;
+   if debug_search then
+      DumpPage(folder+'wikiList_' + num_run + '_ORIG.html', Pagestr);                // debug
+   PageStr := UTF8Decode(PageStr);
+   if debug_search then
+      DumpPage(folder+'wikiList_' + num_run + '_utf8.html', Pagestr);                // debug
+   Save_address := Address;
+   SetField(fieldURL, Address);
+end;
+
+procedure crea_lista;
+var
+length_pag_ricerca: integer;
+save_riga_li: string;
+cancella_li, titolo_li: string;
+
+begin;
+   ctr_loop := 0;
+
+   HTMLdecode(Pagestr);
+   if Pos('find anything', Pagestr) <> 0 then
+   begin
+      LogMessage('Errore nella ricerca - nessun risultato per ' + file_name);
+      Found := False;
+      exit;
+   end;
+//<div class="searchresults mw-searchresults-has-iw">
+//<p class='mw-search-pager-bottom'>
+//   init_li := '<div class="searchresults mw-searchresults-has-iw">';           //2015-11-25
+//   end_li  := '<div class="mw-search-visualclear">';                           //2015-11-25
+   init_li := '<div class="mw-search-results-container">';             //2024-01-07
+   end_li  := '<div class="mw-search-visualclear">';                             //2024-01-07
+   pag_ricerca := TextBetween(Pagestr, init_li, end_li) + tappo_fine_ricerca + end_li;  //elenco titoli richiesti e tappo ricerca
+   if debug_search then
+      DumpPage(folder+'wikiricerca.html', pag_ricerca);                // debug
+   position_li :=  pos(tappo_fine_ricerca, pag_ricerca);
+   if  position_li = 1 then
+      begin
+      init_li := '<div class="searchresults">';
+//      end_li := '<p class=';                           //FS2020-12-13
+      end_li := '<div class="mw-search-visualclear">';    //FS2020-12-21
+      pag_ricerca := TextBetween(Pagestr, init_li, end_li) + tappo_fine_ricerca;  //elenco titoli richiesti e tappo ricerca
+      end
+   if debug_search then
+      DumpPage(folder+'wikiricerca-1.html', pag_ricerca);                // debug
+
+// inizio pulizia wiki collaterali
+   init_wikinote := '<div id="mw-interwiki-results">';
+   end_wikinote  := '<div class="g">Tappodifinericercadaticongoogle';
+   wikinote := textbetween(pag_ricerca, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote;
+   pag_ricerca := stringreplace(Pag_ricerca, wikinote, '');
+   if debug_search then
+      DumpPage(folder+'wikiricerca_li.html', pag_ricerca);                // debug
+// fine   pulizia wiki collaterali
+
+   pulisci_search_match;                  //2020-11-28
+
+   init_li := 'mw-search-result';                  //2020-11-19
+   end_li  := '</li>';                                          //2020-11-19
+   position_li := pos(init_li, pag_ricerca);
+
+   while position_li > 0 do          //estraggo fino al tappo di fine ricerca
+      begin
+      riga_li := textbetween(pag_ricerca, init_li, end_li) + end_li;
+      save_riga_li := riga_li;
+      riga_li := '<div>' + textbetween(riga_li, '>', 'mw-search-result-data');
+
+      cancella_li := textbetween(riga_li, '<span class="searchmatch"', '</a>') + '</a>';
+      riga_li := stringreplace(riga_li, cancella_li, '');
+      titolo_li := textbetween(riga_li, 'title="', '"');                //FS2020-11-27
+//FS2020-11-27      riga_li := stringreplace(riga_li, titolo_li, '');     //descrizione molto estesa
+      initchar := '<a href="';
+      endchar  := '"';
+//debug      Address  := 'xyz' + apice + '---------' + apice + 'xyz';   //per  visualizzare caratteri
+      Address  := textBetween(riga_li, initchar, endchar);
+      Address := UrlBase + Address;
+//******************************* fin qui OK ****************************
+      initchar := 'title="';
+      endchar  := '"';
+      Title_album  := textBetween(riga_li,initchar, endchar);              //titolo del link
+      riga_li := stringReplace(riga_li, Title_album, '');
+      HTMLRemoveTags(riga_li);
+      Title_album := Title_album + ' - ' + copy(riga_li, 1, 80);
+      found := True;
+      ctr_loop := ctr_loop +  1;
+      if ctr_loop = 1 then
+         begin
+         file_name := intestazione + film_o_seriename + '"';
+         PickTreeAdd(file_name, '');
+         end
+      Titolo_li := Titolo_li + ' - (' + TextAfter(Address, '/wiki/') + ')';
+      PickTreeAdd(Titolo_li, Address);                 //FS2020-11-27
+      found := True;
+
+      init_li := 'mw-search-result';                  //2020-11-19
+//      init_li := '<li class=' + apice + 'mw-search-result' + apice + '>';                  //2020-11-19
+      end_li  := '</li>';
+      pag_ricerca := stringreplace(pag_ricerca, save_riga_li, '');                                           //2020-11-19
+      length_pag_ricerca := length(pag_ricerca);
+      position_li := pos(init_li, pag_ricerca);
+      if length(riga_li) = 0 then               //FS2020-11-23
+         position_li := 0;                      //FS2020-11-23
+      end;
+end;
+
+// elimina risultati dei wiki collaterali (wikibooks, wiktionary ecc.)
+procedure pulisci_wiki_collaterali;
+begin
+   init_wikinote := '<li class="iw-resultset"';
+   end_wikinote  := '</li>';
+   wikinote := textbetween(pag_ricerca, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pag_ricerca);
+   while posizione > 0 do
+       begin
+       pag_ricerca := stringreplace(pag_ricerca, wikinote, '');
+       wikinote := textbetween(pag_ricerca, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       pag_ricerca := stringreplace(pag_ricerca, wikinote, '');
+       posizione :=  pos(init_wikinote, pag_ricerca);
+       end                                                          //fine   pulizia  [......]
+end;
+
+// elimina risultati dei wiki collaterali (wikibooks, wiktionary ecc.)
+procedure pulisci_search_match;
+begin
+   init_wikinote := '<span class="searchmatch">';
+   end_wikinote  := '</span>';
+   wikinote := textbetween(pag_ricerca, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pag_ricerca);
+   while posizione > 0 do
+       begin
+       pag_ricerca := stringreplace(pag_ricerca, wikinote, '');
+       wikinote := textbetween(pag_ricerca, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       pag_ricerca := stringreplace(pag_ricerca, wikinote, '');
+       posizione :=  pos(init_wikinote, pag_ricerca);
+       end                                                          //fine pulizia titolo ricercate
+end;
+
+//------------------------------------------------------------------------------
+// ANALYZE Movie PAGE
+//------------------------------------------------------------------------------
+procedure AnalyzeMoviePage;
+var
+   Lenght, Pays: String;
+   Autore, style, str_min, campo_note: String;
+   minu, minuti, ore, lgth_comm, save_lgth_comm, i: integer;
+   j: Real;
+begin
+   save_comments    := '';
+   commento_episodi := '';
+   commento_skeda   := '';
+   estrai_episodi_ok := false;
+   Address := film_o_serieName;                        //2019.10.19
+   titolo_tradotto := '';
+//FS2020-12-11   estrazione_scheda;
+   if  pos('_stagione)', Address) > 0 then  		  //FS2020-12-11
+       begin
+        estrazione_episodi;			                  //FS2020-12-11
+        estrazione_scheda;                        //FS2020-12-11 Address viene impostato da estrazione_episodi
+       end
+   else
+       estrazione_scheda;                   			//FS2020-12-11
+end;
+
+//------------------------------------------------------------------------------
+// ESTRAE LISTA EPISODI DA SCHEDA
+//------------------------------------------------------------------------------
+procedure estrazione_episodi;
+var
+   tab_episodi: string;
+   save_description, anno: String;
+begin
+   Page.Text := GetPage(Address);
+   pagestr := Page.Text;
+   PageStr := UTF8Decode(PageStr);
+   Save_address := Address;
+   estrai_episodi_ok := true;
+   SetField(fieldURL, Address);
+   Address := textbetween(Pagestr, '<i>Voce principale:', 'title="');
+   Address := textbetween(Address, '<a href="', '"');
+   Address := UrlBase + Address;
+   HTMLdecode(Pagestr);
+   if debug_film_o_serie then
+      DumpPage(folder+'pagina_episodi.html', Pagestr);                // debug
+//*** titolo tradotto
+   initchar := '<title>';                                 //fs2016-06-26
+   endchar :=  '</title>';
+   titolo_tradotto := textbetween(Pagestr, initchar, endchar);
+   titolo_tradotto := stringreplace(titolo_tradotto, ' - Wikipedia', '');
+   titolo_tradotto := stringreplace(titolo_tradotto, 'Episodi di', '');
+   titolo_tradotto := fulltrim(titolo_tradotto);
+   SetField(fieldtranslatedTitle, titolo_tradotto);
+
+   tab_episodi := textbetween(pagestr, '<table class="wikitable">', '</tbody>');
+   tab_episodi := stringreplace (tab_episodi, '<tr>', (CRLF + 'xyz'));
+   tab_episodi := stringreplace (tab_episodi, CRLF, 'xyz');
+   tab_episodi := stringreplace (tab_episodi, 'xyzxyz', CRLF);
+   tab_episodi := stringreplace (tab_episodi, 'xyz', '  -  ');
+   tab_episodi := stringreplace (tab_episodi, (CRLF +CRLF), CRLF);
+   HTMLRemoveTags(tab_episodi);
+   if debug_film_o_serie then
+      DumpPage(folder+'tabella_episodi.html', tab_episodi);
+
+   commento_episodi := ' n' + textafter(tab_episodi, ' n');
+//   commento_episodi := stringreplace(commento_episodi, ('  ' + CRLF), CRLF);
+   commento_episodi := stringreplace(commento_episodi, ('  -  ' + CRLF), CRLF);
+   length_commento := length(commento_episodi);
+   commento_episodi := stringreplace(commento_episodi, (CRLF + '  -  '), CRLF);
+   length_commento := length(commento_episodi);
+   commento_episodi := stringreplace(Commento_episodi, '  -    -  ', '  -  ');
+end;
+
+//------------------------------------------------------------------------------
+// ESTRAE INFORMAZIONI DA SCHEDA
+//------------------------------------------------------------------------------
+procedure estrazione_scheda;
+var
+   save_description, anno: String;
+   cancel_img: string;
+   init_comments, end_comments: string;
+begin
+   Page.Text := GetPage(Address);
+   pagestr := Page.Text;
+   save_pagestr := pagestr;             //FS2020-12-01
+   if debug_film_o_serie  then
+      DumpPage(folder+'pagestr_skeda.html', Pagestr);                         // debug_film_o_serie
+
+// elimina_wikinote
+   init_wikinote := '<span class="mw-editsection">';
+   end_wikinote  := '</span></span>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //individua note wiki
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do                                                       //inizio loop pulizia note [......]
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //individua note wiki
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                                      //fine loop pulizia  [......]
+
+// elimina_link interni wiki
+   init_wikinote := '<sup id="cite_';
+   end_wikinote  := '</sup>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //individua note wiki
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do                                                       //inizio loop pulizia note [......]
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //individua note wiki
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                                      //fine loop pulizia  [......]
+
+// pulisci_avvertenze_wiki;
+   init_wikinote := '<td class="avviso-testo mbox-text">';
+   end_wikinote  := '</td>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);
+   pagestr := stringreplace(pagestr, wikinote, '');
+
+// elimina_immagini destre interne al testo
+   init_wikinote := '<div class="thumb tright">';
+   end_wikinote  := '</div></div>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                          //fine   pulizia  [......]
+
+// elimina_immagini sinistre interne al testo
+   init_wikinote := '<div class="thumb tleft">';
+   end_wikinote  := '</div></div>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                          //fine   pulizia  [......]
+
+// elimina_citazioni interne al testo
+   init_wikinote := '<table class="citazione-table">';
+   end_wikinote  := '</table>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                          //fine   pulizia  [......]
+
+// elimina_formattazioni interne al testo
+   init_wikinote := '<style data-mw-deduplicate=';
+   end_wikinote  := '</style>';
+   wikinote := textbetween(pagestr, init_wikinote, end_wikinote);
+   wikinote := init_wikinote + wikinote + end_wikinote;
+   posizione :=  pos(init_wikinote, pagestr);
+   while posizione > 0 do
+       begin
+       pagestr := stringreplace(pagestr, wikinote, '');
+       wikinote := textbetween(pagestr, init_wikinote, end_wikinote);  //elimina note wiki da trama
+       wikinote := init_wikinote + wikinote + end_wikinote;
+       posizione :=  pos(init_wikinote, pagestr);
+       end                                                          //fine   pulizia  [......]
+
+   if not estrai_episodi_ok then
+      SetField(fieldURL, Address);       //E' una serie: URL già impostato da estrazione_episodi
+   Pagestr := UTF8decode(Pagestr);
+   HTMLdecode(Pagestr);
+   if debug_film_o_serie  then
+      DumpPage(folder+'wikiPageDetail.html', Pagestr);                         // debug_film_o_serie
+
+   if (BatchMode = 0)  and (tipo_ricerca = 'sk ep') then
+      SetField(fieldURL, Address);
+   campo_URL := getfield(fieldurl);
+
+   SetField(fieldDate, DateToStr(Date));
+   Normalizza_Page(pagestr);
+   if debug_film_o_serie  then
+      DumpPage(folder+'wikiPageDetailHTMLdecode.html', pagestr);               // debug_film_o_serie
+//   Page := UTF8Decode(pagestr);                                              //fs2015-01-15
+   film_o_serieok := True;
+   Value := Pagestr;
+//fs 2017.01.28   riquadro := textbetween(Value, '<div id="mw-content-text"', '</div>');
+   riquadro := textbetween(Value, '<table class="sinottico"', '</table>');        //fs 2017.01.28
+   if debug_film_o_serie  then
+      DumpPage(folder+'wikiriquadro.html', riquadro);
+   if riquadro = '' then                                           //fs 2023.12.11
+      begin                                                        //fs 2023.12.11
+      riquadro := textbetween(Value, '<tbody', '</tbody>');        //fs 2023.12.11
+      if debug_film_o_serie  then                                  //fs 2023.12.11
+          DumpPage(folder+'wikiriquadro.html', riquadro);          //fs 2023.12.11
+      end;
+
+//*** titolo tradotto
+   if not estrai_episodi_ok then                //titolo tradotto già estratto da estrazione_episodi
+     begin
+     initchar := '<title>';                                 //fs2016-06-26
+     endchar :=  '</title>';
+     titolo_tradotto := textbetween(Value, initchar, endchar);
+     titolo_tradotto := stringreplace(titolo_tradotto, ' - Wikipedia', '');
+     titolo_tradotto := fulltrim(titolo_tradotto);
+     titolo_tradotto := fulltrim(titolo_tradotto);
+     SetField(fieldtranslatedTitle, titolo_tradotto);
+     end;
+
+//*** Descrizione (trama)
+   label := textbetween(value, '<h2><span class="mw-headline" id="Trama">Trama</span>', '<h2>');
+   cancel_img := textbetween(label, '<div class="thumb tleft">', '</div></div>');  //elimina immagine se presente
+   label := stringreplace(label, cancel_img, '');
+//   cancel_img := textbetween(label, init_wikinote, end_wikinote);  //elimina "modifica" note wiki" ripetute
+//   label := stringreplace(label, cancel_img, '');
+       
+   HTMLRemoveTags(label);
+   label := fulltrim(label);
+   label := stringreplace(label, (CRLF + CRLF), '');
+   trama_skeda := label;
+   save_description := Label;
+
+//*** commento (descrizione generale)
+   init_comments := '<span class="mw-headline" id="Produzione">Produzione</span>';
+   end_comments  := '<span class="mw-headline" id="Note">Note</span>';
+   commento_skeda := textbetween(pagestr, init_comments, end_comments);
+   if length(commento_skeda) = 0 then
+      begin
+      end_comments  := '<span class="mw-headline" id="Altri_progetti">Altri progetti</span>';
+      commento_skeda := textbetween(pagestr, init_comments, end_comments);
+      end;
+      
+   HTMLRemoveTags(commento_skeda);
+   commento_skeda := fulltrim(commento_skeda);
+   if commento_skeda = 'Questa sezione  sull''argomento film è ancora vuota. Aiutaci a scriverla!' then
+      commento_skeda := '';
+   if estrai_episodi_ok then
+      begin
+      setfield(fielddescription, commento_episodi);
+      setField(fieldcomments, trama_skeda);
+      end
+   else
+      begin
+      setfield(fielddescription, trama_skeda);
+      setField(fieldcomments, commento_skeda);
+      end;
+      
+//   *** dati estratti dal riquadro sinottico ***
+//*** country
+   initchar := '>Paese';      endchar :=  '</tr>';
+   label := TextBetween(riquadro, initchar, endchar);
+   HTMLRemoveTags(label);
+   label := stringReplace(label, 'di produzione', '');
+   label := stringReplace(label, 'Stati Uniti d''America', 'USA');
+   label := fulltrim(label);
+   SetField(fieldcountry, label);
+
+   pagestr := save_pagestr;
+   Findcover;
+
+//*** Titolo Originale
+   label := textbetween(riquadro, '>Titolo originale<', '</td>');
+   initchar := '<td';           endchar :=  '</td>';
+   label := initchar + textbetween(label, initchar, '</i>');
+   label := FormatText(label);
+   SetField(fieldoriginalTitle, label);
+
+//*** genere
+   initchar := '>Genere<';
+   label := textbetween(riquadro, initchar, '</tr>');
+   initchar := '<td';           endchar :=  '</td>';
+   label := initchar + textbetween(label, initchar, endchar);
+   HTMLRemoveTags(label);
+   label    := AnsiMixedCase(AnsiLowerCase(label), ' ');
+   SetField(fieldcategory, label);
+
+//*** regia
+   initchar := '>Regia</a>';     endchar :=  '</td>';
+   label := TextBetween(riquadro, initchar, endchar);
+   HTMLRemoveTags(label);
+   label := FormatText(label);
+   SetField(fieldDirector, label);
+
+//*** personaggi e interpreti
+   initchar := '<ul>';
+   endchar :=  '</ul>';
+   label := initchar + TextBetween(riquadro, initchar, endchar) + endchar;
+   initchar := '<li>';
+   label := initchar + TextBetween(riquadro, initchar, endchar) + endchar;
+   HTMLRemoveTags(label);
+   if  label = '' then
+       estrai_attori;
+   SetField(fieldactors, label);
+
+//*** anno
+   anno := textbetween (riquadro, '<th style="">Anno</th>', '</tr>');
+   anno := stringReplace(anno, '– in produzione', ' ');
+   HTMLRemoveTags(anno);
+   anno := fulltrim(anno);
+   if pos('-', anno) > 0 then      //serie in corso
+      anno := textbefore(anno, '-', '');
+   if anno = '' then                     //serie animazione
+      begin
+      anno := textbetween (riquadro, 'TV</th>', '</tr>');
+      HTMLRemoveTags(anno);
+      anno := fulltrim(anno);
+      end;
+   SetField(fieldyear, anno);
+   anno:= getfield(fieldyear);
+   if anno = '' then                     //serie animazione
+      begin
+      anno := textbetween (riquadro, '<span title="italiana">it.</span>', '</tr>');
+      HTMLRemoveTags(anno);
+      anno := fulltrim(anno);
+      end;
+   SetField(fieldyear, anno);
+
+//*** produttore
+   initchar := '>Casa di produzione<';    endchar:= '</tr>';
+   label := textbetween(riquadro, initchar, endchar);
+   label := '<' + stringReplace(label, '<br />', ', ');
+   HTMLRemoveTags(label);                        //   label := stringReplace(label, ' - in produzione', '');
+   SetField(fieldproducer, label);
+
+//*** writer (ideatore della serie TV)  -  soggetto (film)
+   initchar := '>Soggetto';                   //film
+   label := textbetween(value, initchar, '</tr>');
+//   label := textbetween(label, '<td>', '</td>');
+   HTMLRemoveTags(label);
+   SetField(fieldwriter, label);
+   if label = '' then
+      begin
+      initchar := '<th>Ideatore</th>';           //serie
+      label := textbetween(value, initchar, '</tr>');
+//    label := textbetween(label, '<td>', '</td>');
+      HTMLRemoveTags(label);
+      SetField(fieldwriter, label);
+   end;
+
+//*** compositore
+   initchar := '>Musiche';    endchar:= '</tr>';
+   label := textbetween(riquadro, initchar, endchar);
+   label := '<' + stringReplace(label, '<br />', ', ');
+   HTMLRemoveTags(label);                        //   label := stringReplace(label, ' - in produzione', '');
+   SetField(fieldcomposer, label);
+
+end;
+
+// attori assenti dal riquadro e presenti con icone in gallery box
+Procedure estrai_attori;
+var
+   len_label: integer;
+begin
+  initchar := '<ul class="gallery mw-gallery-traditional"';
+  endchar  := '</ul>';
+  if debug_film_o_serie then
+     DumpPage(folder+'actors_pagestr.html', pagestr);                // debug
+  label := textbetween(pagestr, initchar, endchar);
+  label := textafter(label, '">');
+  if debug_film_o_serie then
+     DumpPage(folder+'actors_box.html', label);                // debug
+  HTMLRemoveTags(label);
+  label := fulltrim(label);
+  len_label := length(label);
+  label := stringreplace(label, null,'');
+  len_label := length(label);
+  label := stringreplace(label, (CRLF + CRLF), CRLF);
+  label := stringreplace(label, (CRLF + CRLF), CRLF);
+  label := stringreplace(label, (CRLF + CRLF), CRLF);
+  label := stringreplace(label, ' interpreta ', ' --> ');
+  len_label := length(label);
+  label := stringreplace(label, null,'');
+  if debug_film_o_serie then
+     DumpPage(folder+'actors_extr.html', label);                // debug
+
+end;
+
+Procedure Normalizza_page(Pagina: string);    // elimina i crlf, trasforma delimiters maiuscoli in minuscoli
+begin
+  pagina := RegExprSetReplace('<([^>]+)>', pagina, '<\L\1>', true);
+  CharAbNormal := crlf;   CharNormal := ' ';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '<B';   CharNormal := '<b';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</B';  CharNormal := '</b';
+  pagina := StringReplace(Value, CharAbNormal, CharNormal);
+  CharAbNormal := '<FONT';  CharNormal := '<font';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</FONT';   CharNormal := '</font';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '<TR';   CharNormal := '<tr';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</TR';   CharNormal := '</tr';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '<TD';     CharNormal := '<td';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</TD';    CharNormal := '</td';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '<DIV';   CharNormal := '<div';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</DIV';   CharNormal := '</div';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '<Ol';    CharNormal := '<ol';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+  CharAbNormal := '</Ol';   CharNormal := '</ol';
+  pagina := StringReplace(pagina, CharAbNormal, CharNormal);
+//  >modifica wikitesto<
+end;
+
+//------------------------------------------------------------------------------
+// set show warning (normal mode) or add to log (batch mode)
+//------------------------------------------------------------------------------
+procedure LogMessage(m: string);
+begin
+   if BatchMode > 0 then
+      AddToLog('item '+GetField(fieldNumber)+': '+m)
+   else
+      ShowWarning(m);
+end;
+
+//------------------------------------------------------------------------------
+// add a message in the batch log and save to disk
+// (because I don't know when it's finished...)
+//------------------------------------------------------------------------------
+procedure AddToLog(m: string);
+begin
+//fs2016-12-31    batchlog.Add(m);
+//fs2016-12-31    batchlog.SaveToFile(batchlogfic);
+end;
+
+//------------------------------------------------------------------------------
+// process batch mode
+//------------------------------------------------------------------------------
+procedure wikiBatch;
+var
+   pos_url: integer;
+begin
+   film_o_serieName := GetField(fieldUrl);                      // if no url or another site then ignore
+   pos_url := Pos(UrlBase, film_o_serieName);
+   if pos_url = 0 then
+      begin
+      film_o_serieName := stringreplace(film_o_serieName, 'http://', 'https://');
+      pos_url := Pos(UrlBase, film_o_serieName);
+      end;
+   if (film_o_serieName <> '') and (pos_url > 0) then
+      AnalyzeMoviePage
+   else
+      LogMessage('indirizzo ingnorato ="'+film_o_serieName+'"');
+end;   
+
+//------------------------------------------------------------------------------
+// process normal mode
+//------------------------------------------------------------------------------
+procedure wikiNorm;
+begin
+   file_name:= getField(fieldfilepath);
+   if (GetField(fieldTranslatedTitle) <> '') then
+      film_o_serieName := GetField(fieldTranslatedTitle)          // get film_o_serie name
+   else
+      film_o_serieName := GetField(fieldOriginalTitle);							//mrobama           
+   if film_o_serieName = '' then
+      film_o_serieName := file_name;
+   repeat
+      if not Input('cerca: ' + film_o_serieName, 'Scrivi il nome del film o della serie:'
+          + crlf, film_o_serieName) or (film_o_serieName = '') then exit;
+//      formato := getfield(FieldOriginalTitle);
+      GetList;
+   until film_o_serieok;
+end;
+
+procedure FindCover;
+var
+  pict_dim: Double;
+  Page_cover: TStringList;
+  trova_cover, cover_ok, url_img, new_url_img: string;
+  pos_locandina, lgth_comm: integer;
+  locandina_da: string;
+begin                    // Picture
+  Page_cover := TStringList.Create;
+  url_img := '';
+  new_url_img := '';
+  cover_ok := 'no';
+  pict_dim := 0;
+  save_pagestr := pagestr;
+  locandina_da := 'Locandina: ';
+  Pagestr := textafter(Pagestr, '<span class="mw-headline" id="Collegamenti_esterni">Collegamenti esterni</span>');
+
+//AntonioGenna
+  initchar := 'https://www.antoniogenna.net/';
+  strtmp := TextBetween(Pagestr, initchar, '">');
+  if length(strtmp) > 0   then
+    begin
+    strtmp := initchar + strtmp;
+    pagestr := getpage(strtmp);
+    if debug_film_o_serie then
+       DumpPage(folder+'Antonio_Genna.html', Pagestr);                // debug
+    pos_locandina := pos('alt="Il mondo dei doppiatori - Zona Cinema', pagestr);           //film
+    if pos_locandina = 0 then
+       pos_locandina := pos('alt="Il mondo dei doppiatori - Zona Telefilm"', pagestr);        //animazione
+    if pos_locandina = 0 then
+       pos_locandina := pos('alt="Il mondo dei doppiatori - Zona Animazione"', pagestr);        //animazione
+    if pos_locandina > 0 then
+       begin
+       strtmp := stringreplace(strtmp, '.html', '.jpg');         //eventuali cambi html <---> htm
+       strtmp := stringreplace(strtmp, '.htm', '.jpg');
+       url_img := locandina_da + strtmp;
+       GetPicture (strTmp);
+       Pict_dim	 := GetPictureSize;
+       if Pict_dim > 22000  then
+          cover_ok := 'yes_AntonioGenna';
+       end;
+       pagestr := save_pagestr;
+    end
+
+//IMDB
+  if cover_ok = 'no' then
+    begin
+    initchar := 'https://www.imdb.com/';
+    strtmp := TextBetween(Pagestr, initchar, '">');
+    if length(strtmp) > 0   then
+      begin
+      strtmp := initchar + strtmp;
+      pagestr := getpage(strtmp);
+      if debug_film_o_serie then
+         DumpPage(folder+'IMDB.html', Pagestr);                // debug
+      pos_locandina := pos('<div class="poster">', pagestr);   // cerco sulla pagina IMDB
+      if pos_locandina > 0 then
+         begin
+         strtmp := TextBetween(pagestr, '<div class="poster">', '<img alt="');
+         strtmp := TextBetween(strtmp, '<a href="/', '"');
+         strtmp := initchar + strtmp;
+         pagestr := getpage(strtmp);            //pagina della locandina grande
+         strtmp := TextBetween(Pagestr, '<meta property="og:image" content="', '"/>');
+         url_img := locandina_da + strtmp;
+         GetPicture (strTmp);
+         Pict_dim	 := GetPictureSize;
+         if Pict_dim > 22000  then
+            cover_ok := 'yes_IMDB';
+         end;
+       pagestr := save_pagestr;
+    end;
+  end
+
+//*** cover       locandina da wikipedia  ------------------
+  if cover_ok = 'no' then
+    begin
+    pagestr := save_pagestr;
+    cover := 'https:' + TextBetween(riquadro, 'src="', '"');
+//    if cover <> 'http:' then
+    cover := StringReplace(cover, 'http:', 'https:');
+    if length(cover) > length('https:') then
+        begin
+         GetPicture(cover);
+         Pict_dim	 := GetPictureSize;
+         if Pict_dim > 4000  then
+           begin
+           url_img := locandina_da + cover;
+           cover_ok := 'yes_Wiki';
+           end;
+         end;
+  end;
+
+//*** cover       locandina da wikipedia per stagioni telefilm ------------------
+  if cover_ok = 'no' then
+    begin
+    url_img := locandina_da + getfield(fieldUrl);
+    pagestr := save_pagestr;
+    cover := TextBetween(pagestr, 'meta property="og:image" content="', '"');
+    if length(cover) > length('https:') then
+       GetPicture(cover);
+    Pict_dim	 := GetPictureSize;
+    if Pict_dim > 4000  then
+       begin
+       url_img := locandina_da + cover;
+       cover_ok := 'yes_Wiki_wiki';
+       end;
+  end;
+
+//   cancel_img := '123456781234567812345678';                  //Prova
+//   cancel_img := stringreplace(cancel_img, '1', '   ');       //tutte le ricorrenze sono modificate!
+
+  if url_img <> '' then
+     begin
+     commenti := getfield(fieldcomments);
+     if pos(locandina_da, commenti) > 0 then
+        commenti := textbefore(commenti, (locandina_da + 'https://'), '');   // evito doppio indirizzo locandina nel caso di
+                                                                             // aggiornamento informazioni
+     lgth_comm := length(commenti);
+     if commenti <> '' then
+        commenti := pre_comments + CRLF + commenti + CRLF + url_img;
+     if commenti = '' then
+        commenti := pre_comments + CRLF + url_img;
+     if pos(CRLF, commenti) = 1 then
+        delete(commenti, 1, 1);
+     commenti := fulltrim(stringreplace(commenti, (CRLF + CRLF), CRLF));
+     commenti := fulltrim(stringreplace(commenti, (CRLF + CRLF), CRLF));
+     setfield(fieldcomments, commenti);
+     end
+end;
+
+//------------------------------------------------------------------------------
+//  start here
+//------------------------------------------------------------------------------                                             
+begin
+      if not CheckVersion(4,2,1) then
+      begin
+         ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.1)');
+         exit;
+      end;   
+// get user's parms (used more than once)
+      BatchMode := GetOption('Mode');
+//      film_o_serie_option := GetOption('film_o_serie');
+      Page := TStringList.Create;
+// *********************************************************************
+      if BatchMode = 1 then                                
+          wikiBatch;
+      if BatchMode = 0 then
+          wikiNorm;
+
+end.

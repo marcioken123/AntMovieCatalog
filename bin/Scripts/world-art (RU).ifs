@@ -1,0 +1,362 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Demonic  (EKB, GMT+5)
+Title=world-art
+Description=Imports Anime info with picture from World-art
+Site=http://world-art
+Language=RU
+Version=1.0b (14.12.2006)
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program worldart;
+const
+  BaseAddress = 'http://world-art.ru/';
+var
+  MovieName: string;
+
+function ParseURL(Text:String):String;
+var
+  BeginPos : Integer;
+  EndPos : Integer;
+  Value : String;
+begin
+
+  repeat
+    BeginPos := Pos('<b>',Text);
+    If BeginPos > 0 Then
+    Begin
+      EndPos := Pos('</b>',Text);
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      Value := StringReplace(Value,'<BR>',', ');
+      Value := StringReplace(Value,'<br>',', ');
+      HTMLRemoveTags(Value);
+      Delete(Text,1,EndPos);
+      If Length(result)>0 Then
+        result := result + ', ' + Value
+      else
+        result := Value;
+    end;
+  until BeginPos < 1;
+
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(AnsiLowerCase(Pattern), AnsiLowerCase(List.GetString(i))) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  ID, FilmName, Line: String;
+  Page: TStringList;
+  FilmPage: TStringList;
+  BeginPos, EndPos, LineBeginPos: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('c:\page1.txt');
+  PickTreeClear; // Очистка дерева фильмов
+  PickTreeAdd('Поиск по слову: ' + MovieName, '');
+  LineBeginPos := 0;
+  beginpos:=Findline('Refresh',Page,0);
+if beginpos=0 then
+ begin
+   Line:= Page.GetString(BeginPos);
+               BeginPos := Pos('url=/',Line)+5;
+                EndPos:= Length(line)-1;
+                ID := 'http://world-art.ru/'+copy(Line, BeginPos, EndPos - BeginPos); // Получить адрес страницы
+                AnalyzeMoviePage(ID);
+  end;
+
+  repeat
+    BeginPos := FindLine('bgcolor=#ffffff>', Page, LineBeginPos+1);
+    LineBeginPos := BeginPos;
+    if  BeginPos > 0 then
+      begin
+        // Вывод фильмов в дерево
+        Line:= Page.GetString(BeginPos+2); // Получить строку с адресами
+        repeat
+              BeginPos := Pos('animation/animation.php?id=',Line);
+              If BeginPos>0 Then
+              // поиск возможных вариантов
+              begin
+              Delete(Line,1,BeginPos); //Удаление начала
+                // получаем адрес
+                BeginPos:=Pos('php?id=',Line)+7;
+                EndPos:= Pos('est',Line)-9;
+                ID := 'http://world-art.ru/animation/animation.php?id='+copy(Line, BeginPos, EndPos - BeginPos); // Получить адрес страницы
+
+                // вытаскиваем название
+                BeginPos := Pos('/">',Line)+52;
+                EndPos := Pos('</a>',Line);
+                FilmName := Copy(Line, BeginPos, EndPos - BeginPos); // Получить название для выбора
+                FilmName := StringReplace(FilmName,'&nbsp;',' ');
+                FilmName := StringReplace(FilmName,'<font color=red>','');
+                FilmName := StringReplace(FilmName,'</font>','');
+                PickTreeAdd(FilmName, ID);
+              end;
+        until BeginPos < 1;
+      end;
+  until LineBeginPos < 1;
+
+ 
+  If  PickTreeExec(Address) Then
+      AnalyzeMoviePage(Address); // Проанализировать страницу с фильмом
+end;
+
+procedure AnalyzeMoviePage(Address: String);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value, TmpStr, ViewSerials, Descr : String;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('c:\page2.txt'); //!Отладка
+
+  // URL
+  SetField(fieldURL,Address);
+
+  //Rating
+
+  // Translated Title
+  TmpStr := '<img src=img/back.gif border=0></a>&nbsp;&nbsp;';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+  BeginPos:=Pos(TmpStr,Page.text);
+  EndPos:= Pos(' [</font>',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos);
+
+
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldTranslatedTitle,Value);
+  end;
+
+  // Original Title
+  TmpStr := '</b></font><br>';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+    BeginPos:=Pos(TmpStr,Page.text)+15;
+  EndPos:= Pos('<font size=2><br><br><b>Производство</b>',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+
+    Line := StringReplace(Line, '<br>', ' / ');
+    Line := StringReplace(Line, '<BR>', ' / ');
+    
+//    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+//    Value := UTF8Encode(Line);
+    if Value='' then Value := GetField(fieldTranslatedTitle);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Year
+  TmpStr := '><font size=3 color=#990000>';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+      BeginPos:=Pos(TmpStr,Page.text)+28;
+  EndPos:= Pos('</font></a><font size=3>]',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldYear, Value);
+  end;
+  
+   // Reiting
+  TmpStr := '<br><b>Средний балл</b>:&nbsp;';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+      BeginPos:=Pos(TmpStr,Page.text)+30;
+  EndPos:= Pos('&nbsp;из 10<br>',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldRating, Value);
+  end;
+
+  //Category
+  TmpStr :='<br><b>Жанр</b>:&nbsp;';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+  BeginPos:=Pos(TmpStr,Page.text)+16;
+  EndPos:= Pos('</a><br><b>Тип</b>:',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    Value := StringReplace(Value,'/',', ');
+    SetField(fieldCategory, Value);
+  end;
+
+  //Country
+
+  // Director
+  TmpStr := '<br><b>Режиссёр</b>:';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+  BeginPos:=Pos(TmpStr,Page.text)+20;
+  EndPos:= Pos('</a><br><b>Снято',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos);
+
+
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldDirector, Value);
+  end;
+
+  // Producer
+
+  // Actors
+ (* TmpStr := '<td><b>В ролях:</b>&nbsp;';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := StringReplace(Line,TmpStr,'');
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldActors, Value);
+  end;
+   *)
+   
+   // Description first view
+  TmpStr := '<font size=2 color=#990000>В каком порядке';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+    BeginPos:=Pos(TmpStr,Page.text)+length(TmpStr)-15;
+ //   EndPos := FindLine('</td><td width=2></td></tr></table><br><br>', Page, BeginPos);
+ EndPos:= Pos('<td><b><font size=2 color=#990000>Эпизоды:</font>',Page.text);
+ if EndPos<BeginPos then EndPos:= Pos('<font size=2 color=#99000>Комментарии на этот фильм:',Page.text);
+ 
+// if endpos < beginpos then EndPos:= Pos('</td><td width=2></td></tr></table><br><br><table><tr><td width=3></td><td width=100% height=1',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos);
+
+    Line := StringReplace(Line, '#', #13#10#35);
+    Line := StringReplace(Line, '<br>', #13#10);
+    Line := StringReplace(Line, '<BR>', #13#10);
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    ViewSerials:=Value;
+//    SetField(fieldDescription,Value);
+  end;
+  
+  
+
+   
+  // Description
+  TmpStr := '<td><b><font size=2 color=#990000>Эпизоды:</font>';
+  LineNr := FindLine(TmpStr, Page, 0); 
+  if LineNr > -1 then
+  begin
+    BeginPos:=Pos(TmpStr,Page.text)+49;
+ //   EndPos := FindLine('</td><td width=2></td></tr></table><br><br>', Page, BeginPos);
+ EndPos:= Pos('</td><td width=2></td></tr></table><br><br><center><table',Page.text);
+ if endpos < beginpos then EndPos:= Pos('</td><td width=2></td></tr></table><br><br><table><tr><td width=3></td><td width=100% height=1',Page.text);
+  Line := copy(Page.text, BeginPos, EndPos - BeginPos); 
+  
+
+    Line := 'Эпизоды:<br>'+Line;
+    Line := StringReplace(Line, '<br>', #13#10);
+    Line := StringReplace(Line, '<BR>', #13#10);
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    Descr:=Value;
+//    SetField(fieldDescription,ViewSerials+descr);
+  end;
+  
+  SetField(fieldDescription,ViewSerials+' '+descr);
+  
+  // comments
+  TmpStr := '<font size=2 color=#99000>Комментарии на этот фильм:';
+  LineNr := FindLine(TmpStr, Page, 0); 
+  if LineNr > -1 then
+  begin
+    BeginPos:=Pos(TmpStr,Page.text)+52;
+  EndPos:= Pos('написать мини-обзор</a>',Page.text);
+  Line := '<br>'+copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+
+
+    Line := StringReplace(Line, '<br>', #13#10);
+    Line := StringReplace(Line, '<BR>', #13#10);
+    HTMLDecode(Line);
+    HTMLRemoveTags(Line);
+    Value := Trim(Line);
+    SetField(fieldComments,Value);
+  end;
+
+  // Picture
+  TmpStr := '<table><tr><td Valign=top align=right><img src=';
+  LineNr := FindLine(TmpStr, Page, 0); // Начало строки с рисунком
+if LineNr<1 then begin
+     TmpStr := '<table><tr><td Valign=top align=right><a href=';
+     LineNr := FindLine(TmpStr, Page, 0); // Начало строки с рисунком
+      end;
+  if LineNr > -1 then
+  begin
+    BeginPos:=Pos(TmpStr,Page.text)+length(TmpStr)+1;
+  EndPos:= Pos('.jpg',Page.text)+4;
+  Line := BaseAddress+'animation/'+copy(Page.text, BeginPos, EndPos - BeginPos); 
+
+//    Line := Page.GetString(LineNr);
+//    BeginPos := 29;
+//    EndPos := pos('" ', Line);
+ //   Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Address := Line;
+    GetPicture(Address);
+  end;
+// DisplayResults;
+end;
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import from world-art', 'Enter the title of the movie:', MovieName) then
+      AnalyzePage('http://world-art.ru/search.php?name='+UrlEncode(MovieName)+'&sector=animation');
+end.

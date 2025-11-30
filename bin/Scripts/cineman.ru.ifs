@@ -1,0 +1,208 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Dmitry501
+Title=cineman.ru
+Description=cineman.ru - Russian films
+Site=www.cineman.ru
+Language=RU
+Version=
+Requires=3.5.0
+Comments= Special for Alexsandr
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program cineman_divx;
+const
+  BaseAddress = 'http://www.cineman.ru/';
+var
+  MovieName: string;
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+function HTMLRemove(Value: String): String;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+procedure AnalyzeFilmPage(Address: String);
+var
+  Page : TStringList;
+  Line, Value : string;
+  LineNr, BeginPos, EndPos: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  // URL
+  SetField(fieldURL, Address);
+  // Year
+  LineNr := FindLine('Год', Page, 0);
+  if LineNr > -1 then begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldYear, Value);
+  end;
+  // Title
+  LineNr := FindLine('<big><strong>', Page, 0);
+  if LineNr > -1 then begin
+    Value := Page.GetString(LineNr+2);
+    Value := Value + Page.GetString(LineNr+3);
+    Value := HTMLRemove(Value);
+    LineNr := pos('&nbsp', Value);
+    SetField(fieldTranslatedTitle, Left(Value,LineNr-1));
+    Value := copy(Value, LineNr+5,Length(Value));
+    Value := StringReplace(Value, '(', '');
+    Value := StringReplace(Value, ')', '');
+    SetField(fieldOriginalTitle, Value);
+  end;
+  // Director
+  LineNr := FindLine('Режиссёр:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldDirector, Value);
+  end;
+  // Actors
+  LineNr := FindLine('В ролях:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldActors, Value);
+  end;
+  //Country
+  LineNr := FindLine('Страна:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldCountry, Value);
+  end;
+  //Category
+  LineNr := FindLine('Жанр:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldCategory, Value);
+  end;
+  //Description
+  LineNr := FindLine('Комментарии:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldDescription, Value);
+  end;
+  // Discs
+  LineNr := FindLine('Количество дисков:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldDisks, Value);
+  end;
+  // Length
+  LineNr := FindLine('Время:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldLength, Value);
+  end;
+  // Video
+  LineNr := FindLine('Формат видео:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldVideoFormat, Value);
+   end;
+  // Audio
+  LineNr := FindLine('Формат звука:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr+1);
+    Value := HTMLRemove(Value);
+    SetField(fieldAudioFormat, Value);
+   end;
+  // Get Picture
+  LineNr := FindLine('<img src=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<img src=', Line)+11;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos(' ', Line);
+    Value := BaseAddress + copy(Line, 1, EndPos - 1);
+    GetPicture(Value); // False = do not store picture externally ; store it in the catalog file
+  end;
+end;
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndPos: Integer;
+  Line: string;
+  MovieAddress, findMovieName : string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if (pos('найдено позиций :', Page.Text)>0) then
+  begin
+    PickTreeAdd('Найдено на cineman.ru', '');
+    LineNr :=0;
+    repeat
+      LineNr := FindLine('<td width=29%  height= 10><font size=2 color=#1B5188><strong>', Page, LineNr);
+      If LineNr >0 Then Begin
+        Line := Page.GetString(LineNr);
+        StartPos := pos('<a href=', Line) + 8;
+        EndPos := pos(' target=_blank>',Line);
+        MovieAddress := 'cgi/' + copy(Line, StartPos, EndPos - StartPos);
+        StartPos := EndPos + 15;
+        EndPos := pos('</a><strong>',Line);
+        FindMovieName := copy(Line, StartPos, EndPos - StartPos);
+        HTMLRemoveTags(FindMovieName);
+        HTMLDecode(FindMovieName);
+        PickTreeAdd(FindMovieName, BaseAddress + MovieAddress);
+        LineNr := LineNr + 1;
+      End;
+    until (LineNr<1);
+    if PickTreeExec(Address) then begin
+      AnalyzeFilmPage(Address);
+    end;
+    Page.Free;
+  end;
+  //DisplayResults;
+end;
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Import from cineman.ru', 'Enter the title of the movie:', MovieName) then begin
+    MovieName:=AnsiLowerCase(MovieName);
+    MovieName:=AnsiUpFirstLetter(MovieName);
+    AnalyzePage('http://www.cineman.ru/cgi/search.pl?WORD='+UrlEncode(MovieName)+'&TYPE=name');
+  end;
+end.
+

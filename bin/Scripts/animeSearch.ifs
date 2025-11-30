@@ -1,0 +1,274 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Jan
+Title=AniSearch
+Description=AniSearch Script
+Site=www.anisearch.de
+Language=DE
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program CUPictureGrab;
+var
+  MovieName: string;
+uses
+  StringUtils1,  BatchCommon7552, StringUtils7552;
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, OriginalTitle, TranslatedTitle, MovieTitle,MovieUrl, MovieDate, MovieID: string;
+  BeginPos, EndPos: Integer;
+  Line: string;
+  Log: array of string;
+  Page, Page2: TStringList;
+  LineNr: Integer;
+  FindLNr: Integer;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  AnzahlSuchTreffer: String;
+  AnzahlPos: Integer ;
+  Nureine: Integer;
+  
+  
+  
+begin
+  strPage := GetPage(Address);
+  
+  
+  
+  // Abfrage Ob mehrere Suchergebnisse erzielt wurden
+   PickTreeClear();
+
+  Page2 := TStringList.Create;
+  Page2.Text := strPage;
+   LineNr := FindLine('<strong>Treffer</strong>', Page2, 0);
+   if LineNr <> -1 then
+   begin
+   //-------------..
+   Line := Page2.GetString(LineNr);
+   AnzahlSuchTreffer:= TextBetween (Line,'<strong>Treffer</strong> [',']');
+   AnzahlPos:=StrToInt(AnzahlSuchTreffer,AnzahlPos);
+     while (AnzahlPos) > 0    do
+      begin
+        LineNr := FindLine('<tr>', Page2, LineNr);
+        LineNr := LineNr + 3;
+    Line := Page2.GetString(LineNr);
+        //Auswahl der Filme
+         //Suchen Nach Englischer Titel;OriginalTitel..
+     BeginPos := Pos('title="englischer Titel"',Line);
+     if BeginPos <> 0 then
+  begin
+     MovieTitle := TextAfter(Line,'title="englischer Titel" /> <a href=');
+     MovieUrl :=  TextBetween(MovieTitle,'forward.php?id=','">');
+     MovieTitle := TextBetween (MovieTitle,'id='+MovieUrl,'</a>');
+    MovieTitle := StringReplace(MovieTitle,'</span>','');
+      MovieTitle := StringReplace(MovieTitle,'<span class="highlight">','');
+    MovieUrl := 'http://anisearch.de/index.php?page=anime&id=' + MovieUrl+'&hentai=yes';
+        MovieTitle := StringReplace(MovieTitle,'>','');
+           MovieTitle := StringReplace(MovieTitle,'"','');
+    PickTreeAdd(MovieTitle,  MovieUrl);
+      end;
+    //Suche nach Synonym
+   BeginPos := Pos('title="Synonym"',Line);
+     if BeginPos <> 0 then
+  begin
+     MovieTitle := TextAfter(Line,'title="Synonym" /> <a href=');
+     MovieUrl :=  TextBetween(MovieTitle,'forward.php?id=','">');
+     MovieTitle := TextBetween (MovieTitle,'">','</a');
+    MovieTitle := StringReplace(MovieTitle,'</span>','');
+     MovieTitle := StringReplace(MovieTitle,'<span class="highlight">','');
+       MovieTitle := StringReplace(MovieTitle,'>','');
+              MovieTitle := StringReplace(MovieTitle,'"','');
+    MovieUrl := 'http://anisearch.de/index.php?page=anime&id=' + MovieUrl+'&hentai=yes';
+
+    PickTreeAdd(MovieTitle,  MovieUrl);
+
+
+  end;
+
+
+    //Suche nach Ortiginal Name
+   BeginPos := Pos('title="Original-Titel"',Line);
+     if BeginPos <> 0 then
+  begin
+     MovieTitle := TextAfter(Line,'title="Original-Titel" /> <a href=');
+     MovieUrl :=  TextBetween(MovieTitle,'forward.php?id=','">');
+     MovieTitle := TextBetween (MovieTitle,'">','</a');
+    MovieTitle := StringReplace(MovieTitle,'</span>','');
+     MovieTitle := StringReplace(MovieTitle,'<span class="highlight">','');
+     MovieTitle := StringReplace(MovieTitle,'<span class="highlight">','');
+      MovieTitle := StringReplace(MovieTitle,'>','');
+             MovieTitle := StringReplace(MovieTitle,'"','');
+    MovieUrl := 'http://anisearch.de/index.php?page=anime&id=' + MovieUrl+'&hentai=yes';
+    PickTreeAdd(MovieTitle,  MovieUrl);
+
+
+  end;
+
+
+
+;       AnzahlPos := Anzahlpos -1 ;
+    end;
+     PickTreeExec(Address);
+    end;
+
+    
+    
+
+
+
+
+
+
+
+ Nureine :=  Pos('http://anisearch.de/index.php?page=suche&mode=auswahl&qsearch=',Address);
+if Nureine = 1 then
+
+begin
+MovieTitle :=  TextBetween(strPage,'?page=anime&amp;id=','&amp');
+Address := 'http://anisearch.de/index.php?page=anime&id=' + MovieTitle  +'&hentai=yes' ;
+end;
+
+strPage := GetPage(Address);
+
+//Auswertung der Anime Seite
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := strPage;
+
+  // Original
+  LineNr := FindLine('<td valign="top" class="atitle1">Original</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+
+    Item := TextBetween (Line, '<td class="acontent1">', '</td>');
+
+    HTMLDecode(Item);
+
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+
+
+
+
+  ////Translated Englisch + Synonyme ..
+  LineNr := FindLine('<td valign="top" class="atitle1">Englisch</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+
+    Item := TextBetween (Line, '<td class="acontent1">', '</td>');
+
+    //HTMLDecode(Item);
+
+    LineNr := FindLine('<td valign="top" class="atitle1">Synonym</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+       Line := Page.GetString(LineNr+1);
+
+    Item := Item + ',' + TextBetween (Line, '<td class="acontent1">', '</td>');
+ end;
+  SetField(fieldTranslatedTitle, Trim (Item));
+  end;
+
+  //Typ + Anzahl Episode, Jahr
+
+  LineNr := FindLine('<td valign="top" class="atitle2">Typ / Jahr</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  Item := TextBetween (Line, '<td class="acontent2">', ', ');
+  SetField(fieldSource, Trim (Item));
+  Item := TextBetween (Line, '<strong>', '</strong>');
+  SetField(fieldDisks, Trim (Item));
+  Item := TextBetween (Line, '/ ', '</td>');
+  Item := Copy(Item,1,4);
+  SetField(fieldYear, Trim (Item));
+
+  end;
+
+  //Land
+
+  LineNr := FindLine('tlich in</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  Item := TextBetween (Line, '<td class="acontent1">', '</td>');
+  SetField(fieldCountry, Trim (Item));
+  end;
+
+   // Personen << Muss ich mal schauen >>
+
+
+
+   //Beschreibung = Firmen + Webseite + Beschreibung
+     LineNr := FindLine('<td valign="top" class="atitle1">Firmen</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  Item := TextBetween (Line, '<td class="acontent1">', '</td>');
+  HTMLDecode(Item);
+  end;
+     LineNr := FindLine('<td valign="top" class="atitle2">Webseite</td>', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  Item := Item + '<br>' + TextBetween (Line, '<td class="acontent2">', '</td>');
+  HTMLDecode(Item);
+  end;
+     LineNr := FindLine('<div class="xhead bold">Anime Kurzbeschreibung</div>', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr);
+  Item := '<br>' + Item + TextBetween (Line, ';">', '</div>');
+  HTMLDecode(Item);
+  end;
+  SetField(fieldDescription, Trim(Item));
+
+
+
+  //Bild
+  LineNr := FindLine('img_anime/', Page, 0);
+  if LineNr <> -1 then
+  begin
+  Line := Page.GetString(LineNr);
+
+
+  Item := TextBetween (Line, '<img src="', '"');
+  Item := 'http://anisearch.de/'+ Item;
+GetPicture(Item);
+  end;
+  
+
+
+
+end;
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('AniSearch', 'Titel des Filmes:', MovieName) then
+    begin
+      AnalyzePage('http://anisearch.de/index.php?page=suche&mode=auswahl&qsearch=' + UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

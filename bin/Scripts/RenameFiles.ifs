@@ -1,0 +1,116 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=RenameFiles
+Description=Rename the media files using a field containing the filename
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=?
+Version=1.3 (29/07/2012)
+Requires=4.1.0
+Comments=
+License=
+GetInfo=0
+
+[Options]
+Number=1|1|1=Yes|0=No
+Title=0|0|0=Translated title [Original title]|1=Translated title|2=Original title
+Year=1|1|1=Yes|0=No
+Languages=1|1|1=Yes|0=No
+Subtitles=1|1|1=Yes|0=No
+Categories=0|0|1=Yes|0=No
+Source=0|0|1=Yes|0=No
+VideoFormat=0|0|1=Yes|0=No
+AudioFormat=0|0|1=Yes|0=No
+Framerate=0|0|1=Yes|0=No
+
+***************************************************)
+
+program RenameFiles;
+uses
+  FieldsUtils, SoulSnakeUtils;
+
+var
+  path, filename, filepath, nameext, ext, newname, s1, s2 : string;
+  nb, i, field : Integer;
+
+begin
+  //path := 'C:\Test\';
+  
+  if GetIteration = 0 then
+  begin
+    field := SelectFieldOrCustomField;
+    if field = -1 then
+      Exit;
+
+    if (path = '') then
+    begin
+       Input('Folder path contening media files', 'Folder path (leave blank to use filename path in field):', path);
+       if path <> '' then
+        path := IncludeTrailingPathDelimiter(path);
+    end;
+  end;
+  
+  filename := GetFieldOrCustomField(field);
+  filepath := ExtractFilePath(filename);
+  nameext := ExtractFileName(filename);
+  ext := ExtractFileExt(nameext);
+  nb := StrToInt(GetField(fieldDisks), 0);
+  //ShowMessage('field = ' + IntToStr(field) + #10 + 'path = ' + path + #10 +
+  //  'filename = ' + filename + #10 + 'filepath = ' + filepath + #10 +
+  //  'nameext = ' + nameext + #10 + 'ext = ' + ext + #10 + 'nb = ' + IntToStr(nb) + #10);
+  
+  if ((nameext <> '') and (ext <> '')) then
+  begin
+    newname := GenerateFilenameWithGetOptions();
+    //ShowMessage('newname = ' + newname);
+    if (newname <> '') then
+    begin
+      if (nb > 1) then
+      begin
+        for i:=1 to nb do
+        begin
+          if path <> '' then 
+            s1 := path + StringReplace(nameext, 'Cd1', 'Cd' + IntToStr(i))
+          else
+            s1 := filepath + StringReplace(nameext, 'Cd1', 'Cd' + IntToStr(i));
+          if path <> '' then
+            s2 := path + newname + ' Cd' + IntToStr(i) + ext
+          else
+            s2 := filepath + newname + ' Cd' + IntToStr(i) + ext;
+          //ShowMessage('s1 = ' + s1 + #10 + 's2 = ' + s2 + #10); 
+          if MoveFile(s1, s2) then
+          begin
+            SetFieldOrCustomField(field, filepath + newname + ' Cd1' + ext);
+          end else
+          begin
+            if FileExists(s1) and FileExists(s2) then
+              ShowMessage('Impossible to rename "' + s1 + '" to "' + s2 + '" because another file has already the same name.');
+          end;
+        end;
+      end else
+      begin
+        if path <> '' then
+          s1 := path + nameext
+        else
+          s1 := filepath + nameext;
+        if path <> '' then
+          s2 := path + newname + ext
+        else
+          s2 := filepath + newname + ext; 
+        //ShowMessage('s1 = ' + s1 + #10 + 's2 = ' + s2 + #10); 
+        if MoveFile(s1, s2) then
+        begin
+          SetFieldOrCustomField(field, filepath + newname + ext);
+        end else
+        begin
+          if FileExists(s1) and FileExists(s2) then
+            ShowMessage('Impossible to rename "' + s1 + '" to "' + s2 + '" because another file has already the same name.');
+        end;
+      end;
+    end;
+  end;
+end.

@@ -1,0 +1,373 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=yasia22
+Title=HurtomCom
+Description=Movie importation script for Hurtom.COM forum
+Site=www.hurtom.com/torrents/forum/
+Language=UA
+Version=0.0.3 (2009-11-08)
+Requires=3.5.1
+Comments=This script is not 100% accurate, as forum users describe movies in many different ways.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+Awards=1|1|0=Do not import awards|1=Import awards to Description field, after the summary|2=Import awards to Comments field, after comments
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not ask for movie title, but halts if no movie found
+CrewMembers=1|1|0=Don't get any of the crew|1=Get the writer only|2=Get all available
+VideoType=3|1|0=[UA] DVD|1=[UA] HD|2=[UA] Movie|3=[UA] Cartoon|4=[UA] Series|5=[UA] Cartoon Series|6=[UA] ArtHouse|7=Movie|8=Cartoon|9=Series|10=Cartoon Series|11=ArtHouse|12=Anime|13=Trailer|14=Subtitled|15=[TV] Music|16=[TV] Documentary|17=[TV] Sport|18=[TV] History|19=[TV] Show
+
+***************************************************)
+
+program HurtomCom;
+
+uses StringUtils1;
+
+var
+    MovieName: String;
+    MovieURL: String;
+    MovieNumber: String;
+    isFound: Boolean;
+    FoundAddr: String;
+    Forums: array of Integer;
+
+
+// *** Analyze search results page *** //
+// *** @input: link to the forum thread of movies/video *** //
+// *** @ouput: list of movies *** //
+// *** Calls AnalyzeMoviePage() if exact movie found *** //
+
+procedure AnalyzePage(Address: String);
+var
+    PageStr, NextPage, MovieAddr, MovieTitle, MovieYear, MovieID: String;
+    BeginPos, EndPos: Integer;
+    LastPage: Boolean;
+    Pages: Integer;
+    MovieCount: Integer;
+    
+begin
+    LastPage := True;
+    PageStr := GetPage(Address);
+
+    if (0 < Pos('Сторінка:&nbsp;&nbsp;<b>1</b>', PageStr)) then
+        PickTreeClear;
+    if (0 < Pos('>наступна</a></span>', PageStr)) then
+    begin
+        LastPage := False;
+//        NextPage := TextBetween(PageStr, '</a>&nbsp;&nbsp;<a href="viewforum.php?f=', '">наступна');
+        NextPage := TextBetween(PageStr, '</b>, <a href="viewforum.php?f=', '">');
+        NextPage := StringReplace(NextPage, 'amp;', #38);
+        NextPage := 'http://www.hurtom.com/torrents/forum/viewforum.php?f=' + NextPage;
+    end;
+    
+    BeginPos := Pos('thCornerR', PageStr);
+    if (BeginPos > 0) then
+    begin
+        Delete(PageStr, 1, BeginPos);
+        BeginPos := Pos('<td class="row1" width="100%">', PageStr);
+        EndPos := 1;
+        while ((BeginPos > 0) and (EndPos > 0) and not (isFound)) do
+        begin
+            Delete(PageStr, 1, BeginPos);
+            EndPos := Pos('</td>', PageStr);
+            MovieID := TextBetween(PageStr, '?t=', '"');
+            MovieAddr := 'http://www.hurtom.com/torrents/forum/viewtopic.php?t=' + MovieID;
+            MovieTitle := TextBetween(PageStr, '" class="topictitle">', '</a>');
+            HTMLRemoveTags(MovieTitle);
+            HTMLDecode(MovieTitle);
+            MovieYear := TextBetween(MovieTitle, ' (', ')');
+            if 0 < Length(MovieYear) then
+                MovieTitle := TextBefore(MovieTitle, ' (', '');
+            if (EqualIgnoreCase(MovieName, MovieTitle)) then
+            begin
+                isFound := True;
+                FoundAddr := MovieAddr;
+            end; // names are equal
+            PickTreeAdd(MovieTitle + ' (' + MovieYear + ')', MovieAddr);
+            BeginPos := Pos('<td class="row1" width="100%">', PageStr);
+            if (Pos('</table>', PageStr) < BeginPos) then
+                BeginPos := -1;
+        end; // while there are more movies to add
+    end; // if there are any search results
+    
+    if (LastPage) then
+    begin
+        if (isFound) then
+            AnalyzeMoviePage(FoundAddr)
+        else
+        begin
+            PickTreeSort;
+            if PickTreeExec(Address) then
+                AnalyzeMoviePage(Address);
+        end; // exact movie title was not found
+    end // last page
+    else
+    begin
+        AnalyzePage(NextPage);
+    end;
+end;
+// *** End of AnalyzePage() *** //
+
+// *** Analyze particular movie page *** //
+// *** @input: link to the movie page*** //
+// *** @output: parsed values *** //
+procedure AnalyzeMoviePage(Address: String);
+var
+    Page: TStringList;
+    PageStr: String;
+    Item, Crew: String;
+    DescStart: Integer;
+    
+begin
+    Page := TStringList.Create;
+    PageStr := GetPage(Address);
+    // *  Original title and year* //
+    if (CanSetField(fieldOriginalTitle)) then
+    begin
+        Item := GetProperty(PageStr, '<a class="maintitle"', '</td>', '>', '</a>');
+        if (0 < Length(TextBetween(Item, ' (', ')'))) then
+        begin
+            SetField(fieldYear, TextBetween(Item, ' (', ')'));
+            SetField(fieldOriginalTitle, TextBefore(Item, ' (', ''));
+            SetField(fieldMediaType, TextAfter(Item, ') '));
+        end
+        else
+            SetField(fieldOriginalTitle, Item);
+    end; // Original title
+    // * Director(s) * //
+    if (CanSetField(fieldDirector)) then
+        SetField(fieldDirector, GetProperty(PageStr, 'Режисер', '/>', '</span> ', '<br'));
+    // *  Studio * //
+    if (CanSetField(fieldCountry)) then
+    begin
+        Item := GetProperty(PageStr, 'Кіностудія', '/>', '</span> ', '<br');
+        if (0 = Length(Item)) then
+            Item := GetProperty(PageStr, 'Країна', '/>', '</span> ', '<br');
+        if Pos('Довженка', Item) > 0 then
+            Item := 'Довженка';
+        SetField(fieldCountry, Item);
+    end; // Studio/country added
+    // *  Category * //
+    if (CanSetField(fieldCategory)) then
+        SetField(fieldCategory, GetProperty(PageStr, 'Жанр', '/>', '</span>', '<br'));
+    // *  Length * //
+    if (CanSetField(fieldLength)) then
+    begin
+        Item := GetProperty(PageStr, 'Тривалість', '/>', '</span>', '<br');
+        Item := GetProperty(PageStr, 'Тривалість', '/>', '</span>', '<br');
+        Item := IntToStr(StrToInt(TextBefore(Item, ':', ''), 0) * 60 + StrToInt(TextBetween(Item, ':', ':'), 0));
+        SetField(fieldLength, Item);
+    end;
+    // * URL * //
+    if (CanSetField(fieldURL)) then
+        SetField(fieldURL, Address);
+    // *  Description * //
+    if (CanSetField(fieldDescription)) then
+    begin
+        Item := GetProperty(PageStr, 'Сюжет:', 'style="font-weight: bold"', '<span style="font-style: italic">', '</span>');
+        SetField(fieldDescription, Item);
+    end; // Description
+    // *  Picture * //
+    if (CanSetPicture) then
+        ImportPicture(PageStr, '', 'img resizemod="on"', 'border="0"');
+    // * Actor(s) * //
+    if (CanSetField(fieldActors)) then
+    begin
+        Item := GetProperty(PageStr, 'ролях', '/>', '</span> ', '<br');
+        if (0 = Length(Item)) then
+            Item := GetProperty(PageStr, 'Актор', '/>', '</span> ', '<br');
+        SetField(fieldActors, Item);
+    end; // Actor(s) added
+    // * Award(s) * //
+    Item := GetProperty(PageStr, 'Нагород', 'align="center"', '</span> ', '<div');
+    case GetOption('Awards') of
+        0:
+            Item := '';
+        1:
+            if (Length(Item) > 0) then
+                SetField(fieldDescription, GetField(fieldDescription) + #13#10 + Item);
+        2:
+            if (Length(Item) > 0) then
+                SetField(fieldComments, Item);
+    end; // Case awards option
+    // * Crew  members: writer(s), operator(s), composer(s), artist(s), sound editor(s) * //
+    Crew := '';
+    case GetOption('CrewMembers') of
+        0: // No crew
+        begin
+            Crew := '';
+        end; // case 0
+        1: // Writer(s) only
+        begin
+            if (CanSetField(fieldProducer)) then
+            begin
+                Crew := GetProperty(PageStr, 'ценар', '/>', '</span> ', '<br');
+                if (0 < Length(Crew)) then
+                    Crew := StringReplace(Crew, ', ', ' (сценарист), ') + ' (сценарист)';
+                SetField(fieldProducer, Crew);
+            end; // Writer(s) found
+        end; // case 1
+        2: // Whole crew
+        begin
+            if (Pos('ценар', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'ценар', '/>', '</span> ', '<br');
+                if (0 < Length(Item)) then
+                    Item := StringReplace(Item, ', ', ' (сценарист), ') + ' (сценарист)';
+                Crew := Item;
+            end; // Writer(s)
+            if (Pos('Композитор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Композитор', '/>', '</span>', '<br');
+                Item := StringReplace(Item, ', ', ' (композитор), ') + ' (композитор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Composer(s)
+            if (Pos('Оператор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Оператор', '/>', '</span>', '<br');
+                Item := StringReplace(Item, ', ', ' (оператор), ') + ' (оператор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Operator(s)
+            if (Pos('Художник', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Художник', '/>', '</span>', '<br');
+                Item := StringReplace(Item, ', ', ' (художник), ') + ' (художник)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Artist(s)
+            if (Pos('Звуко', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Звуко', '/>', '</span>', '<br');
+                Item := StringReplace(Item, ', ', ' (звукорежисер), ') + ' (звукорежисер)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // SoundEditor(s)
+            
+            if (CanSetField(fieldProducer)) then
+                SetField(fieldProducer, Crew);
+        end; //case 2
+    end; // Case crew option
+end;
+// *** End of AnalyzeMoviePage() *** //
+
+// *** Compare two strings *** //
+// *** @input: two strings *** //
+// *** @output: boolean comparison result *** //
+// *** Ignores case of input strings *** //
+function EqualIgnoreCase(String1: string; String2: string): boolean;
+var
+    i: Integer;
+begin
+    Result := True;
+    if (Length(String1) = Length(String2)) then
+    begin
+        String1 := AnsiLowerCase(String1);
+        String2 := AnsiLowerCase(String2);
+        for i := 0 to Length(String1) do
+        begin
+            if (Copy(String1, i, 1) <> Copy(String2, i, 1)) then
+            begin
+                Result := False;
+                Break
+            end;
+        end;
+    end
+    else
+    begin
+        Result := False;
+        Break;
+    end;
+end;
+// *** End of EqualIgnoreCase() *** //
+
+// *** Get movie property *** //
+// *** @input: string, and two pairs of boundaries*** //
+// ***@output: parsed value, stripped of tags *** //
+function GetProperty(PageStr: String; Start1: String; End1: String; Start2: String; End2: String): String;
+var
+    Item: String;
+begin
+    Result := '';
+    if (Pos(Start1, PageStr) > 0) then
+    begin
+        Item := TextBetween(PageStr, Start1, End1);
+        Item := TextBetween(Item, Start2, End2);
+        Item := StringReplace(Item, #13#10, '');
+        Item := StringReplace(Item, '<br />', #13#10);
+        HTMLRemoveTags(Item);
+        HTMLDecode(Item);
+        Trim(Item);
+        Result := Item;
+    end;
+end;
+// *** End of GetProperty() *** //
+
+// *** Import a picture *** //
+// *** @input: string, base url, and a pair of boundaries*** //
+// ***@output: gets a picture *** //
+procedure ImportPicture(PageStr: String; BaseURL: String; Start1: String; End1: String);
+var
+    Source: String;
+begin
+    Source := TextBetween(PageStr, Start1, End1);
+    if ('' <> Source) then
+    begin
+        if (0 < Pos('src=' + #39, Source)) then
+            Source := TextBetween(Source, 'src=' + #39, #39)
+        else if (0 < Pos('src="', Source)) then
+            Source := BaseURL + TextBetween(Source, 'src="', '"');
+        if (Source <> '') then
+        begin
+            GetPicture(Source);
+        end; // picture exists
+    end;
+end;
+// *** End of ImportPicture() *** //
+
+// *** Main function *** //
+Begin
+    if (CheckVersion(3,5,1)) then
+    begin
+        //* 0-[UA] DVD
+        //* 1-[UA] HD
+        //* 2-[UA] Movie
+        //* 3-[UA] Cartoon
+        //* 4-[UA] Series
+        //* 5-[UA] Cartoon Series
+        //* 6-[UA] ArtHouse
+        //* 7-Movie
+        //* 8-Cartoon
+        //* 9-Series
+        //* 10-Cartoon Series
+        //* 11-ArtHouse
+        //* 12-Anime
+        //* 13-Trailer
+        //* 14-Subtitled
+        //* 15-[TV] Music
+        //* 16-[TV] Documentary
+        //* 17-[TV] Sport
+        //* 18-[TV] History
+        //* 19-[TV] Show
+        Forums := [66, 96, 42, 84, 124, 125, 129, 16, 19, 32, 44, 55, 127, 94, 70, 18, 21, 54, 131, 132];
+        isFound := False;
+        MovieName := GetField(fieldOriginalTitle);
+        if (('' = MovieName) or ((6 < GetOption('VideoType')) and (15 > GetOption('VideoType')))) then
+            MovieName := GetField(fieldTranslatedTitle);
+        if (1 = GetOption('BatchMode')) then
+            AnalyzePage('http://www.hurtom.com/torrents/forum/viewforum.php?f=' + IntToStr(Forums[GetOption('VideoType')]))
+        else if (Input('Імпорт з Hurtom.Com', 'Назва фільму:', MovieName)) then
+            AnalyzePage('http://www.hurtom.com/torrents/forum/viewforum.php?f=' + IntToStr(Forums[GetOption('VideoType')]));
+    end // version is fine
+    else
+        ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.1.1)');
+End.

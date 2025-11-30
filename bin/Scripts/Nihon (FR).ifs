@@ -1,0 +1,432 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN
+Title=Nihon-fr.com
+Description=Cinéma Asiatique
+Site=http://www.nihon-fr.com
+Language=FR
+Version=10 du 23/05/2005
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web
+Casse Choisie=3|3|0=Titre et Nom en minuscule|1=Titre et Nom en majuscule|2=Première lettre en majuscule|3=Première lettre de chaque mot en majuscule
+Titre en double=0|0|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Critique Complète=1|1|0=Critique de la première page|1=Critique Complète
+Fichier de log=1|1|0=Oui|1=Non
+
+***************************************************)
+
+program Nihon_FR;
+uses
+  ScorEpioNCommonScript;
+
+const
+     VersionScript = '10 du 23/05/2005';
+     NomScript = 'NIHON-FR';
+     urlDomain = 'nihon-fr.com';
+     Nihon = 'http://www.nihon-fr.com';
+     NihonSearch = Nihon+'/cinema/afficher?page=rechercher&tables%5Bfilms%5D=1&phrase=';
+     NihonSubmit = '&submit=Chercher';
+
+var
+  MovieName, Address : string;
+  i, premiereExecution: Integer;
+  listeResultat: TStringList;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES RESULTATS NIHON-FR.COM
+//------------------------------------------------------------------------------
+
+procedure recherche(title : String);
+var
+  adresseRecherche, Line, titre, adresse : String;
+  StartPos, EndPos : Integer;
+begin
+  adresseRecherche := NihonSearch+UrlEncode(title)+NihonSubmit;
+  Line := GetPage(adresseRecherche);
+  if pos('FILMS</td>', Line) > 0 then
+  begin
+    listeResultat := TStringList.Create;
+    StartPos := pos('FILMS</td>', Line);
+    delete(Line, 1, StartPos+length('FILMS</td>')-1);
+    StartPos := pos('<a href="', Line);
+    repeat
+     delete(Line, 1, StartPos+length('<a href="')-1);
+     adresse := Nihon+copy(Line, 0, pos('&highlight=', Line) - 1);
+     delete(Line, 1, pos('">', Line)+1);
+     titre := copy(Line, 0, pos('</a>', Line) - 1);
+     HTMLRemoveTags(titre);
+//ajoute les films
+     listeResultat.Add(titre+'|'+adresse);
+     StartPos := pos('<a href="', Line);
+     EndPos := pos('<td>RECHERCHER</td>', Line);
+    until (StartPos > EndPos);
+    afficheResultat(title);
+  end else
+  begin
+    SetField(fieldChecked, '');
+    exit;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+procedure afficheResultat(title : String);
+var
+   StartPos: Integer;
+   couple, titre, adresse : String;
+begin
+
+  if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) then
+  begin
+   PickTreeClear;
+   PickTreeAdd('Films trouvés pour ' + title + ' :', '');
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     titre := copy(couple,0,pos('|',couple)-1);
+     HTMLDecode(titre);
+     adresse := copy(couple,pos('|',couple)+1,length(couple)-1);
+     PickTreeAdd(titre , adresse);
+   end;
+
+   if listeResultat.Count = 1 then
+   begin
+     recupInfo(adresse);
+     exit;
+   end;
+
+    begin
+      if PickTreeExec(Address)=true then
+      begin
+          recupInfo(Address);
+      end;
+    end;
+  end else if (GetOption('Type de Lancement') = 2) then
+  begin
+   if listeResultat.Count = 1 then
+   begin
+     couple := listeResultat.GetString(0);
+     adresse := copy(couple,pos('|',couple)+1,length(couple)-1);
+     recupInfo(adresse);
+     exit;
+   end else
+   begin
+     trouveTitle(title);
+   end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS
+//------------------------------------------------------------------------------
+
+procedure recupInfo(Adresse : String);
+var
+   Value, Value2, Line: String;
+   StartPos: Integer;
+begin
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     beforeUpdate();
+
+   Line := GetPage(Adresse);
+// Jaquette DVD
+   if CanSetPicture then
+     GetPicture(Nihon+'/cinema/images/films/'+findInfo('/cinema/images/films/', '"', Line,'0'));
+// Titre Original
+   if CanSetField(fieldOriginalTitle) then
+      MonSetField(fieldOriginalTitle, formatTitre(findInfo('<b>Titre Original :</b>', '<br>', Line,'0'),GetOption('Casse Choisie')));
+// Titre Traduit
+   if CanSetField(fieldTranslatedTitle) then
+   begin
+     Value := findInfo('<b>Titre Fran&ccedil;ais :</b>', '<br>', Line,'0');
+     Value := remetArticle(Value);
+     MonSetField(fieldTranslatedTitle, formatTitre(Value,GetOption('Casse Choisie')));
+   end;
+// Genre
+   if CanSetField(fieldCategory) then
+      MonSetField(fieldCategory, formatTitre(findInfo('<b>Genre :</b>', '<br>', Line,'0'),GetOption('Casse Choisie')));
+// Durée
+   if CanSetField(fieldLength) then
+      MonSetField(fieldLength, findInfo('<b>Dur&eacute;e :</b>', 'minutes<br>', Line,'0'));
+// Année
+   if CanSetField(fieldYear) then
+      MonSetField(fieldYear, findInfo('<b>Ann&eacute;e :</b>', '<br>', Line,'0'));
+// Note Moyenne
+   if CanSetField(fieldRating) then
+      MonSetField(fieldRating, findInfo('<b>Note Moyenne :</b>', ' / 10', Line,'0'));
+// Acteurs
+   if CanSetField(fieldActors) then
+      MonSetField(fieldActors, formatTitre(findInfo('<b>Acteurs :</b>', '<br>', Line,'0'),GetOption('Casse Choisie')));
+// Réalisateur
+   if CanSetField(fieldDirector) then
+      MonSetField(fieldDirector, formatTitre(findInfo('<b>R&eacute;alisateurs :</b>', '<br>', Line,'0'),GetOption('Casse Choisie')));
+// Producteur
+   if CanSetField(fieldProducer) then
+      MonSetField(fieldProducer, findInfo('<b>Producteur :</b>', '<br>', Line,'0'));
+// Pays
+   if CanSetField(fieldCountry) then
+   begin
+      Value := findInfo('/cinema/interface/up_', '.jpg', Line,'0');
+      if Value = 'hongkong' then
+      begin
+       Value := formatTitre('Hong-Kong',GetOption('Casse Choisie'));
+      end else if Value = 'chine' then
+      begin
+       Value := formatTitre('Chine',GetOption('Casse Choisie'));
+      end else if Value = 'coree' then
+      begin
+       Value := formatTitre('Corée',GetOption('Casse Choisie'));
+      end else if Value = 'japon' then
+      begin
+       Value := formatTitre('Japon',GetOption('Casse Choisie'));
+      end else if Value = 'taiwan' then
+      begin
+       Value := formatTitre('Taiwan',GetOption('Casse Choisie'));
+      end else if Value = 'thailande' then
+      begin
+       Value := formatTitre('Thaïlande',GetOption('Casse Choisie'));
+      end;
+      MonSetField(fieldCountry, Value);
+   end;
+// Résumé
+   if CanSetField(fieldDescription) then
+   begin
+      Value := findInfo('<b>R&eacute;sum&eacute;</b>', '</td></tr></table><br>', Line,'0');
+      if pos('Le site officiel',Value) <> 0 then
+      begin
+        Value := copy(Value,0,pos('Le site officiel',Value)-1);
+      end else if pos('CRITIQUE',Value) <> 0 then
+      begin
+        Value := copy(Value,0,pos('CRITIQUE',Value)-1);
+      end;
+      if (Value <> #13#10) then
+         MonSetField(fieldDescription, Value);
+   end;
+// Critique
+   if CanSetField(fieldComments) then
+   begin
+      // Critique de la première page
+      if (GetOption('Critique Complète') = 0) then
+      begin
+        Value := findInfo('<td>CRITIQUE</td>', '</p></td></tr></table><br>', Line,'-1');
+        Value := StringReplace(Value, '&#8217;', '''');
+        Value := StringReplace(Value, '', '''');
+        MonSetField(fieldComments, Value);
+      end else
+      if (GetOption('Critique Complète') = 1) then
+      begin
+        if pos('bouton_suite.gif',Line) > 0 then
+        begin
+          Value := Nihon+'/cinema/'+findInfo('/cinema/', '/afficher', adresse,'0')+'/afficher/page-critiques/table-films/'+findInfo('/page-critiques/table-films/', '">', Line,'0');
+          Line := GetPage(Value);
+          Value := findInfo('<p class="texte" align="justify"><b>', '</p>', Line,'-1');
+          Value := StringReplace(Value, '&#8217;', '''');
+          Value := StringReplace(Value, '', '''');
+          MonSetField(fieldComments, Value);
+        end else
+        begin
+          Value := findInfo('<td>CRITIQUE</td>', '</p></td></tr></table><br>', Line,'-1');
+          Value := StringReplace(Value, '&#8217;', '''');
+          Value := StringReplace(Value, '', '''');
+          MonSetField(fieldComments, Value);
+        end;
+      end;
+   end;
+// Adresse Web
+  if CanSetField(fieldURL) then
+      SetField(fieldURL, Adresse);
+
+// Pour le mode Batch
+  if (GetOption('Fichier de log') = 0) then
+    afterUpdate();
+
+// Affichage des titres si original et traduit identique
+  titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// REMET LES ARTICLES EN DEBUT DE TITRE
+//------------------------------------------------------------------------------
+
+function remetArticle(title : String) : String;
+var
+  Articles: array of string;
+  i: integer;
+begin
+  title := AnsiLowerCase(title);
+// supprimer les articles
+  SetArrayLength(Articles,8);
+  Articles[0]:='le ';
+  Articles[1]:='la ';
+  Articles[2]:='l''';
+  Articles[3]:='l ';
+  Articles[4]:='les ';
+  Articles[5]:='des ';
+  Articles[6]:='un ';
+  Articles[7]:='une ';
+  for i := 0 to GetArrayLength(articles)-1 do
+  begin
+    if Pos('('+trim(Articles[i])+')', title) <> 0 then
+    begin
+      title := Articles[i]+title;
+      title := StringReplace(title, '('+trim(Articles[i])+')', '');
+      Break;
+    end;
+  end;
+  result := title;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME LES ACCENTS
+//------------------------------------------------------------------------------
+
+function supprimeAccents(NomFilm : String) : String;
+var
+  Articles: array of string;
+  i: integer;
+begin
+// supprimer les articles
+  SetArrayLength(Articles,8);
+  Articles[0]:='le ';        
+  Articles[1]:='la ';
+  Articles[2]:='l''';        
+  Articles[3]:='l ';
+  Articles[4]:='les ';
+  Articles[5]:='des ';
+  Articles[6]:='un ';
+  Articles[7]:='une ';
+  for i := 0 to GetArrayLength(articles)-1 do
+  begin
+    if Pos(Articles[i], NomFilm) = 1 then
+    begin
+      NomFilm := Copy(NomFilm, Length(Articles[i])+1, length(NomFilm));
+      Break;
+    end;
+  end;
+// les accents
+     NomFilm := supprimeLesAccents(NomFilm);
+// Pour n'avoir que le titre
+     delete(NomFilm, pos(' - ',NomFilm), length(NomFilm));
+     if (pos(', ',NomFilm) > 0) then
+        delete(NomFilm, 1, pos(', ',NomFilm)+1);
+     if (pos('(',NomFilm) > 0) then
+        delete(NomFilm, pos('(',NomFilm), length(NomFilm));
+     if (pos(':',NomFilm) > 0) then
+        delete(NomFilm, pos(':',NomFilm), length(NomFilm));
+     result := trim(NomFilm);
+end;
+
+//------------------------------------------------------------------------------
+// COMPARE LE TITRE PASSE ET LE TITRE TROUVE
+//------------------------------------------------------------------------------
+
+function compareTitle(titleAllo, title : String) : String;
+begin
+     title := supprimeAccents(trim(AnsiLowerCase(title)));
+     titleAllo := supprimeAccents(trim(AnsiLowerCase(titleAllo)));
+     if (title = titleAllo) then
+     begin
+       result := 'OK';
+     end else
+     begin
+       result := 'KO';
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// TROUVE LE BON TITRE SI LE PREMIER N'EST PAS LE BON
+//------------------------------------------------------------------------------
+
+procedure trouveTitle(title : String);
+var
+   oK, couple, titre, adresse : String;
+begin
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     titre := copy(couple,0,pos('|',couple)-1);
+     adresse := copy(couple,pos('|',couple)+1,length(couple)-1);
+     oK := compareTitle(title,titre);
+     if oK = 'OK' then
+     begin
+       recupInfo(adresse);
+       exit;
+     end;
+   end;
+   listeResultat.Free;
+
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      batch(NomScript);
+      AddToLog('Les films ayant été mis à jour sont maintenant cochés');
+    end;
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre du film :', MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+        begin
+          recupInfo(MovieName);
+        end else
+          recherche(MovieName);
+      end;
+    end else
+    if (GetOption('Type de Lancement') = 3) then
+    begin
+      if (premiereExecution = 0) then
+      begin
+        premiereExecution := -1;
+        if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = False) then
+           exit;
+      end;
+      MovieName := GetField(fieldURL);
+      if Pos(urlDomain, MovieName) > 0 then
+         recupInfo(MovieName);
+    end else
+    begin
+      if (premiereExecution = 0) then
+      begin
+          premiereExecution := -1;
+	      if (ShowConfirmation('Vous allez executer le script sans confirmation, cliquer sur ''''OUI'''' pour continuer') = True) then
+          begin
+            recherche(MovieName);
+          end else
+            exit;
+      end else
+      begin
+          recherche(MovieName);
+      end;
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

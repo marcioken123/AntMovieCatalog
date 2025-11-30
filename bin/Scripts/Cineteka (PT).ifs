@@ -1,0 +1,152 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião
+Title=Cineteka
+Description=Movie importation script for Cineteka
+Site=www.cineteka.com
+Language=PT
+Version=1.2
+Requires=3.5.0
+Comments=Script feito por Guardião para o site "www.cineteka.com"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=651</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Cineteka;
+uses StringUtils1,StringUtils7552;
+var MovieName:string;
+
+procedure AnalyzeFilmPage(Address: String);
+var  Page : TStringList;
+     valor, actores:string;
+     LineNr:integer;
+begin
+  Page := TStringList.Create;
+  Address:='http://www.cineteka.com/index.php?op=Movie&id='+Address;
+  Page.Text := GetPage(Address);
+
+  valor:=TextBetween(Page.Text,'<td class="txt12"><b>','</b>');
+  SetField(fieldTranslatedTitle, valor);
+  
+  valor:=TextBetween(Page.Text,'<span class="txt11">(',')</span>');
+  SetField(fieldOriginalTitle, valor);
+  
+  valor:=TextBetween(Page.text,'<div class="txt-normal" style="margin-top: 10px;">','</td></tr></table>');
+  HTMLRemoveTags(valor);
+  SetField(fieldDescription, valor);
+  
+  LineNr:=FindLine('<b>Elenco:</b>', Page, 0);
+  if LineNr<>-1 then
+  begin
+     repeat
+       LineNr:=LineNr+1;
+       valor:= Page.GetString(LineNr);
+       HTMLRemoveTags(valor);
+       if length(actores)>0 then
+          actores:=actores+', ';
+       actores:=actores+CompactString(valor,'');
+     until (Page.GetString(LineNr+1)='</td>')
+  end;
+  SetField(fieldActors, actores);
+  
+  LineNr:= FindLine('<b>Realização:</b>', Page, 0);
+  valor:= Page.GetString(LineNr+1);
+  HTMLRemoveTags(valor);
+  valor:=CompactString(valor,'');
+  SetField(fieldDirector, valor);
+  
+  valor:=TextBetween(Page.Text,'<b>País:</b><br>','</div>');
+  valor:=TextBetween(valor,'>','<');
+  HTMLRemoveTags(valor);
+  if copy(valor,length(valor)-1,1)=',' then
+    valor:=copy(valor,1,length(valor)-2);
+  SetField(fieldCountry, valor);
+  
+  valor:=TextBetween(Page.Text,'<b>Género:</b><br>','</div>');
+  valor:=TextBetween(valor,'>','<');
+  valor:=StringReplace(valor,'<br>',', ');
+  HTMLRemoveTags(valor);
+  SetField(fieldCategory, valor);
+  
+  valor:=TextBetween(Page.Text,'<div><b>Ano:</b>','<');
+  SetField(fieldYear, valor);
+  
+  valor:=TextBetween(Page.Text,'<b>Duração:</b> ',' min');
+  SetField(fieldLength, valor);
+  
+  valor:=TextBetween(Page.Text,'<img class="pic_tn" src=',' ');
+  valor:='http://www.cineteka.com/'+valor;
+  GetPicture(valor);
+  
+  SetField(fieldURL, Address);
+  Page.Free;
+end;
+
+procedure AnalyzePage(Address: string);
+var Page:TStringList;
+    nome_filme, url, Line:string;
+    LineNr,BeginPos,EndPos:integer;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  LineNr:=0;
+  if Pos('Não foram encontrados registos para a pesquisa efectuada', Page.Text)>0 then
+  begin
+       showmessage('O filme não foi encontrado.');
+  end
+  else
+  begin
+  repeat
+   repeat
+     LineNr:= FindLine('class="txt9"', Page, LineNr+1);
+     Line:= Page.GetString(LineNr);
+     BeginPos:=Pos('href=',line);
+     line:=copy(line,BeginPos,length(line));
+
+     nome_filme:=TextBetween(line,'>','<');
+     if length(nome_filme)>0 then
+     begin
+      url:=TextBetween(Line,'id=','">');
+       PickTreeAdd(nome_filme, url);
+     end;
+    until (LineNr=-1);
+    //vai para a próxima pagina
+     LineNr:= FindLine('>+</a>', Page, 0);
+     if LineNr>-1 then
+     begin
+        Line:= Page.GetString(LineNr);
+        EndPos:= pos('>+</a>', line);
+        BeginPos:=EndPos;
+        repeat
+          BeginPos:=BeginPos-1;
+        until copy(line,BeginPos,1)='/';
+
+        url:='http://www.cineteka.com'+Copy(line,BeginPos,EndPos-BeginPos);
+        Page.Text := GetPage(url);
+        LineNr:=0;
+     end
+     else
+      break;
+     until (1=2);
+      if PickTreeExec(Address) then
+    AnalyzeFilmPage(Address);
+   end;
+   Page.Free;
+end;
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if Input('Importar do www.cineteka.com', 'Escreva o nome do filme:', MovieName) then
+    begin
+      MovieName := StringReplace(MovieName, ' ', '+');
+      AnalyzePage('http://www.cineteka.com/index.php?op=MovieSearch&s='+MovieName);
+    end;
+end.

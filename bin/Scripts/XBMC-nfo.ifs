@@ -1,0 +1,102 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Nicezia
+Title=XBMC .nfo Export
+Description=Exports Movies to individual .nfo files that XBMC can read for movie Information
+Site=
+Language=?
+Version=1.0.32
+Requires=3.5.1
+Comments=Contains sample code written by antp to export actors
+License=
+GetInfo=0
+
+[Options]
+
+***************************************************)
+
+program XBMCNfo;
+  var
+  MovieActors: string;
+  MovieGenre: string;
+  SavefileName: string;
+  DirSelected: string;
+  FormatedData: string;
+  OutToFile: TStringList;
+
+ 
+  function ActorsToXml(actors: string): string;
+   var
+    lstActor: TStringList;
+    iActor: Integer;
+    sActor:  string;
+   begin
+    lstActor := TStringList.Create;
+    lstActor.Text := StringReplace(actors, ', ', #13#10);
+    for iActor := 0 to lstActor.Count - iActor do
+      begin
+        sActor := '   <actor>' + #13#10 + '     <name>' + lstActor.GetString(iActor) + '</name>' + #13#10 +'   </actor>';
+        if lstActor.GetString(iActor) <> #13#10 then lstActor.SetString(iActor, sActor);
+      end;
+        Result := lstActor.Text;
+        lstActor.Free;
+   end;
+
+   function GenreToXML(genre: string): string;
+      var
+      lstGenre: TStringList;
+      iGenre: Integer;
+      sGenre: string;
+      begin
+      lstGenre := TStringList.Create;
+      lstGenre.Text := StringReplace(genre, ', ', #13#10);
+      for iGenre := 0 to lstGenre.Count -iGenre do
+        begin
+        sGenre :=  '   <genre>' + lstGenre.GetString(iGenre) + '</genre>';
+        lstGenre.SetString(iGenre, sGenre);
+        end
+        Result := lstGenre.Text;
+        lstGenre.Free;
+      end;
+
+   function ChooseTitle(Original: string; Translated: string): string;
+     begin
+      if Translated <> '' then Result := Translated else Result := Original
+     end;
+
+   
+  begin
+    if DirSelected ='' then
+      begin
+      Input('Folder Select','Select Folder to save NFO files',DirSelected)
+      end;
+      begin
+      OutToFile := TStringList.Create;
+      SaveFileName := IncludeTrailingPathDelimiter(DirSelected) + GetField(fieldOriginalTitle) + '.nfo';
+      FormatedData := FormatedData +'<movie>'+#13#10;
+      FormatedData := FormatedData +'   <title>'+ ChooseTitle(GetField(fieldOriginalTitle), GetField(fieldTranslatedTitle)) + '</title>'+#13#10;
+      FormatedData := FormatedData +'   <rating>'+GetField(fieldRating)+'</rating>'+#13#10;
+      FormatedData := FormatedData +'   <year>'+GetField(fieldYear)+'</year>'+#13#10;
+(*    FormatedData := FormatedData +'   <top250>'+GetFeild(fieldWhatever)+'</top250>'+#13#10;
+      FormatedData := FormatedData +'   <votes>'+GetField(fieldWhatever)+'</votes>'+#13#10;
+      FormatedData := FormatedData +'   <outline>'+GetField(Whatever)+'</outline>'+#13#10; *)
+      FormatedData := FormatedData +'   <plot>'+GetField(fieldDescription)+'</plot>'+#13#10;
+      FormatedData := FormatedData +'   <tagline>'+GetField(fieldComments)+'</tagline>'+#13#10;
+      FormatedData := FormatedData +'   <runtime>'+GetField(fieldLength)+'min</runtime>'+#13#10;
+      FormatedData := FormatedData +'   <thumb>'+GetField(fieldOriginalTitle)+'.tbn</thumb>'+#13#10;
+      FormatedData := FormatedData +'   <mpaa>X</mpaa>'+#13#10;
+      FormatedData := FormatedData +'   <director>'+GetField(fieldDirector)+'</director>'+#13#10;
+      FormatedData := FormatedData +'   <studio>'+GetField(fieldProducer)+'</studio>' + #13#10;
+(* Run Actor Script here*)
+      MovieActors := ActorsToXML(GetField(fieldActors));
+      MovieGenre  := GenreToXML(GetField(fieldCategory));
+      OutToFile.Append(UTF8Encode(FormatedData + MovieGenre + MovieActors + '</movie>'));
+      OutToFile.SaveToFile(SaveFileName);
+      OutToFile.Free;
+      FormatedData := ''
+     end;
+end.

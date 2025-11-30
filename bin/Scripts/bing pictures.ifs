@@ -1,0 +1,140 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Tadeu Cunha & fulvio53s03
+Title=Bing Picture Import
+Description=Get picture from bing.com images
+Site=http://www.bing.com
+Language=IT,EN
+Version=1.01 - 31.01.2017
+Requires=4.2.1
+Comments=See code comments. Thanks to the authors of IMDB.ifs and IAFD.ifs
+License=GPL
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+AutoSelect=1|1|0=Always show movie selection dialog|1=Auto-select movie if there is only one
+GetOnlyFirstPicture=0|1|0=Show available pictures|1=Get Only the first picture found
+IncludeTheWordCover=1|1|0=Normal search|1=Include COVER as text string
+
+[Parameters]
+
+***************************************************)
+
+program BingPics;
+
+// no mail; comments only in web
+
+uses
+  StringUtils7552;
+var
+  MovieName, cerca_film, Title_photo: string;
+  initchar, endchar: string;
+const
+  BaseURL  = 'https://www.bing.com/images/search?q=';  //https://www.bing.com/images/search?q=Inception&FORM=HDRSC2
+  MaxItems = 50;
+  debug_search = false;                                   // debug mode on/off su ricerca files
+  debug_pagina = false;                                  // debug mode on/off su estrazione dati film_o_serie
+  folder = 'f:\prova\';
+
+// ---
+function RemovePar(wholetext: string) : string;
+var
+  str1: String;
+  i: Integer;
+begin
+  str1 := Trim(TextBefore(wholetext, '(', ''));
+  if str1 <> '' then
+  begin
+    if Pos(')', RemainingText) > 0 then
+      wholetext := str1+' '+Trim(TextAfter(RemainingText, ')'));  // + end of text or ''
+  end;
+  result := Trim(wholetext);
+end;
+
+// ---
+procedure AnalyzePage(Address: string);
+var
+  ImgCnt: Integer;
+  PageText,strRef,strImg,strTest: string;
+begin
+  // Read the whole page
+  PageText := GetPage(Address);
+  if debug_search then
+     DumpPage(folder+'bingSearchPage.html', PageText);                // debug
+
+  // Looks for the first images
+  ImgCnt:= MaxItems;
+  PickTreeClear;
+  PickTreeTitle(MovieName);
+  while ImgCnt > 0 do
+  begin
+    // Looks for all tags href
+    initchar := '<a class="thumb"';          endchar := '<div class="fileInfo">';
+    strTest := initchar + TextBetween(PageText, initchar, endchar) + endchar;
+    if (strTest = '') then
+      break;
+    PageText := RemainingText;
+
+    // Check if there is a class with the url inside this href
+    if pos('class="thumb"', strTest) > 0 then                          //class="thumb"
+    begin
+    // Get the img reference
+      initchar := 'href="';          endchar := '"';
+      strImg := TextBetween(strTest, initchar, endchar);
+      initchar := '<div class="des">';          endchar := '</div>';
+      Title_photo := Textbetween(strtest, initchar, endchar);
+      Title_photo:= FormatText(Title_photo);
+      if (GetOption('GetOnlyFirstPicture') = 1) then           //href="http://www.dvdsreleasedates.com/covers/inception-dvd-cover-27.jpg" h="ID=images,5014.1"><div class="cico" style="width:230px;height:170px;"><img height="170"
+      begin
+        // That's it, we have the picture!
+        GetPicture (strImg);
+        exit;
+      end;
+
+//      Title_album := copy(Title_album, 1, 42);
+//      PickTreeAdd(Title_Album, Address);
+      PickTreeAdd(Title_photo, strImg);
+      ImgCnt := ImgCnt - 1;
+    end;
+  end
+ 
+  if (ImgCnt = MaxItems) then
+  begin
+    ShowError('Error: Images not found! Probably something changed at Bing :(');
+  end else
+  begin
+    // User choose the image, get it!
+    if PickTreeExec(strImg) then
+      GetPicture (strImg);
+  end;
+end;
+//------------------------------------------------------------------------------
+
+begin
+  if not CheckVersion(4,2,1) then
+      begin
+         ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.1)');
+         exit;
+      end;
+  MovieName := GetField(fieldTranslatedTitle);
+  if MovieName = '' then MovieName := GetField(fieldOriginalTitle);
+ 
+  if (GetOption('AutoSelect') = 0) or (MovieName = '')  then
+      if Input('Bing Picture Search', 'Input title:', MovieName) = False then exit;
+ 
+  MovieName := RemovePar(RemoveBrackets(MovieName));
+  if(GetOption('IncludeTheWordCover') = 1) then
+    MovieName := 'COVER ' + MovieName;
+   
+//  cerca_film := BaseURL + UrlEncode(MovieName);
+  cerca_film := BaseURL + UrlEncode(MovieName) + '&qft=+filterui:imagesize-large+filterui:aspect-tall&FORM=R5IR28';
+  AnalyzePage(cerca_film);
+//  'http://www.bing.com/images/search?q=American%20Horror%20Story'
+//   ricerca     http://www.bing.com/images/search?&q
+// grande alto   https://www.bing.com/images/search?&q=inception+film&qft=+filterui:aspect-tall+filterui:imagesize-large&FORM=R5IR2
+end. 

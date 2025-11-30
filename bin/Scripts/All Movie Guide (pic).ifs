@@ -1,0 +1,888 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Hubert Kosior, KaraGarga, Chetan Rao, Donna Huffman, R_V, Fulvio53s03
+Title=All Movie Guide
+Description=All Movie Guide detailed info import with picture
+Site=https://www.allmovie.com
+Language=EN
+Version=2.0.1 / GIUGNO 2024
+Requires=3.5.0
+Comments=a bug corrected by Antoine Potten|completely rewritten again for the AllRovi site by Chetan Rao.|Reworked March 2009 for changes to AllMovieGuide by Donna Huffman|Rewritten for Allmovie.com by R_V (V 0.7.0 <-> 0.7.2 Feb 2014)|Updated by Fulvio53s03 on 27 feb 2021 and 17 march 2024
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+CategoryOptions=3|3|1=Only import first category|2=Import all categories and divide by "/"|3=Import all categories and divide by ","
+ProducerOptions=0|0|0=Import Production Companies into Producer Field|1=Import Releaser Company into Producer Field
+SynopsisOptions=1|1|1=Import into Description Field|2=Import into Comments Field|0=DO NOT import Synopsis
+ReviewOptions=2|2|1=Import into Description Field|2=Import into Comments Field|0=DO NOT import Review
+AwardsOptions=2|2|1=Import into Description Field|2=Import into Comments Field|0=DO NOT import Awards List
+CastOptions=3|3|1=Import Cast divided by ";"|2=Import Cast as a list (AMG Default)|3=Import Cast as a list (like IMDB)|4=Import Cast as a list within paranthesis|5=Import Cast within paranthesis
+FieldforCredits=2|2|0=DO NOT import Production Credits|1=Import Production Credits into Description Field|2=Import Production Credits into Comments Field
+CreditsOptions=2|2|1=Import Credits as a list (like AMG)|2=Import Credits as a list (like IMDB)|3=Import Credits as a list (within paranthesis)
+CharacteristicsOptions=1|1|0=DO NOT import Characteristics|1=Import into Description Field
+Picture=1|1|1=Big|2=Small
+MaxResults=5000|5000|100=Maximum search results returned|200=|5000=|8000=
+BatchMode=0|0|0=Normal working mode|1=Batch mode: if the URL field is filled, it imports from that page instead of asking for a title
+
+[Parameters]
+
+***************************************************)
+
+program AllMovie;
+uses
+  StringUtils7552;
+const
+//  crlf = #13#10;                        // carriage return/line feed
+  tab  = #9;
+  debug_search = false;
+  folder = 'f:\prova\';                   // directory where to save debug files
+var
+  MovieName: string;
+  PageURL, Pagestr, MovieResults: string;
+  PageReview, initchar, endchar: string;
+  UpdateFile: TStringList;
+  
+// simple string procedures
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+function RemoveWhiteSpace(S : string) : string;
+begin
+    Result := StringReplaceAll(S, tab, '');
+    Result := StringReplaceAll(Result, crlf, '');
+    Result := Trim(Result);
+end;
+
+function GetStringFromList(Content, Delimiter: string): string;
+var
+  Data : string;
+begin
+    while(true) do
+    begin
+      Data := TextBetween(Content, '">', '</a>');
+      if (Length(Data) = 0) then
+        break;
+      HTMLRemoveTags(Data);
+      Data := RemoveWhiteSpace(Data);
+      Result := Result + Data + Delimiter + ' ';
+      Content := TextAfter(Content, '</a>');
+    end;
+    // remove trailing delimiter
+    Result := Trim(Result);
+    if (Copy(Result, Length(Result), 1) = Delimiter) then
+      Result := Copy(Result, 0, Length(Result) - 1);
+end;
+
+function GetStringFromTable(Content, Delimiter, ColDelim : string): string; // for actors
+var
+  Data, cast_role   : string;
+  ColLen : Integer;
+begin
+  ColLen   := Length(ColDelim);
+  Result   := '';
+  
+  Content := TextBetween(Content, '<div class="cast_container">', '<span>Jump to: ') + '<div class="cast_container">';
+  //Content := TextAfter(Content, '<div class="cast_container">');
+  while(true) do
+  begin
+    Data := TextBetween(Content, '<div class="cast_name artist-name">', '<div class="cast_container">');
+    // make a unique delimiter between character and name
+    cast_role := Fulltrim(TextBetween(Data, '<div class="cast_role">', '</div>')); // if there is no cast_role next go line 80
+    Data := StringReplaceAll(Data, '<div class="cast_role">', ColDelim);
+
+    HTMLRemoveTags(Data);
+    HTMLDecode(Data);
+
+    if (Length(Data) = 0) then
+      break;
+
+    Data := RemoveWhiteSpace(Data);
+    
+    // make sure we don't start with the ColDelim
+    if (Copy(Data, 0, ColLen) = ColDelim) then
+      Data := Copy(Data, ColLen + 1, Length(Data));
+    // make sure we don't end with the ColDelim
+    if (Copy(Data, Length(Data) - ColLen + 1, ColLen) = ColDelim) then
+      Data := Copy(Data, 1, Length(Data) - ColLen);
+
+    Content := TextAfter(Content, '<div class="cast_container">');
+    if cast_role <> '' then // if there is no cast_role necessary for actors format options
+    Result  := Result + Data + Delimiter
+    else
+    Result  := Result + Data + '## ';
+  end;
+end;
+
+function GetStringFromTable2(Content, Delimiter, ColDelim : string): string; // for crew
+var
+  Data   : string;
+  ColLen : Integer;
+begin
+  ColLen   := Length(ColDelim);
+  Result   := '';
+
+  Content := TextBetween(Content, '<div class="crew_container">', '<span>Jump to: ') + '<div class="crew_container">';
+  //Content := TextAfter(Content, '<div class="crew_container">');
+  while(true) do
+  begin
+    Data := TextBetween(Content, '<div class="crew_name artist-name">', '<div class="crew_container">');
+    // make a unique delimiter between character and name
+    Data := StringReplaceAll(Data, '<div class="crew_role">', ColDelim);
+
+    HTMLRemoveTags(Data);
+    HTMLDecode(Data);
+
+    if (Length(Data) = 0) then
+      break;
+
+    Data := RemoveWhiteSpace(Data);
+
+    // make sure we don't start with the ColDelim
+    if (Copy(Data, 0, ColLen) = ColDelim) then
+      Data := Copy(Data, ColLen + 1, Length(Data));
+    // make sure we don't end with the ColDelim
+    if (Copy(Data, Length(Data) - ColLen + 1, ColLen) = ColDelim) then
+      Data := Copy(Data, 1, Length(Data) - ColLen);
+
+    Content := TextAfter(Content, '<div class="crew_container">');
+    Result  := Result + Data + Delimiter;
+  end;
+end;
+
+function GetStringFromAwardsTable(Content, Delimiter, ColDelim : string): string;
+var
+  Data       : string;
+  RowData    : string;
+  ColLen     : Integer;
+  AwardTitle : string;
+  AwardType  : string;
+  AwardRecps : string;
+  AwardYear  : string;
+  Presenter  : string;
+  
+begin
+  ColLen   := Length(ColDelim);
+  Result   := '';
+
+  while(true) do
+  begin
+    Data      := TextBetween(Content, '<h3 class="award">', '</table>');
+    Presenter := FullTrim( TextBetween(Content, '<h3 class="award">', '</h3>') );
+
+    HTMLDecode(Data);
+
+    if (Length(Data) = 0) then
+      break;
+
+    Data := RemoveWhiteSpace(Data);
+    RowData := Data;
+    RowData := TextAfter(Rowdata, '<tbody>');
+    
+    while(true) do
+    begin
+      Data := TextBetween(RowData, '<tr>', '</tr>');
+      
+      if (Length(Data) = 0) then
+        break;
+      Data := StringReplace(Data, '<td class="award-type"', '<td class="award-type"><td class="award-type"');
+      Data := StringReplace(Data, '<td class="award-title"', '<td class="award-title"><td class="award-title"');
+      Data := StringReplace(Data, '<td class="award-year"', '<td class="award-year"><td class="award-year"');
+      AwardType  := TextBetween(Data, '<td class="award-type">', '</td>');
+      AwardTitle := TextBetween(Data, '<td class="award-title">', '</td>');
+      AwardRecps := TextBetween(Data, '<div class="recipients">', '</div>');
+      AwardYear  := TextBetween(Data, '<td class="award-year">', '</td>');
+
+      HTMLRemoveTags(AwardType);
+      HTMLRemoveTags(AwardTitle);
+      HTMLRemoveTags(AwardRecps);
+      HTMLRemoveTags(AwardYear);
+      
+      AwardType := FullTrim(AwardType);
+      AwardTitle := FullTrim(AwardTitle);
+      AwardRecps := FullTrim(AwardRecps);
+      AwardYear := FullTrim(AwardYear);
+
+
+      if (Length(AwardType) > 0) then
+        AwardType := ' (' + AwardType + ')';
+
+      Data       := AwardTitle + AwardType + ColDelim + AwardRecps + ColDelim + AwardYear + ColDelim + Presenter;
+      Result     := Result + Trim(Data) + Delimiter;
+      RowData    := TextAfter(RowData, '</tr>');
+    end;
+    
+    Content := TextAfter(Content, '</table>');
+  end;
+end;
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+function StrOccurs(Text, SearchText: string) : integer;
+var
+   loc, len : integer;
+begin
+  StrOccurs := 0;
+  len       := length(SearchText);
+  loc       := 1;
+  repeat
+    loc := Pos(SearchText, Text);
+    if loc > 0 then
+    begin
+      StrOccurs := StrOccurs + 1;
+      loc  := loc + len;
+      Text := Copy(Text, loc, Length(Text) - loc);
+    end;
+  until(loc <= 0);
+end;
+
+// Loads and analyses search results page
+procedure AnalyzeSearchResults(MovieTitle: string);
+var
+  Page: TStringList;
+  begin_list, end_list : string;
+  NumResults, MaxResults, Code : Integer;
+  Address, nome_film : string;
+  CharResults : string;
+begin
+  MaxResults := GetOption('MaxResults');
+  Page := TStringList.Create;
+  nome_film := 'https://www.allmovie.com/search/movies/' + MovieTitle;
+  Page.Text := GetPage(nome_film);
+  pagestr := Page.Text;
+  if debug_search then
+    DumpPage(folder +'1 AllMovieFilm.html', Pagestr);
+
+ // ***************** limiti di estrazione *************
+  begin_list := '<div class="results">';                           //fs20240613
+  end_list   := '<div class="footer-leaderboard">';                //fs20240613
+// ***************** fine limiti di  estrazione ************
+  NumResults := 0;
+  if Pos('search results for ', Page.Text) > 0 then
+    begin
+//fs20240613    MovieResults := TextBetween(Page.Text, '<li class="filter-movies active">', '</li>');
+    MovieResults := TextBetween(Pagestr, begin_list, end_list);      //fs20240613
+    if debug_search then
+       DumpPage(folder +'2 AllMovieFilm.html', Pagestr);
+    MovieResults := StringReplace(MovieResults, ',', '');
+    MovieResults := StringReplace(MovieResults, '+', '');
+
+    CharResults := TextBetween(MovieResults, '<h1>', '</h1>');
+    CharResults := TextBefore(CharResults, ' movie search results', '');
+    CharResults := Fulltrim(CharResults);
+    NumResults := 0;
+    if CharResults <> '' then
+       numResults := StrToInt(CharResults, 0);
+    if (NumResults > 0) and (NumResults <= MaxResults) then
+    begin
+      PickTreeClear;
+      PickTreeAdd(CharResults + ' results found for "' + MovieName + '"', '');
+      Create_Movies_List(MovieTitle);
+      if PickTreeExec(Address) then
+        AnalyzePage(Address);
+    end;
+  end;
+
+  if (NumResults > MaxResults) then
+    ShowMessage('Sorry, there are too many possible matches, please adjust your search and retry.')
+  else
+  if NumResults = 0 then
+    ShowMessage('Sorry, no movies found.');
+
+  // cleanup
+  Page.Free;
+end;
+
+// Loads and analyses a movie page
+procedure AnalyzePage(Address: string);    //analisi della pagina estratta
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if CanSetField(fieldURL) then SetField(FieldURL, Address);
+  AnalyzeMoviePage(Address, Page);
+  Page.Free;
+end;
+
+// Extracts movie details from page
+procedure AnalyzeMoviePage(Address: String; MoviePage: TStringList);
+var
+  Page: string;
+  Value, Value2, Temp, Writer, Composer: string;
+  Content: string;
+  Delimiter : string;
+  wiki, Dummy: string;
+  SubPage: TStringList;
+  Rating : real;
+begin
+  Page    := MoviePage.Text;
+  SubPage := TStringList.Create;
+    if debug_search then
+    DumpPage(folder +'5 AllMovieFilm extracted.html', Pagestr);
+  // Original title
+  if CanSetField(fieldOriginalTitle) then
+  begin
+//2021-02-28    Value := TextBetween(Page, '<h2 class="movie-title" itemprop="name">', '<');
+    Value := TextBetween(Page, '<h2 class="movie-title">', '<') + '</h2>';             //2021-02-28
+    Value := UTF8Decode(Value);
+    HTMLRemoveTags(Value);
+//2021-0-28    HTMLDecode(Value);
+    Value := FullTrim(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  Content := Page;
+
+  // Year
+  if CanSetField(fieldYear) then
+  begin
+    Value := TextBetween(Page, '<span class="release-year">(', ')');
+    SetField(fieldYear, Value);
+  end;
+
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    Value := TextBetween(Page, 'Run Time - <span>', ' min');
+    SetField(fieldLength, Value);
+  end;
+
+  // Country
+  if CanSetField(fieldCountry) then
+  begin
+    Value := TextBetween(Page, 'Countries - <span>', '</span>');
+    Value := UTF8Decode(Value);
+    SetField(fieldCountry, Value);
+  end;
+
+  // AKA -> translated title
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    Value := TextBetween(Page, '<h4>Alternate Title</h4>', '</span>');
+    HTMLRemoveTags(Value);
+    Value := UTF8Decode(Value);
+    Value := FullTrim(Value);
+    SetField(fieldTranslatedTitle, Value);
+  end;
+
+  // Rating
+  if CanSetField(fieldRating) then
+  begin
+//    Value := TextBetween(page, 'itemprop="ratingValue">', '</div>');
+//    Value := TextBetween(page, '"aggregateRating": {', '}');
+//    Value := TextBetween(Value, '"ratingValue": "', '"');
+    initchar := '<div class="allmovie-rating';
+    endchar  := '</div>';
+    Value := initchar + TextBetween(page, '<div class="allmovie-rating', '</div>') + endchar;
+    HTMLRemoveTags(Value);
+    Value := FullTrim(Value);
+    Rating := StrToFloat(Value);
+    SetField(fieldRating, FloatToStr(Rating));
+  end;
+
+  // Certification
+  if CheckVersion(4,2,0) = True then
+  begin
+    Value := TextBetween(Content, 'MPAA Rating - <span>', '</span>');
+    Value := AnsiUpperCase(Value);
+    Value := StringReplace(Value, 'PG13', 'PG-13');
+    Value := StringReplace(Value, 'NC17', 'NC-17');
+    SetField(fieldCertification, Value);
+  end;
+
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := TextBetween(Content, 'Directed by ', '</span>');
+    Value := UTF8Decode(Value);
+    Value := GetStringFromList(Value, ',');
+    SetField(fieldDirector, Value);
+  end;
+
+  // Genre -> category
+  if CanSetField(fieldCategory) then
+  begin
+    Value := TextBetween(Content, 'Genres - ', '</span');
+    Value := UTF8Decode(Value);
+    if GetOption('CategoryOptions') = 1 then
+    begin
+      Value := TextBetween(Value, '">', '</a>');
+      HTMLRemoveTags(Value);
+    end
+    else
+    begin
+      if GetOption('CategoryOptions') = 2 then
+        Delimiter := '/';
+      if GetOption('CategoryOptions') = 3 then
+        Delimiter := ',';
+      Dummy := GetStringFromList(Value, Delimiter);
+      // sub-genres
+      Value := TextBetween(Content, 'Sub-Genres - ', '</span>');
+      Value := UTF8Decode(Value);
+      Value := GetStringFromList(Value, Delimiter);
+      if Length(Value) > 0 then
+        Value := Dummy + Delimiter + ' ' + Value
+      else
+        Value := Dummy;
+    end;
+    SetField(fieldCategory, Value);
+  end;
+
+  // Producing company  -> producer
+  if CanSetField(fieldProducer) then
+  begin
+    Value := '';
+    if GetOption('ProducerOptions') = 0 then
+    begin
+      Value := TextBetween(Page, '<h4>Produced by</h4>', '</div>');
+      Value := UTF8Decode(Value);
+    end;
+
+    if GetOption('ProducerOptions') = 1 then
+    begin
+      Value := TextBetween(Page, '<h4>Released By</h4>', '</div>');
+      Value := UTF8Decode(Value);
+    end;
+
+    HTMLRemoveTags(Value);
+    Value := FullTrim(Value);
+    SetField(fieldProducer, Value);
+  end;
+
+  // Image     getimg   getpicture
+  if CanSetPicture then
+  begin
+    Value := TextBetween(Page, '<div class="poster', '</div>');
+    Value := TextBetween(Value, '<img src="', '"');
+    Value := StringReplace(Value, '?partner=allrovi.com', '');
+    Value := StringReplace(Value, 'https', 'http');
+    if GetOption('Picture') = 1 then
+    Delete(Value, Pos('_derived', Value), (Pos('_m0/', Value))-(Pos('_derived', Value))+4);
+    // don't bother getting the default "no-image"
+    if ( (Length(Value) > 0) and (Pos('no-image', Value) = 0) )
+      then GetPicture(Value);
+  end;
+
+  if ( CanSetPicture ) and ( (Length(Value) = 0) ) then          //fs2024-03-17  nuova ricerca immagine
+  begin
+    initchar := '<img src="https://cps-static.rovicorp.com/';
+    Value := TextBetween(Page, initchar, '"');
+    Value := initchar + value;
+    Value := StringReplace(Value, '<img src="', '');
+  //fs2024-03-17  if GetOption('Picture') = 1 then
+  //fs2024-03-17  Delete(Value, Pos('_derived', Value), (Pos('_m0/', Value))-(Pos('_derived', Value))+4);
+    // don't bother getting the default "no-image"
+    if ( (Length(Value) > 0) and (Pos('no-image', Value) = 0) )
+      then GetPicture(Value);
+  end;
+
+// Plot synopsis
+  if CanSetField(fieldComments) or CanSetField(fieldDescription) then
+  begin
+    // store the author of the synopsis                //fs20240615  OK
+    Wiki  := TextBetween(Page, '<section class="review read-more description">', '</section>');
+    Dummy := TextBetween(Wiki, '<h4 class="review-author headline">', '</h4>');
+    HTMLRemoveTags(Dummy);                  //autore della Synopsi
+    Dummy := fullTrim(Dummy) + CRLF + CRLF;                  //autore della Synopsi
+    Dummy := RemoveSpaces(Dummy, True);
+    Dummy := stringReplace(Dummy, 'Synopsis by ', '');
+
+    value := TextBetween(wiki, '<div class="text">', '</div>');            //2021-02-27
+    value := StringReplace(value, '</p> <p>', ('</p> <p>' + CRLF));         //2021-02-28 stacca paragrafi
+    value := StringReplace(value, './n', ('.' + CRLF));         //2021-02-28 stacca paragrafi
+    HTMLRemoveTags(Value);
+    Value := 'AMG SYNOPSIS: ' + fulltrim(Value) + ' -- ' + fulltrim(Dummy);
+
+    if GetOption('SynopsisOptions') = 1 then
+      SetField(fieldDescription, Value);
+
+    if GetOption('SynopsisOptions') = 2 then
+      SetField(fieldComments, Value);
+  end;
+  
+  // Characteristics
+  
+  if (CanSetField(fieldComments)) and (GetOption('CharacteristicsOptions') > 0) then
+  begin
+  Value := TextBetween(Page, '<h3>Characteristics</h3>', '</section>');
+  Value := StringReplace(Value, '</h4>', ' : </h4>');
+  Value := StringReplace(Value, '</4>', ' : </h4>'); // because sometimes the html code is broken on AMG site
+  Value := StringReplace(Value, '<h4>', '<h4>##');
+  HTMLRemovetags(Value);
+  HTMLDecode(Value);
+  Value := RemoveSpaces(Value, True);
+  Value := StringReplace(Value, '##', crlf);
+  SetField(fieldDescription, GetField(fieldDescription) + CRLF + CRLF + 'CHARACTERISTICS:' + Value + crlf + crlf);
+  end;
+
+  // Review -> description
+  if (CanSetField(fieldComments) or CanSetField(fieldDescription))
+  and (GetOption('ReviewOptions') > 0) and (Pos('<li class="tab review">', Page) > 0) then
+  begin
+    // get the page
+    SubPage.Text := GetPage(Address + '/review');
+    PageReview := Subpage.Text;
+    // store the author of the review
+    initchar := '<section class="review">';
+    endchar  := '</section>';
+    Dummy := initchar + TextBetween(PageReview, initchar, endchar) + endchar;
+    Content := textbetween(Dummy, '</h4>', endchar) + endchar;
+    initchar := '<span>';
+    endchar  := '</span>';
+    Dummy := initchar + TextBetween(Dummy, initchar, endchar) + endchar;
+    HTMLRemoveTags(Dummy);                                                   //autore della Review
+
+    // get the review
+    initchar := '<p>';
+    endchar  := '</section>';
+    Content := initchar + TextBetween(Content, initchar, endchar);
+    Content := RemoveSpaces(Content, True);
+    Content := StringReplace(Content, '</p> <p>', ('</p> <p>' + CRLF));
+    value := StringReplace(value, './n', ('.' + CRLF));         //2021-02-28 stacca paragrafi
+    HTMLRemoveTags(Content);
+    HTMLDecode(Content);
+    Value := UTF8Decode(Content);
+    if (Length(Value) > 0) then
+      Value := Fulltrim(Value) + ' -- ' + Dummy + CRLF + CRLF;
+
+    if GetOption('ReviewOptions') = 1 then
+	begin
+	  //if (GetOption('SynopsisOptions')= 1) or (GetOption('AwardsOptions')= 1) or (GetOption('FieldforCredits')= 1) then
+	    Value := 'AMG REVIEW: ' + Value;
+      SetField(fieldDescription, Value);
+	end;
+
+    if GetOption('ReviewOptions') = 2 then
+	begin
+	  //if (GetOption('SynopsisOptions')= 2) or (GetOption('AwardsOptions')= 2) or (GetOption('FieldforCredits')= 2) then
+        Value := 'AMG REVIEW: ' + Value;
+      SetField(fieldComments, Value)
+	end;
+  end;
+
+  // Awards -> description
+  if (CanSetField(fieldComments) or CanSetField(fieldDescription)) and (GetOption('AwardsOptions') > 0) and (Pos('<li class="tab awards">', Page) > 0) then
+  begin
+    // get the page
+    SubPage.Text := GetPage(Address + '/awards');
+
+    // get the awards panel content -- this yields the awards
+    Content := TextAfter(SubPage.Text, '<div class="awards-box">');
+
+    Value := GetStringFromAwardsTable(Content, '~~ ', '||');
+    Value := UTF8Decode(Value);
+
+    Value := StringReplace(Value, '~~ ', #13#10);
+    Value := StringReplace(Value, '||', ' - ');
+
+    if Length(Value) > 0 then
+    begin
+      if GetOption('AwardsOptions') = 1 then
+        SetField(fieldDescription, GetField(fieldDescription) + 'AWARDS:' +#13#10 + Value + #13#10);
+
+      if GetOption('AwardsOptions') = 2 then
+        SetField(fieldComments, GetField(fieldComments) + 'AWARDS:' + #13#10 + Value + #13#10);
+    end;
+  end;
+
+  // Cast -> actors
+  if CanSetField(fieldActors) or CanSetField(fieldComments) or CanSetField(fieldDescription) or (CheckVersion(4,2,0) and (CanSetField(fieldWriter) or CanSetField(fieldComposer))) then
+  begin
+    // get the page
+    SubPage.Text := GetPage(Address + '/cast-crew');
+
+    // get the center panel content -- this yields the Cast table
+    Content := TextBetween(SubPage.Text, '<h2>Cast</h2>', '<h2>Crew</h2>');
+    
+    Value := GetStringFromTable(Content, '~~ ', '||');
+    Value := UTF8Decode(Value);
+
+    if Length(Value) > 0 then
+    begin
+      // remove double spaces if only actor name given
+      while Pos('  ', Value) > 0 do
+        Delete(Value, Pos('  ', Value), 2);
+
+      if GetOption('CastOptions') = 1 then
+      begin
+        Value := StringReplaceAll(Value, '~~ ', ';');
+        Value := StringReplace(Value, '## ', ';');
+        Value := StringReplaceAll(Value, '||', '-');
+        SetField(fieldActors, Value);
+      end;
+
+      if GetOption('CastOptions') = 2 then
+      begin
+        Value := StringReplace(Value, '~~ ', #13#10);
+        Value := StringReplace(Value, '## ', #13#10);
+        Value := StringReplaceAll(Value, '||', '-');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+        SetField(fieldActors, Value);
+      end;
+
+      if GetOption('CastOptions') = 3 then
+      begin
+        Value := StringReplace(Value, '~~ ', #13#10);
+        Value := StringReplace(Value, '## ', #13#10);
+        Value := StringReplace(Value, '||', ' ... ');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+        SetField(fieldActors, Value);
+      end;
+
+      if GetOption('CastOptions') = 4 then
+      begin
+        Value := StringReplace(Value, '~~ ', ')'+#13#10);
+        Value := StringReplace(Value, '## ', #13#10);
+        Value := StringReplace(Value, '||', ' (');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+        SetField(fieldActors, Value);
+      end;
+
+      if GetOption('CastOptions') = 5 then
+      begin
+        Value := StringReplace(Value, '~~ ', '), ');
+        Value := StringReplace(Value, '## ', ', ');
+        Value := StringReplace(Value, '||', ' (');
+        if (Copy(Value, Length(Value) - 1, 2) = ', ') then
+          Value := Copy(Value, 0, Length(Value) - 2);
+        SetField(fieldActors, Value);
+      end;
+    end;
+  
+    // ProductionCredits -> Comments/Description
+
+    // get the center panel content -- this yields the Cast table
+    Content := TextBetween(SubPage.Text, '<h2>Crew</h2>', '</section>');
+    
+    // transform the weirdly formatted list into a pseudo table so we can
+    // reuse existing
+    Value := GetStringFromTable2(Content, '~~ ', '||');
+    Value := UTF8Decode(Value);
+
+    if Length(Value) > 0 then
+    begin
+      // remove double spaces if only name given
+      while Pos('  ', Value) > 0 do
+        Delete(Value, Pos('  ', Value), 2);
+
+      // begin get composer and writer
+      if CheckVersion(4,2,0) = True then
+      begin
+        Value2 := '%Name : '+Value;
+        Value2 := StringReplace(Value2, '~~ ', ']#'+#13#10+'%Name : ');
+        Value2 := deleteEnd(Value2, '%Name : ');
+        Value2 := StringReplace(Value2, '||', ' [');
+        if (Copy(Value2, Length(Value2) - 1, 2) = #13#10) then
+        Value2 := Copy(Value2, 0, Length(Value2) - 2);
+        // start loop
+        While Pos('#', Value2) > 0 do
+        begin
+          Temp := TextBetween(Value2, '%', '#');
+          if Pos('Composer', Temp) > 0 then
+          Composer := Composer+TextBetween(Temp, 'Name : ', ' [')+', ';
+          if (Pos('Screenwriter', Temp) > 0) OR (Pos('Screen Story', Temp) > 0) then
+          Writer := Writer+TextBetween(Temp, 'Name : ', ' [')+', ';
+          Delete(Value2,1,Pos('#',Value2));
+        end;
+        // end loop
+        Composer := deleteEnd(Composer, ', ');
+        SetField(fieldComposer,Composer);
+        Writer := deleteEnd(Writer, ', ');
+        SetField(fieldWriter,Writer);
+      end;
+      // end get composer and writer
+      
+      if GetOption('CreditsOptions') = 1 then
+      begin
+        Value := StringReplace(Value, '~~ ', #13#10);
+        Value := StringReplaceAll(Value, '||', '-');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+      end;
+
+      if GetOption('CreditsOptions') = 2 then
+      begin
+        Value := StringReplace(Value, '~~ ', #13#10);
+        Value := StringReplace(Value, '||', ' ... ');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+      end;
+
+      if GetOption('CreditsOptions') = 3 then
+      begin
+        Value := StringReplace(Value, '~~ ', ')'+#13#10);
+        Value := StringReplace(Value, '||', ' (');
+        if (Copy(Value, Length(Value) - 1, 2) = #13#10) then
+          Value := Copy(Value, 0, Length(Value) - 2);
+      end;
+
+      if GetOption('FieldforCredits') = 1 then
+        SetField(fieldDescription, GetField(fieldDescription) + 'PRODUCTION CREDITS:' + #13#10 + Value + crlf + crlf);
+
+      if GetOption('FieldforCredits') = 2 then
+        SetField(fieldComments, GetField(fieldComments) + 'PRODUCTION CREDITS:' + #13#10 + Value + crlf + crlf);
+    end;
+  end;
+
+  SubPage.Free;
+  
+  // remove trailing newline from description or comments
+  Value := GetField(fieldDescription);
+  While Copy(Value, Length(Value) - 1, 2) = #13#10 do
+  begin
+    Value := Copy(Value, 0, Length(Value) - 2);
+    SetField(fieldDescription, Value);
+  end;
+
+  Value := GetField(fieldComments);
+  While Copy(Value, Length(Value) - 1, 2) = #13#10 do
+  begin
+    Value := Copy(Value, 0, Length(Value) - 2);
+    SetField(fieldComments, Value);
+  end;
+end;
+
+// Adds movie titles from search results to tree
+procedure Create_Movies_List(Title : string{; NumResults: Integer});
+var
+  Page: TStringList;
+  PageText : string;
+  SearchAddress : string;
+  MovieTitle, MovieAddress, MovieYear, MovieDirector, Temp: string;
+begin
+  SearchAddress := 'https://www.allmovie.com/search/movies/' + Title;
+  Page := TStringList.Create;
+  Page.Text := GetPage(SearchAddress);
+  PageText := Page.Text;
+  Pagestr := PageText;
+  if debug_search then
+    DumpPage(folder +'3 AllMovieFilm.html', Pagestr);
+  Delete(PageText, 1, Pos('<ul class="search-results">', PageText)-1);
+  Pagestr := PageText;
+  if debug_search then
+    DumpPage(folder +'4 AllMovieFilm.html', Pagestr);
+//  Every movie contained between "<li"    and "</li>"
+  while Pos('<li class="movie clearfix">', Pagestr) > 0 do
+    begin
+      Temp := TextBetween(Pagestr, '<li class="movie clearfix">', '</li>');
+      MovieAddress := 'https://www.allmovie.com/movie' + TextBetween(Temp, '<a href="https://www.allmovie.com/movie', '"');
+      MovieTitle := UTF8Decode(TextBetween(Temp, MovieAddress+'">', '</a>'));
+      MovieYear := TextBetween(Temp, MovieTitle+'</a>', '</div>');
+      MovieYear := FullTrim(MovieYear);
+      MovieDirector := UTF8Decode(TextBetween(Temp, 'Directed by: ', '</div>'));
+      HTMLRemoveTags(MovieDirector);
+      MovieDirector := FullTrim(MovieDirector);
+      If MovieDirector <> '' then
+        MovieDirector := ' by ' + MovieDirector;
+      MovieTitle := MovieTitle + ' ' + MovieYear + MovieDirector;
+      // add movie to list
+      PickTreeAdd(MovieTitle, MovieAddress);
+      // remove the entry we just processed
+      CutAfter(Pagestr, '</li>');
+  end;
+  
+//fs20240613  Page.Free;
+end;
+
+// Extracts single movie detail (like director, genre) from page
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  // recognition tag - if present, extract detail from page, otherwise assume detail is not present
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    // optional cut tag helps finding right string in html page
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    // movie detail copied with html tags up to end string
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    // remove html tags and decode html string
+    HTMLRemoveTags(Result);
+    HTMLDecode(Result);
+    Result := RemoveWhiteSpace(Result);
+//  ShowMessage('DEBUG: GetStringFromHTML - StartTag "'+StartTag+'", CutTag "'+CutTag+'", EndTag "'+EndTag+'", Result "'+Result+'" ___ '+Page);
+  end;
+end;
+
+// Delete substring of a string if end string
+function deleteEnd(Value, EndValue : String) : String;
+begin
+  if copy(Value,length(Value)-length(EndValue)+1,length(Value)) = EndValue then
+        Value := copy(Value,1,length(Value)-length(EndValue));
+  result := Value;
+end;
+
+//------------------------------------------------------------------------------
+// Program
+//------------------------------------------------------------------------------
+
+begin
+  // Check StringUtils1 version and update if < version 7
+  if StringUtils1_Version < 7 then
+    begin
+      if ShowWarning('Old version of file "Stringutils1.pas" detected: v'+IntToStr(StringUtils1_Version)+#13#10+'The script requires at least version 7.'+#13#10+'Download and install latest version now ?') = True then
+        begin
+          UpdateFile := TStringList.Create;
+          UpdateFile.Text := GetPage('http://update.antp.be/amc/scripts/StringUtils1.pas');
+          UpdateFile.SaveToFile(dirScripts + 'StringUtils1.pas');
+          UpdateFile.Free;
+          ShowInformation('StringUtils1 has been updated. Please restart "All Movie Guide" script now. Thank you.');
+          Exit;
+        end
+      else
+        begin
+          ShowInformation('You can download latest version of "StringUtils1.pas" using script [ UPDATE SCRIPTS ] or via http://update.antp.be/amc/scripts');
+          Exit;
+        end;
+    end;
+  // Check AMC version
+  if CheckVersion(4,2,1) then
+  begin
+    MovieName := GetField(fieldUrl);
+    if (GetOption('BatchMode') = 1) and (Pos('allmovie.com', MovieName) > 0) then
+    begin
+      if Pos('https', MovieName) > 0 then
+      AnalyzePage(MovieName)
+      else
+      AnalyzePage(StringReplace(MovieName, 'http', 'https'));
+    end
+    else
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+      if Input('All Movie Import', 'Enter title (only letters, digits and spaces) or URL:', MovieName) then
+      begin
+        if Pos('allmovie.com', MovieName) > 0 then
+        AnalyzePage(MovieName)
+        else
+        AnalyzeSearchResults( StringReplace(URLEncode(MovieName), '%20', '+') );
+      end;
+    end;
+  end
+  else
+  begin
+  if ShowWarning('This script requires a newer version of Ant Movie Catalog'+#13#10+'at least the 4.2.1 BETA version available here : '+#13#10+'http://forum.antp.be/phpbb2/viewtopic.php?t=4844'+#13#10#13#10+'Click on ''Ok'' to launch directly the adress in your browser') = True then
+  Launch('http://forum.antp.be/phpbb2/viewtopic.php?t=4844', '');
+  end
+end.

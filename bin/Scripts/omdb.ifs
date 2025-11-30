@@ -1,0 +1,378 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=cage
+Title=omdb
+Description=Import entries from omdb
+Site=http://www.omdbapi.com/
+Language=EN
+Version=0.1.1
+Requires=4.1.2
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+FullPlot=0|1|0=Short plot description|1=Full plot description
+Tomato=0|1|0=Do NOT fill comments with Rotten Tomatoes data|1=Fill comments with Rotten Tomatoes data
+Misc=0|1|0=Do NOT fill comments with extra misc fields|1=Fill comments with extra misc fields
+
+***************************************************)
+
+program omdb;
+
+uses
+  StringUtils1;
+var
+  Title, SiteUrl, Temp, Imdbid: string;
+  
+procedure AnalyzePage(Url: string);
+var
+  Contents: string;  
+begin
+  
+  Contents := GetPage(Url);
+
+  if pos('<error>Incorrect IMDb ID</error>"}', Contents) = 0 then
+    begin
+      ParseXML(Contents);
+    end
+  else
+    begin
+      ShowMessage('Movie not found');      
+    end;  
+end;
+
+// set movie information
+procedure SetInformation(Contents: TStringList);
+var
+  Value, CommentString: String;
+begin
+
+  // ** amc easy fillable fields
+  
+  // title
+  if CanSetField(fieldOriginalTitle) then
+    Value := Contents.GetValue('Title');      
+    SetField(fieldOriginalTitle, Value);
+
+  // year
+  if CanSetField(fieldYear) then
+    Value := Contents.GetValue('Year');      
+    SetField(fieldYear, Value);
+  
+  // genre
+  if CanSetField(fieldCategory) then
+    Value := Contents.GetValue('Genre');      
+    SetField(fieldCategory, Value);
+
+  // director
+  if CanSetField(fieldDirector) then
+    Value := Contents.GetValue('Director');      
+    SetField(fieldDirector, Value);
+    
+  // actors
+  if CanSetField(fieldActors) then
+    Value := Contents.GetValue('Actors');      
+    SetField(fieldActors, Value);
+
+  // plot
+  if CanSetField(fieldDescription) then
+    Value := Contents.GetValue('Plot');      
+    SetField(fieldDescription, Value);
+    
+  // poster (annoying.. should be returning nothing or a blank string)
+  Value := Contents.GetValue('Poster');      
+  if Value <> 'N/A' then
+    begin
+      GetPicture(Value);
+    end;
+
+  // imdb rating
+  if CanSetField(fieldRating) then
+    Value := Contents.GetValue('imdbRating');      
+    SetField(fieldRating, Value);
+   
+  // imdb id
+  if CanSetField(fieldURL) then
+    Value := 'http://www.imdb.com/title/' + Contents.GetValue('imdbID');      
+    SetField(fieldURL, Value);
+
+  // ** fields that don't really exist in amc
+  // or need reworking
+
+  if GetOption('Misc') = 1 then
+    begin
+        
+      CommentString := CommentString + 'Misc Data' + #13#10 + #13#10;
+
+      // type
+
+      // rated
+      if CanSetField(fieldComments) then
+       Value := Contents.GetValue('rated');      
+       CommentString := CommentString + 'rated: ' + Value + #13#10;
+  
+      // full release year (DD MMM YYYY)
+      if CanSetField(fieldComments) then
+        Value := Contents.GetValue('released');      
+        CommentString := CommentString + 'released: ' + Value + #13#10;
+  
+      // runtime (2h 10 min)
+ 
+      // writer
+      if CanSetField(fieldComments) then
+       Value := Contents.GetValue('writer');      
+       CommentString := CommentString + 'writer: ' + Value + #13#10;
+ 
+      // imdb votes
+      if CanSetField(fieldComments) then
+        Value := Contents.GetValue('imdbvotes');      
+        CommentString := CommentString + 'imdbvotes: ' + Value + #13#10 + #13#10; 
+   end;
+   
+  // roten tomatoes data
+  
+  if GetOption('Tomato') = 1 then
+    begin
+
+     CommentString := CommentString + 'Rotten Tomatoes' + #13#10 + #13#10;
+
+      // tomatometer
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatometer');      
+       CommentString := CommentString + 'tomatometer: ' + Value + #13#10;
+
+     // tomatoimage
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatoimage');      
+       CommentString := CommentString + 'tomatoimage: ' + Value + #13#10;
+
+     // tomatorating
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatometer');      
+       CommentString := CommentString + 'tomatometer: ' + Value + #13#10;
+
+     // tomatoreviews
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatoreviews');      
+       CommentString := CommentString + 'tomatoreviews: ' + Value + #13#10;
+
+     // tomatofresh
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatofresh');      
+       CommentString := CommentString + 'tomatofresh: ' + Value + #13#10;
+
+     // tomatorotten
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatorotten');      
+       CommentString := CommentString + 'tomatorotten: ' + Value + #13#10;
+
+     // tomatoconsensus
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatoconsensus');      
+       CommentString := CommentString + 'tomatoconsensus: ' + Value + #13#10;
+
+     // tomatousermeter
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatousermeter');      
+       CommentString := CommentString + 'tomatousermeter: ' + Value + #13#10;
+
+     // tomatouserrating
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatouserrating');      
+       CommentString := CommentString + 'tomatouserrating: ' + Value + #13#10;
+
+     // tomatouserreviews
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('tomatouserreviews');      
+       CommentString := CommentString + 'tomatouserreviews: ' + Value + #13#10;
+
+     // dvd
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('dvd');      
+       CommentString := CommentString + 'dvd: ' + Value + #13#10;
+
+     // boxoffice
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('boxoffice');      
+       CommentString := CommentString + 'boxoffice: ' + Value + #13#10;
+
+     // production
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('production');      
+       CommentString := CommentString + 'production: ' + Value + #13#10;
+
+     // website
+     if CanSetField(fieldComments) then
+       Value := Contents.GetValue('website');      
+       CommentString := CommentString + 'website: ' + Value + #13#10;
+       
+    SetField(fieldComments, CommentString);
+  end;
+
+end;
+
+procedure ParseXML(Response: string);
+var
+  Contents: TStringList;
+  Stitle, Syear, Simdbid, Stype, Selected: String;
+  
+  XMLFile: TJvSimpleXml;
+  CurItem: TJvSimpleXmlProps;
+  i: Integer;
+  
+begin
+  
+  Contents := TStringList.Create;
+  
+  XMLFile := TJvSimpleXml.Create(nil);
+  XMLFile.LoadFromString(Response);
+
+  PickTreeClear;
+  
+  for i := 0 to XMLFile.Root.Items.Count-1 do
+    begin
+      CurItem := XMLFile.Root.Items.GetItem(i).Properties;
+            
+      Contents.SetValue('Title', CurItem.GetItemNamed('title').Value);
+      Contents.SetValue('Year', CurItem.GetItemNamed('year').Value);
+      Contents.SetValue('Rated', CurItem.GetItemNamed('rated').Value);
+      Contents.SetValue('Released', CurItem.GetItemNamed('released').Value);
+      Contents.SetValue('Runtime', CurItem.GetItemNamed('runtime').Value);
+      Contents.SetValue('Genre', CurItem.GetItemNamed('genre').Value);
+      Contents.SetValue('Director', CurItem.GetItemNamed('director').Value);
+      Contents.SetValue('Writer', CurItem.GetItemNamed('writer').Value);
+      Contents.SetValue('Actors', CurItem.GetItemNamed('actors').Value);
+      Contents.SetValue('Plot', CurItem.GetItemNamed('plot').Value);
+      Contents.SetValue('Poster', CurItem.GetItemNamed('poster').Value);
+      Contents.SetValue('Year', CurItem.GetItemNamed('year').Value);
+      Contents.SetValue('imdbRating', CurItem.GetItemNamed('imdbrating').Value);
+      Contents.SetValue('imdbVotes', CurItem.GetItemNamed('imdbvotes').Value);
+      Contents.SetValue('imdbID', CurItem.GetItemNamed('imdbid').Value);
+      Contents.SetValue('type', CurItem.GetItemNamed('type').Value);
+      
+      // rotten tomatoes extras
+      Contents.SetValue('tomatoMeter', CurItem.GetItemNamed('tomatometer').Value);
+      Contents.SetValue('tomatoImage', CurItem.GetItemNamed('tomatoimage').Value);
+      Contents.SetValue('tomatoRating', CurItem.GetItemNamed('tomatorating').Value);
+      Contents.SetValue('tomatoReviews', CurItem.GetItemNamed('tomatoreviews').Value);
+      Contents.SetValue('tomatoFresh', CurItem.GetItemNamed('tomatofresh').Value);
+      Contents.SetValue('tomatoRotten', CurItem.GetItemNamed('tomatorotten').Value);
+      Contents.SetValue('tomatoConsensus', CurItem.GetItemNamed('tomatoconsensus').Value);
+      Contents.SetValue('tomatoUserMeter', CurItem.GetItemNamed('tomatousermeter').Value);
+      Contents.SetValue('tomatoUserRating', CurItem.GetItemNamed('tomatouserrating').Value);
+      Contents.SetValue('tomatoUserReviews', CurItem.GetItemNamed('tomatouserreviews').Value);
+      Contents.SetValue('DVD', CurItem.GetItemNamed('dvd').Value);
+      Contents.SetValue('BoxOffice', CurItem.GetItemNamed('boxoffice').Value);
+      Contents.SetValue('Production', CurItem.GetItemNamed('production').Value);
+      Contents.SetValue('Website', CurItem.GetItemNamed('website').Value);
+      
+  end;
+
+  SetInformation(Contents);
+  
+end;
+
+function SearchTitle(Url: String) : String;
+var
+  Stitle, Syear, Simdbid, Stype, Selected: String;
+  Contents: String;
+  XMLFile: TJvSimpleXml;
+  CurItem: TJvSimpleXmlProps;
+  i: Integer;
+begin
+
+  Contents := GetPage(Url);
+  
+  if pos('response="False"', Contents) = 0 then
+    begin
+
+      XMLFile := TJvSimpleXml.Create(nil);
+      XMLFile.LoadFromString(Contents);
+
+      PickTreeClear;
+   
+      for i := 0 to XMLFile.Root.Items.Count-1 do
+        begin
+          CurItem := XMLFile.Root.Items.GetItem(i).Properties;
+      
+          Stitle := CurItem.GetItemNamed('Title').Value;
+          Syear := CurItem.GetItemNamed('Year').Value;
+          Simdbid := CurItem.GetItemNamed('imdbID').Value;
+          Stype := CurItem.GetItemNamed('Type').Value;
+      
+          PickTreeAdd(Stitle + ' (' + Syear + ')', Simdbid);
+        end;  
+  end
+  else
+    begin
+      // on failure set to nothing
+      SearchTitle := '';    
+  end;
+  
+  if PickTreeExec(Selected) then
+    begin
+      SearchTitle := Selected;
+    end
+  else
+    begin
+      SearchTitle = '';
+    end
+end;
+
+// start program
+begin
+  if CheckVersion(4,1,2) then
+    begin  
+      Title := GetField(fieldOriginalTitle);
+        if Title = '' then Title := GetField(fieldTranslatedTitle);
+        if Input('omdb import', 'Please enter title name or imdb movie id (ttXXXXXXX):', Title) then
+        begin
+        Title := AnsiLowerCase(Title);
+        Title := StringReplace(Title, Chr(39), '');
+        Title := StringReplace(Title, '’', '');        
+        Title := StringReplace(Title, ' ', '+');
+        
+        SiteUrl := 'http://www.omdbapi.com/';        
+        
+        if Pos('tt', Title) = 1 then
+          begin            
+            // enter imdb tt number eg. tt0116922 (Lost Highway)            
+            SiteUrl := SiteUrl + '?i=' + Title + '&tomatoes=true&r=xml';
+          end        
+        else
+          begin
+          
+            // otherwise do fuzzy search
+            Imdbid := SearchTitle(SiteUrl + '?s=' + Title + '&r=xml');
+        
+            If Imdbid <> '' then
+              begin            
+                SiteUrl := SiteUrl + '?i=' + Imdbid + '&tomatoes=true&r=xml';            
+            end;
+    
+            if GetOption('FullPlot') = 1 then
+              begin
+                SiteUrl := SiteUrl + '&plot=full';
+              end
+            else
+              begin
+                SiteUrl := SiteUrl;
+              end
+            end;
+                   
+          AnalyzePage(SiteUrl);
+          
+        end
+      end;
+    end.
+  else
+    begin
+      ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.1.2)');
+    end;
+end.

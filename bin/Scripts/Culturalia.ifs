@@ -1,0 +1,613 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Raulsara, Dinís González, David Arenillas, Antoine Potten, J.M. Folgueira, japg2000 and micmic
+Title=Culturalia
+Description=Importación de Culturalianet
+Site=http://www.culturalianet.com
+Language=ES
+Version=1.97 (05/10/2013)
+Requires=3.5.0
+Comments=Actualización 1.97 realizada por Raulsara
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+ImportLengthIMDB=1|1|0=Imports Length from Culturalia (no info)|1=Imports Length from IMDB
+ImportRatingIMDB=1|1|0=Imports Rating from Culturalia (no info)|1=Imports Rating from IMDB
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not display any window, takes the first movie found
+HideAkaTitles=0|0|0=Show Aka Titles (IMDB)|1=Hide Aka Titles (IMDB)
+
+[Parameters]
+
+***************************************************)
+
+program Culturaliabueno;
+
+// Developed by Raulsara
+
+uses
+  StringUtils1;
+const
+  BaseURLCulturalia = 'http://www.culturalianet.com/bus/resu.php';
+  BaseURLCulturaliaimagen =  'http://www.culturalianet.com/';
+var
+  MovieName, strTemp, donde: string;
+  Articles: array of string;
+  Index: integer;
+  
+// Funcion para cambiar el artículo
+// Ej. "Sirenita, La" lo convierte en "La Sirenita".
+  
+function TransformTitle(Title: string): string;
+var
+  BeginPos, EndPos: Integer;
+  Value: string;
+  Words: array of string;
+  Articles: array of string;
+  Replace,Original: string;
+  Index, CommaCount: Integer;
+
+Begin
+
+  //  Titulo
+
+  Result:=Title;
+
+  Setarraylength(Words,11);
+  Words[0]:=' In ';
+  Words[1]:=' On ';
+  Words[2]:=' Of ';
+  Words[3]:=' As ';
+  Words[4]:=' The ';
+  Words[5]:=' At ';
+  Words[6]:=' And A ';
+  Words[7]:=' And ';
+  Words[8]:=' An ';
+  Words[9]:=' To ';
+  Words[10]:=' For ';
+
+  SetArrayLength(Articles,35);
+  Articles[0]:=' The';
+  Articles[1]:=' a';
+  Articles[2]:=' An';
+  Articles[3]:=' Le';
+  Articles[4]:=' L''';
+  Articles[5]:=' Les';
+  Articles[6]:=' Der';
+  Articles[7]:=' Das';
+  Articles[8]:=' Die';
+  Articles[9]:=' Des';
+  Articles[10]:=' Dem';
+  Articles[11]:=' Den';
+  Articles[12]:=' Ein';
+  Articles[13]:=' Eine';
+  Articles[14]:=' Einen';
+  Articles[15]:=' Einer';
+  Articles[16]:=' Eines';
+  Articles[17]:=' Einem';
+  Articles[18]:=' Il';
+  Articles[19]:=' Lo';
+  Articles[20]:=' La';
+  Articles[21]:=' I';
+  Articles[22]:=' Gli';
+  Articles[23]:=' Le';
+  Articles[24]:=' Uno';
+  Articles[25]:=' Una';
+  Articles[26]:=' Un''';
+  Articles[27]:=' O';
+  Articles[28]:=' Os';
+  Articles[29]:=' As';
+  Articles[30]:=' El';
+  Articles[31]:=' Los';
+  Articles[32]:=' Las';
+  Articles[33]:=' Unos';
+  Articles[34]:=' Unas';
+
+  // Count the Comma in The Title
+
+  CommaCount := 0;
+  EndPos := 0;
+  Value := Title;
+  repeat
+     BeginPos := Pos(',', Value);
+     if BeginPos > 0 then
+     begin
+       Delete(Value, 1, BeginPos);
+       CommaCount := CommaCount + 1;
+       EndPos := EndPos + BeginPos;
+     end;
+  until( Pos(',',Value) = 0);
+
+  // Compare the Article to a list of known ones
+
+  for Index := 0 to 34 do
+  begin
+    if Pos(Articles[Index], Value) <> 0 then
+    begin
+       CommaCount := 1;
+       BeginPos := EndPos;
+       Break;
+    end;
+  end;
+
+  if (BeginPos > 0) and (CommaCount = 1) then
+  begin
+    Value := Copy(Title, BeginPos + 1, Length(Title));
+    Value := Trim(Value);
+    Result := Value + ' ' + Copy(Title, 1, BeginPos - 1);
+  end;
+
+  BeginPos := Pos(': ', Result);
+  if BeginPos > 0 then
+    Result := StringReplace(Result, ': ', ' - ');
+
+  Result := AnsiMixedCase(Result, ' ');
+
+  for Index := 0 to 10 do
+  begin
+    if Pos(Words[Index],Result) <> 0 then
+    begin
+      Original := Words[Index];
+      Replace := AnsiLowerCase(Original);
+      Result := StringReplace(Result, Original, Replace);
+    end;
+  end;
+
+  Result := StringReplace(Result, ' - the ', ' - The ');
+  Result := Trim(Result);
+end;
+
+// Analiza la página con todos los resultados que ha encontrado
+
+procedure AnalyzePageCulturalia(Address: string);
+var
+  Page, TempTit: TStringList;
+  LineNr: Integer;
+  Code, Title, TitleOrig, Parent1, Parent2, Parent3, Parent4, Director, Year: string;
+  TitleFound: Boolean;
+
+begin
+
+  Page := TStringList.Create;
+  TempTit := TStringList.Create;
+  Page.Text := GetPage(Address);
+  Page.Text := StringReplace(Page.Text, '<br>', #13#10);
+
+  if Pos('No se ha encontrado ningún artículo por título', Page.Text) = 0 then
+  begin
+    if GetOption('BatchMode') = 0 then
+    begin
+
+       PickTreeClear;
+       LineNr:= FindLine('Se muestran del', Page, 0);
+       PickTreeAdd('Resultados más probables de la búsqueda:', '');
+       while LineNr + 1 < Page.Count do
+       begin
+
+           Code      := Textbetween(page.getstring(LineNr), '../art/ver.php?art=' , ''' target=''');
+           Title     := Textbetween(page.getstring(LineNr), '_top''>' , '</a></b></td>');
+
+        // Cambia el articulo y lo pone al principio
+
+           Title     := (Transformtitle(title));
+           Title     := StringReplace(Title , '.' , '');
+
+           LineNr    := LineNr + 1;
+           TitleOrig := Textbetween(page.getstring(LineNr), 'colspan=2><i>' , '</i>.');
+        
+           If TitleOrig = '' then
+
+             begin
+
+             Parent3 := '';
+             Parent4 := '';
+             end
+           else
+             begin
+
+             Parent3 := ' (';
+             Parent4 := ')';
+             end
+           Director  := Textbetween(page.getstring(LineNr), '. De ' , ' (');
+
+           If Director = '-' then
+             begin
+             Director := ' ';
+             end
+
+
+           Year := Textbetween(page.getstring(LineNr), ' (' , ')');
+
+           If Year = '' then
+
+             begin
+             Parent1 := '';
+             Parent2 := '';
+             end
+           else
+             begin
+             Parent1 := '(';
+             Parent2 := ')';
+             end
+          
+       PickTreeAdd(Title + Parent3 + TitleOrig + Parent4 +', ' +  Director + ' ' + Parent1 + Year + Parent2, 'http://www.culturalianet.com/art/ver.php?art=' + code);
+
+       end;
+       Page.Free;
+       if PickTreeExec(Address) then
+
+         AnalyzeMoviePageCulturalia(Address);
+
+
+   end
+  end else
+  if (GetOption('BatchMode') = 0) then
+    ShowMessage('No se ha encontrado ninguna coincidencia por título');
+end;
+
+// Extrae la información de la pagina
+
+procedure AnalyzeMoviePageCulturalia(Address: string);
+var
+  Page: TStringList;
+  Comments: string;
+  StrTitle: string;
+  StrSinopsis: string;
+  Line: string;
+  LineNr: Integer;
+  StrTemp: string;
+  Contador: integer;
+  Year: string;
+  Pais: string;
+  Director: string;
+  Directores: string;
+  Actor: string;
+  Actores: string;
+  Productor: string;
+  Productores: string;
+  Guion: string;
+  Guionistas: string;
+  Musico: string;
+  Musicos: string;
+  Calificacion: string;
+  Imagen: string;
+  Addresspicture: string;
+  Literal1: string;
+  Category: string;
+
+
+begin
+
+  Page := TStringList.Create;
+  Page.Text := StringReplace(GetPage(Address), '<br><br>', #13#10);
+  Page.Text := StringReplace(Page.Text, '<br>', #13#10);
+  contador:= 151;
+
+  // Titulo traducido
+  
+  strtitle := Textbetween(Page.Getstring(contador), 'class = ''titulo2''>' , '. (');
+
+  strTemp := strTitle;
+
+  SetField(fieldTranslatedTitle , TransformTitle(strTemp));
+
+  
+  // Año
+  
+  year := Textbetween(Page.Getstring(contador),  '. (' , ')</font></u>');
+
+  Setfield(fieldYear, year);
+  
+  // Titulo original
+  
+  contador := (contador + 1);
+  strtemp := Textbetween(Page.Getstring(contador), '<i>' , '</i>.</td>');
+
+  SetField(fieldOriginalTitle, TransformTitle(strTemp));
+
+  
+  // Genero
+
+    if Pos('Género:' , Page.Text) <> 0 then
+
+      begin
+    
+      LineNr:= FindLine('Género:', Page, 0);
+
+      Category := (Page.Getstring(LineNr+1));
+      Setfield(fieldCategory, Category);
+
+    end
+  
+  // Pais
+
+    if Pos('Nacionalidad:' , Page.text) <> 0 then
+
+    begin
+
+    LineNr:= FindLine('Nacionalidad:', Page, 0);
+    LineNr:= LineNr + 1;
+    SetField(fieldCountry, (Page.Getstring(LineNr)));
+
+    end
+  
+  // Director
+  
+  if Pos('Director:' , Page.Text) <> 0 then
+
+  begin
+  
+     LineNr:= FindLine('Director:', Page, 0);
+
+     LineNr:= LineNr + 1;
+     
+     while Pos('titulo3', Page.Getstring(LineNr)) = 0 do
+
+       begin
+
+          If Pos('<', Page.Getstring(LineNr)) = 1 then
+      
+           begin
+             Director :=  TextBetween(Page.GetString(LineNr), '>' , '</a>');
+
+           end else
+    
+           begin
+    
+             Director :=  (Page.GetString(LineNr));
+
+           end
+
+         LineNr:= (LineNr + 1);
+
+         Directores := (Directores + ' / ' + Director);
+
+      end
+
+      Delete (Directores, 1, 3);
+      Setfield(fieldDirector, Directores);
+
+  end
+
+
+// Actores
+  
+  if Pos('Actores:' , Page.Text) <> 0 then
+
+  begin
+
+     LineNr:= FindLine('Actores:', Page, 0);
+     LineNr:= LineNr + 1;
+
+     while pos('titulo3', Page.Getstring(LineNr))= 0 do
+
+       begin
+
+       If Pos('<', Page.Getstring(LineNr)) = 1 then
+
+          begin
+            Actor :=  TextBetween(Page.GetString(LineNr), '>' , '</a>');
+          end else
+
+          begin
+            Actor :=  (Page.GetString(LineNr));
+          end
+
+      LineNr:= (LineNr + 1);
+      Actores := (Actores + ', ' + Actor);
+
+    end
+    
+      Delete (Actores, 1, 2);
+
+      Setfield(fieldActors, actores);
+      
+  end
+
+ // Productores
+ 
+  if Pos('Productor:' , Page.Text) <> 0 then
+
+  begin
+  
+    LineNr:= FindLine('Productor:', Page, 0);
+    LineNr:= LineNr + 1;
+
+    while pos('titulo3', Page.Getstring(LineNr))= 0 do
+
+      begin
+      
+      If Pos('<', Page.Getstring(LineNr)) = 1 then
+
+      begin
+         Productor :=  TextBetween(Page.GetString(LineNr), '>' , '</a>');
+      end else
+
+      begin
+         Productor :=  (Page.GetString(LineNr));
+      end
+
+      LineNr:= (LineNr + 1);
+
+      Productores := (Productores + ' / ' + Productor);
+
+    end
+  
+      Delete (Productores, 1, 3);
+      Setfield(fieldProducer, Productores);
+
+    
+  end
+  
+// Guionistas
+
+  if Pos('Guión:' , Page.Text) <> 0 then
+  
+  begin
+  
+    LineNr:= FindLine('Guión:', Page, 0);
+    LineNr:= LineNr + 1;
+
+    while pos('titulo3', Page.Getstring(LineNr))= 0 do
+
+    begin
+
+      If Pos('<', Page.Getstring(LineNr)) = 1 then
+
+        begin
+          Guion :=  TextBetween(Page.GetString(LineNr), '>' , '</a>');
+        end else
+
+        begin
+          Guion :=  (Page.GetString(LineNr));
+        end
+
+      LineNr := (LineNr + 1);
+      Guionistas := (Guionistas + ' / ' + Guion);
+
+    end
+  
+    Delete (Guionistas, 1, 2);
+    
+    Comments := Comments + #13#10 + #13#10 + 'Guión: ' + Guionistas;
+    
+  end
+  
+ // Musica
+ 
+  if Pos('Música:' , Page.Text) <> 0 then
+  
+  begin
+  
+    LineNr:= FindLine('Música:', Page, 0);
+    LineNr:= LineNr + 1;
+
+    while pos('titulo3', Page.Getstring(LineNr))= 0 do
+
+      begin
+
+      If Pos('<', Page.Getstring(LineNr)) = 1 then
+
+          begin
+            Musico :=  TextBetween(Page.GetString(LineNr), '>' , '</a>');
+          end else
+
+          begin
+            Musico :=  (Page.GetString(LineNr));
+          end
+
+      LineNr := (LineNr + 1);
+      Musicos := (Musicos + ' / ' + Musico);
+
+    end
+    
+      Delete (Musicos, 1, 2);
+
+      Comments := Comments + #13#10 + #13#10 + 'Musica: ' + Musicos;
+
+  end
+  
+// Calificacion
+
+  if Pos('Calificación moral:', Page.Text) <> 0 then
+  
+  begin
+  
+    LineNr:= FindLine('Calificación', Page, 0);
+    Calificacion:= TextAfter (Page.Getstring(LineNr), 'Calificación moral:</font> ' );
+    Comments := Comments + #13#10 + #13#10 + 'Calificación moral: ' + Calificacion;
+
+  end
+  
+  SetField(fieldComments, Comments);
+
+  
+// Sinopsis
+  
+  if Pos('Sinopsis:', Page.Text) <> 0 then
+
+  begin
+  
+    LineNr := FindLine('Sinopsis:', Page, 0);
+    LineNr := (LineNr + 1);
+    Line := Page.GetString(LineNr);
+    Literal1:= '<table border';
+
+    If pos(Literal1, Line) = 0 then
+
+    begin
+
+      Setfield (fieldDescription, Line);
+
+    end else
+  
+    begin
+    
+    Setfield (fieldDescription, '');
+
+    end
+    
+  end
+  
+// Duracion
+
+  if Pos('Duración:', Page.Text) <> 0 then
+
+  begin
+  
+    LineNr := FindLine('Duración:</font> ', Page, 0);
+    Line := TextBetween (Page.Getstring(LineNr) , 'Duración:</font> ' , ' minutos');
+    Setfield (fieldLength, Line);
+
+  end
+
+// URL
+
+  Setfield (fieldURL, Address);
+
+// Caratula
+
+    LineNr := FindLine('img src = ', Page, 0);
+    if LineNr <> -1 then
+     begin
+       Line := Page.GetString(LineNr);
+       Imagen:= TextBetween(Line, 'img src = "..' , '" width=');
+       Getpicture2 (Imagen, BaseUrlCulturaliaimagen);
+     end;
+
+  Page.Free;
+end;
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+begin
+
+if CheckVersion(3,5,0) then
+   begin
+    MovieName := '';
+    MovieName := GetField (fieldTranslatedTitle);
+    donde := '&donde=1';
+     if MovieName = '' then                      begin
+       MovieName := GetField(fieldOriginalTitle);
+       donde := '&donde=2';
+      end
+
+      If MovieName <> '' then
+        begin
+          strTemp := MovieName;
+          if Copy(strTemp, Length(strTemp), Length(strTemp)) = '.' then
+          MovieName := Copy(strTemp, 1, Length(strTemp) -1);
+          if Input('Importar de Culturalianet.com', 'Por favor, introduce el titulo:', Moviename) then
+            begin
+              AnalyzePageCulturalia(BaseURLCulturalia + '?&texto=' + UrlEncode(MovieName) + '&' + donde);
+            end
+        end
+   end else
+     ShowMessage('Este script requiere una versión más reciente de Ant Movie Catalog (al menos la versión 3.5.0)');
+end.

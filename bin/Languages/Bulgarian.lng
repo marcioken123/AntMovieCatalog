@@ -1,0 +1,1892 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAzCwAAMwsAABAAAAAQAAAAAAAAAAAiAAAAVAAAAIQAAAAAqgAAAP0AqqqqAJmZ/wDMzMwA7u7uAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAKqqqqqqqqqqAAAAAAAAAAAEREREREREUARVVVVVVVVwBFVVVVVVVXAEVVVVVVVVcAEiIiIiIiIwASIiIiIiIjABIiIiIiIiMAEiIiIiIiIwBoiIiIiIiJAGiIiIiIiIkAaIiIiIiIiQBpmZmZmZmZAAAAAAAAAAAKqqqqqqqqqq
+Name=Bulgarian
+LocalName=
+Encoding=windows-1251
+Version=3.4.3
+VersionFormat=4.2.2
+Comments=If you want to contribute by updating this translation, simply open Bulgarian.lng with a text editor (e.g. Notepad) and modify it.
+Authors=Rumen Stoyanov|rumen@nextlevel.bg|Momchil Karabulev|karabulev@yahoo.com
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Нов
+ActionFileNew.Hint=Нов|Създаване на нов файл
+ActionFileOpen.Caption=&Отвори...
+ActionFileOpen.Hint=Отвори...|Отвори файл
+  ActionFileOpenNoRecent.Caption=No recent file
+ActionFileSave.Caption=&Запази
+ActionFileSave.Hint=Запази|Запази този файл
+ActionFileSaveAs.Caption=Запази &като...
+ActionFileSaveAs.Hint=Запази като...|Запази този файл като...
+ActionFilePrint.Caption=&Печат...
+ActionFilePrint.Hint=Пачатай списък|Пачатай списъка от текущия каталог
+ActionFileImport.Caption=&Импорт...
+ActionFileImport.Hint=Импорт...|Импорт на данни от друг файлов формат
+ActionFileExport.Caption=&Експорт...
+ActionFileExport.Hint=Експорт...|Експорт на каталога в друг файлов формат
+ActionFileProperties.Caption=&Информация...
+ActionFileProperties.Hint=Информация...|Информация за каталога
+
+ActionExit.Caption=&Изход
+ActionExit.Hint=Изход|Изход от програмата
+ActionOptions.Caption=&Настройки...
+ActionOptions.Hint=Настройки...|Промяна на настройките на програмата
+  ActionLanguage.Caption=L&anguage...
+  ActionLanguage.Hint=Language...|Change user interface language
+ActionLoan.Caption=&На Заем...
+ActionLoan.Hint=На Заем...|Списък с филми дадени на заем
+ActionToolsScripting.Caption=С&криптове...
+ActionToolsScripting.Hint=Скриптове...|Изпълнява скрипт за избраните филми
+ActionToolsGrid.Caption=П&окажи като таблица
+ActionToolsGrid.Hint=Покажи като таблица|Показва филмовия списък като голяма таблица
+  ActionStretchList.Caption=Stretch &list
+  ActionStretchList.Hint=Stretch list|Stretch the list to the right
+  ActionDisplayHTML.Caption=&Display HTML
+  ActionDisplayHTML.Hint=Display HTML|Display movie information according to HTML template
+  ActionSelectHTML.Caption=&Select HTML
+  ActionSelectHTML.Hint=Select HTML|Select HTML template
+  ActionDisplayThumbnails.Caption=Display as &thumbnails
+  ActionDisplayThumbnails.Hint=Display as thumbnails|Display the movie list as thumbnails
+  ActionSortAscend.Caption=Ascending
+  ActionSortAscend.Hint=|Sort in ascending order
+  ActionSortDescend.Caption=Descending
+  ActionSortDescend.Hint=|Sort in descending order
+  ActionSortAdvanced.Caption=Advanced...
+  ActionSortAdvanced.Hint=|Advanced sort
+ActionGroupNone.Caption=< none >
+ActionGroupNone.Hint=|Не групирай филмите
+  ActionManageFields.Caption=Manage &fields...
+  ActionManageFields.Hint=Manage fields...|Manage custom fields of current catalog
+  ActionManagePictures.Caption=Manage p&ictures...
+  ActionManagePictures.Hint=Manage pictures...|Manage pictures of current catalog
+  ActionHTMLEditor.Caption=&HTML editor...
+  ActionHTMLEditor.Hint=HTML editor...|Edit HTML templates
+
+ActionHelpIndex.Caption=&Помощ
+ActionHelpIndex.Hint=Помощ|Стартирай помощната програма
+ActionHelpAbout.Caption=&За програмата...
+ActionHelpAbout.Hint=За програмата...|За програмата
+  ActionHelpVersion.Caption=&Versions...
+  ActionHelpVersion.Hint=Versions...|Show files version information
+
+ActionMovieAdd.Caption=&Добави...
+ActionMovieAdd.Hint=Добави...|Добави нов филм
+ActionMovieUndo.Caption=&Отказ от промените
+ActionMovieUndo.Hint=Отказ от промените|Отказ от промените за този филм
+ActionMovieDelete.Caption=&Изтрий
+ActionMovieDelete.Hint=Изтрий|Изтрий този филм
+ActionMovieCopy.Caption=&Копирай
+ActionMovieCopy.Hint=Копирай|Копирай информацията за този филм в клип борда
+ActionMoviePaste.Caption=&Вмъкни
+ActionMoviePaste.Hint=Вмъкни|Вмъкни информацията за този филм от клип борда
+ActionMovieRenumber.Caption=&Преномерирай...
+ActionMovieRenumber.Hint=Преномерирай филмите...|Преномерира филмите
+ActionMovieFind.Caption=&Търси...
+ActionMovieFind.Hint=Намери...|Търси филм
+ActionFindFindNext.Caption=Търси пак
+ActionFindFindNext.Hint=|Търси следващия филм отговарящ на търсените параметри
+ActionFindWholeField.Caption=В цялото поле
+ActionFindWholeField.Hint=|Включва само филми при които цялото поле отговаря на търсеното
+  ActionFindReverse.Caption=&Reverse results
+  ActionFindReverse.Hint=|Reverse search results
+ActionFindDisplay.Caption=Покажи резултат
+ActionFindDisplay.Hint=|Показва всички филми отговарящи на търсенето
+LField.Caption=Търси в поле:
+LValue.Caption=Търси по стойност:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Промени &номера...
+ActionMovieNumber.Hint=Промени номера|Променя номера на филма
+ActionMovieStats.Caption=&Статистика...
+ActionMovieStats.Hint=Статистика...|Показва статистика за каталога и филмите които съдържа
+ActionMovieImportFiles.Caption=От &файловете...
+ActionMovieImportFiles.Hint=Вземи информация от файловете...|Взима информация за филма от файловете
+  ActionMovieImportScript.Caption=From internet using a &script...
+  ActionMovieImportScript.Hint=Get information from internet using a script...|Get movie information from internet using a script file
+ActionMovieSearch.Caption=&Търсене в Интернет
+ActionMovieSearch.Hint=Търсене на информация в Интернет|Търсене в Интернет на информация за филма
+  ActionMovieRandom.Caption=&Random
+  ActionMovieRandom.Hint=Random|Random selection
+ActionMoviePictureShow.Caption=Покажи &картинката
+ActionMoviePictureShow.Hint=Показва или скрива картинката на филма|показва или скрива прозореца за картинките
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+ActionPicDelete.Caption=&Изтрий
+ActionPicDelete.Hint=Изтрий|Изтрива картинката
+ActionPicUndock.Caption=Скачи/&Разкачи
+ActionPicUndock.Hint=Скачва/Разкачва|Прозореца за картинки: Скачва (интегрира в главния прозорец) или Разкачва (плаващ прозорец)
+ActionPicSaveAs.Caption=&Запази като...
+ActionPicSaveAs.Hint=Запази картинката като...|Запазва копие на картинката в нов файл
+ActionPicCopy.Caption=&Копирай
+ActionPicCopy.Hint=Копирай в клипборда|Копира изображението в клипборда
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  ActionMovieUrl.Caption=URL
+  ActionMovieUrl.Hint=URL|Movie URL
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=&Файл
+ActionMenuMovie.Caption=&Филм
+  ActionMenuDisplay.Caption=&Display
+ActionMenuTools.Caption=&Инструменти
+ActionMenuHelp.Caption=&Помощ
+ActionMenuPicture.Caption=К&артинка
+ActionMenuPicture.Hint=Филмова картинка|Команди за картинката
+ActionMenuGet.Caption=&Вземи информация
+ActionMenuGet.Hint=Вземи информация|Взима информация за филма
+  ActionMenuGridFields.Caption=Grid &fields
+  ActionMenuGridFields.Hint=Grid fields|Select grid fields to show or hide
+  ActionMenuSort.Caption=&Sort by
+  ActionMenuSort.Hint=Sort movies|Sort by a specified field the movies of the list
+ActionMenuGroup.Caption=&Групирай по
+ActionMenuGroup.Hint=Групира филмите|Групира филмите по указано поле
+ActionRefresh.Caption=&Опресняване
+ActionRefresh.Hint=Опресняване на списъка|Опреснява филмовия списък
+  ActionMenuGroupsFormat.Caption=Groups f&ormatting
+  ActionMenuGroupsFormat.Hint=Format the group names|Format the group names depending on the chosen option
+  ActionGroupsFormatNone.Caption=< &none >
+  ActionGroupsFormatNone.Hint=|Do not format group names
+  MnuGpf1L.Caption=Extract first letter
+  MnuGpf2L.Caption=Extract two first letters
+  MnuGpf3L.Caption=Extract three first letters
+  MnuGpf4L.Caption=Extract four first letters
+  MnuGpf5L.Caption=Extract five first letters
+  MnuGpfDateY.Caption=Extract the year of dates
+  MnuGpfDateYM.Caption=Extract the year and month of dates
+  MnuGpfRound0001.Caption=Round numbers to thousandths
+  MnuGpfRound001.Caption=Round numbers to hundredth
+  MnuGpfRound01.Caption=Round numbers to tenth
+  MnuGpfRound1.Caption=Round numbers to unit
+  MnuGpfRound10.Caption=Round numbers to ten
+  MnuGpfRound100.Caption=Round numbers to hundred
+  MnuGpfRound1000.Caption=Round numbers to thousand
+  MnuGpfRoundType.Caption=&Kind of rounding
+  MnuGpfRoundDown.Caption=Round &down
+  MnuGpfRoundNearest.Caption=Round to &nearest
+  MnuGpfRoundUp.Caption=Round to &up
+
+  MnuSelect.Caption=Select
+  ActionMovieSelGroup.Caption=Whole group
+ActionMovieSelGroup.Hint=Маркирай група|Маркирай всички филми от тази група
+  ActionMovieSelCheck.Caption=Checked
+  ActionMovieSelCheck.Hint=Select checked|Select only the movies that are checked
+  ActionMovieSelUncheck.Caption=Unchecked
+  ActionMovieSelUncheck.Hint=Select unchecked|Select only the movies that are not checked
+
+  MnuSelected.Caption=Selected movies
+  ActionMovieCheck.Caption=Check
+ActionMovieCheck.Hint=Маркирай избраното|Маркирай избрания филм
+  ActionMovieUncheck.Caption=Uncheck
+  ActionMovieUncheck.Hint=Размаркирай избраното|Размаркирай избрания филм
+
+ActionDisplayPictureToolbar.Caption=&Меню за снимки
+ActionDisplayPictureToolbar.Hint=Покажи менюто за снимки|Покажи или скрий менюто за снимки
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=&Главно меню
+ActionDisplayMainToolbar.Hint=Покажи главното меню|Покажи или скрий главното меню
+ActionDisplayStatusBar.Caption=&Статус лента
+ActionDisplayStatusBar.Hint=Покажи статус лентата|Показва или скрива статус лентата
+
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+
+  MnuHtmlCopy.Caption=Copy
+  MnuHtmlCopy.Hint=|Copy text selected
+  MnuHtmlEdit.Caption=Edit...
+  MnuHtmlEdit.Hint=|Edit HTML template
+  MnuTlsBrowseHTML.Caption=Browse...
+
+ToolbarMenu.Caption=Меню
+ToolbarMain.Caption=Главно меню
+ToolbarPicture.Caption=Меню за снимки
+ToolbarPictureWindow.Caption=Картинка
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Търси
+
+Listview1.HeaderSections.Item[0].Text=Nr
+Listview1.HeaderSections.Item[1].Text=Заглавие
+
+MoviePicture.Hint=|Натисни тук за да се покаже картинката в цял размер
+
+  ThumbsSizer.Hint=|Change size of pictures
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display movie title
+
+Messages.Strings.String[0]=Сигурни ли сте че искате да изтриете  %s : %s ?
+Messages.Strings.String[1]=Сигурни ли сте че искате да върнете предишната информация за филма?
+  Messages.Strings.String[2]=%d movies
+  Messages.Strings.String[3]=(%0:d selected, %1:d checked, %2:d visible)
+Messages.Strings.String[4]=Текущия файл е променен. Искате ли да го запазите?
+Messages.Strings.String[5]=Не питай повече за потвърждение.
+Messages.Strings.String[6]=Променен
+  Messages.Strings.String[7]=Picture
+Messages.Strings.String[8]=Запази копие на картинката като нов файл
+Messages.Strings.String[9]=Вмъкване %s...
+Messages.Strings.String[10]=Запазване %s...
+Messages.Strings.String[11]=Зареждане %s...
+Messages.Strings.String[12]=Изберете картинка
+Messages.Strings.String[13]=Това ще изтрие картинката. Сигурни ли сте ?
+Messages.Strings.String[14]=Тази картинка не може да се използва: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+  Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Изберете файлове от които да се вземе информация
+Messages.Strings.String[17]=Търси информация в %0:s|Търси информация за филма в %0:s
+Messages.Strings.String[18]=Няма последни файлове
+  Messages.Strings.String[19]=This catalog has pictures stored in it. To save the catalog to XML the pictures have to be in individual files.|If you still want to save the file to XML, click OK to convert these pictures or Ignore if you do not want to keep them (linked pictures will be kept).|The name of the pictures will be based on the value of "Picture naming" of the "Picture importation" page from the Preferences window.
+Messages.Strings.String[20]=|Групирай по %s
+Messages.Strings.String[21]=< none >
+Messages.Strings.String[22]=След като връзката мък картинката беше махната, искате ли да бъдат изтрити и самите картинки от диска? (%s)
+  Messages.Strings.String[23]=This movie currently has a linked picture, when replacing this link by another picture do you want to delete the old picture file from disk? (%s)
+  Messages.Strings.String[24]=The picture cannot be copied in the catalog folder until the catalog has a name; please save it somewhere and try again
+  Messages.Strings.String[25]=Stored in catalog as %s
+  Messages.Strings.String[26]=External file: %s
+  Messages.Strings.String[27]=%.0n bytes
+Messages.Strings.String[28]=Зареждане на изглада за печат
+Messages.Strings.String[29]=Търси принтер
+  Messages.Strings.String[30]=Select a file to reference in the URL field
+  Messages.Strings.String[31]=< others >
+  Messages.Strings.String[32]=All
+  Messages.Strings.String[33]=|Sort by %s
+  Messages.Strings.String[34]=Movie Fields
+  Messages.Strings.String[35]=Custom Fields
+  Messages.Strings.String[36]=File "%s" doesn't exist
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+  Messages.Strings.String[38]=Get information from files...
+  Messages.Strings.String[39]=Select same color tag|Select only the movies that have the same color tag
+  Messages.Strings.String[40]=Mark selected with a color tag|Mark selected movies with a color tag
+  Messages.Strings.String[41]=All Fields
+  Messages.Strings.String[42]=You have choosen to replace an existing catalog. Do you want to delete the old copied pictures of this catalog?
+  Messages.Strings.String[43]=Copy/paste on movie "%s"
+  Messages.Strings.String[44]=Delete old copied pictures...
+  Messages.Strings.String[45]=Copy pictures into a subfolder pictures
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Номер
+  Fields.Strings.String[1]=Checked
+  Fields.Strings.String[2]=Color Tag
+Fields.Strings.String[3]=Етикет на носителя
+Fields.Strings.String[4]=Вид на носителя
+Fields.Strings.String[5]=Получен от
+Fields.Strings.String[6]=Дата на добавяне
+Fields.Strings.String[7]=Зает на
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Рейтинг
+Fields.Strings.String[11]=Ориг. заглавие
+Fields.Strings.String[12]=Прев. заглавие
+  Fields.Strings.String[13]=Formated Title
+Fields.Strings.String[14]=Режисьор
+Fields.Strings.String[15]=Продуцент
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=Актьорски състав
+Fields.Strings.String[19]=Държава
+Fields.Strings.String[20]=Година
+Fields.Strings.String[21]=Времетраене
+Fields.Strings.String[22]=Категория
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Описание
+Fields.Strings.String[26]=Коментар
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Видео формат
+Fields.Strings.String[29]=Видео Bitrate
+Fields.Strings.String[30]=Аудио формат
+Fields.Strings.String[31]=Аудио Bitrate
+Fields.Strings.String[32]=Резолюция
+Fields.Strings.String[33]=Framerate
+Fields.Strings.String[34]=Езици
+Fields.Strings.String[35]=Субтитри
+Fields.Strings.String[36]=Размери на файловете
+Fields.Strings.String[37]=Брой дискове
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+  Media.Strings.String[0]=Volume Label
+  Media.Strings.String[1]=File Path
+  Media.Strings.String[2]=Path + File Name
+  Media.Strings.String[3]=Path + File Name + Extension
+  Media.Strings.String[4]=File Name
+  Media.Strings.String[5]=File Name (Filtered)
+  Media.Strings.String[6]=File Name + Extension
+  Media.Strings.String[7]=Folder Name
+  Media.Strings.String[8]=Folder Name (Filtered)
+  Media.Strings.String[9]=File Extension
+  Media.Strings.String[10]=File Extension (Without dot)
+  Media.Strings.String[11]=Size (String - "650+530")
+  Media.Strings.String[12]=Size (Sum - "1180")
+  Media.Strings.String[13]=Disks
+  Media.Strings.String[14]=Picture
+  Media.Strings.String[15]=Length
+  Media.Strings.String[16]=Resolution ("Width x Height")
+  Media.Strings.String[17]=Resolution (Width)
+  Media.Strings.String[18]=Resolution (Height)
+  Media.Strings.String[19]=Framerate
+  Media.Strings.String[20]=Video Codec
+  Media.Strings.String[21]=Video Bitrate
+  Media.Strings.String[22]=Audio Codec
+  Media.Strings.String[23]=Audio Channels
+  Media.Strings.String[24]=Audio Codec + Audio Channels
+  Media.Strings.String[25]=Audio Bitrate
+  Media.Strings.String[26]=Languages
+  Media.Strings.String[27]=Subtitles
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Предупреждение
+Captions.Strings.String[1]=Грешка
+Captions.Strings.String[2]=Информация
+Captions.Strings.String[3]=Подвърждение
+Captions.Strings.String[4]=&Да
+Captions.Strings.String[5]=&Не
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Откажи
+Captions.Strings.String[8]=&Прекрати
+Captions.Strings.String[9]=&Опитай отново
+Captions.Strings.String[10]=&Игнорирай
+Captions.Strings.String[11]=&Всички
+Captions.Strings.String[12]=Не за всички
+Captions.Strings.String[13]=Да за бсички
+Captions.Strings.String[14]=&Помощ
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=Да
+btn1.Caption=Откажи
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=За програмата
+btn3.Caption=Затвори
+btn2.Caption=Файлови версии
+btn1.Caption=Заслуги
+Messages.Strings.String[0]=%s : версия %s (създадена от %s)
+Messages.Strings.String[1]=(натисни Ctrl+C ако искате да копирате тази информация в клипборда)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Номер на филма в каталога
+btn2.Caption=Да
+btn1.Caption=Откажи
+LEnterNumber.Caption=Въведете номер за филма:
+  btnFindNum.Hint=Find an available number|
+  grpNotUnique.Caption=There is already a movie with this number...
+  grpNotUnique.Items.String[0]=&Accept duplicate
+  grpNotUnique.Items.String[1]=&Give another number to the existing movie
+  grpNotUnique.Items.String[2]=&Shift movie numbers until there is no more duplicate
+CBDoNotAsk.Caption=Не ме питай отново; автоматично номерирай
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=Да
+btn1.Caption=Откажи
+Caption=Информация за каталога
+LHOwnerInfo.Caption=Информация за собственика
+LFileName.Caption=Име:
+LFileSize.Caption=Големина:
+LFileVersion.Caption=Формат:
+  LHXMLHeader.Caption=XML Header
+  LEncoding.Caption=Encoding:
+LOwnerName.Caption=Име:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=Website:
+LDescription.Caption=Описание:
+EOwnerMail.ButtonHint=Изпрати поща
+EOwnerSite.ButtonHint=Отиди до URL
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Дадени на заем
+btn2.Caption=Затвори
+btn1.Caption=Помощ
+
+ActionBorrowerAdd.Caption=Добави...
+ActionBorrowerAdd.Hint=Добави заемател|Добавя нов заемател в списъка
+ActionBorrowerDel.Caption=Изтрий
+ActionBorrowerDel.Hint=Изтрива заемател|Изтрива избрания заемател от списъка
+ActionCheckOut.Caption=Дай назаем
+ActionCheckOut.Hint=Дай назаем|Добавя избрания филм с списъка на заемателя
+ActionCheckIn.Caption=Върнат
+ActionCheckIn.Hint=Върнат|Маха избрания филм от списъка на заемателя
+ActionMovieGetBorrower.Caption=Намери заемателя
+ActionMovieGetBorrower.Hint=Намери заемателя|Търси в списъка на заемателя, неговото име или избран филм
+ActionMovieFindNext.Caption=Следващ
+ActionMovieFindNext.Hint=Следващ|Търси следващия филм със заглавие съдържащо указания текст
+  ActionOptions.Caption=&Options
+  ActionOptions.Hint=Options|Options for check in and check out
+  ActionOptionsIncNum.Caption=Include movies with same &number
+  ActionOptionsIncNum.Hint=Include movies with same number|Include in check in and check out other movies that have the same number than the selected one
+  ActionOptionsIncLab.Caption=Include movies with same &label
+  ActionOptionsIncLab.Hint=Include movies with same label|Include in check in and check out other movies that have the same media label than the selected one
+
+LvMovies.HeaderSections.Item[0].Text=№
+  LvMovies.HeaderSections.Item[1].Text=Label
+LvMovies.HeaderSections.Item[2].Text=Title
+LvMovies.HeaderSections.Item[3].Text=Borrower
+LvNames.HeaderSections.Item[0].Text=Заемател
+LvNames.HeaderSections.Item[1].Text=Количество
+LvLent.HeaderSections.Item[0].Text=№
+  LvLent.HeaderSections.Item[1].Text=Label
+LvLent.HeaderSections.Item[2].Text=Title
+
+Messages.Strings.String[0]=Ще изтриете "%s" от списъка със заематели, и ще върнете всички филми заети от този човек.
+Messages.Strings.String[1]=Зареждане на списъка...
+Messages.Strings.String[2]=Този филм е даден вече на някой
+Messages.Strings.String[3]=Моля въведете име
+  Messages.Strings.String[4]=The following movies are already lent to somebody else:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Въведете име
+Messages.Strings.String[7]=Нов заемател
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Експорт в друг файлове формат
+  lvFormat.Columns.Item[0].Caption=Supported file formats
+Btn3.Caption=Експорт...
+Btn2.Caption=Затвори
+Btn1.Caption=Помощ
+  grpImages.Caption=Images
+  CBCopyPictures.Caption=Copy with exported file
+  CBCopyPictures.Hint=Copy pictures to the same folder as the exported file
+  CBCopyPicturesInPicDir.Caption=Into a subfolder
+  CBCopyPicturesInPicDir.Hint=Copy pictures into a subfolder pictures
+  CBCopyPicturesNew.Caption=Only if it does not exist yet
+  CBCopyPicturesNew.Hint=Copy only file pictures that do not exist yet (i.e. no overwrite)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Изберете формат...
+
+  LCSVDelimiter.Caption=Field delimiter:
+  ECSVDelimiter.Hint=|Character delimiting fields values
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+  LCSVBloc.Caption=Text block delimiter:
+  ECSVBloc.Hint=|Character around text strings (leave empty if none is used)
+  LCSVLinebreaks.Caption=Replace linebreaks by:
+  ECSVLinebreaks.Hint=|Character to use as representation of linebreaks in descriptions and comments
+CBCSVColumnTitles.Caption=Добави заглавие на колона
+LSQLTableName.Caption=Име на таблицата:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Update" вместо "Insert"
+LSQLCommands.Caption=SQL команди за вмъкване:
+  LSQLLinebreaks.Caption=Replace linebreaks by:
+LOrigonsLink.Caption=Този формат Ви позволява да сложите вашия каталог online на сървъра на Origons<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Полета за експорт:
+FieldsSQL.LSelected.Caption=Полета за експорт:
+  LAMCNote.Caption=You can also export to AMC (without export options) from the main window using the File -> Save As command, then select AMC as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+  LXMLNote.Caption=You can also export to XML (without export options) from the main window using the File -> Save As command, then select XML as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Сортиране на списъка...
+Messages.Strings.String[1]=Експортиране към %s...
+Messages.Strings.String[2]=Копиране на файловете...
+Messages.Strings.String[3]=Експорт към HTML
+Messages.Strings.String[4]=Експорт към CSV
+Messages.Strings.String[5]=Експорт към SQL
+Messages.Strings.String[6]=Експорт на картинките
+Messages.Strings.String[7]=Експорт към файл за Origons.com
+  Messages.Strings.String[8]=Export to AMC
+  Messages.Strings.String[9]=Export to XML
+  Messages.Strings.String[10]=You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Вмъкване от друг файлов формат
+  Btn3.Caption=&Import...
+  Btn2.Caption=Close
+Btn1.Caption=Помощ
+  lvFormat.Columns.Item[0].Caption=Supported file formats
+  lvFormat.Items.Item[5].Caption=Media files
+  Messages.Strings.String[0]=Searching for media files...
+  Messages.Strings.String[1]=Media files found:
+  Messages.Strings.String[2]=Importing media info...
+  Messages.Strings.String[3]=Importing from %s...
+  Messages.Strings.String[4]=Some files or folders cannot be scanned because they contains not supported characters:
+
+[TImportFrame]
+  lblLink.Caption=This allows to import movies from %s
+  grpSettings.Caption=Settings
+  chkAllowDup.Caption=Allow duplicate numbers
+  chkAllowClear.Caption=Allow to clear fields when new value is empty
+  chkAutoAssign.Caption=Try to assign fields to columns automatically
+  lblPictures.Caption=Pictures importation method:
+  cmbPictures.Items.String[0]=1 - Store into catalog
+  cmbPictures.Items.String[1]=2 - Copy to catalog folder and make relative link
+  cmbPictures.Items.String[2]=3 - Copy to catalog folder only if it was not stored
+  cmbPictures.Items.String[3]=4 - Copy to pictures folder and make relative link
+  cmbPictures.Items.String[4]=5 - Copy to pictures folder only if it was not stored
+  cmbPictures.Items.String[5]=6 - Make absolute links to current pictures
+  cmbPictures.Items.String[6]=7 - Make relative links to current pictures
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+  grpSourceFile.Caption=Source file
+  btnBrowse.Hint=Browse...|Browse for a file to import
+  btnReload.Caption=&Reload file
+  grpPreview.Caption=Preview
+  lblPreview.Caption=Click on column headers to assign fields to them
+  btnFieldsLoad.Hint=Load fields|Load field-column link that was previously saved
+  btnFieldsSave.Hint=Save fields|Save current field-column links
+  btnFieldsAutoLoad.Hint=Reload fields automatically|Reload automatically field-column links that was previously saved
+  btnColumnsAutoResize.Hint=Resize columns automatically|Resize columns automatically
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+ActionListAll.Caption=Отметни &всички
+  ActionListAll.Hint=Check all|Check all items
+ActionListNone.Caption=Нищо &немаркирай
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+  ActionListCheckExists.Caption=Check existing movies
+  ActionListCheckExists.Hint=Check existing movies|Check existing movies in current catalog
+  ActionListUncheckExists.Caption=Uncheck existing movies
+  ActionListUncheckExists.Hint=Uncheck existing movies|Uncheck existing movies in current catalog
+  ActionSortAscend.Caption=Sort ascending
+  ActionSortAscend.Hint=Sort ascending|Sort column values into ascending order
+  ActionSortDescend.Caption=Sort descending
+  ActionSortDescend.Hint=Sort descending|Sort column values into descending order
+  ActionDefineKeyField.Caption=Define as key field
+  ActionDefineKeyField.Hint=|Use this key field to compare movies
+  ActionHeaderNoImport.Caption=Do not import this field
+  MnuMov.Caption=Movie Fields
+  MnuMovCF.Caption=Custom Fields
+  MnuMovExtras.Caption=Extra fields
+  Messages.Strings.String[0]=No movie to import
+  Messages.Strings.String[1]=You did not assign a field to any column. Click on column headers for this.
+  Messages.Strings.String[2]=For this picture importation method, the catalog must have a name; please save it somewhere and try again
+  Messages.Strings.String[3]=Select a folder:
+  Messages.Strings.String[4]=%s movie(s) found!
+  Messages.Strings.String[5]=%s movie(s) added!
+  Messages.Strings.String[6]=%s movie(s) updated!
+  Messages.Strings.String[7]=The values of key field are not unique in current catalog.|A movie in the list could match with several movies in current catalog.
+  Messages.Strings.String[8]=To do this action, you must first select a key field to compare movies (click on a column header of the list).
+  Messages.Strings.String[9]=Importing movies into current catalog...
+
+[TImportFrameCSV]
+  chkFirstLineHeaders.Caption=First line contains headers
+  lblDelim.Caption=Field delimiter:
+  edtDelim.Hint=|Character delimiting fields values
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+  lblQuote.Caption=Text block delimiter:
+  edtQuote.Hint=|Character around text strings (leave empty if none is used)
+  lblLinebreaks.Caption=Linebreaks:
+  edtLinebreaks.Hint=|Character to convert to linebreak in descriptions and comments
+
+[TImportFrameQuery]
+  grpQuery.Caption=Query to execute
+  btnQueryExec.Hint=Execute|Execute query
+
+[TImportFrameDir]
+  Messages.Strings.String[10]=Source folder
+  Messages.Strings.String[11]=Browse...|Browse for a folder to scan
+  Messages.Strings.String[12]=&Scan folder
+  lblExtractProcess.Caption=Extract process:
+  cmbExtractProcess.Items.String[0]=1 - Extract advanced media info during scanning
+  cmbExtractProcess.Items.String[1]=2 - Only extract advanced media info during final import
+  cmbExtractProcess.Items.String[2]=3 - Do not extract advanced media info
+  chkInternalAVI.Caption=Use internal engine for AVI importation (faster)
+  chkMultiDisks.Caption=Merge info of media in multi parts/disks
+  lblDiskTag.Caption=Disk Tag:
+  edtDiskTag.Hint=|E.g. choose tag 'cd' for names like 'moviename.cd1', 'moviename.cd2',...
+  lblBrowseDepth.Caption=Browse subfolders with depth of:
+  edtBrowseDepth.Hint=|0 = none, * = browse all
+  edtBrowseDepth.Left=244
+  btnFilterFileName.Caption=Filter the file name
+  lblExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+  Caption=Movies importation method
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LMsg1.Caption=You have selected a key field to compare checked movies of the list with movies in current catalog.
+  LMsg2.Caption=You will import all checked movies of the list in current catalog. To check if movies do not already exist, you can define a key field to compare them click on a column header of the list.
+  grpImportMethod.Caption=What do you want to do ?
+  grpImportMethod.Items.String[0]=Import all movies
+  grpImportMethod.Items.String[1]=Import only new movies
+  grpImportMethod.Items.String[2]=Update only existing movies
+  grpImportMethod.Items.String[3]=Import new movies and update existing movies
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Настройки
+Btn3.Caption=Да
+Btn2.Caption=Отказ
+Btn1.Caption=Помощ
+
+LvCat.Items.Item[0].Text=Общ изглед
+LHToolbar.Caption=Ленти с инструменти и менюта
+LIconSet.Caption=Икони:
+LColorType.Caption=Тип на цвета:
+cbxColorType.Items.String[0]=Автоматично
+cbxColorType.Items.String[1]=Сиви когато не са активни
+cbxColorType.Items.String[2]=Светли когато не са активни
+cbxColorType.Items.String[3]=Тъмни когато не са активни
+cbxColorType.Items.String[4]=Винаги оцветени
+  CBOfficeXP.Caption=Office XP style
+CBMenuImages.Caption=Икони в менютата
+LHMainWindow.Caption=Общ изглед
+CBSoftBorders.Caption=Тънки граници за Списъка с филми и Панела с информация за филма
+  CBNatCmp.Caption=Use natural comparison (detect numbers automatically) to sort strings
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+  CBAutoFocus.Hint=|Give focus to component when the mouse pointer moves over it
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Стариране
+CBLogo.Caption=Покажи логото
+
+LvCat.Items.Item[1].Text=Промени лентата с инстументи
+LHCustomizeToolbar.Caption=Изберете икони които да се показват в главния прозорец
+
+LvCat.Items.Item[2].Text=Файлове
+LHSaving.Caption=Каталози
+CBBackup.Caption=Винаги създавай резервно копие
+CBAutoLoad.Caption=При стартиране отваряй следния файл вместо да се създава нов:
+EAutoLoad.ButtonHint=Избери...|Избира файл
+CBAutoLoadLast.Caption=Отвори последния използван файл
+  CBAutoLoadCF.Caption=Automatically import custom fields from following file for new catalogs:
+  EAutoLoadCF.ButtonHint=Browse...|Select file
+LRecentFiles.Caption=Бой скорошни файлове които да се показват в менюто
+LRepairAssociations.Caption=За да асоциирате .amc файловете Ant Movie Catalog, натиснете бутона:
+BtnRepairAssoc.Caption=Оправи файловите асоциации
+LHHistory.Caption=История на заемите
+  CBHistory.Caption=Съхранявай историята на заемите в следния файл (using tab-delimited format):
+EHistoryFile.ButtonHint=Избери...|Избира файл
+  LHHTMLTemplate.Caption=HTML Template
+  EHTMLTemplate.ButtonHint=Browse...|Select file
+
+LvCat.Items.Item[3].Text=Списък на филмите
+LHDisplay.Caption=Показване
+  CBCheckboxes.Caption=Checkboxes (right click to change movie color tag)
+  CBCheckboxesInThumbs.Caption=Checkboxes in thumbnails display
+  CBCheckboxesColor.Caption=Checkboxes with background color associated to movie color tag
+  CBLinesColor.Caption=Lines with background color associated to movie color tag
+CBHotTrack.Caption=Гореща следа (подчертаване на заглавието)
+CBEnhScrollbars.Caption=Enhanced scrollbars
+  CBMovieNumColumn.Caption="Movie Number" column
+  LGridTextSize.Caption=Number of characteres per column in grid mode (0 = no limit):
+  LGridTextSize.Hint=|The columns FormatedTitle, OriginalTitle and TranslatedTitle are not affected
+  CBAutoStretchListGrid.Caption=Auto stretch list in grid mode view
+  CBAutoStretchListThumbs.Caption=Auto stretch list in thumbnails view
+LHOperations.Caption=Операции
+CBDelete.Caption=Потвърждение за изтриване
+CBUndo.Caption=Потвърждение за отмяна
+LHShortcut.Caption=Бързи клавиши
+LShortcutPrev.Caption=Предишен филм
+LShortcutNext.Caption=Следващ филм
+
+LvCat.Items.Item[4].Text=Форматиране на заглавието
+LHFormatting.Caption=Форматиране
+LTitleColumn.Caption=Показвано заглавие:
+cbxTitle.Items.String[0]=Оригинално заглавие
+cbxTitle.Items.String[1]=Преведено заглавие
+cbxTitle.Items.String[2]=Оригинално заглавие (Преведено заглавие)
+cbxTitle.Items.String[3]=Преведено заглавие (Оригинално заглавие)
+cbxTitle.Items.String[4]=Етикет на носителя
+  cbxTitle.Items.String[5]=Custom title
+  LTitleTemplate.Caption=Template of title:
+  BtnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+CBPrefixes.Caption=Постави следните префикси в края на заглавието:
+LPrefixes1.Caption=Разпознават се само думи следвани от интервал или кавички в заглавието .
+LPrefixes2.Caption=Вкарайте ги в списъка като всяка е на отделен ред без интервал или кавички.
+
+  LvCat.Items.Item[5].Text=Groupage
+  LHGrouping.Caption=Groups
+  CBGroupCount.Caption=Display groups count
+  CBGroupExpand.Caption=Full expand by default
+  CBGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBGroupMulti.Hint=|For multi fields such as Category, Actors, Languages, Subtitles...
+  EGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBGroupMultiRmAllP.Caption=Remove values between parentheses for all multi fields
+  CBGroupMultiRmAllP.Hint=|Field Actors by default + Others multi fields
+  CBGroupMultiAddPatch.Caption=Add patch to ignore parenthesis of (I, (II, (II, (IV... (XXX values
+  CBSortGroupsByCount.Caption=Sort groups by groups count
+  LHCommonGroups.Caption=Common groups
+  lblGroupLocation.Caption=Location:
+  RBGroupsAbove.Caption=Groups above common groups
+  RBGroupsBelow.Caption=Groups below common groups
+  CBGroupUnique.Caption=Put in a special common group items that would have been alone in their group
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Добавяне на нов филм
+CBAskNumber.Caption=Питай за номер
+CBFirstAvailable.Caption=Използвай първия свободен номер вместо най-големия + 1
+CBAddOpenScript.Caption=Отвори прозореца "Вземи информация от скрипт"
+CBAddOpenFiles.Caption=Отвори прозореца "Вземи информация от файл"
+LDefaultValues.Caption=Да промените стойностите по подразбиране за нов филм, натиснете бутона отдолу:
+BtnDefaultValues.Caption=Редактирай стойностите по подразбиране за филм
+  CBSetCurrentDate.Caption=Fill field "Date Added" with current date instead of specified date
+  CBChecked.Caption=Checked
+  LColorTag.Caption=Color Tag:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHRating.Caption=Rating
+  CBRatingTrunc.Caption=Do not display decimals in main view, export and printing
+LHPictureWindow.Caption=Картинка
+LPictureBackground.Caption=Цвят на фона:
+CBFitPicture.Caption=Събери картинката в прозореца
+  CBShowPicInfo.Caption=Show picture size, format and path in fullsize picture window
+  LHMovieFrame.Caption=Frame movie fields
+  LMovieFrameBackground.Caption=Background color:
+
+LvCat.Items.Item[8].Text=Падащи менюта
+LHComboBoxItems.Caption=Обекти
+CBComboSameForAll.Caption=Същите настройки за всички в списаците (does not affect list contents)
+LListOptions.Caption=Настройки за списъка:
+CBComboSort.Caption=Автоматично сортиране
+CBComboAutoComplete.Caption=Автоматично довършване при въвеждане
+CBComboCatalogValues.Caption=Използвай стойностите от текущия каталог вместо от дефиниран списък
+CBComboAutoAdd.Caption=Автоматично прибавяй стойности които не са в списъка
+LListEdit.Caption=Редактирай полетата:
+
+  LvCat.Items.Item[9].Text=Media files importation
+LHVideoDragDrop.Caption=Влачи и пусни / Вземи информация от файловете
+  CBDNDMediaLabel.Caption=Import media label
+CBDNDFileName.Caption=Вмъкни името на файла като заглавие
+  btnFilterFileName.Caption=Filter the file name
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+  CBDNDFileNameURL.Caption=Import full path in URL field
+CBDNDSize.Caption=Вмъкни файловия размер:
+RBDNDString.Caption=Направи низ, като "650+530"
+RBDNDSum.Caption=Направи сума, като "1180"
+LDNDSizeUnit.Caption=Дименсия:
+cbxDNDSizeUnit.Items.String[0]=Bytes
+cbxDNDSizeUnit.Items.String[1]=Kilobytes (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabytes (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabytes (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Вмъкни времетраенето
+  CBDNDAllowClear.Caption=Allow to clear fields when new value is empty
+CBDNDInternalAVI.Caption=Use internal engine rather than MediaInfo DLL for AVI importation (faster)
+  LExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+  LHGetInfoVideo.Caption=Info to take from video streams
+CBDNDResolution.Caption=Вмъкни резолюцията
+CBDNDFramerate.Caption=Вмъкни framerate
+CBDNDVideoCodec.Caption=Вмъкни видео кодека
+CBDNDVideoBitrate.Caption=Вмъкни video bitrate
+  LHGetInfoAudio.Caption=Info to take from audio streams
+CBDNDAudioCodec.Caption=Вмъкни аудио кодека
+  CBDNDAudioChannels.Caption=Import audio channels
+CBDNDAudioBitrate.Caption=Вмъкни audio bitrate
+  CBDNDLanguages.Caption=Import languages
+  CBDNDSubtitles.Caption=Import subtitles
+
+  LvCat.Items.Item[10].Text=Picture importation
+  LHImportPic.Caption=Importing picture from external sources
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+  PicImportGetInfo.grp.Caption=For drag && drog / Get information from files
+  CBPicImportGetInfoNoAsk.Caption=Do not ask for picture import method; always use the above option
+  PicImportScripting.grp.Caption=For internet scripting
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+  LPicNamingNote.Caption=Notes: if the picture name is already taken by another movie, a random name will be generated. When there is no original name (e.g. when converting from amc to xml file format), the movie title is used.
+  
+LvCat.Items.Item[11].Text=Търсене в Интернет
+LHSearch.Caption=Търсене в Интернет
+LSearchEdit.Caption=Редактирай избрания ред:
+btnSearchAdd.Hint=Добави|Добавя нов запис над избрания
+btnSearchDel.Hint=Изтрий|Изтрива избраното
+btnSearchUp.Hint=Премести нагоре|Премести нагоре избраното
+btnSearchDown.Hint=Премести надолу|Премести надолу избраното
+LSearchNotes.Caption=Бележки:
+LSearchNote1.Caption=- Името трябва да е уникално
+LSearchNote2.Caption=- В адреса, въведете %s където искате програмата да вмъкне заглавието
+LSearchNote3.Caption=- За да вмъкнете разделител в списъка, направете име започващо с "-"
+
+LvCat.Items.Item[12].Text=Скриптове
+  LHScript.Caption=Scripts settings
+  CBAutorunScript.Caption=Auto-run last script used with "Get information from script"
+  LScriptPicImport.Caption=For picture importation preferences, see the <LINK>Picture Importation</LINK> page
+  LHConnection.Caption=Internet connection
+CBProxy.Caption=Използвай прокси
+LProxyServer.Caption=Сървър:
+LProxyPort.Caption=Порт:
+LProxyUsername.Caption=Потребителско име:
+LProxyPassword.Caption=Парола:
+CBKeepConnection.Caption=Поддържай връзката
+  CBHTTP10.Caption=Restrict to HTTP 1.0 (needed by some proxy servers)
+
+LvCat.Items.Item[13].Text=Експортиране
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Автоматично зареди последния използван шаблон
+LLineBreaks.Caption=Новия ред ще бъде заменен със следващия таг:
+ELineBreaks.Hint=|Остави това поле празно ако не искаш да заменяш символа за нов ред
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Остави празно ако не искаш да променяш ширината
+EForcePicSizeH.Hint=|Остави празно ако не искаш да променяш височината
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Формат за данните:
+ESQLDate.Hint=|Остави празно за подразбиращата се стойност на Windows
+LHExportFileNames.Caption=Файлови имена
+CBLastFileName.Caption=Запомни името на последния експортиран файл
+CBOpenExportedFile.Caption=Отвори файла когато експортирането завърши
+ExpFileNamingFrame.grp.Caption=Вид на индивидуалните страници и имената на файловете с картинките
+LExpFileExt.Caption=Разширение за добавяне:
+EExpFileExt.Hint=|Остави празно за да използваш същото разширение като главния експортван файл
+LHPictures.Caption=Картинки
+CBCopyPictures.Caption=Копирай картинките в същата папка с експортирания файл
+  CBCopyPicturesInPicDir.Caption=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=Копирай само ако файловете не съществуват
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Папки
+  LHFoldersDialogs.Caption=Dialog boxes
+LFolderToUse.Caption=Папки за
+cbxWindow.Items.String[0]=Зареждане/Запазване на каталози
+cbxWindow.Items.String[1]=Зареждане на снимки
+cbxWindow.Items.String[2]=Експорт
+cbxWindow.Items.String[3]=Зареждане/Запазване на шаблони
+cbxWindow.Items.String[4]=Импорт
+cbxWindow.Items.String[5]=Вземи информация от файлове
+cbxWindow.Items.String[6]=Запази графики
+cbxWindow.Items.String[7]=Зареждане/Запазване на скриптове
+  cbxWindow.Items.String[8]=Load/save custom fields
+  cbxWindow.Items.String[9]=Load/save filters
+RBFolderDefault.Caption=Папка на Windows (резултата зависи от версията на Windows)
+RBFolderRemember.Caption=Запомни последната използвана папка
+RBFolderSpecified.Caption=Използвай тази папка:
+EFolderSpecified.ButtonHint=Преглеждане...|Изберете папка
+CBSameForAll.Caption=Същите опции за всички прозорци
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Редактирай стойностите по подразбиране за нов филм
+Btn3.Caption=По подразбиране
+Btn3.Hint=|Възтанови стойностите по подразбиране
+Btn2.Caption=OK
+Btn1.Caption=Откажи
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=По подразбиране
+Btn3.Hint=|Възтанови стойностите по подразбиране
+Btn2.Caption=OK
+Btn1.Caption=Откажи
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+  Caption=Select a language
+  Btn2.Caption=OK
+  Btn1.Caption=Cancel
+  LanguageFrame.lstLanguages.Columns.Item[0].Caption=Name
+  LanguageFrame.lstLanguages.Columns.Item[1].Caption=Local Name
+  LanguageFrame.lblVersion.Caption=Version:
+  LanguageFrame.lblMadeBy.Caption=Made by:
+  LanguageFrame.lblComments.Caption=Comments:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Разширени опции за сортиране
+Fields.LSelected.Caption=Полета които да се включат:
+  BtnSortOrder.Hint=Invert sort order|Invert sort order of selected field
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Статистика
+btn1.Caption=Затвори
+ActionSaveAs.Caption=Запази като...
+ActionSaveAs.Hint=Запази като...|Запази картината във файл
+ActionCopy.Caption=Копирай
+ActionCopy.Hint=Копирай|Копирай картината в клипборда
+ActionCopyWMF.Caption=като Metafile
+ActionCopyWMF.Hint=Копирай като Metafile|копира картината в клипборда като metafile
+ActionCopyBMP.Caption=като Bitmap
+ActionCopyBMP.Hint=Копирай като Bitmap|копира картината в клипборда като bitmap
+ActionOptions.Caption=Опции
+ActionOptions.Hint=Опции|Промяна на някои опции на графиката
+ActionOptionsLegend.Caption=Легенда
+ActionOptionsLegend.Hint=Покажи легендата|Покажи легендата от дясно на графиката
+ActionOptionsLabels.Caption=Етикети
+ActionOptionsLabels.Hint=Покажи етикетите|Покажи етикетите на графиката
+ActionOptionsEmpty.Caption=Празни месеци
+ActionOptionsEmpty.Hint=Покажи празните месеци|Показва в графиката месеците в които сумата е нула
+ActionOptionsGroup.Caption=Групови стойности
+  ActionOptionsGroup.Hint=Group values|Chart: Group values using intervals; Pie: Group smaller values together
+Messages.Strings.String[0]=%.1f минути
+Messages.Strings.String[1]=< none >
+Messages.Strings.String[2]=Запази графиката
+  Messages.Strings.String[3]=%0:d days %1:d hours %2:d minutes
+  Messages.Strings.String[4]=< others >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+  Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Общ брой филми
+lstGeneral.Items.Item[1].Caption=Средна продължителност на филмите
+  lstGeneral.Items.Item[2].Caption=Total movie length
+  lstGeneral.Items.Item[3].Caption=Total size of movie files
+  lstGeneral.Items.Item[4].Caption=Total number of discs
+lstCategories.Items.String[0]=Обща информация
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Scripting
+  btn2.Caption=&Close
+  btn1.Caption=Помощ
+ActionFileNew.Caption=Нов
+ActionFileNew.Hint=Нов|Създава нов скрипт
+ActionFileOpen.Caption=Отвори...
+ActionFileOpen.Hint=Отвори...|Отваря скриптов файл
+ActionFileNoRecent.Caption=Няма последни файлове
+ActionFileSave.Caption=Запази
+ActionFileSave.Hint=Запази|Запазва текущия скрипт
+ActionFileSaveAs.Caption=Запази като...
+ActionFileSaveAs.Hint=Запази като...|Запазва скрипта под ново име
+  ActionFileProperties.Caption=Properties...
+  ActionFileProperties.Hint=Properties and options...|Edit script properties and options
+ActionDebugRun.Caption=Изпълни
+ActionDebugRun.Hint=Изпълни скрипта|Изпълнява скрипта
+ActionDebugStop.Caption=Стоп
+ActionDebugStop.Hint=Спира скрипта|Спира изпълнението на скрипта
+  ActionDebugBreakpoint.Caption=Breakpoint
+  ActionDebugBreakpoint.Hint=Toggle breakpoint|Enable or disable breakpoint at current line
+  ActionDebugBreakpointClear.Caption=Clear breakpoints
+  ActionDebugBreakpointClear.Hint=Clear breakpoints|Remove all breakpoints
+  ActionDebugStep.Caption=Step over
+  ActionDebugStep.Hint=Step over|Run next line of source code
+  ActionDebugRunToCursor.Caption=Run to cursor
+  ActionDebugRunToCursor.Hint=Run to cursor|Run the program until it reaches the current carret position
+  ActionDebugEval.Caption=Evaluate...
+  ActionDebugEval.Hint=Evaluate variable...|Show the content of the selected variable
+  ActionDebugWatchAdd.Caption=Add watch
+  ActionDebugWatchAdd.Hint=Add variable watch|Add selected variable to watch list
+  ActionDebugWatchRemove.Caption=Remove
+  ActionDebugWatchRemove.Hint=Remove variable watch|Remove selected variable from watch list
+  ActionDebugWatchClear.Caption=Clear list
+  ActionDebugWatchClear.Hint=Clear variable watch list|Remove all variables from watch list
+ActionListCheck.Caption=&Отметни избраните
+  ActionListCheck.Hint=Check selected|Check selected items
+ActionListUncheck.Caption=&Размаркирай избраното
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+ActionListAll.Caption=Отметни &всички
+  ActionListAll.Hint=Check all|Check all items
+ActionListNone.Caption=Нищо &немаркирай
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+ActionDisplayScripts.Caption=Скриптове
+ActionDisplayScripts.Hint=Избери скрипт|Показва наличните скриптове
+ActionDisplayEditor.Caption=Редактор
+ActionDisplayEditor.Hint=Редактор на скриптове|Показва редактора на скриптове
+  ActionViewFilter.Caption=&Language filter
+  ActionViewFilter.Hint=Language filter|Filter that allows you to hide scripts getting info in specified languages
+  ActionViewList.Caption=List
+  ActionViewList.Hint=List view|Display the scripts as a list
+  ActionViewDetailed.Caption=Detailed
+  ActionViewDetailed.Hint=Detailed view|Display the scripts in two columns (with their description)
+  ActionOptionsEdit.Caption=Change...
+  ActionOptionsEdit.Hint=Change value...|Change the value of selected option
+  ActionOptionsDefault.Caption=Default values
+  ActionOptionsDefault.Hint=Default values|Revert options to their default values
+  lstScripts.Hint=|Select a script then click "Run", or double-click on the script name, or press F9 or Enter.
+  lstScripts.Columns.Item[0].Caption=Title
+  lstScripts.Columns.Item[1].Caption=Description
+ActionEditUndo.Caption=&Отказ от промените
+ActionEditCut.Caption=&Отрежи
+ActionEditCopy.Caption=&Копирай
+ActionEditPaste.Caption=&Вмъкни
+ActionEditDelete.Caption=&Delete
+ActionEditSelectAll.Caption=Избери &всички
+ActionEditFind.Caption=Намери...
+ActionEditfind.Hint=Намери|Намери търсеното в текста
+ActionEditFindNext.Caption=Намери следващ
+ActionEditFindNext.Hint=Намери следващ|Намери следващото в текста
+  DockpanelExec.Caption=Execution options
+  CBShowResults.Caption=Show &results window
+  CBShowResults.Hint=Displays old and new field values of each movie for manual selection of which field has to be kept
+  CBCloseThis.Caption=Close this window at &end
+  CBCloseThis.Hint=Close this window when script execution is successfully finished
+  CBAllowClear.Caption=&Allow to clear fields
+  CBAllowClear.Hint=Allow the script to replace values by empty ones if the script specifies it
+  DockpanelOptions.Caption=Script options
+  DockpanelOptions.Hint=|Double-click on an option to change it. Note: options are saved only when executing the script.
+  DockpanelParameters.Caption=Script parameters
+  DockpanelParameters.Hint=|Double-click on a parameter to change it. Note: parameters are saved only when executing the script.
+  DockpanelLimitations.Caption=Script limitations
+  grpLimitFields.Caption=Modifiable fields
+  lstLimitFields.Hint=|Note: fields selection is saved only when executing the script.
+  grpScriptInfo.Caption=Information
+  tabScriptInfo.Tabs.String[0]=General
+  tabScriptInfo.Tabs.String[1]=Comments
+  tabScriptInfo.Tabs.String[2]=License
+  DockpanelWatch.Caption=Watch list
+
+  Messages.Strings.String[0]=Script error in "%0:s": %1:s at line %2:d
+  Messages.Strings.String[1]=Current script has been modified. Do you want to save it?
+  Messages.Strings.String[2]=unknown
+  Messages.Strings.String[3]=I agree
+  Messages.Strings.String[4]=No movie found for current script limitation settings (%0:s: %1:s)
+Messages.Strings.String[5]=Искате ли да преткатите изпълнението на скрипта?
+  Messages.Strings.String[6]=Modified
+  Messages.Strings.String[7]=Value for option "%s"
+  Messages.Strings.String[8]=Value for parameter "%s"
+Messages.Strings.String[9]=Намери
+Messages.Strings.String[10]=Въведи текст за търсене:
+Messages.Strings.String[11]=Не се намерени повече "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Филм
+btnView.Caption=Виж страницата
+btnView.Hint=Стартирай web browser|
+btn3.Caption=Да
+btn2.Caption=Намери още
+btn1.Caption=Откажи
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Описание
+btn2.Caption=Да
+btn1.Caption=Откажи
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+  Caption=Script properties, options and parameters
+  btn3.Caption=&Save
+  btn2.Caption=&Cancel
+  btn1.Caption=&Help
+  lstProperties.TitleCaptions.String[0]=Property
+  lstProperties.TitleCaptions.String[1]=Value
+  grpOptions.Caption=Options
+  btnOptionAdd.Hint=Add|Add a new option
+  btnOptionDel.Hint=Delete|Delete selected option
+  btnOptionUp.Hint=Move up|Move up selected option
+  btnOptionDown.Hint=Move down|Move down selected option
+  grpValues.Caption=Available values for the selected option
+  lblValueDefault.Caption=Default:
+  btnValueAdd.Hint=Add|Add a new value
+  btnValueDel.Hint=Delete|Delete selected value
+  btnValueUp.Hint=Move up|Move up selected value
+  btnValueDown.Hint=Move down|Move down selected value
+  grpParameters.Caption=Parameters
+  btnParameterAdd.Hint=Add|Add a new parameter
+  btnParameterDel.Hint=Delete|Delete selected parameter
+  btnParameterUp.Hint=Move up|Move up selected parameter
+  btnParameterDown.Hint=Move down|Move down selected parameter
+
+  Messages.Strings.String[0]=Script authors:
+  Messages.Strings.String[1]=Script title:
+  Messages.Strings.String[2]=Description:
+  Messages.Strings.String[3]=Site address:
+  Messages.Strings.String[4]=Site language:
+  Messages.Strings.String[5]=Script version:
+  Messages.Strings.String[6]=Requires at least:
+  Messages.Strings.String[7]=Comments:
+  Messages.Strings.String[8]=Script license:
+  Messages.Strings.String[9]=Get info from web:
+  Messages.Strings.String[10]=Requires movies:
+  Messages.Strings.String[11]=Value
+  Messages.Strings.String[12]=Description
+  Messages.Strings.String[13]=This will delete the option "%s"
+  Messages.Strings.String[14]=Option name:
+  Messages.Strings.String[15]=Rename the option "%s"
+  Messages.Strings.String[16]=An option with the name "%s" already exist!
+  Messages.Strings.String[17]=Name
+  Messages.Strings.String[18]=Default value
+  Messages.Strings.String[19]=Description
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+  Caption=Script execution results
+  btn4.Caption=&Save
+  btn4.Hint=|Save information for this movie
+  btn3.Caption=Save a&ll
+  btn3.Hint=|Save this movie and all the following ones
+  btn2.Caption=S&kip
+  btn2.Hint=|Skip this movie only
+  btn1.Caption=&Abort
+  btn1.Hint=|Abort scripting process
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+ActionListCheck.Caption=&Отметни избраните
+  ActionListCheck.Hint=Check selected|Check selected items
+ActionListUncheck.Caption=&Размаркирай избраното
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+ActionListAll.Caption=Отметни &всички
+  ActionListAll.Hint=Check all|Check all items
+ActionListNone.Caption=Нищо &немаркирай
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Do you want to remember which fields to keep for next movies of this script execution? (if you answer No, all the fields modified by the script will be used)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Преномериране на филмите
+  SortBy.grp.Caption=Before renumbering, sort by
+btn2.Caption=Да
+btn1.Caption=Откажи
+
+Messages.Strings.String[0]=Преномериране на филмите...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=Печат...
+btn2.Caption=Затвори
+btn1.Caption=Помощ
+ActionFileLoad.Caption=Зареди шаблон...
+ActionFileLoad.Hint=Зареди шаблон|Зареди шаблон
+ActionFileDesigner.Caption=Проектиране...
+ActionFileDesigner.Hint=Отвори за проектиране|Отвори за проектиране
+ActionPrint.Caption=Печат...
+ActionPrint.Hint=Печат|Печат на текущия рапорт
+ActionPreviewRefresh.Caption=Обнови
+ActionPreviewRefresh.Hint=Обнови изгледа|Обнови изгледа
+ActionPreviewPageFirst.Caption=Първа страница
+ActionPreviewPageFirst.Hint=Първа страница|Отиди на първата страница
+ActionPreviewPagePrevious.Caption=Предишна страница
+ActionPreviewPagePrevious.Hint=Предишна страница|Отиди на предишната страница
+ActionPreviewPageNext.Caption=Следваща страница
+ActionPreviewPageNext.Hint=Следваща страница|Отиди на следващата страница
+ActionPreviewPageLast.Caption=Последна страница
+ActionPreviewPageLast.Hint=Последна страница|Отиди на последната страница
+ActionPreviewPageFull.Caption=Цяла страница
+ActionPreviewPageFull.Hint=Цяла страница|Разшири до цяла страница
+ActionPreviewPageTwo.Caption=Две страници
+ActionPreviewPageTwo.Hint=Две страници|Разшири до две страници
+ActionPreviewPageWidth.Caption=Ширина на страница
+ActionPreviewPageWidth.Hint=Ширина на страница|Разшири до ширината на страница
+ActionPreviewZoomOut.Caption=Намали
+ActionPreviewZoomOut.Hint=Намали|Намали
+ActionPreviewZoomIn.Caption=Увеличи
+ActionPreviewZoomIn.Hint=Увеличи|Увеличи
+LvScripts.Columns.Item[0].Caption=Налични шаблони
+Messages.Strings.String[0]=Печат - %s
+Messages.Strings.String[1]=<няма избран файл>
+Messages.Strings.String[2]=Не мога да заредя шаблона за преглед: %s
+Messages.Strings.String[3]=Не мога да намеря рапорта. %s трябва да бъде в същата папка като Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Import a picture
+Btn3.Caption=OK
+Btn2.Caption=Cancel
+Btn1.Caption=&Help
+CBDoNotAsk.Caption=Do not ask again, remember my selection for future importations
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+  Caption=Custom fields manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  btnDel.Hint=Delete field|Delete custom field
+  btnClearAll.Hint=Clear all fields|Clear all custom fields
+  btnImport.Hint=Import fields|Import custom fields
+  btnExport.Hint=Export fields|Export custom fields
+  LField.Caption=Field:
+  LTag.Caption=Tag:
+  LName.Caption=Name:
+  LExt.Caption=Extension:
+  LType.Caption=Type:
+  LDefaultValue.Caption=Default value:
+  LTemplate.Caption=Template:
+  btnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+  LMediaInfo.Caption=Import media info:
+  LMultiValues.Caption=Multiple values:
+  EMultiValues.Hint=|Make groups with multiple field values
+  LMultiValuesSep.Caption=Separator:
+  LMultiValuesRmp.Caption=Del. Parentheses:
+  EMultiValuesRmp.Hint=|Delete values between parentheses
+  LMultiValuesPatch.Caption=Patch:
+  EMultiValuesPatch.Hint=|Apply path to ignore some parentheses
+  LListValues.Caption=List values:
+  EListSort.Caption=Auto-sort items
+  EListAutoComplete.Caption=Auto-complete while typing
+  EListCatalogValues.Caption=Use values of current catalog instead of predefined list
+  EListAutoAdd.Caption=Automatically add values that are not in list
+  Messages.Strings.String[0]=Import custom fields
+  Messages.Strings.String[1]=Export custom fields
+  Messages.Strings.String[2]=Add field|Add custom field
+  Messages.Strings.String[3]=Change tag|Change custom field tag
+  Messages.Strings.String[4]=--- New Field ---
+  Messages.Strings.String[5]=String
+  Messages.Strings.String[6]=Integer
+  Messages.Strings.String[7]=Real (1 decimal)
+  Messages.Strings.String[8]=Real (2 decimals)
+  Messages.Strings.String[9]=Real (3 decimals)
+  Messages.Strings.String[10]=Boolean
+  Messages.Strings.String[11]=List
+  Messages.Strings.String[12]=Date
+  Messages.Strings.String[13]=Text
+  Messages.Strings.String[14]=URL
+  Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+  Caption=Filter
+  LNote1.Caption=Notes: This filter replaces each expression string by associated replace string in list order.
+  LNote2.Caption=You can use regular expression if you start expression with string '::>'.
+  LNote3.Caption=To see an example with regular expressions, press button 'Default'.
+  LNote4.Caption=For more details on regular expressions syntax, see help on website regexpstudio.com
+  LExprString.Caption=Expression string
+  LReplaceString.Caption=Replace string
+  btn1.Caption=Cancel
+  btn2.Caption=OK
+  btn3.Caption=Default
+  btn3.Hint=Default|Restore default filter
+  btnClearAll.Hint=Clear all|Clear all expressions
+  btnImport.Hint=Import|Import filter
+  btnExport.Hint=Export|Export filter
+  btnAdd.Hint=Add|Add a new expression below selected expression
+  btnDel.Hint=Delete|Delete selected expression
+  btnUp.Hint=Move up|Move up selected expression
+  btnDown.Hint=Move down|Move down selected expression
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+  Caption=Pictures manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+
+  Messages.Strings.String[0]=Applying changes on movie pictures...
+  Messages.Strings.String[1]=Unable to apply changes on picture of movie "%0:s": %1:s
+  Messages.Strings.String[2]=After applying this changes, the current catalog must be saved to remain consistent! Do you want to save catalog automatically after applying this changes?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+  Caption=HTML templates editor
+  Btn2.Caption=&Close
+  Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Заглавие:
+LMediaType.Caption=Вид на носителя:
+LSource.Caption=Получен от:
+LDate.Caption=Добавен на:
+LBorrower.Caption=Заета:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Рейтинг:
+LOriginalTitle.Caption=Огр. Заглавие:
+LTranslatedTitle.Caption=Прев. заглавие:
+LDirector.Caption=Режисьор:
+LProducer.Caption=Продуцент:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Страна:
+LCategory.Caption=Жанр:
+  LCertification.Caption=Certification:
+LYear.Caption=Година:
+LLength.Caption=Времетраене:
+LLengthMin.Caption=мин.
+LActors.Caption=Актьори:
+LURL.Caption=URL:
+LDescription.Caption=Описание:
+LComments.Caption=Коментари:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Video формат:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Audio формат:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Резолюция:
+LFramerate.Caption=Framerate:
+LFramerateFPS.Caption=fps
+LSize.Caption=Големина:
+LDisks.Caption=Дискове:
+LLanguages.Caption=Език:
+LSubtitles.Caption=Субтитри:
+
+EMedia.Hint=|Заглавие, номер или баркод
+EMediaType.Hint=|Вид на носителя/поддържани видове
+ESource.Hint=|Източник (откъде/как сте получили филма)
+EDate.Hint=|Дата на добавяне на филма в каталога
+EBorrower.Hint=|Дадена на заем
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Рейтинг, от 0 до 10
+EOriginalTitle.Hint=|Оригинално заглавие
+ETranslatedTitle.Hint=|Преведено заглавие
+EDirector.Hint=|Режисьор
+EProducer.Hint=|Продуцент
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Страна
+ECategory.Hint=|Жанр
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Година на издаване
+ELength.Hint=|Времетраене в минути
+EActors.Hint=|Списък на актьорите
+EURL.Hint=|Website
+EDescription.Hint=|Описание
+EComments.Hint=|Коментар
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Видео формат/codec
+EVideoBitrate.Hint=|Видео bitrate
+EAudioFormat.Hint=|Аудио формат/codec
+EAudioBitrate.Hint=|Аудио bitrate
+EResolution.Hint=|Резолюция
+EFramerate.Hint=|Видео framerate
+ESize.Hint=|Големина на файла
+EDisks.Hint=|Брой на дисковете или касетите
+ELanguages.Hint=|Език
+ESubtitles.Hint=|Субтитри
+
+[TMovieFrameCustom]
+  ActionAddCustomField.Caption=Add a custom field
+  ActionAddCustomField.Hint=|Add a custom field
+  ActionModifyCustomField.Caption=Modify custom field
+  ActionModifyCustomField.Hint=|Modify custom field
+  ActionDeleteCustomField.Caption=Delete custom field
+  ActionDeleteCustomField.Hint=|Delete custom field
+  ActionMoveResizeCustomFields.Caption=Move custom fields
+  ActionMoveResizeCustomFields.Hint=|Move and resize custom fields
+  ActionDefaultPositioning.Caption=Default positioning
+  ActionDefaultPositioning.Hint=|Retore default positioning of custom fields
+  ActionAutoStretchWidth.Caption=Auto stretch width
+  ActionAutoStretchWidth.Hint=Auto stretch field width on resize
+  ActionAutoStretchHeight.Caption=Auto stretch height
+  ActionAutoStretchHeight.Hint=Auto stretch field height on resize
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Налични полета:
+  LSelected.Caption=Selected fields:
+BtnAdd.Hint=Добави|Добави избраното поле
+BtnRem.Hint=Премахни|Премахни избраното поле
+BtnAddAll.Hint=Добави всички|Добави всички полета
+BtnRemAll.Hint=Премахни всички|Премахни всички полета
+BtnUp.Hint=Премести нагоре|Премести нагоре избраното поле
+BtnDown.Hint=Премести нагоре|Премести нагоре избраното поле
+
+[TSortByFrame]
+grp.Caption=Sort by
+BtnAdvSort.Caption=Повече
+EOrderBy.Items.String[4]=Разширени опции за подреждане...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+  grp.Caption=Movies to include
+  rbtAll.Caption=All
+  rbtSelected.Caption=Selected
+  rbtChecked.Caption=Checked
+  rbtVisible.Caption=Visible
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+  grp.Caption=Picture importation method
+  rbtStorePic.Caption=&Store picture into catalog
+  rbtCopyPicInCatDir.Caption=Copy picture to &catalog folder, and link it to catalog
+  rbtCopyPicInPicDir.Caption=Copy picture to &pictures folder of catalog, and link it to catalog
+  rbtLinkPic.Caption=Only &link picture
+  chkLinkRelative.Caption=Make &relative path if possible
+
+[TPictureOperationFrame]
+  grp.Caption=Pictures operation
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInCatDirIfCopied.Caption=Copy picture to catalog folder only if picture is copied in pictures folder
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtCopyInPicDirIfCopied.Caption=Copy picture to pictures folder only if picture is copied in catalog folder
+  rbtRenameIfCopied.Caption=Rename picture if it is copied in catalog or pictures folder
+  rbtAbsToRelLink.Caption=Transform absolute link to relative link if possible if picture is only linked
+  rbtRelToAbsLink.Caption=Transform relative link to absolute link if picture is only linked
+  rbtDelete.Caption=Delete picture (and picture file if it is copied in catalog or pictures folder)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+  grp.Caption=Pictures exportation method
+  rbtNoChangeAMC.Caption=Same as current catalog
+  rbtNoChangeXML.Caption=Same as current catalog (stored pictures will be lost)
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtDelete.Caption=Delete picture
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Нов
+ActionHTMLNew.Hint=Нов шаблон|Създава нов шаблон
+ActionHTMLOpen.Caption=Зареди
+ActionHTMLOpen.Hint=Зареди...|Зарежда съществуващ шаблон
+ActionHTMLNoRecent.Caption=Няма последни файлове
+ActionHTMLSave.Caption=Запази
+ActionHTMLSave.Hint=Запази|Запазва текущия шаблон
+ActionHTMLSaveAs.Caption=Запази като...
+ActionHTMLSaveAs.Hint=Запази като...|Запазва текущия шаблон под ново име
+ActionInsertTag.Caption=&Вмъкни специален таг
+ActionInsertTag.Hint=|Вмъква специална стойност която ще бъде заменена от информация от каталога или филма
+ActionEditUndo.Caption=&Отмяна
+ActionEditCut.Caption=Из&режи
+ActionEditCopy.Caption=&Копирай
+ActionEditPaste.Caption=&Вмъкни
+  ActionEditDelete.Caption=&Delete
+ActionEditSelectAll.Caption=Избери &всички
+ActionExportBoth.Caption=Експортирай и двата
+ActionExportBoth.Hint=|Експортирай и двата шаблона "Пълен" и "Индивидуален"
+ActionExportSelected.Caption=Експорт на избраните
+ActionExportSelected.Hint=|Експорт само на избраните шаблони
+ActionDisplayFull.Caption=Пълен
+ActionDisplayFull.Hint=Покажи шаблона с пълния списък|Показва HTML страницата която ще се използва за пълен списък на филмите
+ActionDisplayIndividual.Caption=Индивидуален
+ActionDisplayIndividual.Hint=Покажи шаблона с индивидуалния списък|Показва HTML страницата която ще се използва за отделните филмови страници.
+
+MnuGen.Caption=&Общ
+MnuGenDte.Caption=Текуща дата
+MnuGenTme.Caption=Текущо време
+MnuCat.Caption=&Каталог
+MnuCatNme.Caption=Име на файла
+MnuCatPth.Caption=Име на файла и пълен път
+MnuCatNbr.Caption=Брой на филмите
+  MnuCatDsk.Caption=Number of disks
+MnuOwnNam.Caption=Име на собственика
+MnuOwnEml.Caption=E-mail на собственика
+MnuOwnWeb.Caption=Website на собственика
+MnuCatDsc.Caption=Описание
+MnuMovBeg.Caption=Начало на списъка
+MnuMovEnd.Caption=Край на списъка
+MnuMovRec.Caption=Record number
+MnuMovInd.Caption=Име на файл  или отделна филмова страница
+
+  MnuMov.Caption=&Movie fields
+  MnuMovCF.Caption=&Custom fields
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Картинка
+MnuMovPfn.Caption=Файлово име на картинката
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+  MnuMovR04.Caption=Rating (0 to 4 without decimal)
+  MnuMovR10.Caption=Rating (0 to 10 without decimal)
+  MnuMovApp.Caption=Appreciation (0 to 4 stars)
+  MnuMovA10.Caption=Appreciation (0 to 10 stars)
+  MnuMovFT1.Caption=Formatted Title: Original (Translated)
+  MnuMovFT2.Caption=Formatted Title: Translated (Original)
+  MnuMovHtm.Caption=Color Tag (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+  MnuLab.Caption=&Labels movie fields
+  MnuLabCF.Caption=&Labels custom fields
+  MnuLabExtras.Caption=&Labels extra fields
+  MnuLabPic.Caption=Picture
+  MnuLabUAF.Caption=Unit audio bitrate
+  MnuLabUVF.Caption=Unit video bitrate
+  MnuLabUFS.Caption=Unit file size
+  MnuLabUFP.Caption=Unit framerate
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Не може да се запише файла "%s": %s
+Messages.Strings.String[1]=Не може да се зареди файла "%s": %s
+  Messages.Strings.String[2]=HTML template has been modified. Do you want to save it?
+Messages.Strings.String[3]=HTML шаблона за пълния списък беше променен. Искате ли да го запазя?
+Messages.Strings.String[4]=HTML шаблона за индивидуалния списък беше променен. Искате ли да го запазя?

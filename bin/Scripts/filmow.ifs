@@ -1,0 +1,190 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ronniewo2 (Ronnie Oliveira)
+Title=Filmow
+Description=Movie importation script for filmow.com
+Site=http://filmow.com/
+Language=BR
+Version=1.30
+Requires=3.5.1
+Comments=Previous author: MIKEPAX
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Filmow;
+var MovieName:string;
+uses StringUtils1;
+
+procedure AnalyzeFilmPage(Address:string);
+var Page:TStringList;
+    valor, valor2, Texto:String;
+    j, i, k, Inicio, Fim:integer;
+begin
+  Page := TStringList.Create;
+  valor:= Address;
+  Page.Text:=GetPage(valor);
+  valor2:=Page.Text;
+  Inicio:=pos('<a itemprop="genre"', valor2);
+  Fim:=pos('<meta itemprop="duration"', valor2);
+  if Inicio>0 then begin
+     Texto:=copy(valor2,Inicio,Fim-Inicio);
+  end;
+
+  valor:=Page.Text;
+  Inicio:=pos('<meta property="og:description" content="',valor);
+  Fim:=pos('<meta property="og:site_name"',valor);
+  valor:=copy(valor,Inicio,Fim-Inicio);
+  valor:=TextBetween(valor,'content="','">');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  valor:= StringReplace(valor, #13#10, '');
+  SetField(fieldDescription, valor);
+
+  i:=FindLine('<title>',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'<title>','| Filmow</title>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  SetField(fieldTranslatedTitle, valor);
+
+  //Ano:
+  valor:=Page.Text;
+  Inicio:=pos('<small class="release">',valor);
+  valor2:=copy(valor,Inicio,Inicio+20);
+  valor2 := TextBetween(valor2, '">' , '</');
+  if Inicio=0 then begin
+    Inicio:=pos('<div class="item release_date">',valor);
+    valor2:=copy(valor,Inicio,Inicio+100);
+    valor2 := TextBetween(valor2, '<div>' , '</div>');
+  end;
+  valor2:= StringReplace(valor2, #9, ''); //tab}
+  valor2:= StringReplace(valor2, #13#10, '');
+  valor2:= Utf8Decode(valor2);
+  HTMLDecode(valor2);
+  HTMLRemoveTags(valor2);
+  SetField(fieldYear,trim(valor2));
+
+  i:=FindLine('<h2 class="movie-original-title">',Page,0);
+  valor:=Page.GetString(i);
+  valor := TextBetween(valor, 'title">' , '</h2>');
+  valor:= Utf8Decode(valor);
+  //*HTMLRemoveTags(valor);
+  HTMLDecode(valor);
+  SetField(fieldOriginalTitle, valor);
+
+  valor:='';
+  repeat
+    j:=pos('<a itemprop="genre"', Texto);
+    i:=pos('"btn-tag">', Texto);
+    valor:=valor+' / '+TextBetween(Texto, '"btn-tag">' , '</a>');
+    delete(Texto,j,i);
+    delete(Texto,i,10);
+  until j=0;
+  delete(valor,1,3);
+  delete(valor,length(valor)-2,3);
+  HTMLRemoveTags(valor);
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  SetField(fieldCategory,valor);
+
+  valor:=Page.Text;
+  Inicio:=pos('<span itemprop="director"',valor);
+  valor:=copy(valor,Inicio,Inicio+100);
+  valor := TextBetween(valor, '="name">' , '</span>');
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  HTMLRemoveTags(valor);
+  SetField(fieldDirector,valor);
+
+  valor:=Page.Text;
+  Inicio:=pos('<h2>Elenco</h2>',valor);
+  Fim:=pos('class="tip movie-report">',valor);
+  valor:=copy(valor,Inicio,Fim-Inicio);
+  valor := TextBetween(valor, '<span itemprop="name">' , '</div>');
+  valor:= StringReplace(valor, ' <em>', '..... ');
+  valor:= StringReplace(valor, 'class="more">Mais', '');
+  valor:= StringReplace(valor, #9, ''); //tab
+  valor := StringReplace(valor, #13#10#13#10, #13#10);
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  HTMLRemoveTags(valor);
+  delete(valor,length(valor)-5,6);
+  SetField(fieldActors,valor);
+  
+  valor:=Page.Text;
+  Inicio:=pos('ses de Origem:<',valor);
+  if Inicio>0 then begin
+     Fim:=pos('<ul class="videos-list">',valor);
+     valor:=copy(valor,Inicio,Fim-Inicio);
+     valor := TextBetween(valor, 'class="btn-tag">' , '</a>');
+     valor:= Utf8Decode(valor);
+     HTMLDecode(valor);
+     HTMLRemoveTags(valor);
+     SetField(fieldCountry,valor);
+  end;
+
+  i:=FindLine('<meta property="og:image"',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'content="','">');
+  GetPicture(valor);
+  
+  valor:=Page.Text;
+  Inicio:=pos('<span class="running_time">',valor);
+  valor:=copy(valor,Inicio,Inicio+40);
+  valor := TextBetween(valor, '_time">' , '</span>');
+  valor:=copy(valor,1,pos(' ',valor)-1);
+  valor:= Utf8Decode(valor);
+  HTMLDecode(valor);
+  HTMLRemoveTags(valor);
+  SetField(fieldLength,valor);
+
+  Page.free;
+end;
+
+procedure AnalyzePage(Address: String);
+var Page:TStringList;
+    i, j:integer;
+    nome, url, ano:string;
+begin
+  PickTreeClear;
+  Address:=Address+'buscar/filmes/?q=';//nome;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address+MovieName);
+  i:=0;
+  j:=0;
+  repeat
+    i:=FindLine('<a href="/',Page,i+1);
+    nome:=Page.GetString(i);
+    nome:=TextBetween(nome,'title="','" class="');
+    nome:= Utf8Decode(nome);
+    HTMLDecode(nome);
+    if (length(nome)>0) then begin
+      url:=Page.GetString(i);
+      url:=TextBetween(url,'<a href="','" title="');
+      url:='http://filmow.com/'+url;
+      PickTreeAdd(nome,url);
+    end;
+  until i=-1;
+ if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  Page.free;
+end;
+
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do Filmow.com', 'Escreva o nome do filme:', MovieName) then
+  begin
+    MovieName := StringReplace(MovieName, ' ', '+');
+    AnalyzePage('http://filmow.com/');
+  end;
+end. 

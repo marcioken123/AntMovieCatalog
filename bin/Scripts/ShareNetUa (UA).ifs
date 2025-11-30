@@ -1,0 +1,391 @@
+(****************************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=yasia22
+Title=ShareNetUA
+Description=Movie importation script for Share.Net.UA forum
+Site=www.share.net.ua
+Language=UA
+Version=0.2 (2008-10-28)
+Requires=3.5.1
+Comments=This script is not 100% accurate, as forum users describe movies in many different ways.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+ActorsLayout=0|0|0=Actors separated by commas|1=Actors separated by linebreaks
+Awards=1|1|0=Do not import awards|1=Import awards to Description field, after the summary|2=Import awards to Comments field, after comments
+BatchMode=0|0|0=Normal working mode, prompts user when needed|1=Does not ask for movie title, but halts if no movie found
+CrewMembers=1|1|0=Don't get any of the crew|1=Get the writer only|2=Get all available
+VideoType=0|0|0=Ukrainian|1=Subtitled|2=Documentary|3=Without translation
+
+****************************************************************)
+
+program ShareNetUa;
+
+uses StringUtils1;
+
+var
+    MovieName: String;
+    MovieURL: String;
+    MovieNumber: String;
+    isFound: Boolean;
+    FoundAddr: String;
+
+
+// *** Analyze search results page *** //
+// *** @input: link to the forum thread of movies/video *** //
+// *** @ouput: list of movies *** //
+// *** Calls AnalyzeMoviePage() if exact movie found *** //
+
+procedure AnalyzePage(Address: String);
+var
+    PageStr, MovieAddr, MovieTitle, MovieYear, MovieID: String;
+    BeginPos, EndPos: Integer;
+    LastPage: Boolean;
+    Pages: Integer;
+    MovieCount: Integer;
+    
+begin
+    LastPage := False;
+    PageStr := GetPage(Address);
+    Pages := StrToInt(Copy(TextBetween(PageStr, 'ipbpagespan', '</div>'), LastPos('</a>', TextBetween(PageStr, 'ipbpagespan', '</div>')) - 1, 1), 1);
+
+    if ((0 = Pos('-', Address)) and (0 < Pages)) then
+        for MovieCount := 0 to Pages - 1 do
+            AnalyzePage(Address + '-' + IntToStr(MovieCount * 150));
+    
+    if (0 < Pos('-0', Address)) then
+        PickTreeClear;
+    if (0 < Pos('-' + IntToStr(150 * (Pages - 1)), Address)) then
+        LastPage := True;
+    
+    BeginPos := Pos('<ol>', PageStr);
+    if (BeginPos > 0) then
+    begin
+        Delete(PageStr, 1, BeginPos);
+        BeginPos := Pos('<li>', PageStr);
+        EndPos := 1;
+        while ((BeginPos > 0) and (EndPos > 0) and not (isFound)) do
+        begin
+            Delete(PageStr, 1, BeginPos);
+            EndPos := Pos('</li>', PageStr);
+            MovieID := TextBetween(PageStr, '?t', '.html');
+            MovieAddr := 'http://www.share.net.ua/forum/index.php?showtopic=' + MovieID ;
+            MovieTitle := TextBetween(PageStr, '>', '</a>');
+            HTMLRemoveTags(MovieTitle);
+            HTMLDecode(MovieTitle);
+            MovieYear := TextBetween(MovieTitle, ' (', ')');
+            if 0 < Length(MovieYear) then
+                MovieTitle := TextBefore(MovieTitle, ' (', '');
+            if (EqualIgnoreCase(MovieName, MovieTitle)) then
+            begin
+                isFound := True;
+                FoundAddr := MovieAddr;
+            end; // names are equal
+            PickTreeAdd(MovieTitle + ' (' + MovieYear + ')', MovieAddr);
+            BeginPos := Pos('<li>', PageStr);
+            if (Pos('</ol>', PageStr) < BeginPos) then
+                BeginPos := -1;
+        end; // while there are more movies to add
+    end; // if there are any search results
+    
+    if (LastPage) then
+    begin
+        if (isFound) then
+            AnalyzeMoviePage(FoundAddr)
+        else
+        begin
+            PickTreeSort;
+            if PickTreeExec(Address) then
+                AnalyzeMoviePage(Address);
+        end; // exact movie title was not found
+    end; // last page
+end;
+// *** End of AnalyzePage() *** //
+
+// *** Analyze particular movie page *** //
+// *** @input: link to the movie page*** //
+// *** @output: parsed values *** //
+procedure AnalyzeMoviePage(Address: String);
+var
+    Page: TStringList;
+    PageStr: String;
+    Item, Crew: String;
+    DescStart: Integer;
+    
+begin
+    Page := TStringList.Create;
+    PageStr := GetPage(Address);
+    // *  Original title and year* //
+    if (CanSetField(fieldOriginalTitle)) then
+    begin
+        Item := GetProperty(PageStr, 'font-size:14pt;', '</span>', '<b>', '</b>');
+        if (0 < Length(TextBetween(Item, ' (', ')'))) then
+        begin
+            SetField(fieldYear, TextBetween(Item, ' (', ')'));
+            SetField(fieldOriginalTitle, TextBefore(Item, ' (', ''));
+        end
+        else
+            SetField(fieldOriginalTitle, Item);
+    end; // Original title
+    // * Director(s) * //
+    if (CanSetField(fieldDirector)) then
+        SetField(fieldDirector, GetProperty(PageStr, 'Режисер', '/>', ' ', '<br'));
+    // *  Studio * //
+    if (CanSetField(fieldCountry)) then
+    begin
+        Item := GetProperty(PageStr, 'Кіностудія', '/>', ' ', '<br');
+        if (0 = Length(Item)) then
+            Item := GetProperty(PageStr, 'Країна', '/>', ' ', '<br');
+        if (0 = Length(Item)) then
+        begin
+            Item := GetProperty(PageStr, '<span style=''color:gray''', 'br />', '>', '<');
+            Item := TextBefore(Item, ',', '');
+        end;
+        if Pos('Довженка', Item) > 0 then
+            Item := 'Довженка';
+        SetField(fieldCountry, Item);
+    end; // Studio/country added
+    // *  Category * //
+    if (CanSetField(fieldCategory)) then
+        SetField(fieldCategory, GetProperty(PageStr, 'Жанр', '/>', ' ', '<br'));
+    // *  Length * //
+    if (CanSetField(fieldLength)) then
+    begin
+        Item := GetProperty(PageStr, 'Тривалість', '/>', ' ', ' хв');
+        if (0 = Length(Item)) then
+        begin
+            Item := GetProperty(PageStr, 'Тривалість', '/>', ' ', '<br');
+            Item := IntToStr(StrToInt(TextBefore(Item, ':', ''), 0) * 60 + StrToInt(TextBetween(Item, ':', ':'), 0));
+        end;
+        SetField(fieldLength, Item);
+    end;
+    // * URL * //
+    if (CanSetField(fieldURL)) then
+        SetField(fieldURL, Address);
+    // *  Description * //
+    if (CanSetField(fieldDescription)) then
+    begin
+        Item := PageStr;
+        DescStart := Pos('</span><br /><br />', Item);
+        while (DescStart = Pos('</span><br /><br /><', PageStr)) do
+        begin
+            Delete(Item, 1, DescStart);
+            DescStart := Pos('</span><br /><br />', Item);
+        end;
+        
+        Item := GetProperty(Item, '</span><br /><br /', 'br /><br /><', '>', '<');
+        SetField(fieldDescription, Item);
+    end; // Description
+    // *  Picture * //
+    if (CanSetPicture) then
+        ImportPicture(PageStr, '', '<div class="postcolor">', '</div>');
+    // * Actor(s) * //
+    if (CanSetField(fieldActors)) then
+    begin
+        Item := GetProperty(PageStr, 'ролях', '/>', ' ', '<br');
+        if (0 = Length(Item)) then
+            Item := GetProperty(PageStr, 'Актор', '/>', ' ', '<br');
+        if (1 = GetOption('ActorsLayout')) then
+            Item := StringReplace(Item, ', ', #13#10);
+        SetField(fieldActors, Item);
+    end; // Actor(s) added
+    // * Award(s) * //
+    Item := GetProperty(PageStr, 'Нагород', '/>', ' ', '<br');
+    Item := StringReplace(Item, '; ', #13#10);
+    Item := StringReplace(Item, '. ', #13#10);
+    case GetOption('Awards') of
+        0:
+            Item := '';
+        1:
+            if (Length(Item) > 0) then
+                SetField(fieldDescription, GetField(fieldDescription) + #13#10#13#10 + Item);
+        2:
+            if (Length(Item) > 0) then
+                SetField(fieldComments, Item);
+    end; // Case awards option
+    // * Crew  members: writer(s), operator(s), composer(s), artist(s), sound editor(s) * //
+    Crew := '';
+    case GetOption('CrewMembers') of
+        0: // No crew
+        begin
+            Crew := '';
+        end; // case 0
+        1: // Writer(s) only
+        begin
+            if (CanSetField(fieldProducer)) then
+            begin
+                Crew := GetProperty(PageStr, 'ценар', '/>', ' ', '<br');
+                if (0 < Length(Crew)) then
+                    Crew := StringReplace(Crew, ', ', ' (сценарист), ') + ' (сценарист)';
+                SetField(fieldProducer, Crew);
+            end; // Writer(s) found
+        end; // case 1
+        2: // Whole crew
+        begin
+            if (Pos('ценар', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'ценар', '/>', ' ', '<br');
+                if (0 < Length(Item)) then
+                    Item := StringReplace(Item, ', ', ' (сценарист), ') + ' (сценарист)';
+                Crew := Item;
+            end; // Writer(s)
+            if (Pos('Композитор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Композитор', '/>', ' ', '<br');
+                Item := StringReplace(Item, ', ', ' (композитор), ') + ' (композитор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Composer(s)
+            if (Pos('Оператор', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Оператор', '/>', ' ', '<br');
+                Item := StringReplace(Item, ', ', ' (оператор), ') + ' (оператор)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Operator(s)
+            if (Pos('Художник', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Художник', '/>', ' ', '<br');
+                Item := StringReplace(Item, ', ', ' (художник), ') + ' (художник)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // Artist(s)
+            if (Pos('Звуко', PageStr) > 0) then
+            begin
+                Item := GetProperty(PageStr, 'Звуко', '/>', ' ', '<br');
+                Item := StringReplace(Item, ', ', ' (звукорежисер), ') + ' (звукорежисер)';
+                if (Length(Crew) > 0) then
+                    Crew := Crew + ', ';
+                Crew := Crew + Item;
+            end; // SoundEditor(s)
+            
+            if (CanSetField(fieldProducer)) then
+                SetField(fieldProducer, Crew);
+        end; //case 2
+    end; // Case crew option
+end;
+// *** End of AnalyzeMoviePage() *** //
+
+// *** Compare two strings *** //
+// *** @input: two strings *** //
+// *** @output: boolean comparison result *** //
+// *** Ignores case of input strings *** //
+function EqualIgnoreCase(String1: string; String2: string): boolean;
+var
+    i: Integer;
+begin
+    Result := True;
+    if (Length(String1) = Length(String2)) then
+    begin
+        String1 := AnsiLowerCase(String1);
+        String2 := AnsiLowerCase(String2);
+        for i := 0 to Length(String1) do
+        begin
+            if (Copy(String1, i, 1) <> Copy(String2, i, 1)) then
+            begin
+                Result := False;
+                Break
+            end;
+        end;
+    end
+    else
+    begin
+        Result := False;
+        Break;
+    end;
+end;
+// *** End of EqualIgnoreCase() *** //
+
+// *** Get movie property *** //
+// *** @input: string, and two pairs of boundaries*** //
+// ***@output: parsed value, stripped of tags *** //
+function GetProperty(PageStr: String; Start1: String; End1: String; Start2: String; End2: String): String;
+var
+    Item: String;
+begin
+    Result := '';
+    if (Pos(Start1, PageStr) > 0) then
+    begin
+        Item := TextBetween(PageStr, Start1, End1);
+        Item := TextBetween(Item, Start2, End2);
+        Item := StringReplace(Item, '<br>', #13#10);
+        HTMLRemoveTags(Item);
+        HTMLDecode(Item);
+        Trim(Item);
+        Result := Item;
+    end;
+end;
+// *** End of GetProperty() *** //
+
+// *** Import a picture *** //
+// *** @input: string, base url, and a pair of boundaries*** //
+// ***@output: gets a picture *** //
+procedure ImportPicture(PageStr: String; BaseURL: String; Start1: String; End1: String);
+var
+    Source: String;
+begin
+    Source := TextBetween(PageStr, Start1, End1);
+    if ('' <> Source) then
+    begin
+        if (0 < Pos('src=' + #39, Source)) then
+            Source := TextBetween(Source, 'src=' + #39, #39)
+        else if (0 < Pos('src="', Source)) then
+            Source := BaseURL + TextBetween(Source, 'src="', '"');
+        if (Source <> '') then
+        begin
+            GetPicture(Source);
+        end; // picture exists
+    end;
+end;
+// *** End of ImportPicture() *** //
+
+// *** Main function *** //
+Begin
+    if (CheckVersion(3,5,1)) then
+    begin
+        isFound := False;
+        MovieName := GetField(fieldOriginalTitle);
+        if (('' = MovieName) or (1 = GetOption('VideoType'))) then
+            MovieName := GetField(fieldTranslatedTitle);
+        case GetOption('VideoType') of
+            0: // Ukrainian
+            begin
+                if (1 = GetOption('BatchMode')) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f1')
+                else if (Input('Імпорт з Share.Net.UA', 'Назва фільму:', MovieName)) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f1');
+            end; // case 0
+            1: // Subtitled
+            begin
+                if (1 = GetOption('BatchMode')) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f22')
+                else if (Input('Імпорт з Share.Net.UA', 'Назва фільму:', MovieName)) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f22');
+            end; // case 1
+            2: // Documentary
+            begin
+                if (1 = GetOption('BatchMode')) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f13')
+                else if (Input('Імпорт з Share.Net.UA', 'Назва фільму:', MovieName)) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f13');
+            end; // case 2
+            3: // Without translation
+            begin
+                if (1 = GetOption('BatchMode')) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f11')
+                else if (Input('Імпорт з Share.Net.UA', 'Назва фільму:', MovieName)) then
+                    AnalyzePage('http://www.share.net.ua/forum/lofiversion/index.php?f11');
+            end; // case 3
+        end; // video type switch
+    end // version is fine
+    else
+        ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.1.1)');
+End.

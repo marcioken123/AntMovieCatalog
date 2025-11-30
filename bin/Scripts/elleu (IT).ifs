@@ -1,0 +1,284 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=06.10.2004 Stefano Mora stefano.mora@libero.it
+Title=Elleu
+Description=Get movie info from elleu.it
+Site=http://www.elleu.com
+Language=IT
+Version=1.0.1 02.02.2005
+Requires=3.5.0
+Comments=**Chages**|Modified by Dino Librandi dinolib@libero.it (2005) for v 3.5.0
+License=The source code of the script can |be used in another program only |if full credits to script author and |a link to Ant Movie Catalog website |are given in the About box or in the |documentation of the program
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program elleu;
+
+var
+ MovieName: string;
+ 
+const
+  PATHLOG = 'c:\Programmi\Ant Movie Catalog\Log\LogElleu\';
+  SITE = 'http://www.elleu.com';
+  FILMURL = SITE+'/customer/';
+  MOVIE = 'Il commissario Montalbano - La gita a Tindari (Dvd)';
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+// --------------------------------------------------
+
+// Analizza la pagina e ricava i dati
+procedure LeggeFilm(Page: TStringList);
+var
+  strTmp, strTmp2, strTmp3: string;
+  LineNr: integer;
+  EndLine: integer;
+  BeginPos, EndPos: Integer;
+  bNome: boolean;
+  
+begin
+
+// Titoli
+  LineNr := FindLine('Titolo', Page, 0);
+  strTmp := Page.GetString(LineNr);
+  // I dati sono tutti in questa riga !
+
+// Immagine - fascetta
+  BeginPos := pos('fascette', strTmp)-15;
+  delete( strTmp, 1, BeginPos);
+  BeginPos := 0;
+  EndPos := pos('width', strTmp)-2;
+  strTmp2 := SITE+copy( strTmp, BeginPos, EndPos-BeginPos);
+  GetPicture(strTmp2);
+  //ShowMessage(strTmp2);
+
+// Titolo
+  BeginPos := pos('Titolo', strTmp);
+  delete( strTmp, 1, BeginPos+13);
+  //ShowMessage(strTmp);
+  BeginPos := 0;
+  EndPos := pos('<br>', strTmp)-1;
+  strTmp2 := trim(copy(strTmp, BeginPos, EndPos));
+  // Toglie il (dvd) o (vhs)
+  BeginPos := pos('(Dvd)', strTmp2);
+  if BeginPos <> 0 then strTmp2 := trim(copy (strTmp2, 1, BeginPos-1));
+  BeginPos := pos('(Vhs)', strTmp2);
+  if BeginPos <> 0 then strTmp2 := trim(copy (strTmp2, 1, BeginPos-1));
+  // Titolo originale === titolo tradotto
+  SetField( fieldTranslatedTitle, strTmp2);
+  SetField( fieldOriginalTitle, strTmp2);
+  //ShowMessage(strTmp2);
+
+// Attori
+  BeginPos := pos('Attori:', strTmp);
+  delete( strTmp, 1, BeginPos+13);
+  BeginPos := 0;
+  EndPos := pos('<br>', strTmp)-1;
+  strTmp2 := copy(strTmp, BeginPos, EndPos);
+  SetField( fieldActors, strTmp2);
+  //ShowMessage(strTmp2);
+
+// Regia
+  BeginPos := pos('Regia:', strTmp);
+  delete( strTmp, 1, BeginPos+13);
+  BeginPos := 0;
+  EndPos := pos('<br>', strTmp)-1;
+  strTmp2 := trim(copy(strTmp, BeginPos, EndPos));
+  SetField( fieldDirector, strTmp2);
+
+// Genere
+  BeginPos := pos('Genere:', strTmp);
+  delete( strTmp, 1, BeginPos+13);
+  BeginPos := 0;
+  EndPos := pos('<br>', strTmp)-1;
+  strTmp2 := copy(strTmp, BeginPos, EndPos);
+  SetField( fieldCategory, trim(strTmp2));
+
+// Durata
+  BeginPos := pos('Durata:', strTmp);
+  delete( strTmp, 1, BeginPos+13);
+  BeginPos := 0;
+  EndPos := pos('min', strTmp)-1;
+  strTmp2 := trim(copy(strTmp, BeginPos, EndPos));
+  SetField( fieldLength, trim(strTmp2));
+
+// Anno
+  BeginPos := pos('Anno di p', strTmp);
+  if BeginPos = 0 then  // Non trovato -> linea successiva !
+    begin
+    strTmp := Page.GetString(LineNr+1);
+    BeginPos := pos('Anno di p', strTmp);
+    end
+  delete( strTmp, 1, BeginPos+34);
+  BeginPos := 0;
+  EndPos := pos('<br>', strTmp)-1;
+  strTmp2 := trim(copy(strTmp, BeginPos, EndPos));
+  SetField( fieldYear, strTmp2);
+
+// Descrizione
+  BeginPos := pos('>Trama<', strTmp);
+  delete (strTmp, 1, BeginPos);
+
+  BeginPos := pos('class="testo"', strTmp)+30;
+  delete (strTmp, 1, BeginPos);
+
+  BeginPos := 0;
+  EndPos := pos('</td>', strTmp)-1;
+
+  strTmp2 := copy( strtmp, BeginPos, EndPos-BeginPos);
+  HTMLRemoveTags(strTmp2);
+  SetField( fieldDescription, strTmp2);
+
+  // Si sposta nella pagina dei risultati
+  //DisplayResults;
+end;
+
+// ---
+
+procedure AnalyzePage(Address: string);
+
+var
+  Page: TStringList;
+  strPage, MovieAddr, MovieTitle : string;
+  BeginPos, EndPos: Integer;
+  
+  LineNr: Integer;
+  rigalista: string;
+  rigahtml: string;
+  strTmp: string;
+  altrapagina: string;
+
+begin
+  // Crea la lista
+  Page:= TStringList.Create;
+  
+  // Riceve la pagina
+  Page.Text := GetPage(Address);
+  //Page.SaveToFile(PATHLOG+MovieName+'.res');
+  //Page.LoadFromFile(PATHLOG+MOVIE+'.res');
+
+  BeginPos:= FindLine('Nessun film trovato', Page, 0);
+  if BeginPos <> -1 then
+    begin
+    ShowMessage('Film non trovato !');
+    exit;
+    end;
+
+  // Controllare che ci siano film !!
+  LineNr := FindLine('Prodotti trovati', Page, 0);
+  if(LineNr = -1) then
+    begin
+    // Trovato il film
+    // LeggeFilm(Page);
+    ShowMessage('Nessuna voce trovata');
+    end
+
+  else  // Lista di film
+
+    begin
+
+    PickTreeClear;
+    PickTreeAdd('Risultati ricerca per "' + MovieName + '":', '');
+
+    LineNr := FindLine('>Titolo<', Page, LineNr);
+    while LineNr <> -1 do
+      begin
+
+// Titolo
+      rigahtml:= Page.GetString(LineNr);
+
+      // Url
+      BeginPos:= pos('href=', rigahtml);
+      Delete(rigahtml, 1, BeginPos);
+
+      BeginPos := 5;
+      EndPos:= pos(' class="te', rigahtml);
+      MovieAddr:= FILMURL+copy( rigahtml, BeginPos, EndPos-BeginPos);
+
+      BeginPos:= pos('">', rigahtml)+2;
+      EndPos:= pos('</a>', rigahtml);
+      MovieTitle:= copy( rigahtml, BeginPos, EndPos-BeginPos);
+
+      // Legge il regista
+      LineNr := FindLine('Regista:', Page, LineNr);
+      if LineNr <> -1 then
+        begin
+        strTmp := Page.GetString(LineNr);
+        BeginPos := pos('</span>', strTmp)+7;
+        EndPos := 1000;
+        strTmp := trim(copy(strTmp, BeginPos, EndPos-BeginPos));
+        MovieTitle := MovieTitle + ' - ' + strTmp;
+        end
+
+      // Add to listbox
+      PickTreeAdd(MovieTitle, MovieAddr);
+
+      // Restart the process
+      LineNr := LineNr+2;
+      LineNr := FindLine('>Titolo<', Page, LineNr);
+      end;
+
+      // Controlla se ci sono altre pagine di risultati
+      LineNr := FindLine('>Avanti<', Page, LineNr);
+      if LineNr <> -1 then
+        begin
+        PickTreeAdd('Ci sono altre pagine risultato ...', '');
+        
+        // Estrae l'indirizzo per un'altra pagina
+        strTmp := Page.GetString(LineNr);
+        BeginPos := pos('href="', strTmp)+6;
+        EndPos := pos('" id=', strTmp);
+        altrapagina := copy( strTmp, BeginPos, EndPos-BeginPos);
+        //ShowMessage(altrapagina);
+        end;
+
+      // Visualizza la lista e fa scegliere
+      if(PickTreeExec(Address)) then
+        begin
+        Page.text := GetPage(Address);
+        // Salva la pagina per debug
+		    //Page.SaveToFile(PATHLOG+MovieName+'.film');
+		    //Page.LoadFromFile(PATHLOG+MOVIE+'.film');
+        LeggeFilm(Page);
+        end;
+    end;
+  Page.Free();
+end;
+
+// -------------------- main
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    // Considera il titolo tradotto, se vuoto il titolo originale
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then MovieName := GetField(fieldOriginalTitle);
+    // Chiede conferma del titolo
+    Input('elleu Import', 'Titolo del film:', MovieName);
+    if MovieName <> '' then
+    begin
+      AnalyzePage('http://www.elleu.com/customer/search.php?substring='+UrlEncode(MovieName)+'&vers=DVD&showhow=simple&catebig%5B%5D=DVD&catebig%5B%5D=VHS&catebig%5B%5D=LIBRI&catebig%5B%5D=CD&ordersearch=add_date&typesearch=minisearch');
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

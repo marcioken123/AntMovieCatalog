@@ -1,0 +1,581 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Håkan M
+Title=Discshop
+Description=Import data & picture from www.discshop.se in swedish
+Site=www.discshop.se
+Language=SE
+Version=1.3.4
+Requires=3.5.0
+Comments=Based on the Discshop-script (v.1.1.0) made by Andreas Fridvall|Updated & modified by Håkan M|Updated by R_V
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+BatchMode=0|0|0=Normal working mode, prompts user when needed (default)|1=Does not display any window, takes the first movie found
+MultipleValuesActors=2|2|0=Only take first value for Actors|1=Take full list, separated by commas|2=Take full list, separated by slashes (default)|3=Take full list, separated by linebreaks
+MultipleValuesCountry=1|1|0=Only take first value for Country|1=Take full list, separated by commas (default)|2=Take full list, separated by slashes
+MultipleValuesCategory=1|1|0=Only take first value for Category|1=Take full list, separated by commas (default)|2=Take full list, separated by slashes
+MultipleValuesLanguages=1|1|0=Only take first value for Languages|1=Take full list, separated by commas (default)|2=Take full list, separated by slashes
+FilmOrMusic=0|0|0=Search for movies (default)|1=Search for music-dvd
+
+[Parameters]
+
+***************************************************)
+
+program Discshop;
+
+uses
+  StringUtils1;
+
+var
+  MovieList: string;
+  MovieName: string;
+  MovieURL: string;
+  MovieNumber: string;
+  SearchID: string;
+  SubSite: string;
+  StartPos: integer;
+  MovieListLength: integer;
+  ListEmpty: integer;
+  
+// ***** analyzes the results page that asks to select a movie from a list *****
+
+procedure AnalyzeResultsPage(Address: string);
+var
+  PageText: string;
+  Value: string;
+  Info: string;
+begin
+  PageText := GetPage(Address);
+
+  if GetOption('BatchMode') = 0 then
+  begin
+
+    // No movies were found
+    if Pos('Hittade inga produkter', PageText) <> 0 then
+    begin
+      ShowMessage('No movie found for this search');
+      Exit;
+    end;
+
+    // Only one movie was found
+    if Pos('Visar 1-1 av 1', PageText) <> 0 then
+    begin
+      MovieURL := TextBetween(PageText, 'Visar 1-1 av 1', '<div class="head">');
+      MovieURL := TextBetween(MovieURL, '<h3>', '</h3>');
+      MovieURL := TextBetween(MovieURL, '<a href="', '"');
+      PageText := GetPage(MovieURL);
+      AnalyzeMoviePage(PageText);
+      Exit;
+    end;
+
+    // More that one movie was found
+    PickTreeClear;
+	  ListEmpty := 1;
+    MovieList := TextBetween(PageText, 'Visar', '<div class="head">');
+
+    while ListEmpty = 1 do
+    begin
+      if Pos('<h3>', MovieList) <> 0 then
+      begin
+        StartPos := Pos('<h3>', MovieList)+4;
+        MovieList := Copy(MovieList, StartPos ,Length(MovieList)-StartPos);
+      end
+      else
+      begin
+        MovieList := '';
+      end;
+
+      //MovieNumber := TextBetween(MovieList, 'ds.php?red=ds_produkt.php&&arg=id@@@', ',,,');
+      MovieURL := TextBetween(MovieList, '<a href="', '"');
+      MovieName := TextBetween(MovieList, 'title="', '"');
+      Info := TextBetween(MovieList, '<p>', '</p>');
+
+      // If a movie was found
+      if MovieName <> '' then
+      begin
+        // Add it to the tree
+        HTMLDecode(MovieName);
+        HTMLRemoveTags(MovieName);
+        MovieName := MovieName + ' [' + Info + ']';
+        PickTreeAdd(MovieName, MovieURL);
+        MovieName :='';
+        ListEmpty := 1;
+      end
+      else
+      begin
+        ListEmpty := 0;
+      end;
+    end;
+
+    if PickTreeExec(MovieURL) then
+    begin
+      PageText := GetPage(MovieURL);
+      AnalyzeMoviePage(PageText);
+    end;
+  end
+  else
+  begin
+
+    if Pos('Hittade inga produkter', PageText) <> 0 then
+    begin
+		ShowMessage('No movie found for this search');
+      // BatchNo movies were found
+      Exit;
+    end
+    else
+    begin
+      // Batch mode, pick the first available movie
+      MovieURL := TextBetween(PageText, 'Visar', '<div class="head">');
+	  MovieURL := TextBetween(MovieURL, '<h3>', '</h3>');
+      MovieURL := TextBetween(MovieURL, '<a href="', '"');
+      PageText := GetPage(MovieURL);
+      AnalyzeMoviePage(PageText);
+      Exit;
+    end;
+  end;
+end;
+
+// ***** analyzes the page containing movie information *****
+
+procedure AnalyzeMoviePage(PageText: string);
+var
+  Value, Value2, Value3: string;
+  p: Integer;
+  Rating : Extended;
+begin
+
+  // URL
+  if CanSetField(fieldURL) then
+    SetField(fieldURL, MovieURL);
+
+  // Translated Title
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Lokal titel</b><br/>', '</p>');
+    Value := StringReplace(Value, 'Discshop.se - ', '');
+    Value := StringReplace(Value, ' - Discshop.se', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldTranslatedTitle, Value);
+  end;
+
+  // Original Title
+  if CanSetField(fieldOriginalTitle) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Originaltitel</b><br/>', '</p>');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Year
+  if CanSetField(fieldYear) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Premiärår</b><br/>', '</p>');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  // Length
+  if CanSetField(fieldLength) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Speltid</b><br/>', ' min');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldLength, Value);
+  end;
+
+  // Director
+  if CanSetField(fieldDirector) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Regi</b><br/>', '</p>');
+    Value := StringReplace(Value, '<BR>', ', ');
+    Value := StringReplace(Value, '<br>', ', ');
+    Value := StringReplace(Value, '<br/>', ', ');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '  ', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := deleteEnd(Value, ', ');
+    SetField(fieldDirector, Value);
+  end;
+
+  // Rating
+  if CanSetField(fieldRating) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, '<div class="rate_2">', '</div>');
+    repeat
+      Rating := Rating + StrToInt(TextBetween(Value, '<i class="i i16 i16_rate_', '">'),0);
+      Delete(Value, 1, Pos('</i>', Value));
+    until Pos('<i class="', Value) = 0;
+     Value := FloatToStr(Rating/5);
+    SetField(fieldRating, Value);
+  end;
+
+  // Resolution
+  if CanSetField(fieldResolution) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Bild', '</p>');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '(anamorfisk)','');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := deleteEnd(Value, ' ');
+    SetField(fieldResolution, Value);
+  end;
+
+  // VideoFormat
+  if CanSetField(fieldVideoFormat) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Format', '</p>');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    while Pos(' ', Value) = 1 do
+      Value := Copy(Value, 2, Length(Value));
+    while Pos('  ', Value) > 0 do
+      Value := StringReplace(Value, '  ', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldVideoFormat, Value);
+  end;
+
+// MediaType
+  if CanSetField(fieldMediaType) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Kartong', '</p>');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldMediaType, Value);
+  end;
+
+  // Writer (Producer Field)
+  if CanSetField(fieldProducer) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Manus</b><br/>', '</p>');
+    Value := StringReplace(Value, '<BR>', ', ');
+    Value := StringReplace(Value, '<br>', ', ');
+    Value := StringReplace(Value, '<br/>', ', ');
+    Value := StringReplace(Value, '<BR/>', ', ');
+    Value := StringReplace(Value, #13#10, '');
+    Value := StringReplace(Value, #09,'');
+    while Pos(' ', Value) = 1 do
+      Value := Copy(Value, 2, Length(Value));
+    while Pos('  ', Value) > 0 do
+      Value := StringReplace(Value, '  ', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := deleteEnd(Value, ', ');
+    SetField(fieldProducer, Value);
+  end;
+
+  // Picture
+  if CanSetPicture then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, '<meta property="og:image" content="','"');
+    if Value <> '' then
+      begin
+      Value := StringReplace(Value, 'front_normal', 'front_large');
+      //Value := 'http://www.discshop.se' + Value;
+      GetPicture(Value);
+      end;
+  end;
+
+  // Discs
+  SetField(fieldDisks, ImportList(PageText, GetOption('MultipleValuesDisks'), 'Antal skivor</b><br/>'));
+
+  // Country
+  if CanSetField(fieldCountry) then
+    SetField(fieldCountry, ImportList(PageText, GetOption('MultipleValuesCountry'), 'Produktionsland</b><br/>'));
+
+  // Category
+  if CanSetField(fieldCategory) then
+    SetField(fieldCategory, ImportList(PageText, GetOption('MultipleValuesCategory'), 'Genre</b><br/>'));
+
+	// Language
+  if CanSetField(fieldLanguages) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Ljud</b><br/>', '</p>');
+    //Value := TextBetween(Value, '<div id="specifikationer_sprak_alla" style="display:none;">', '</div>');
+    // Value := Copy(Value,1,LastPos('<br>',Value)-1);
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '&nbsp;','');
+    case GetOption('MultipleValuesLanguages') of
+      0: if Pos('<br>',Value)>0 then Value := TextBefore(Value, '<br>', '');
+      1: Value := StringReplace(Value, '<br/>', ', ');
+      2: Value := StringReplace(Value, '<br/>', ' / ');
+      3: Value := StringReplace(Value, '<br/>', #13#10);
+    end;
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    while Pos(' ', Value) = 1 do
+      Value := Copy(Value, 2, Length(Value));
+    while Pos('  ', Value) > 0 do
+      Value := StringReplace(Value, '  ', '');
+    while Pos(' ', Value) = Length(Value)-1 do
+      Value := Copy(Value, 0, Length(Value)-1);
+    while Pos(',', Value) = Length(Value)-1 do
+      Value := Copy(Value, 0, Length(Value)-2);
+    // Remove the last ', ' in the row
+    Value2 := Copy(Value, Length(Value)-1, 2);
+    if Value2 = ', ' then Value := Copy(Value, 0, Length(Value)-2);
+    
+    Value := deleteEnd(Value, ' / ');
+    SetField(fieldLanguages, Value);
+  end;
+
+  // Subtitles
+  if CanSetField(fieldSubtitles) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText, 'Textning</b><br/>', '</p>');
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '&nbsp;', '');
+    Value := StringReplace(Value, '<br/>', ', ');
+
+    {Value2 := TextBetween(Value, '<div id="specifikationer_text" style="display:none;">','</div>');
+    // discshop uses two diffrent layouts for subtitle listnings
+    if Value2='' then
+    begin
+      Value3 := Copy(Value,1,LastPos('<br/>',Value)-1);  // remove the last <br>
+      Value3 := StringReplace(Value3, '<br/>', ', ');
+    end
+    else
+    begin
+      Value := RemainingText;
+      Value3 := '';
+      while Value2 <> '' do
+      begin
+        if Value3='' then
+          Value3 := Value2
+        else
+          Value3 := Value3 + ', ' + Value2;
+        Value2 := TextBetween(Value, '<TD>','</TD>');
+        Value := RemainingText;
+      end;
+    end;
+    while Pos(' ', Value3) = 1 do
+      Value3 := Copy(Value3, 2, Length(Value3));
+    Value3 := StringReplace(Value3, ',  ', '');
+    while Pos('  ', Value3) > 0 do
+      Value3 := StringReplace(Value3, '  ', ' ');
+    // Add ', ' instead of space between subtitles
+    // Value3 := StringReplace(Value3, ' ', ', ');
+    // Remove the last ', ' in the row
+    //Value3 := Copy(Value3, 0, Length(Value3)-2);
+    // Replace ',,' with ','
+    // Value3 := StringReplace(Value3, ',,', ',');
+
+    HTMLRemoveTags(Value3);
+    HTMLDecode(Value3);
+    Value := deleteEnd(Value, ', ');
+    SetField(fieldSubtitles, Value3);}
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := deleteEnd(Value, ', ');
+    SetField(fieldSubtitles, Value);
+  end;
+
+  // Actors
+  if CanSetField(fieldActors) then
+    SetField(fieldActors, ImportList(PageText, GetOption('MultipleValuesActors'), 'Skådespelare</b><br/>'));
+
+  // Description
+  if CanSetField(fieldDescription) then
+  begin
+    Value := '';
+    Value := TextBetween(PageText,'Filmens handling:', '</div>');
+    if Value = '' then
+      Value := TextBetween(PageText, 'Filmens handling', '</div>');
+    if Value = '' then
+      Value := TextBetween(PageText, 'Beskrivning:', '</div>');
+    if Value = '' then
+      Value := TextBetween(PageText, '<div class="desc desc_long">', '</div>');
+    Value := StringReplace(Value, '    ', '');
+    Value := StringReplace(Value, 'disableSelection(document.getElementById("text_handling"));', '');
+    Value := StringReplace(Value, TextBetween(Value, '<span style="display: none;">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style=" display: none;">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style=" display: none">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style="display: none">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style="display: none;">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style=" display: none;">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style=" display: none">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style="display: none">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style="display: none;">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style=" display: none;">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style=" display: none">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style="display: none">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style="display:none;">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style=" display:none;">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style=" display:none">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span style="display:none">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style="display:none;">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style=" display:none;">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style=" display:none">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i style="display:none">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style="display:none;">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style=" display:none;">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style=" display:none">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b style="display:none">', '</b>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<span class="infoText1234">', '</span>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<i class="infoText1234">', '</i>'),'');
+    Value := StringReplace(Value, TextBetween(Value, '<b class="infoText1234">', '</b>'),'');
+    Value := StringReplace(Value, '<FONT COLOR="white">i</FONT>', ' ');
+    Value := StringReplace(Value, #13#10,'');
+    Value := StringReplace(Value, #09,'');
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, ' Informationen kopierad från discshop.se!','');
+    Value := StringReplace(Value, ' Info kopierad från discs hop.se!','');
+    Value := StringReplace(Value, ' Informationen är tagen från discshop.se!','');
+    Value := StringReplace(Value, ' Informationen är tagen från disc shop.se!','');
+    Value := StringReplace(Value, ' Informationen hämtad från discshop.se!','');
+    Value := StringReplace(Value, ' Över 15.000 titlar i lager.','');
+    Value := StringReplace(Value, ' Över 18.000 titlar i lager.','');
+    Value := StringReplace(Value, ' Leverans nästa dag.','');
+    Value := StringReplace(Value, ' Leverans nästa dag.','');
+    Value := StringReplace(Value, ' Leverans nästa dag om du beställer före 16.00.','');
+    Value := StringReplace(Value, ' Leverans nästa dag om du beställer före 16.00.','');
+    Value := StringReplace(Value, ' Beställ före 16.00.','');
+    Value := StringReplace(Value, ' Beställ före 16.00, leverans nästa dag.','');
+    Value := StringReplace(Value, ' Köp den på www.discshop.se idag!.','');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := deleteEnd(Value, ' ');
+    SetField(fieldDescription, Value);
+  end;
+
+  // Reviews
+ if CanSetField(fieldComments) then
+  begin
+    Value3 := '';
+    Value3 := TextBetween(PageText, '<div class="ds_omdomme_cust">', 'Läs alla omdömen');
+    Value3 := StringReplace(Value3, #9, '');
+    Value3 := StringReplace(Value3, '         ', '');
+    Value3 := StringReplace(Value3, '<b>&nbsp;', 'Betyg: ');
+    Value3 := StringReplace(Value3, '</b></font>', '/5.0');
+    Value3 := StringReplace(Value3, TextBetween(Value3, 'HSPACE=6 BORDER=0>', '</A>'),'');
+    while Pos(' ', Value3) = 1 do
+      Value3 := Copy(Value, 2, Length(Value3));
+    while Pos('  ', Value3) > 0 do
+      Value3 := StringReplace(Value3, '  ', '');
+    while Pos(#13#10 + ' ', Value3) > 0 do
+      Value3 := StringReplace(Value3, #13#10 + ' ', ' ');
+    HTMLRemoveTags(Value3);
+    HTMLDecode(Value3);
+    Value3 := FullTrim(Value3);
+    SetField(fieldComments, Value3);
+  end;
+end;
+
+// ***** Imports lists like Genre, Country, etc. depending of the selected option *****
+
+function ImportList(PageText: string; MultipleValues: Integer; StartTag: string): string;
+var
+  Value: string;
+begin
+  Value := '';
+  Value := TextBetween(PageText, StartTag, '</p>');
+  //Value := TextBetween(Value, '<div class="item2">', '</div>');
+  Value := StringReplace(Value, #13#10,'');
+  Value := StringReplace(Value, #09,'');
+  Value := StringReplace(Value, '<br/>','<BR>');   // separator for categories
+  Value := StringReplace(Value, '</br>','<BR>');
+  Value := StringReplace(Value, ' / ','<BR>');   // separator for some countries
+  while Pos(' ', Value) = 1 do
+    Value := Copy(Value, 2, Length(Value));
+  while Pos('  ', Value) > 0 do
+    Value := StringReplace(Value, '  ', '');
+  case MultipleValues of
+  0: if Pos('<BR>',Value)>0 then Value := TextBefore(Value, '<BR>', '');
+  1: Value := StringReplace(Value, '<BR>', ', ');
+  2: Value := StringReplace(Value, '<BR>', ' / ');
+  3: Value := StringReplace(Value, '<BR>', #13#10);
+  end;
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  Value := deleteEnd(Value, ' ');
+  Value := deleteEnd(Value, ',');
+  Value := deleteEnd(Value, ' /');
+  Result := Value;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME UNE SOUS CHAINE D'UNE CHAINE SI TERMINE LA CHAINE (Merci ScorEpioN)
+//           (Delete a sub-string of a string if end the string)
+//                    Modify 02/06/2011 (loop "while-do")
+//------------------------------------------------------------------------------
+
+function deleteEnd(Value, EndValue : String) : String;
+begin
+  while copy(Value,length(Value)-length(EndValue)+1,length(Value)) = EndValue do
+        Value := copy(Value,1,length(Value)-length(EndValue));
+  result := Value;
+end;
+
+// ***** beginning of the program *****
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    case GetOption('FilmOrMusic') of
+      0 : SubSite := 'movies';
+      1 : SubSite := 'music';
+    end;
+    MovieName := '';
+
+    if GetOption('BatchMode') = 2 then
+    begin
+      MovieName := GetField(fieldURL);
+      if Pos('discshop.se', MovieName) = 0 then
+        MovieName := '';
+    end;
+
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+    if GetOption('BatchMode') = 0 then
+    begin
+      if not Input('Discshop.se import', 'Enter the title of the movie:', MovieName) then
+        Exit;
+    end
+    else
+      Sleep(500);
+    if MovieName <> '' then
+    begin
+      if Pos('discshop.se', MovieName) > 0 then
+        AnalyzeResultsPage(MovieName)
+      else
+      begin
+        MovieName := StringReplace(MovieName, '&', 'and');
+        AnalyzeResultsPage('http://www.discshop.se/advanced_search.php?title=' + UrlEncode(MovieName) + '&person_1=&condition_person=AND&person_2=&director=&year1=1900&year2=2011&country=&keyword_1=&condition_key=AND&keyword_2=&price_1=0&price_2=5000&subtitles=&soundsystem_1=&soundsystem_2=&media_type=&distributor=&origin=&package=&action=search&type=' + SubSite + '&view=1&page_size=200')
+      end;
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

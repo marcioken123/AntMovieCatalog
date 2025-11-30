@@ -1,0 +1,246 @@
+<html><head>
+<!--
+Créé par milyon
+Basé sur le template de Willspo
+-->
+<LINK REL="stylesheet" href="movies.css" TYPE="text/css">
+<script language="javaScript">
+var message="$$ITEM_FORMATTEDTITLE2"
+var neonbasecolor="gray"
+var neontextcolor="yellow"
+var flashspeed=100  //in milliseconds
+var n=0
+if (document.all){
+document.write('<font color="'+neonbasecolor+'">')
+for (m=0;m<message.length;m++)
+document.write('<span id="neonlight">'+message.charAt(m)+'</span>')
+document.write('</font>')
+var tempref=document.all.neonlight
+}
+else
+document.write(message)
+
+function neon(){
+
+if (n==0){
+for (m=0;m<message.length;m++)
+tempref[m].style.color=neonbasecolor
+}
+
+//cycle through and change individual letters to neon color
+tempref[n].style.color=neontextcolor
+
+if (n<tempref.length-1)
+n++
+else{
+n=0
+clearInterval(flashing)
+setTimeout("beginneon()",1500)
+return
+}
+}
+
+function beginneon(){
+if (document.all)
+flashing=setInterval("neon()",flashspeed)
+}
+beginneon()
+</script>
+</head><body class="moviecard">
+<style>
+   body {
+      background: #ADBBFF;
+      color: black;
+      font-family: Tahoma, Arial, Verdana;
+   }
+</style>
+<table class="lgt" cellspacing="0" cellpadding="5">
+<tr><td class="lgt">
+<table class="i" border="0" cellspacing="0" cellpadding="1" width="100%">
+<tr>
+   </div></td></tr>
+ 
+ 
+<tr>
+<img src=$$ITEM_PICTUREFILENAME width="220" height="220"> </img>
+<!--BEGIN FADING DYNAMIC CONTENT SCRIPT-->
+<script language="javascript">
+
+var qiksearch_js_text = new Array ("Réalisateur: $$ITEM_DIRECTOR", "Distribution: $$ITEM_ACTORS", "Année: $$ITEM_YEAR", "Genre: $$ITEM_CATEGORY");
+   // The Fading Contents, HTML Tags supported
+var qiksearch_space_width = 390; // The width of the content space
+var qiksearch_space_height = 50; // The height of the content space
+var qiksearch_space_borderw=3; // Border width
+var qiksearch_space_borderc="#FF9900"; // Border Color
+var timeOutVal=300; // Delay in milliseconds
+var isLoop=true; // If you want to loop continuosly then true, else false
+var isAutoStart=true; // If you want the Fading to start else you have to click to start
+var qiksearch_js_text_static='<a href="javascript:resetAll();writeDiv();" style="text-decoration:none" accesskey="l"><font color="#808080" face="verdana,arial,helvetica" size="-1"><b>C<u>l</u>ick to Start</b></font></a>'; // The default content if AutoStart false
+var ie4=document.all&&navigator.userAgent.indexOf("Opera")==-1;
+var ns6=document.getElementById&&navigator.userAgent.indexOf("Opera")==-1;
+var ns4=document.layers;
+var qiksearch_DyObj;
+var qiksearch_space_ns4_left=(screen.width/2-20)-Math.round(qiksearch_space_width/2);
+
+function setDyObj()
+{
+if(ie4)
+{
+  qiksearch_DyObj=document.all.qiksearch_js_space;
+}
+if(ns6)
+{
+  qiksearch_DyObj=document.getElementById("qiksearch_js_space");
+}
+}
+
+if(ie4||ns6)
+{
+document.write('<table width="' + qiksearch_space_width + '" height="' + qiksearch_space_height + '" style="background:#FFFFFF; border:' + qiksearch_space_borderw + 'px solid ' + qiksearch_space_borderc + '"><tr><td align="middle">');
+document.write('<div id="qiksearch_js_space">');
+document.write('</div>');
+document.write('</td></tr></table>');
+}
+
+var def_10='A',def_11='B',def_12='C',def_13='D',def_14='E',def_15='F';
+var colorVal=15;
+var div_count=0;
+
+function qiksearch_fade_desat(getColorIntVal)
+{
+var returnVal;
+if(getColorIntVal>=10)
+{
+  for(var i=0; i<=15; i++)
+  {
+   if((getColorIntVal==i))
+   {
+    returnVal = eval('def_' + i);
+   }
+  }
+}
+else
+{
+  returnVal=getColorIntVal;
+}
+return(returnVal);
+}
+
+function writeDiv()
+{
+if(ns4)
+{
+  qiksearch_DyObj=document.qiksearch_space_ns4;
+}
+if(ie4||ns6)
+{
+  qiksearch_DyObj.innerHTML= '<font face="verdana,arial,helvetica" size="-1" color="#' +  joinColor(qiksearch_fade_desat(colorVal)) + '"><b>' + qiksearch_js_text[div_count] + '</span></b></font>' ;
+}
+if(ns4)
+{
+  qiksearch_DyObj.document.write('<table width="100%" border="1" bordercolor="' + qiksearch_space_borderc + '"><tr><td align="center"><font face="verdana,arial,helvetica" size="-1" color="#' +  joinColor(qiksearch_fade_desat(colorVal)) + '"><b>' + qiksearch_js_text[div_count] + '</span></b></font></td></tr></table>');
+  qiksearch_DyObj.document.close();
+}
+
+if((colorVal>0)  && (colorVal!=0))
+{
+  colorVal--;
+}
+else
+{
+  colorVal=15;
+  if(div_count<qiksearch_js_text.length)
+  {
+   div_count++;
+  }
+
+  if(div_count==qiksearch_js_text.length)
+  {
+   if(isLoop)
+   {
+    setTimeout("resetAll()",timeOutVal);
+    setTimeout("writeDiv()",timeOutVal);
+   }
+   else
+   {
+    if(ie4||ns6)
+    {
+     qiksearch_DyObj.innerHTML = qiksearch_js_text_static;
+    }
+    if(ns4)
+    {
+     qiksearch_DyObj.document.write('<table width="100%" border="1" bordercolor="' + qiksearch_space_borderc + '"><tr><td align="center">' + qiksearch_js_text_static + '</td></tr></table>');
+     qiksearch_DyObj.document.close();
+    }
+   }
+  }
+
+}
+
+if(div_count<qiksearch_js_text.length)
+{
+  setTimeout("writeDiv()",timeOutVal);
+}
+}
+
+function joinColor(getColor)
+{
+return (getColor + '0' + getColor + '0' + getColor + '0');
+}
+
+function resetAll()
+{
+div_count=0;
+colorVal=15;
+}
+
+setDyObj();
+
+function start_fader()
+{
+if(isAutoStart)
+{
+  writeDiv();
+}
+else
+{
+  if(ie4||ns6)
+  {
+   qiksearch_DyObj.innerHTML = qiksearch_js_text_static;
+  }
+  if(ns4)
+  {
+   qiksearch_DyObj=document.qiksearch_space_ns4;
+   qiksearch_DyObj.document.write('<table width="100%" border="1" bordercolor="' + qiksearch_space_borderc + '"><tr><td align="center">' + qiksearch_js_text_static + '</td></tr></table>');
+   qiksearch_DyObj.document.close();
+  }
+}
+}
+
+window.onload=start_fader;
+
+if(ns4)
+{
+document.write('<layer bgcolor="#FFFFFF" id="qiksearch_space_ns4" width="' + qiksearch_space_width + '" left="' + qiksearch_space_ns4_left + '"></layer>');
+}
+
+</script>
+<!--END FADING DYNAMIC CONTENT SCRIPT-->
+
+  </tr>
+</table><hr class="blk">
+<table class="i" border="0" cellspacing="0" cellpadding="1">
+<tr>
+  <td class="igr" width="120">Description:</td>
+  <td class="iwh">$$ITEM_DESCRIPTION</td></tr>
+  <td class="igr">Durée:</td>
+  <td class="iwh">$$ITEM_LENGTH mns</td></tr>
+  <td class="igr">Preté à:</td>
+  <td class="iwh">$$ITEM_BORROWER </td></tr>
+   </table>
+</tr></td></table>
+<FORM>
+<INPUT TYPE="button" value= " Fermer " onClick="self.close()">
+</FORM>
+
+</body></html>

@@ -1,0 +1,411 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=gilistico
+Title=VenAlCine (ES)
+Description= Movie (Posters) importation script for venalcine (Spain)
+Site=http://www.venalcine.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments= First version
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program venalcine;
+
+var
+ 
+   MovieName: string;
+
+//------------------------------------------------------------------------------------
+
+function DeleteTags(var S: string): string;
+var
+   n,len, tag, space: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   space := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      if (c= #13) OR (c=#10) OR (c= #32) OR (c=#9) then
+      begin
+         if space = 1 then
+            continue;
+         c     := #32;
+         space := 1;
+      end
+      else
+      begin
+         space := 0;
+      end;
+
+         
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+
+function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+
+
+
+//------------------------------------------------------------------------------------
+
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+
+
+
+//------------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+   Page: TStringList;
+   LineNr, Count: Integer;
+   Line, Line2: string;
+   Title, DirURL: string;
+   Pagina: Integer;
+
+begin
+
+   Pagina :=1;
+   Count := 0;
+     Page  := TStringList.Create;
+   PickTreeClear;
+
+   while TRUE do
+   begin
+        Page.Text := GetPage(Address);
+
+      LineNr := FindLine('No hay resultados para la busqueda', Page, 0);
+      if LineNr <> -1 then
+      begin
+         if Count > 0 then
+            break;
+
+         ShowMessage('No hay resultados para su búsqueda.');
+           Page.Free;
+         exit;   
+      end;
+
+      While TRUE do
+      begin
+
+           
+          LineNr := FindLine('·', Page, LineNR+1);
+         if LineNR = -1 then
+            breaK;
+
+           Line    := Page.GetString(LineNr);
+         Line2   := Line;
+         DirURL := 'http://www.venalcine.com/' + TextBetween (Line, '<a href=', '>');
+         Title  := TextBetween (Line2,'<span class=descripcion>', '</span>');
+
+         if (DirURL ='') OR (Title = '') then
+            continue;
+
+         DeleteTags(Title);
+           HTMLDecode(Title);
+
+              PickTreeAdd(Title, DirURL);
+         Count := Count +1;
+
+      end;
+
+      Pagina := Pagina + 1;
+
+       LineNr := FindLine('<span class=letras2>'+IntToStr(pagina)+'</span>', Page, 0);
+      if LineNR = -1 then
+         break;
+
+      Address := 'http://www.venalcine.com/' + 'buscador.php?palabra='+MovieName + '&pagina=' + IntToStr(Pagina) +'&tipobusqueda=titulo';
+
+   end;
+
+   if Count = 0 then
+   begin
+      ShowMessage('No se han encontrado registros');
+        Page.Free;
+      exit;   
+   end;   
+     
+      if PickTreeExec(Address) then
+            AnalyzeMovie(Address);
+
+   Page.Free;
+
+end;
+
+function  GetLine(Page: TStringList; TextoBusqueda1: string;  TextoBusqueda2: string;   flag:   Integer): string;
+var
+
+     Item:     string;
+     Line:     string;
+   LineNr:   Integer;
+begin
+   
+   LineNr := FindLine(TextoBusqueda1, Page, 0);
+   if LineNr = -1 then
+   begin
+      result := '';
+   end
+   else
+   begin
+      Line :=  Page.GetString(LineNr);
+      while TRUE do
+      begin
+         LineNr := LineNr + 1;
+         Line := Line + Page.GetString(LineNr);
+           if pos(TextoBusqueda2, Line)> 0 then
+            break;
+      end;
+      Item := TextBetween (Line, TextoBusqueda1,  TextoBusqueda2);
+      Item := DeleteTags(Item);
+      HTMLDecode(Item);
+      if flag = 1 then
+         Item := StringReplace(Item, '.', '');
+      result := Item;
+   end;
+end;
+
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMovie(Address: string);
+var
+     Page:      TStringList;
+     LineNr:    Integer;
+     Line:      string;
+     Item:      string;
+   Count:       Integer;
+     Cartel:    string;
+     Direccion: string;
+   Flag:      Integer;
+   Comments:  String;
+begin
+
+     SetField(fieldURL, Address);
+ 
+     Page      := TStringList.Create;
+     Page.Text := GetPage(Address);
+   Comments  := '';
+   
+    // Titulo español
+   Line := GetLine(Page, 'class=pelicula', '</span>', 0);
+   Item := TextBetween (Line, '>', '(');
+   If Item <> '' then
+   begin
+        SetField(fieldTranslatedTitle, Trim (Item));
+        SetField(fieldOriginalTitle,Trim (Item));
+   end;
+
+   // Titulo original
+   Line := GetLine(Page, 'TÍTULO ORIGINAL', '<br>', 0);
+   Item := TextBetween (Line, ':', '(');
+   if Item <> '' then
+        SetField(fieldOriginalTitle,Trim (Item));
+
+   // Dirección
+   Item := GetLine(Page, 'DIRECTOR:', '<br>', 1);
+      if Item <>'' then
+      SetField(fieldDirector, Trim (Item));
+
+
+   // Año
+   Line := GetLine(Page, 'class=pelicula', '</span>', 0);
+   Item := TextBetween (Line, '(', ')');
+   if Item <>'' then
+      SetField(fieldYear, Trim (Item));
+
+   // Interpretación
+   Item := GetLine(Page, 'REPARTO:', '<br>', 0);
+   if Item <>'' then
+      SetField(fieldActors, Trim (Item));
+
+   // Productora
+   Item := GetLine(Page, 'PRODUCTORA:', '<br>', 1);
+      if Item <>'' then
+          SetField(fieldProducer, Trim (Item));
+
+   // Productora
+   Item := GetLine(Page, 'GÉNERO:', '<br>', 1);
+      if Item <>'' then
+          SetField(fieldCategory, Trim (Item));
+
+   // Sinopsis
+   Item := GetLine(Page, 'SINOPSIS:', '</td>', 0);
+   if Item <>'' then
+      SetField(fieldDescription, Trim (Item));
+
+   // Estreno 1
+     LineNr := FindLine('FECHA DE ESTRENO', Page, 0);
+     if LineNr <> -1 then
+     begin
+        Line := Page.GetString(LineNr);
+      Item := TextBetween (Line, '<span class=titulo>', '<br>');
+      Item := DeleteTags(Item);
+      HTMLDecode(Item);
+      if Item <>'' then
+         Comments := Comments + Item + #13#10;
+   end;
+
+   // Estreno 2
+     LineNr := FindLine('FECHA DE ESTRENO', Page, LineNR+1);
+     if LineNr <> -1 then
+     begin
+        Line := Page.GetString(LineNr);
+      Item := TextBetween (Line, '<span class=titulo>', '<br>');
+      Item := DeleteTags(Item);
+      HTMLDecode(Item);
+      if Item <>'' then
+         Comments := Comments +  Item + #13#10;
+   end;
+
+   // Pagina web
+   Item := GetLine(Page, 'WEB OFICIAL:', '<br>', 0);
+   if Item <>'' then
+      Comments := Comments + 'Web oficial: ' + Item + #13#10;
+
+     HTMLDecode(Comments);
+     SetField(fieldComments, Comments);
+
+   // Pagina de sinopsis
+   Item := GetLine(Page, 'href=sinopsis', '>', 0);
+   if Item <>'' then
+   begin
+      Address := 'http://www.venalcine.com/sinopsis' + Item;
+        Page.Text := GetPage(UrlEncode(Address));
+      Item := GetLine(Page, 'class=descripcion3>', '</td>', 0);
+      if Item <>'' then
+         SetField(fieldDescription, Trim (Item));
+   end;
+
+
+
+   // Pagina de carteles
+   Item := GetLine(Page, 'href=carteles', '>', 0);
+   if Item <>'' then
+   begin
+      Address := 'http://www.venalcine.com/carteles' + Item;
+        Page.Text := GetPage(UrlEncode(Address));
+
+      PickTreeClear;
+      Count := 0;
+      LineNr := 0;
+
+      While TRUE do
+      begin
+         LineNr := FindLine('href=''vercartel.php', Page, LineNr+1);
+         if LineNr = -1 then
+            break;
+
+         Line    := Page.GetString(LineNr);
+
+         Direccion := 'http://carteles.venalcine.com/cartel/' + TextBetween (Line, 'vercartel.php?cartel=', '&pelicula') +'.jpg';
+
+         Count := Count + 1;
+
+         Cartel  := 'Cartel ' + IntToStr(Count);
+
+              PickTreeAdd(Cartel, Direccion);
+      end;
+
+      If Count > 1 then
+            PickTreeExec(Direccion);
+
+      If Count > 0 then
+         GetPicture(Direccion );
+
+   end;
+
+   Page.Free;
+
+end;
+
+
+//------------------------------------------------------------------------------------
+
+begin
+
+   if (CheckVersion(3,5,0)=FALSe) then      
+      begin
+             ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+         exit;
+      end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+
+   if MovieName = '' then
+         MovieName := GetField(fieldOriginalTitle);
+
+       Input('venalcine', 'Titulo de la pelicula:', MovieName);
+
+        AnalyzePage(UrlEncode('http://www.venalcine.com/buscador.php?&tipobusqueda=titulo&palabra=' + MovieName));
+
+end.

@@ -1,0 +1,207 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ilya & LA
+Title=Friends-Forum.com
+Description=Movie importation script for Imports movies info (RU) with picture from Friends-Forum.com
+Site=www.friends-forum.com
+Language=RU
+Version=1.3 (01-Apr-2008)
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+// ver 1.2 - modified by LA
+// ver 1.3 - fixed by bad4u
+// format of pages has been updated; text has been changed
+
+program FriendsForum;
+const
+  BaseAddress = 'http://www.friends-forum.com/';
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);                  //Поиск фильмов и формирование списка
+var
+  ID, FilmName, Line: String;
+  Page: TStringList;
+  FilmPage: TStringList;
+  BeginPos, EndPos, Lines: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  BeginPos := FindLine('<TH  bgcolor="#738FBF"><font class=A_white>О Фильме</font></TH></tr>', Page,0);
+  EndPos := FindLine('<table border=0><tr><td></td></tr></table><br>', Page,0);
+  if  BeginPos> 0 then
+    begin
+      Line:='';
+      for Lines := BeginPos+1 to EndPos do            //Получение строк с названиями и адресами
+        Line:=Line+Page.GetString(Lines);
+      PickTreeClear;                                  //Очистка дерева фильмов
+      PickTreeAdd('Поиск по слову: ' + MovieName, '');
+      repeat
+      BeginPos := Pos(' align=center><A HREF="',Line);
+      If BeginPos>0 Then
+      Begin
+        Delete(Line,1,BeginPos);                      //Удаление начала
+        BeginPos:=23;
+        EndPos := Pos('"><center><b>',Line);
+        ID := copy(Line, BeginPos, EndPos - BeginPos); //Получить адрес страницы фильма
+        BeginPos := Pos('"><center><b>',Line)+12;
+        Delete(Line,1,BeginPos);
+        BeginPos := 1;
+        EndPos := Pos('</b></A><br>',Line)-1;
+        FilmName := Copy(Line, BeginPos, EndPos);       //Получить название фильма
+        FilmName := StringReplace(FilmName,'&nbsp;',' ');
+        PickTreeAdd(FilmName, BaseAddress + ID);
+      end;
+      until BeginPos < 1;
+    end;
+  If  PickTreeExec(Address) Then
+      AnalyzeMoviePage(Address);
+end;
+
+procedure AnalyzeMoviePage(Address: String);        //Получение информации о выбраном фильме
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  SetField(fieldURL,Address);                         //Получение URL
+
+
+  BeginPos := FindLine('> &raquo; Информация о фильме', Page,0);
+  EndPos := FindLine('Рейтинг пользователей</a>:</B>', Page,0);
+
+   Line:='';
+      for LineNr := BeginPos to EndPos do             //Получить строки с информацией
+        Line:=Line+Page.GetString(LineNr);
+
+    Value := '';                                               //импорт картинки
+    BeginPos := Pos('<IMG SRC="',Line)+10;
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := pos('" ALT', Line);
+    if EndPos = 0 then
+      EndPos := pos('"  ALT=', Line);
+    if copy(Line, BeginPos, 1) = '/' then
+         Value := 'http://www.friends-forum.com/';
+    Value := Value + copy(Line, BeginPos, EndPos - BeginPos);
+    GetPicture(Value);
+
+    BeginPos := Pos('<B>Название:</B>',Line)+16;               //переведенное название
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldTranslatedTitle,Value);
+
+    BeginPos := pos('Оригинальное название', Line)+26;          //оригинальное название
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldOriginalTitle, Value);
+
+    BeginPos := pos('выхода', Line)+10;                          //год
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := BeginPos+5;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldYear, Value);
+
+    BeginPos := pos('Жанр', Line)+9;                             //жанр
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldCategory, Value);
+
+    BeginPos := pos('Режиссер', Line)+13;                         //режиссер
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldDirector, Value);
+
+    BeginPos := pos('ролях', Line)+10;                             //в ролях
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldActors, Value);
+
+    BeginPos := pos('фильме', Line)+11;                             //О фильме
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldDescription,Value);
+
+    BeginPos := pos('Выпущено', Line)+13;                            //студия (продюсер)
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldProducer, Value);
+
+    BeginPos := pos('Язык', Line)+9;                                  //язык
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('     </TD></TR>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLanguages, Value);
+
+    BeginPos := pos('Примечания', Line)+15;                            //коментарии
+    Delete(Line,1,BeginPos);
+    BeginPos :=1;
+    EndPos := Pos('</td></tr>',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldComments, Value);
+
+    BeginPos := Pos('Рейтинг пользователей</a>:</B>',Line)+31;       //рейтинг (качество)
+    EndPos := Pos(' / 10 (',Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Value := Trim(Left(StringReplace(Value, '.', '   '),2));
+    Value := IntToStr(StrToInt(Value,0));
+    SetField(fieldRating,Value);
+
+//DisplayResults;
+end;
+
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Поиск на Friends-Forum.com', 'Введите название фильма:', MovieName) then
+      AnalyzePage('http://www.friends-forum.com/modules.php?name=Movie_News&file=index&orderfield=&direct=&pagenum=&searchterm='+UrlEncode(MovieName)+'&category=%C2%F1%E5&vlang=&let=&rezhiser=&artist=&format=%C2%F1%E5&kachestvo=%C2%F1%E5&storynum=100');
+end.

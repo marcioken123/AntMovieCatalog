@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="Windows-1252" standalone="no"?>
+<AntMovieCatalog Format="42" Version="4.2.3 (2023-05-19)" Date="30/11/2025 16:47:30">
+  <Settings>
+    <DataFolders Toolbars="" Languages="" Templates="" Scripts="" Catalogs=""/>
+    <Main WindowWidth="750" WindowHeight="550" WindowLeft="20" WindowTop="20" WindowState="2" Statusbar="-1" ListWidth="200" GridMode="0" ListAlClient="0" DisplayHTML="0" DisplayThumbnails="0" ThumbnailsSize="6" ThumbnailsDisplayTitle="-1" ExtrasThumbsSize="5" ExtrasThumbsDisplayTitle="0" ExtrasThumbsDisplayInfo="0" MovieInfosTabIndex="0" MovieInfosBothWidth="533" MovieInfosHideMediaFields="0" MovieInfosHideVideoFields="0" PicDockedHeight="180" ExtrasDockedWidth="200" FindWholeField="0" FindReverse="0" FindFieldName="All" SortFieldName="Number" GroupFieldName="*None*" GroupsFormatOption="0" GroupsFormatRoundType="1" ExtrasSortFieldName="ENumber" ExtrasGroupFieldName="*None*" ColumnSettings="i0:w40:vf,i1:w156:vf,i2:w120:vt,i3:w120:vt,i4:w120:vt,i5:w120:vt,i6:w120:vt,i7:w120:vt,i8:w120:vt,i9:w120:vt,i10:w120:vt,i11:w120:vt,i12:w120:vt,i13:w120:vt,i14:w120:vt,i15:w120:vt,i16:w120:vt,i17:w120:vt,i18:w120:vt,i19:w120:vt,i20:w120:vt,i21:w120:vt,i22:w120:vt,i23:w120:vt,i24:w120:vt,i25:w120:vt,i26:w120:vt,i27:w120:vt,i28:w120:vt,i29:w120:vt,i30:w120:vt,i31:w120:vt,i32:w120:vt,i33:w120:vt,i34:w120:vt,i35:w120:vt,i36:w120:vt,i37:w120:vt,i38:w120:vt,i39:w120:vt,i40:w120:vt,i41:w120:vt," PictureWinLeft="100" PictureWinTop="100">
+      <MRU>
+        <File Name="D:\Projetos\Corporativos\AntMovieCatalog\bin\teste.amc"/>
+        <File Name="D:\Projetos\Corporativos\AntMovieCatalog\bin\Catalogs\Sample_4.2.0.amc"/>
+        <File Name="D:\Projetos\Corporativos\AntMovieCatalog\bin\amc_full\Catalogs\Sample_4.2.0.amc"/>
+        <File Name="D:\Projetos\Corporativos\AntMovieCatalog\bin\teste.amc"/>
+      </MRU>
+      <SortAdvanced>
+        <Fields/>
+      </SortAdvanced>
+      <ExtrasSortAdvanced>
+        <Fields/>
+      </ExtrasSortAdvanced>
+      <MoviePaste>
+        <DeselectedFields>
+          <Field Name="Number"/>
+        </DeselectedFields>
+      </MoviePaste>
+      <Toolbars>
+        <ToolbarExtras Rev="2000" Visible="1" DockedTo="DockExtrasTop" LastDock="DockExtrasTop" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" FloatRightX="0"/>
+        <ToolbarPictureWindow Rev="2000" Visible="1" DockedTo="DockBottomList" LastDock="DockBottomList" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" ClientWidth="182" ClientHeight="176"/>
+        <ToolbarPicture Rev="2000" Visible="1" DockedTo="DockImageLeft" LastDock="DockImageLeft" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" FloatRightX="0"/>
+        <ToolbarMain Rev="2000" Visible="1" DockedTo="DockMainTop" LastDock="DockMainTop" DockRow="0" DockPos="184" FloatLeft="0" FloatTop="0" FloatRightX="0">
+          <Button Name="TBItemFileNew" Visible="-1"/>
+          <Button Name="TBItemFileOpen" Visible="0"/>
+          <Button Name="TBItemFileOpenMRU" Visible="-1"/>
+          <Button Name="TBItemFileSave" Visible="-1"/>
+          <Button Name="TBItemFileSaveAs" Visible="0"/>
+          <Button Name="TBItemFilePrint" Visible="-1"/>
+          <Button Name="TBItemFileImport" Visible="0"/>
+          <Button Name="TBItemFileExport" Visible="-1"/>
+          <Button Name="TBItemFileProperties" Visible="0"/>
+          <Button Name="TBSeparatorFile" Visible="-1"/>
+          <Button Name="TBItemMovieAdd" Visible="-1"/>
+          <Button Name="TBItemMovieNumber" Visible="0"/>
+          <Button Name="TBItemMovieDelete" Visible="-1"/>
+          <Button Name="TBItemMovieFind" Visible="-1"/>
+          <Button Name="TBItemRandom" Visible="-1"/>
+          <Button Name="TBItemMoviePicture" Visible="-1"/>
+          <Button Name="TBItemMoviePictureMenu" Visible="0"/>
+          <Button Name="TBItemMovieExtras" Visible="-1"/>
+          <Button Name="TBItemMovieUrl" Visible="0"/>
+          <Button Name="TBItemMovieFilePath" Visible="0"/>
+          <Button Name="TBSeparatorMovie" Visible="-1"/>
+          <Button Name="TBItemMovieCopy" Visible="-1"/>
+          <Button Name="TBItemMoviePaste" Visible="-1"/>
+          <Button Name="TBItemMovieUndo" Visible="0"/>
+          <Button Name="TBSeparatorMovieEdit" Visible="-1"/>
+          <Button Name="TBItemGetInfo" Visible="-1"/>
+          <Button Name="TBItemGetInfoFiles" Visible="0"/>
+          <Button Name="TBItemGetInfoScript" Visible="0"/>
+          <Button Name="TBItemSearch" Visible="0"/>
+          <Button Name="TBSeparatorGet" Visible="-1"/>
+          <Button Name="TBItemSort" Visible="-1"/>
+          <Button Name="TBItemGroup" Visible="-1"/>
+          <Button Name="TBItemGroupsFormat" Visible="0"/>
+          <Button Name="TBItemStretchList" Visible="-1"/>
+          <Button Name="TBItemGridFields" Visible="-1"/>
+          <Button Name="TBItemDisplayThumbnails" Visible="-1"/>
+          <Button Name="TBItemSelHTML" Visible="-1"/>
+          <Button Name="TBSeparatorDisplay" Visible="-1"/>
+          <Button Name="TBItemFieldsManager" Visible="-1"/>
+          <Button Name="TBItemPicManager" Visible="0"/>
+          <Button Name="TBItemScripting" Visible="0"/>
+          <Button Name="TBItemRenumber" Visible="0"/>
+          <Button Name="TBItemLoans" Visible="-1"/>
+          <Button Name="TBItemStats" Visible="-1"/>
+          <Button Name="TBItemHTMLEdit" Visible="0"/>
+          <Button Name="TBItemPreferences" Visible="-1"/>
+          <Button Name="TBItemLanguage" Visible="0"/>
+          <Button Name="TBSeparatorMisc" Visible="-1"/>
+          <Button Name="TBItemHelp" Visible="-1"/>
+          <Button Name="TBItemAbout" Visible="0"/>
+          <Button Name="TBSeparatorHelp" Visible="0"/>
+          <Button Name="TBItemExit" Visible="0"/>
+        </ToolbarMain>
+        <ToolbarMenu Rev="2000" Visible="1" DockedTo="DockMainTop" LastDock="DockMainTop" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" FloatRightX="0"/>
+        <ToolbarFind Rev="2000" Visible="0" DockedTo="+" LastDock="DockMainBottom" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" ClientWidth="751" ClientHeight="53"/>
+        <ToolbarExtrasWindow Rev="2000" Visible="1" DockedTo="DockRightExtras" LastDock="DockRightExtras" DockRow="0" DockPos="0" FloatLeft="0" FloatTop="0" ClientWidth="196" ClientHeight="627"/>
+      </Toolbars>
+    </Main>
+    <Export WindowWidth="780" WindowHeight="520" WindowState="1" Includemov="0" Prefix="2" Separator1="_" MovieFieldName="Number" MovieNumberAddZeroes="0" Separator2="_" ExtraFieldName="ENumber" ExtraNumberAddZeroes="0">
+      <Pictures>
+        <PictureNaming Prefix="2" Separator1="_" MovieFieldName="Number" MovieNumberAddZeroes="0" Separator2="_" ExtraFieldName="ENumber" ExtraNumberAddZeroes="0"/>
+      </Pictures>
+      <HTML ExportBoth="-1" LastTemplate="D:\Projetos\Corporativos\AntMovieCatalog\bin\Templates\template.html" LastTemplate2="">
+        <MRU/>
+      </HTML>
+      <CSV Delimiter=";" DelimExtras="&lt;+&gt;" Bloc="&quot;" Linebreaks="" ColumnTitles="-1">
+        <Fields/>
+      </CSV>
+      <SQL SQLUpdate="0" SQLDrop="-1" SQLCreate="-1" SQLTableName="movies" SQLTableNameExtras="extras" SQLLinebreaks="\n">
+        <Fields/>
+      </SQL>
+      <Sort Order="0" Descend="0">
+        <Fields/>
+      </Sort>
+    </Export>
+    <Import WindowWidth="780" WindowHeight="520" WindowState="1" AllowDup="0" AllowClear="0" AutoAssign="-1" PicImport="0" ExtraPicImport="3">
+      <CSV Delim=";" DelimExtras="&lt;+&gt;" Quote="&quot;" FirstLineHeaders="-1" Linebreaks="" KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </CSV>
+      <AMC KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </AMC>
+      <Query From="" Where="" KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </Query>
+      <DVP KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </DVP>
+      <GCS KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </GCS>
+      <Dir MultiDisks="-1" DiskTag="(cd)[0-9]{1,3}" BrowseDepth="*" ExtractProcess="0" KeyField="" AutoLoadFields="0" AutoResizeColumns="0">
+        <Fields/>
+      </Dir>
+      <LastFiles/>
+    </Import>
+    <Print WindowWidth="750" WindowHeight="480" WindowState="1" Includemov="0" ReportsListWidth="175">
+      <Sort Order="0" Descend="0">
+        <Fields/>
+      </Sort>
+    </Print>
+    <Scripts WindowWidth="580" WindowHeight="430" WindowState="1" ScriptRemember1="" ScriptRemember2="" Includemov="0" LangFilterExcl="" ListViewStyle="2" ShowResGetInfo="-1" ShowResScripting="0" CloseWinGetInfo="-1" CloseWinScripting="0" AllowClearGetInfo="0" AllowClearScripting="-1">
+      <MRU/>
+      <Properties WindowWidth="500" WindowHeight="450"/>
+      <Results WindowState="1" WindowWidth="690" WindowHeight="550"/>
+      <ExtrasResults WindowState="1" WindowWidth="690" WindowHeight="450"/>
+      <PickList WindowWidth="500" WindowHeight="440"/>
+      <PickTree WindowWidth="450" WindowHeight="440"/>
+      <Toolbars/>
+    </Scripts>
+    <Loan WindowWidth="650" WindowHeight="550" WindowState="1" MoviesHeight="175" MoviesColWidth="216" MoviesSort="0" NamesWidth="210" NamesSort="0" LentSort="0" IncludeSameNum="0" IncludeSameLabel="0"/>
+    <Properties WindowWidth="400" WindowHeight="350"/>
+    <Statistics WindowWidth="750" WindowHeight="550" WindowState="1" EmptyMonths="-1" Legend="-1" Labels="0" GroupValues="-1" Includemov="0"/>
+    <Renumber SortOrder="0" SortDescend="0">
+      <Fields/>
+    </Renumber>
+    <RenumberExtras SortOrder="0" SortDescend="0">
+      <Fields/>
+    </RenumberExtras>
+    <Options WindowWidth="650" WindowHeight="550" WindowState="1">
+      <Display ImagesInMenu="-1" OfficeXP="0" IconSet="Windows XP" ColorType="0" Logo="-1" SoftBorders="0" NaturalCompare="-1" ScrollUnderPointer="-1" AutoFocus="0" ForceRefresh="-1"/>
+      <Files Backup="-1" RecentFiles="5">
+        <AutoLoad Enabled="-1" File="D:\Projetos\Corporativos\AntMovieCatalog\bin\teste.amc" Last="0"/>
+        <AutoLoadCF Enabled="0" File=""/>
+        <History Enabled="-1" File="Loans history.csv"/>
+        <HTMLTemplate File="HTMLDefaultTemplate.html"/>
+      </Files>
+      <MovieList ConfirmDelete="-1" ConfirmUndo="-1" Checkboxes="-1" CheckboxesInThumbs="-1" CheckboxesColor="-1" LinesColor="0" HotTrack="0" EnhancedScrollbars="0" MovieNumColumn="-1" GridTextSize="32" AutoStretchListGrid="-1" AutoStretchListThumbs="0" ShortcutPrev="16417" ShortcutNext="16418" GroupCount="-1" GroupExpand="0" GroupsAbove="0" GroupUnique="0" GroupMulti="-1" GroupMultiSep="," GroupMultiRmAllP="0" GroupMultiAddPatch="-1" SortGroupsByCount="0" ColorTag0="#FFFFFF" ColorTag1="#ED1C24" ColorTag2="#FF7F27" ColorTag3="#FFF200" ColorTag4="#B5E61D" ColorTag5="#22B14C" ColorTag6="#1CEEEE" ColorTag7="#40B0FF" ColorTag8="#A080FF" ColorTag9="#FF60E0" ColorTag10="#D00EE0" ColorTag11="#B98657" ColorTag12="#999999">
+        <TitleDisplay TitleColumn="2" TitleTemplate="">
+          <Prefixes Use="0"/>
+        </TitleDisplay>
+      </MovieList>
+      <ExtraList ConfirmDelete="-1" Checkboxes="-1" NumWithTitle="0" InfoWhenNoPic="0" CellBorders="0" GroupCount="-1" GroupExpand="-1" GroupsAbove="0" GroupMulti="-1" GroupMultiSep="," GroupMultiRmAllP="0" SortGroupsByCount="0" ActionDoubleClick="1" ActionKeyReturn="1"/>
+      <MovieInfo AskNumber="0" FirstAvailable="0" AddScript="0" AddFiles="0" RatingTrunc="0" SetCurrentDate="-1">
+        <Picture Background="536870912" FitWindow="-1" PictureInfo="0"/>
+        <MovieFrame Background="536870912"/>
+        <HTMLDisplay SearchFontTextColor="#000000" SearchBackTextColor="#FFFF00" NoMoviePage="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body bgcolor=&quot;#F0F0F0&quot;&gt;&lt;/body&gt;&lt;/html&gt;"/>
+        <DefaultMovie WindowWidth="558" WindowHeight="549">
+          <Values Number="0" Checked="True" ColorTag="0"/>
+        </DefaultMovie>
+        <DefaultExtra WindowWidth="432" WindowHeight="341">
+          <Values EChecked="True"/>
+        </DefaultExtra>
+        <ImportInfo AllowClear="0" MediaLabel="0" FileName="0" FileInFilePath="-1" FileInURL="0" Size="-1" SizeString="-1" SizeUnit="2" Picture="0" InternalAVI="0" Length="-1" Resolution="-1" Framerate="-1" VideoCodec="-1" VideoBitrate="-1" AudioCodec="-1" AudioChannels="0" AudioBitrate="-1" Languages="-1" Subtitles="-1"/>
+        <FilterFileName/>
+        <PicImport GetInfoMethod="-1" ScriptingMethod="1" PicConvertJPG="0" MaxPicSizeW="-1" MaxPicSizeH="-1"/>
+        <ExtraPicImport GetInfoMethod="-5" ScriptingMethod="5" PicConvertJPG="0" MaxPicSizeW="-1" MaxPicSizeH="-1"/>
+        <PictureNaming Prefix="1" Separator1="_" MovieFieldName="Number" MovieNumberAddZeroes="0" Separator2="_" ExtraFieldName="ENumber" ExtraNumberAddZeroes="0"/>
+        <Search/>
+        <Lists SameForAll="0">
+          <Media AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Sources AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Borrowers AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Country AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Category AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Video AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Audio AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Framerate AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Languages AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Subtitles AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <Certification AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <ETag AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <ECategory AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+          <ECreatedBy AutoAdd="0" Sorted="-1" AutoComplete="0" UseCatalogValues="-1"/>
+        </Lists>
+        <PosterNames>
+          <Poster Name="Poster"/>
+          <Poster Name="Picture"/>
+          <Poster Name="Cover"/>
+          <Poster Name="Folder"/>
+          <Poster Name="Movie"/>
+          <Poster Name="Film"/>
+        </PosterNames>
+      </MovieInfo>
+      <Scripting Autorun="0">
+        <Proxy Use="0" Server="" Port="8080" Username="" Password="" KeepConnection="0" HTTP10="0"/>
+      </Scripting>
+      <Export LoadTemplate="-1" LineBreak="&lt;br /&gt;" ForcePicSizeW="-1" ForcePicSizeH="-1" ForceExtraPicSizeW="-1" ForceExtraPicSizeH="-1" SQLDate="yyyy&apos;-&apos;mm&apos;-&apos;dd" RememberLastFile="0" LastFile="" OpenExportedFile="0" ExpFileExt="" CopyPictures="-1" CopyPicturesInPicDir="0" CopyPicturesNew="0" CopyPicturesIncExtras="0" PicturesExportMethodAMC="0" PicturesExportMethodXML="0" ExtraPicturesExportMethodAMC="0" ExtraPicturesExportMethodXML="0" PicturesSaveXMLInPicDir="0">
+        <ExpFileNaming Prefix="2" Separator1="_" MovieFieldName="Number" MovieNumberAddZeroes="0" Separator2="_" ExtraFieldName="ENumber" ExtraNumberAddZeroes="0"/>
+      </Export>
+      <Folders SameForAll="0">
+        <Catalogs Type="1" Path="D:\Projetos\Corporativos\AntMovieCatalog\bin\"/>
+        <Picture Type="1" Path=""/>
+        <Export Type="1" Path=""/>
+        <Templates Type="1" Path="D:\Projetos\Corporativos\AntMovieCatalog\bin\Templates\"/>
+        <Import Type="1" Path=""/>
+        <GetFromFiles Type="1" Path=""/>
+        <Graphic Type="1" Path=""/>
+        <Scripts Type="1" Path=""/>
+        <CustomFields Type="1" Path=""/>
+        <StringFilter Type="1" Path=""/>
+      </Folders>
+      <Language File=""/>
+    </Options>
+    <CustomFieldsManager WindowWidth="450" WindowHeight="350" WindowState="1"/>
+    <StringFilter WindowWidth="700" WindowHeight="500" WindowState="1"/>
+    <HTMLEditor WindowWidth="772" WindowHeight="510" WindowState="1" LastTemplate="D:\Projetos\Corporativos\AntMovieCatalog\bin\Templates\HTMLDefaultTemplate.html">
+      <MRU>
+        <File Name="D:\Projetos\Corporativos\AntMovieCatalog\bin\Templates\HTMLDefaultTemplate.html"/>
+      </MRU>
+    </HTMLEditor>
+    <ExtrasEdit WindowWidth="650" WindowHeight="340" WindowState="1"/>
+  </Settings>
+</AntMovieCatalog>

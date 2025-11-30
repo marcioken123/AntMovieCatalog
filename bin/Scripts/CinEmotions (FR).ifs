@@ -1,0 +1,921 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Draco31.fr, bbullot, The Jedi, bad4u, raoul_volfoni
+Title=CinEmotions
+Description=Recherche CinEmotions / Données CinEmotions
+Site=http://www.cinemotions.com/
+Language=FR
+Version=1.3.3 du 15/10/2017
+Requires=4.2.1
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Lancement automatique sur l'adresse web
+Format du Titre=3|3|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule|4=Formatage identique au site d'origine
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Titre original=0|0|0=Aucun (si non renseigné sur le site)|1=Forcé (Prends le titre traduit si pas de titre original sur le site)
+Affiche=1|0|0=Prend la petite affiche|1=Prend la grande affiche
+Liste des Acteurs=1|0|0=Courte|1=Longue
+Note=2|2|0=Note de CinEmotions|1=Note des membres|2=Note moyenne
+Classification=1|0|0=Non|1=Oui (Dans champ dédié si AMC 4.2.0 sinon champ Commentaires)
+Liste des notes=1|0|0=Pas de détail des notes|1=Liste des notes (CinEmotions, Membres) dans le champ commentaire
+Plus d'infos=1|0|0=Non|1=Oui dans le champ "Commentaires"
+Critiques=0|1|0=Oui|1=Non
+
+[Parameters]
+
+***************************************************)
+
+program CinEmotions;
+uses
+  ScorEpioNCommonScript;
+  //StringUtils1;
+
+const
+  VersionScript = '0.8.9_mod du 16/11/2008';
+  NomScript = 'CinEmotions';
+  urlDomain = 'https://www.cinemotions.com';
+  urlCESearch = 'https://www.cinemotions.com/recherche/';
+  pathCESearch = '/cinema-tv-dvd/film-serie-acteur-actrice-/';
+  urlCESearchGo = '1.html';
+  urlCMSearch = 'http://www.cinemoteur.fr/cine-tv-dvd/resultats/1/';
+  urlCMSearchGo = '1.html';
+  timetosleep = 500;
+
+var
+  MovieName, Titre, urlTitre, Resume, APage, CPage, Epage, Comments : string;
+  CxNote, compteur, premiereExecution, numTemp, lien_URL, Critique : Integer;
+  NoteC, NoteM, Note, NumPage: real;
+  listeResultat : TStringList;
+
+
+//--OK--------------------------------------------------------------------------
+// ANALYSE RESULTAT DE RECHERCHE CinEmotions
+//------------------------------------------------------------------------------
+
+procedure AnalyzeCESearchPage(urlSearch: string);
+var
+  Line, PageNo, temp, urlPageSuiv, oneresult : string;
+  nbchoix : integer;
+begin
+  Line := GetPage(urlSearch);
+  if Pos('deblocage_captcha',Line) > 0 then  // si il y a trop de requêtes de la part du script, le site bloque son accès à l'utilisateur. Création d'une PickTreeList et utilisation de la fonction "Voir la page" pour amener l'utilisateur du script directement sur la page a débloquer
+  begin
+    PickTreeAdd('Le site CinEmotions a détecté trop de requêtes de votre part et bloque maintenant son accès par un captcha.','');
+    Delete(Line,1,Pos('<script type="text/javascript">',Line));
+    urlTitre := MonFindInfo('location=''', '''', Line, 0);
+    PickTreeAdd('Sélectionnez cette ligne et cliquez sur "Voir la page" pour accéder directement au site et validez le captcha.',urlTitre);
+    PickTreeAdd('Une fois le captcha validé, quittez le script en cliquant sur "Ok" ou "Annuler" et relancez le.',urlTitre);
+    PickTreeAdd('---------------------------------------------------------------------------------------------------------------------------------','');
+    PickTreeAdd('Si vous voulez quitter le script tout de suite, cliquez sur "Annuler"', '');
+    PickTreeExec(urlTitre);
+    Exit;
+  end
+  else
+  PickTreeClear;
+ // Controle le nb de résultat dans la liste
+  nbchoix := 0;
+  urlTitre := '';
+  Titre := '';
+  oneresult := '';
+  // Supprime le haut de la page
+  Delete(Line,1,Pos('<TABLE width="800" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff" style="margin-left:10px; margin-top:5px;">',Line));
+  // Prend le numéro de la page en cours
+  temp := Copy(urlSearch,Pos('.html',urlSearch)-1,1);
+  NumPage := StrToFloat(temp);
+ // Test si existe page suivante
+  if ( Pos('HREF="/recherche',Line) > 0 ) Then
+  PageNo := ' (Page N°'+temp+')'
+  else
+  begin
+    if (NumPage = 1) Then
+    PageNo := ''
+    else
+    PageNo := ' (Dernière Page)';
+  end
+  PickTreeAdd('Résultat trouvé pour : '+MovieName+PageNo,'');
+  // Ne garde que le tableau de résultats
+  Delete(Line,1,Pos('Résultats de votre recherche',Line));
+  // Condition pour fin de la liste de résultats
+  While (Pos('<table border="0" width="99%" cellspacing="4" cellpadding="4"',Line) > 1) do
+  begin
+    // Supprime jusqu'à la prochaine ligne du tableau
+    Delete(Line,1,Pos('<table border="0" width="99%" cellspacing="4" cellpadding="4"',Line));
+    // Récupère titre et url
+    TraiteInfoC(Line);
+    if (pos('-tt',urlTitre) > 0) AND (pos(': le jeu',Titre) = 0) Then
+    begin
+      PickTreeAdd(Titre,urlTitre);
+      nbchoix := nbchoix+1;
+      if (nbchoix = 1) AND (oneresult = '') then
+      oneresult := urlTitre;
+    end;
+  end
+  // Supprime jusqu'à la fin de la page
+  Delete(Line,1,Pos('<font class="link6">Pages de résultats:</font>',Line));
+  // Supprime jusqu'à la prochaine page
+  Delete(Line,1,Pos('<font class="link6">',Line)); //
+  // Sauve l'url de la page suivante si possible
+  if ( Pos('HREF="/recherche',Line) > 0 ) Then
+  begin
+    urlPageSuiv := urlDomain +'/recherche' + MonFindInfo('HREF="/recherche','" class="link10"><b>'+FloatToStr(Numpage+1),Line,0);
+    PickTreeMoreLink(urlPageSuiv);
+  end
+ // Verifie qu'un titre est trouvé
+  if nbchoix = 0 Then
+  ShowInformation('Aucun titre correspondant à "'+MovieName+'" !'+#13#10+'Relancez le script en donnant un autre mot clé !');
+  if ( NumPage > 1) Then
+  PickTreeAdd('<< Page Précédente',Copy(urlSearch,1,Pos('.html',urlSearch)-2)+FloatToStr(NumPage-1)+'.html')
+  else
+  begin
+    if (nbchoix = 1) Then
+    begin
+      AnalyzeMoviePage(oneresult);
+      nbchoix := 0;
+    end
+  end
+   // Affiche la liste de choix puis verifie qu'il y a une selection
+  if (nbchoix <> 0) Then
+  begin
+    if (PickTreeExec(urlTitre)) then
+    begin
+     // Si choisie, lance la recherche sur la page suivante
+      if (pos(urlCESearch,urlTitre) > 0) Then
+      begin
+        nbchoix := 0;
+        AnalyzeCESearchPage(urlTitre);
+      end
+      else
+     // Analyse la page du film selectionné
+      AnalyzeMoviePage(urlTitre);
+    end
+  end
+end;
+
+//--OK--------------------------------------------------------------------------
+// TRAITE L'INFO CINEMOTION : SEPARE L'URL DU TITRE
+//------------------------------------------------------------------------------
+
+procedure TraiteInfoC(infos: string);
+var
+  temp1, temp2, temp3, temp4 : string;
+begin
+  urlTitre := '';
+  Titre := '';
+  infos := MonFindInfo('<td class="noirpetit">','>Correspondance',infos,0);
+  infos := StringReplace(infos,'<A HREF="','<a href="');
+  infos := StringReplace(infos,'<br />','<br/>');
+  urlTitre := urlDomain+MonFindInfo('<a href="','"',infos,0);
+  temp1 := MonFindInfo('<b>','</b>',infos,0);
+  temp2 := MonFindInfo('<br/>','</td>',infos,0);
+  if Pos('<br/>',temp2) = 0 then
+  Delete(temp2,Pos(' -',temp2),length(temp2)-Pos(' -',temp2)+1);
+  Delete(temp2, 1, Pos('<br/>',temp2)-1);
+  Delete(temp2,Pos(' -',temp2),length(temp2)-Pos(' -',temp2)+1);
+  temp2 := FullTrim(StringReplace(temp2, '<br/>',''));
+  if Length(temp2) <> 4 then
+  temp2 := '';
+  if temp2 <> '' then
+  temp2 := ' ('+temp2+')';
+  temp3 := Fulltrim(findInfo('Réalisation ', '</tr>', infos, '0'));
+  if temp3 <> '' then
+  temp3 := ' de '+temp3;
+  temp4 := Fulltrim(findInfo('avec ', '</tr>', infos, '0'));
+  if temp4 <> '' then
+  temp4 := ', avec : '+temp4;
+  Titre := temp1+temp2+temp3+temp4;
+  Titre := StringReplace(Titre,'\','');
+end;
+
+
+//------------------------------------------------------------------------------
+// ANALYSE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(url : string);
+var
+  t1, t2, t3, min, heure, annee, temp, temp2, Line, pays, le_type, duree, prod, Titre_Complet, Titre_Traduit, Titre_Original, urlTech, LineTech, Infos, Classification, ID : string;
+  i, j : Real;
+  ImageCE : TStringList;
+begin
+  temp := '';
+  Comments := '';
+  Line := GetPage(url);
+  if pos('modules/Films/fiche', url) > 0 then     // Si on utilise le moteur CineMoteur alors on a les anciennes url donc
+  url := MonFindInfo('href="','"',MonFindInfo('<h1>','</h1>',Line,0),0);  // on récupère la bonne url sur la page
+// Supprimme les parties inutiles
+  Delete(Line,1,Pos('<TABLE width=100% border=0 cellspacing=0 cellpadding=0 bgcolor=',Line));
+  
+//--OK--------------------------------------------------------------------------
+// Stocke l'ID de la fiche du film dans la valeur ID
+  ID := StringReplace(url,urlDomain,'');
+  ID := StringReplace(ID,'/','');
+
+//--OK--------------------------------------------------------------------------
+// Stocke l'url
+  Setfield(fieldURL,url);
+
+//--OK--------------------------------------------------------------------------
+// Stocke l'image si necessaire
+  if CanSetPicture then
+  begin
+    temp := '<a href="'+TextBefore(Line, 'title="Affiche', '<a href="');
+    temp2 := MonFindInfo('src="','"',temp,0);
+    //if temp2 <> '' then
+    //  temp2 := urlDomain+temp2;
+    if GetOption('Affiche') = 0 Then
+    begin
+      GetPicture2(temp2,url)
+    end
+    else
+    begin
+     temp2 :=  FindInfo('<a href="', '"', temp, '4');
+     GetPicture2(temp2,url);
+    end
+  temp := '';
+  temp2 := '';
+  end
+
+//--OK--------------------------------------------------------------------------
+// Prend le titre traduit
+    Titre_Complet := MonFindInfo('<h1>', '</div>', Line, 1);
+    Titre_Traduit := FormatTitre(FullTrim(FindInfo('">','</h1>',Titre_Complet,'0')),GetOption('Format du Titre'));
+    SetField(fieldTranslatedTitle, Titre_Traduit);
+    Delete(Titre_Complet,1,Pos('</h1>',Titre_Complet));
+
+//--OK--------------------------------------------------------------------------
+// Prend la Classification
+    if (Pos('www.cinemotions.com/images/picto/picto_',Titre_Complet) > 0) and (GetOption('Classification') = 1) Then
+    begin
+      Classification := FindInfo('www.cinemotions.com/images/picto/picto_','.jpg',Titre_Complet,'1');
+      if (Classification <> '') then
+        begin
+          if CheckVersion(4,2,0) then
+          begin
+          SetField(fieldCertification, '- '+Trim(Classification));
+          end else
+            begin
+              Comments := 'Interdit au moins de '+Classification+' ans.';
+              //if CanSetField(fieldComments) then
+              //SetField(fieldComments, Trim(Comments));
+            end;
+        end;
+    end;
+
+//--OK--------------------------------------------------------------------------
+// Recherche et Prend le titre original
+  if (Pos('<h2 style="',Titre_Complet) > 0) Then
+    begin
+    Delete(Titre_Complet,1,Pos('<h2>',Titre_Complet)-1);
+    SetField(fieldOriginalTitle,Stringreplace(FormatTitre(Fulltrim(FindInfo('">','</h2>',Titre_Complet,'0')),GetOption('Format du Titre')), '-', ' '));
+    end else
+    begin
+    if GetOption('Titre original') = 0 Then
+    SetField(fieldOriginalTitle,'')
+    else
+    SetField(fieldOriginalTitle, Titre_Traduit);
+    end;
+
+// Récupère Année + Pays + Genre + Durée
+  temp :=  MonFindInfo('</a></h1>', '<tr>',Line,0);
+  if Pos('<h2', temp) > 0 then
+  Delete(temp, Pos('<h2', temp), (Pos('h2>', temp))-(Pos('<h2', temp))+3);
+  if Pos('Thématique', temp) > 0 then
+  Delete(temp, Pos('Thématique', temp), length(temp));
+  HTMLDecode(temp);
+  le_type := temp; // on stocke ici la valeur du type (catégorie) en conservant les tags HTML pour analyse plus bas (ligne 325)
+  HTMLRemoveTags(temp);
+  temp := FullTrim(temp);
+
+//--OK--------------------------------------------------------------------------
+// Prend l'année
+  Annee := Copy(temp,1,4);
+  SetField(fieldYear,Annee);
+
+//--OK--------------------------------------------------------------------------
+// Prend le pays
+  pays := MonFindInfo('- ','- ',temp,0);
+  temp := Copy(temp,Pos(pays,temp)+length(pays),length(temp));
+  pays := AnsiLowerCase(pays);
+  pays := StringReplace(pays, 'états-unis', 'USA');
+  pays := StringReplace(pays, 'etats-unis', 'USA');
+  pays := StringReplace(pays, 'hong kong', 'Hong-Kong');
+  pays := StringReplace(pays,' / ',', ');
+  pays := StringReplace(pays,'/',', ');
+  pays := transformCountry(pays);
+  SetField(fieldCountry,pays);
+
+//--OK--------------------------------------------------------------------------
+// Prend la durée
+  duree := Copy(temp,Pos('- ',temp)+2,length(temp));
+  if Pos('h',duree) > 0 Then
+  begin
+    heure := Copy(duree,1,Pos('h',duree)-1);
+    min := Copy(duree,Pos('h',duree)+1,2);
+    i := StrToFloat(heure);
+    j := StrToFloat(min);
+    Setfield(fieldLength,FloatToStr(i*60+j));
+  end
+  else
+  begin
+    if Pos('saison',duree) > 0 Then
+    duree := Copy(duree,1,Pos('m',duree)-1);
+    duree := StringReplace(duree,'mn','');
+    duree := StringReplace(duree,'min','');
+    if Pos('x',duree) > 0 Then
+    begin
+      heure := Copy(duree,1,Pos('x',duree)-1);
+      min := Copy(duree,Pos('x',duree)+1,3);
+      i := StrToFloat(heure);
+      j := StrToFloat(min);
+      SetField(fieldLength,FloatToStr(j));
+      if i <> 0 Then
+      begin
+        if Comments <> '' Then
+        Comments := Comments+#13#10#13#10;
+        Comments := 'Format : '+heure+' épisode(s) de '+min+' minutes';
+        //SetField(fieldComments,Comments);
+      end
+    end
+    else
+    begin
+      Setfield(fieldLength,duree);
+    end;
+  end;
+
+//--OK--------------------------------------------------------------------------
+// Prend le genre
+  le_type := MonFindInfo('<div style="height:3px;"></div>','</div>',le_type,0);
+  HTMLRemoveTags(le_type);
+  le_type := FullTrim(le_type);
+  le_type := StringReplace(le_type,'/',', ');
+  SetField(fieldCategory,le_type);
+ 
+//--OK--------------------------------------------------------------------------
+// Prend le(s) producteur(s)
+  if Pos('<b>Production</B>', Line) > 0 then
+  Begin
+    //LineTech := Getpage(urlTech);
+    temp := MonFindInfo('<b>Production</B>','<font class="home_lien_noir">',Line,1);
+    While Pos('<a href=',temp) > 0 do
+        begin
+         // Prend le nom du producteur présumé
+          t1 := MonFindInfo('class="link10">','<',temp,0);
+         // Vérifie si producteur ou non et ajoute ou non le nom dans la liste
+          t2 := MonFindInfo('<font style="noir">','<',temp,0);
+          Delete(t2, Pos(' (', t2), (Pos(')', t2))-(Pos(' (', t2))+1); // pour les séries quand il y a une année à côté du producteur
+          t2 := StringReplace(t2,'&nbsp;&nbsp;-&nbsp;','');
+          if (t2 = 'producteur') then
+          Prod := Prod+', '+t1
+          else
+          Prod := Prod;
+         // Supprimme les données de ce producteur dans temp
+          Delete(temp,1,Pos('</div>',temp));
+        end
+    Setfield(fieldProducer,Copy(Prod,3,length(Prod)));
+  End
+
+//--OK--------------------------------------------------------------------------
+// Prend les notes
+  CxNote := GetOption('Note');
+  Note := -1;
+ // Stocke chaque note
+  temp := '';
+  temp := MonFindInfo('<font class="home_texte_bleu_10">CinEmotions</font>','</table>',Line,1);
+ // Note CinEmotion
+  t1 := findInfo('alt="','"',temp,'0');
+  if (t1 = 'Pas encore noté') Then
+  NoteC := -1
+  else
+  NoteC := StrToFloat(MonFindInfo('Moyenne : ','(',t1,0));
+ // Note Membre
+  Delete(temp,1,Pos('<font class="home_texte_bleu_10">Membres</font>',temp));
+  t2 := findInfo('alt="','"',temp,'0');
+  if (t2 = 'Pas encore noté') Then
+  NoteM := -1
+  else
+  NoteM := StrToFloat(MonFindInfo('Moyenne : ','(',t2,0));
+// Donne le détail des notes dans le champ commentaire
+  if GetOption('Liste des notes') = 1 Then
+  begin
+    if Comments <> '' Then
+    Comments := Comments+#13#10#13#10;
+    if NoteC <> -1 Then
+    Comments := Comments+StringReplace(t1,'Moyenne','Note CinEmotions')+#13#10
+    else
+    Comments := Comments+'Note CinEmotions : Pas encore noté'+#13#10;
+    if NoteM <> -1 Then
+    Comments := Comments+StringReplace(t2,'Moyenne','Note Membres')
+    else
+    Comments := Comments+'Note Membres : Pas encore noté';
+    //Comments := Comments+#13#10;
+    NoHTML(Comments);
+    //SetField(fieldComments,Comments);
+  end
+
+ // Rempli le champ Note suivant l'option selectionnée
+ // Reteste tant qu'une note n'est pas choisie
+  While CxNote <> -1 Do
+  begin
+    if ((NoteC = -1) and (NoteM = -1)) Then
+    CxNote := -1
+    else
+    begin
+     // Moyenne NoteC + NoteM
+      if (CxNote = 2) Then
+      begin
+       // Test si les 2 notes existent
+        if ((NoteC <> -1) and (NoteM <> -1)) Then
+        begin
+          Note := (NoteC+NoteM)/2;
+          CxNote := -1;
+        end
+        else
+        begin
+         // Si que la note CinEmotions, la prend par défaut
+          if (NoteC > NoteM) Then
+          begin
+            Note := NoteC;
+            CxNote := -1;
+          end
+          else
+          begin
+           // Test si la note Membre existe et la prend par défaut
+            if (NoteM <> -1) Then
+            begin
+              Note := NoteM;
+              CxNote := -1;
+            end
+            else
+           // Si pas de Note CinEmotions ou Membre : pas de note
+            CxNote := -1;
+          end
+        end
+      end
+      else
+      begin
+     // Si Note CinEmotion voulue
+        if CxNote = 0 Then
+        begin
+          if NoteC <> -1 Then
+          Note := NoteC;
+          CxNote := -1;
+        end
+        else
+        begin
+       // Si Note Membres voulue
+          if CxNote = 1 Then
+          begin
+            if NoteM <> -1 Then
+            Note := NoteM;
+            CxNote := -1;
+          end
+        end
+      end
+    end
+  end
+  if Note <> -1 Then
+ // NB: La Note du site est sur 20 !
+  SetField(fieldRating,FloatToStr(Note/2));
+
+
+//--OK--------------------------------------------------------------------------
+// Prend les réalisateurs
+  temp := '';
+  t1 := '';
+  temp := MonFindInfo('Réalisation :','</tr>',Line,0);
+  While Pos('<a href=',temp) > 0 Do
+  begin
+    t1 := t1+', '+MonFindInfo('<span itemprop="name">','</span>',temp,0);
+    Delete(temp,1,Pos('</a>',temp));
+  end
+  SetField(fieldDirector,Copy(t1,3,length(t1)));
+
+
+//--OK--------------------------------------------------------------------------
+// Prend le synopsis
+  temp := '';
+  //temp := MonFindInfo(': Synopsis</','<div style=',Line,1);
+  temp := MonFindInfo('<span itemprop="description">','</span>',Line,0);
+  if pos('<A HREF=', temp) > 0 then
+  delete(temp, pos('<A HREF=', temp), ((pos('</A>', temp))-(pos('<A HREF=', temp))+4));
+  if pos ('barre_serie.png', Line) > 0 then
+  delete(temp, pos('<center>', temp), ((pos('</center>', temp))-(pos('<center>', temp))+9));
+  NoHTML(temp);
+  HTMLRemoveTags(temp);
+  temp := stringreplace(temp, #13#10#13#10#13#10, #13#10);
+  repeat temp := deleteEnd(temp, #13#10);
+  until (copy(temp,length(temp)-length(#13#10)+1,length(temp)) <> #13#10);
+  Setfield(fieldDescription,temp);
+  
+//--OK--------------------------------------------------------------------------
+// Prend Plus d'infos
+  if Getoption('Plus d''infos') = 1 then
+  begin
+    temp := '';
+    if (Pos(': Plus d''infos',Line)) <> 0 then
+    begin
+      Infos := FullTrim(findInfo(': Plus d''infos', '</font>', Line, '-1'));
+    end
+    else
+      Infos := '';
+    if Infos <> '' then
+    begin
+      Infos := 'Plus D''infos :'+#13#10+Infos;
+      if Comments = '' then
+      Comments := Infos
+      else
+      Comments := Comments+#13#10#13#10+Infos;
+      //Setfield(fieldComments, Comments);
+    end;
+  end;
+
+//--OK--------------------------------------------------------------------------
+// Prend le(s) scénariste(s)
+  temp := '';
+  t1 := '';
+  t2 := '';
+  t3 := '';
+  if (Pos ('<b>Ecriture</B>',Line) > 0) AND (CheckVersion(4,2,0)) then
+  begin
+    begin
+      temp := MonfindInfo('<b>Ecriture</B>','<font class="home_lien_noir">',Line,0);
+      temp := TextAfter(temp, '</div>');
+      While Pos('<a href=',temp) > 0 do
+      begin
+         t1 := t1+', '+MonFindInfo('class="link10">','<',temp,0);  // Prend le nom du Scénariste
+        {if Pos('<font class="textes">',t2) > 0 then
+        begin
+          t3 := MonFindInfo('<font class="textes">','</font>',t2,0);
+          if (Pos ('scénario', t3) > 0) OR (Pos ('histoire', t3) > 0) OR (Pos ('auteur', t3) > 0) then
+          t1 := t1+', '+MonFindInfo('onMouseOut="window.status=''''">','</A>',t2,0);  // Prend le nom du Scénariste si rôle contient 'scénario' ou 'histoire' ou 'auteur'
+        end else
+        t1 := t1+', '+MonFindInfo('onMouseOut="window.status=''''">','</A>',t2,0);  // Prend le nom du Scénariste si pas de rôle}
+        // Supprimme les données de ce Scénariste dans temp
+        Delete(temp,1,Pos('</div>',temp));
+      end;
+      t1 := Copy(t1,3,length(t1));
+    end;
+  NoHTML(t1);
+  SetField(fieldWriter,t1);
+  end;
+  
+//--OK--------------------------------------------------------------------------
+// Prend le(s) Compositeur(s)
+  temp := '';
+  t1 := '';
+  t2 := '';
+  t3 := '';
+  if (Pos ('<b>Musique</B>',Line) > 0) AND (CheckVersion(4,2,0)) Then
+  begin
+    begin
+      temp := MonfindInfo('<b>Musique</B>','<font class="home_lien_noir">',Line,0);
+      temp := TextAfter(temp, '</div>');
+      While Pos('<a href=',temp) > 0 do
+      begin
+        t2 := MonfindInfo('<div style="margin-left:5px; margin-bottom:4px;">', '</div>', temp,0);
+        if MonFindInfo('<font style="noir">','<',t2,0) <> '' then
+        begin
+          t3 := MonFindInfo('<font style="noir">','<',t2,0);
+          if (Pos ('compositeur', t3) > 0) AND (Pos ('additionnelle', t3) = 0) then
+          t1 := t1+', '+MonFindInfo('class="link10">','<',t2,0);  // Prend le nom du Compositeur si rôle contient 'compositeur' mais si le rôle ne contient pas 'additionnelle'
+        end else
+        t1 := t1+', '+MonFindInfo('class="link10">','<',t2,0);  // Prend le nom du Compositeur si pas de rôle
+        // Supprimme les données de ce Compositeur dans temp
+        Delete(temp,1,Pos('</div>',temp));
+      end;
+      t1 := Copy(t1,3,length(t1));
+    end;
+  NoHTML(t1);
+  SetField(fieldComposer,t1);
+  end;
+
+//--OK--------------------------------------------------------------------------
+// Prend la liste des acteurs
+  temp := '';
+  t1 := '';
+  t2 := '';
+  t3 := '';
+  if GetOption('Liste des Acteurs') = 1 Then
+  begin
+    t3 := '<b>Interprétation</B>';
+    if Pos (t3,Line) > 0 Then
+    begin
+      if CanSetField(fieldActors) Then
+      begin
+        temp := MonfindInfo('<b>Interprétation</B>','<font class="home_lien_noir">',Line,0);
+        temp := TextAfter(temp, '</div>');
+        While Pos('<a href=',temp) > 0 do
+        begin
+         // Prend le nom de l'acteur
+          t1 := t1+', '+MonFindInfo('class="link10">',' <',temp,0);
+         // Prend son rôle si il existe
+          if ((Pos('<font style="noir">',temp) < Pos('</div>',temp)) And (MonFindInfo('<font style="noir">','<',temp,0) <> '')) Then
+          begin
+            t1 := t1+' ('+MonFindInfo('<font style="noir">','<',temp,0)+')';
+            t1 := StringReplace(t1,'&nbsp;&nbsp;-&nbsp;','');
+            HTMLRemoveTags(t1);
+          end;
+         // Supprimme les données de cet acteur dans temp
+          Delete(temp,1,Pos('</div>',temp));
+        end
+        t1 := Copy(t1,3,length(t1));
+      end
+    end
+  end
+  else
+  begin
+    Delete(Line,1,Pos('Réalisation :',Line));
+    t1 := MonFindInfo('Comédiens :','</td>',Line,0);
+    HTMLDecode(t1);
+    HTMLRemoveTags(t1);
+    t1 := StringReplace(t1,'- ',', ');
+    t1 := StringReplace(t1,#13,'');
+    t1 := StringReplace(t1,#10,'');
+    t1 := StringReplace(t1,#09,'');
+    t1 := StringReplace(t1,' ...suite','');
+  end
+  NoHTML(t1);
+  SetField(fieldActors,t1);
+ 
+
+//--OK--------------------------------------------------------------------------
+// Prend les critiques si il y en a
+  if (GetOption('Critiques') = 0) and CanSetField(fieldComments) Then
+  begin
+    temp := '';
+    t1 := '';
+    t2 := '';
+    t3 := '';
+    t3 := 'Critiques et avis<';
+    if Pos (t3,Line) > 0 Then
+    begin
+      temp := MonFindInfo('Critiques et avis<','<div id="distribution-complete">',Line,1);
+      if Pos('<b>Les avis de l''équipe</b>',temp) > 0 Then
+      begin
+        t1 := t1+'Critique CinEmotions :'+#13#10+#13#10;
+        t3 := MonFindInfo('<b>Les avis de l''équipe</b>','<div style="height:16px;">',temp,1);
+        t2 := findInfo('<font class="link10">', '</font>', t3, '0');
+        t1 := t1+'"'+t2+'"'+' par '+findInfo('par <font class="home_texte_jaune">', '<', t3, '0')+#13#10;
+        t1 := t1+findInfo('<font class="textes">', '</font>', t3, '0')+#13#10+#13#10;
+      end
+      if Pos('<b>A Votre Avis</b>',temp) > 0 Then
+      begin
+        if t1 <> '' then
+        t1 := t1+#13#10+'Critique(s) Spectateur(s):'
+        else
+        t1 := 'Critique(s) Spectateur(s) :';
+        Delete(temp,1,Pos('<b>A Votre Avis</b>',temp));
+        While Pos('<td style="padding-bottom:3px;"',temp) > 0 Do
+        begin
+          t2 := '"'+Fulltrim(FindInfo('class="link10">','</td>',temp,'0'))+'" ';
+          NoHTML(t2);
+          t1 := t1+#13#10#13#10+t2+'par '+MonFindInfo('par <font class="home_texte_jaune">','</font>',temp,0)+#13#10;
+          t2 := '';
+          t1 := t1+MonFindInfo('<font class="textes">','</font>',temp,0);
+          Delete(temp,1,Pos('</font></div>',temp));
+        end
+      end
+      NoHTML(t1);
+      if Comments <> '' then
+      Comments := Comments+#13#10#13#10+t1
+      else
+      Comments := Comments+t1;
+      //SetField(FieldComments,Comments);
+    end
+  end
+  
+  if CanSetField(fieldComments) then
+  SetField(FieldComments,Comments);
+  
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Supprimme les balises HTML
+//------------------------------------------------------------------------------
+
+procedure NoHTML(var page: string);
+begin
+  page := StringReplace(page,'<br>',#13#10);
+  page := StringReplace(page,'<b>','');
+  page := StringReplace(page,'</b>','');
+  page := StringReplace(page,'<i>','');
+  page := StringReplace(page,'</i>','');
+  page := StringReplace(page,'<u>','');
+  page := StringReplace(page,'</u>','');
+  page := StringReplace(page,'<br />','');
+  page := StringReplace(page,'<br/>','');
+  HTMLDecode(page);
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// TROUVE LA CHAINE VOULUE (Merci ScorEpioN)
+// option = 1 : Garde début et fin
+// option = 0 : NE garde PAS début et fin
+//------------------------------------------------------------------------------
+
+function MonFindInfo(Debut, Fin, Line : string ; option : integer) : string;
+var
+   infos : String;
+   BeginPos, EndPos : Integer;
+begin
+   infos := '';
+   BeginPos := pos(Debut, Line);
+   if BeginPos > 0 then
+   begin
+    if (option = 1) then
+// Garde 'Debut' et 'Fin'
+    begin
+      delete(Line, 1, BeginPos-1);
+      EndPos := pos(Fin, Line);
+      infos := copy(Line,0,EndPos+length(Fin)-1);
+    end
+    else
+// Supprimme 'Debut' et 'Fin'
+// Vérifie si paramètre 'option' n'est pas invalide
+    if (option = 0) then
+    begin
+      delete(Line, 1, BeginPos+length(Debut)-1);
+      EndPos := pos(Fin, Line);
+      infos := copy(Line,0,EndPos-1);
+    end
+   end
+   result := Trim(infos);
+end;
+
+
+//--OK--------------------------------------------------------------------------
+// Formatte les textes (Merci ScorEpioN)
+//------------------------------------------------------------------------------
+
+procedure Format(name : string);
+var
+  option: integer;
+begin
+  option := GetOption('Format du Titre');
+  name := formatTitre(name,option);
+end;
+
+//------------------------------------------------------------------------------
+//  Removes tabs and linebreaks in addition of spaces on both sides of the string
+//  antp rewritten by bad4u  (copier à partir du fichier StringUtils1.pas)
+//------------------------------------------------------------------------------
+
+function FullTrim(Value: string): string;
+var
+  ExitLoop: Boolean;
+begin
+  Result := '';
+  ExitLoop := False;
+  repeat
+    case copy(Value, 1, 1) of
+      ' ', #9, #10, #13:    Value := copy(Value, 2, Length(Value)-1);
+    else
+      ExitLoop := True;
+    end;
+  until ExitLoop;
+  ExitLoop := False;
+  repeat
+    case copy(Value, Length(Value), 1) of
+      ' ', #9, #10, #13:    Value := copy(Value, 1, Length(Value)-1);
+    else
+      ExitLoop := True;
+    end;
+  until ExitLoop;
+  Result := Value;
+end;
+
+//------------------------------------------------------------------------------
+//    Returns the text before SearchText, but not before BeginLimit (if it is not empty),
+//    It takes the last occurence of BeginLimit found before the position of SearchText
+//------------------------------------------------------------------------------
+
+function TextBefore(WholeText: string; SearchText: string; BeginLimit: string): string;
+var
+  FoundPos, PrevPos: Integer;
+  WorkText, RemainingText: string;
+begin
+  RemainingText := WholeText;
+  Result := '';
+  FoundPos := Pos(SearchText, WholeText);
+  if FoundPos = 0 then
+    Exit;
+  WorkText := Copy(WholeText, 1, FoundPos - 1);
+  RemainingText := Copy(WholeText, FoundPos + Length(SearchText), Length(WholeText));
+  if BeginLimit <> '' then
+  begin
+    FoundPos := LastPos(BeginLimit, WorkText);
+    if FoundPos = 0 then
+      Exit
+    else
+      FoundPos := FoundPos + Length(BeginLimit);
+  end
+  else
+    FoundPos := 1;
+  Result := Copy(WorkText, FoundPos, Length(WorkText));
+end;
+
+//------------------------------------------------------------------------------
+// Returns the text after SearchText
+//------------------------------------------------------------------------------
+
+function TextAfter(WholeText: string; SearchText: string): string;
+var
+  FoundPos: Integer;
+begin
+  Result := '';
+  FoundPos := Pos(SearchText, WholeText);
+  if FoundPos = 0 then
+    Exit;
+  Result := Copy(WholeText, FoundPos + Length(SearchText), Length(WholeText));
+end;
+
+//------------------------------------------------------------------------------
+// Like the Pos function, but returns the last occurence instead of the first one
+//------------------------------------------------------------------------------
+
+function LastPos(ASearch: string; AText: string): Integer;
+var
+  CurPos, PrevPos: Integer;
+begin
+  PrevPos := 0;
+  CurPos := Pos(ASearch, AText);
+  while CurPos > 0 do
+  begin
+    if PrevPos = 0 then
+      PrevPos := CurPos
+    else
+      PrevPos := PrevPos + CurPos + Length(ASearch) - 1;
+    Delete(AText, 1, CurPos + Length(ASearch) - 1);
+    CurPos := Pos(ASearch, AText);
+  end;
+  Result := PrevPos;
+end;
+
+//------------------------------------------------------------------------------
+// Nettoie le titre pour la recherche
+//------------------------------------------------------------------------------
+
+function Clean(Value: string): string;
+begin
+  Value := StringReplace(Value, ' ', '-');
+  Value := StringReplace(Value, '''', '-');
+  Result := Value;
+end;
+
+//--OK--------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+begin
+  if CheckVersion(4,2,1) then
+  begin
+    NumPage := 1;
+    Comments := '';
+    MovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+   // Choix du lancement
+   // Demande du titre
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+      if Input(NomScript+' par draco31.fr', 'Entrez le titre du film ou de la série :',MovieName) then
+      begin
+        if Pos(urlDomain, MovieName) > 0 then
+          AnalyzeMoviePage(MovieName)
+        else
+          AnalyzeCESearchPage(urlCESearch+supprimeLesAccents(AnsiLowerCase(Clean(MovieName)))+'/'+FloatToStr(NumPage)+'.html');
+      end
+    end
+    else
+    begin
+     // Ne demande pas le titre
+      if (GetOption('Type de Lancement') = 1) then
+       // Recherche CinEmotions
+        AnalyzeCESearchPage(urlCESearch+supprimeLesAccents(AnsiLowerCase(Clean(MovieName)))+'/'+FloatToStr(NumPage)+'.html')
+      else
+      begin
+       // Directement sur l'adresse web
+        if (GetOption('Type de Lancement') = 2) then
+        begin
+          urlTitre := GetField(fieldURL);
+          if Pos(urlDomain,urlTitre) > 0 Then
+          AnalyzeMoviePage(urlTitre)
+          else
+          ShowError('L''adresse web ne correspond pas à une page web de CinEmotions !');
+        end
+      end
+    end
+  end
+  else
+  begin
+  if ShowWarning('Ce script requiert une nouvelle version d''Ant Movie Catalog'+#13#10+'au minimum la version 4.2.1 beta disponible à cette adresse : '+#13#10+'http://forum.antp.be/phpbb2/viewtopic.php?t=4844'+#13#10#13#10+'Cliquer sur ''Ok'' pour lancer directement l''adresse dans un navigateur') = True then
+  Launch('http://forum.antp.be/phpbb2/viewtopic.php?t=4844', '');
+  end
+end.

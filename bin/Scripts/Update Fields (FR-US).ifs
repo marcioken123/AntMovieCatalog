@@ -1,0 +1,917 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN, Dedej, SoulSnake
+Title=Update Fields
+Description=Mise à jour massive de champs / Update fields
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=EN,FR
+Version=41 du 14/07/2013
+Requires=4.1.2
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=
+GetInfo=0
+RequiresMovies=1
+
+[Options]
+Mise à jour=0|0|0=Non / No|1=Oui / Yes
+Casse Choisie=0|0|0=Pas de changement / No change|1=Tout en minuscule / All in Lowercase|2=Tout en majuscule / All in Uppercase|3=(BUG) Première lettre en majuscule / First letter in Uppercase|4=Première lettre de chaque mot en majuscule / First letter of each word in Uppercase|5=Première lettre de chaque mot en majuscule + Chiffres romains conservés si existant + Formatage (,-:) / First letter of each word in Uppercase
+ChampCasse=4|4|0=Titre original et Titre traduit/Original and Translate title|1=Réalisateur et Producteur/Director and Productor|2=Catégorie et Pays/Category and Country|3=Acteurs/Actors|4=L'ensemble de ces champs/all there's fields
+Garder ancien contenu champ=0|0|0=Non / Don't keep destination field value|1=Oui / Keep destination field value
+Vider champ origine=0|0|0=Non / Not Clean origin field|1=Oui / Clean origin field
+
+[Parameters]
+
+***************************************************)
+
+program UpdateAllFields;
+uses
+  ScorEpioNCommonScript, StringUtils7552, FieldsUtils;
+
+const
+  VersionScript = '41 du 14/07/2013';
+  ScriptName = 'Update Fields (FR-US).ifs';
+  SiteUrl = 'http://mickaelvanneufville.online.fr/AMCU/scripts/';
+
+var
+  Update, NewField, NewValue, Field, Abort, FirstExec, Value, Field1, LineField, Text : String;
+  EndPos, i, Maj, PMaj : Integer;
+  Check : Boolean;
+
+//------------------------------------------------------------------------------
+// FONCTION DEMANDE CONFIRMATION
+//------------------------------------------------------------------------------
+function confirm(leMessage : String): Boolean;
+begin
+  if (FirstExec <> 'N') then
+  begin
+    if (ShowConfirmation(leMessage) = True) then
+    begin
+      result := True;
+    end else
+      result := False;
+  end else
+    result := True;
+end;
+
+//------------------------------------------------------------------------------
+// MET UN CHAMP A LA CASSE VOULUE
+//------------------------------------------------------------------------------
+
+function casse(titre : String; option : Integer) : string;
+begin
+  if (option = 1) then
+  begin
+     titre := AnsiLowerCase(titre);
+  end else if (option = 2) then
+  begin
+     titre := AnsiUpperCase(titre);
+  end else if (option = 3) then
+  begin
+     titre := AnsiUpFirstLetter(AnsiLowerCase(titre));
+  end else if (option = 4) then
+  begin
+     titre := AnsiMixedCase(AnsiLowerCase(titre), ' :-');
+  end else if (option = 5) then
+  begin
+     titre := StringReplace(titre, ':', ' : ');
+     titre := StringReplace(titre, '  ', ' ');
+     
+     titre := StringReplace(titre, '-', ' - ');
+     titre := StringReplace(titre, '  ', ' ');
+     
+     titre := StringReplace(titre, '&', ' & ');
+     titre := StringReplace(titre, '  ', ' ');
+     
+     titre := StringReplace(titre, ',', ' , ');
+     titre := StringReplace(titre, '  ', ' ');
+     
+     titre := StringReplace(titre, '(', ' ( ');
+     titre := StringReplace(titre, '  ', ' ');
+     
+     titre := StringReplace(titre, ')', ' ) ');
+     titre := StringReplace(titre, '  ', ' ');
+
+     titre := Trim(titre);
+
+     titre := StringReplace(titre, titre, ' '+titre+' ');
+     titre := AnsiMixedCase(AnsiLowerCase(titre), ' .');
+     
+     titre := StringReplace(titre, ' Iv ', ' IV ');
+     titre := StringReplace(titre, ' Iii ', ' III ');
+     titre := StringReplace(titre, ' Ii ', ' II ');
+     titre := StringReplace(titre, ' Viii ', ' VIII ');
+     titre := StringReplace(titre, ' Vii ', ' VII ');
+     titre := StringReplace(titre, ' Vi ', ' VI ');
+     titre := StringReplace(titre, ' Ix ', ' IX ');
+     titre := StringReplace(titre, ' Usa ', ' USA ');
+     
+     titre := StringReplace(titre, ' ,', ',');
+     titre := StringReplace(titre, '( ', '(');
+     titre := StringReplace(titre, ' )', ')');
+     titre := Trim(titre);
+     
+  end;
+  result := titre;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION DE DUPLICATION DE FICHES
+//------------------------------------------------------------------------------
+procedure duplicateFields();
+var
+  i: Integer;
+begin
+  if (confirm('Vous allez dupliquer la fiche : '+GetField(fieldTranslatedTitle)+' ('+GetField(fieldOriginalTitle)+'). Avez-vous bien penser à sélectionner les fiches cibles ? / You will made a copy of : '+GetField(fieldTranslatedTitle)+' ('+GetField(fieldOriginalTitle)+'). Have selected the destination form ?') = True) then
+  begin
+    if (FirstExec <> 'N') then
+    begin
+    for i := 0 to GetFieldCount-1 do
+      if i <> fieldNumber then
+        SetStatic(GetFieldTag(i), GetField(i));
+    for i := 0 to GetCustomFieldCount-1 do
+      SetStatic(GetCustomFieldTag(i), GetCustomField(GetCustomFieldTag(i)));
+    end else
+    begin
+    for i := 0 to GetFieldCount-1 do
+      if i <> fieldNumber and CanSetField(i) then SetField(i, GetStatic(FieldTag(i)));
+    for i := 0 to GetCustomFieldCount-1 do
+      if CanSetCustomField(GetCustomFieldTag(i)) then SetCustomField(GetCustomFieldTag(i), GetStatic(GetCustomFieldTag(i)));
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION METS LE CHAMP COMMENTAIRE A LA SUITE DU CHAMP DESCRIPTION
+//------------------------------------------------------------------------------
+procedure moveComment();
+begin
+  if (confirm('Vous allez déplacer le contenu du champ ''''Commentaire'''' vers le champ ''''Description'''' / You will move the field ''''Comments'''' to the field ''''Description''''.') = True) then
+  begin
+    if (CanSetField(fieldDescription) and CanSetField(fieldComments))  then
+    begin
+      moveComments();
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION MISE A JOUR DE LA CASSE DES TITRES ET DES NOMS
+//------------------------------------------------------------------------------
+procedure UpdateCasse();
+begin
+  if (confirm('Vous allez modifier la casse des champs des ''''Titres'''', du ''''Réalisateur'''', du ''''Producteur'''', des ''''Pays'''', des ''''Acteurs'''' et du ''''Genres'''', en fonction des champs modifiables et de l''option choisie / You will modify the format of fields ''''Title'''', ''''Director'''', ''''Producer'''', ''''Comments'''', ''''Category'''', ''''Country'''' and ''''Actors'''', if the option selected and the field can be modified.') = True) then
+  begin
+// Titre Original
+  if (GetOption('ChampCasse') = 0) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldOriginalTitle, casse(GetField(fieldOriginalTitle),GetOption('Casse Choisie')));
+// Titre Traduit
+  if (GetOption('ChampCasse') = 0) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldTranslatedTitle, casse(GetField(fieldTranslatedTitle),GetOption('Casse Choisie')));
+// Nom du Réalisateur
+  if (GetOption('ChampCasse') = 1) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldDirector, casse(GetField(fieldDirector),GetOption('Casse Choisie')));
+//Nom du Producteur
+  if (GetOption('ChampCasse') = 1) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldProducer, casse(GetField(fieldProducer),GetOption('Casse Choisie')));
+// Nom des Acteurs
+  if (GetOption('ChampCasse') = 3) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldActors, casse(GetField(fieldActors),GetOption('Casse Choisie')));
+// Catégorie
+  if (GetOption('ChampCasse') = 2) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldCategory, casse(GetField(fieldCategory),GetOption('Casse Choisie')));
+// Pays
+  if (GetOption('ChampCasse') = 2) or (GetOption('ChampCasse') = 4) then
+    SetField(fieldCountry, casse(GetField(fieldCountry),GetOption('Casse Choisie')));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION COPIE TITRE SI VIDE
+//------------------------------------------------------------------------------
+procedure CopyTitle();
+begin
+  if (confirm('Vous allez dupliquer les titres (si vide), avec la casse choisie / You will copy title if a field is empty with the selected format.') = True) then
+  begin
+    if GetField(fieldTranslatedTitle) = '' then
+    begin
+      if (CanSetField(fieldTranslatedTitle)) then
+        SetField(fieldTranslatedTitle, casse(GetField(fieldOriginalTitle),GetOption('Casse Choisie')));
+    end else
+    if GetField(fieldOriginalTitle) = '' then
+    begin
+      if (CanSetField(fieldOriginalTitle)) then
+        SetField(fieldOriginalTitle, casse(GetField(fieldTranslatedTitle),GetOption('Casse Choisie')));
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION COPIE TITRE SI FORMAT AUDIO VIDE
+//------------------------------------------------------------------------------
+procedure CopyLocal();
+begin
+  if (confirm('Vous allez copier le titre dans format audio(si vide), avec la casse choisie / You will copy title in the field audio format(if empty) with the selected format.') = True) then
+  begin
+    if GetField(fieldAudioFormat) = '' then
+    begin
+      if (CanSetField(fieldAudioFormat)) then
+        SetField(fieldAudioFormat, casse(GetField(fieldTranslatedTitle),GetOption('Casse Choisie')));
+    end;
+  end;
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION COPIE CHAMP1 DANS CHAMP2
+//------------------------------------------------------------------------------
+procedure CopyField(Champ : Integer);
+begin
+  if (Field1 = '') then
+    Field1 := Field;
+  menuChamps('Champ2');
+  if abort <> 'O' then
+  begin
+    if (confirm('Vous allez copier le champ1 dans le champ2, avec la casse choisie/You will copy field1 in the field2 with selected format.') = True) then
+    begin
+      if (FirstExec <> 'N') then
+        Check := confirm('Voulez vous cocher les sélections modifiées / Would you check modified items');
+      Value := GetFieldOrCustomField(StrToInt(Field1,0));
+      if (Check = True) and (Value <> '') then
+        SetField(fieldChecked, 'x');
+      if GetOption('Garder ancien contenu champ') = 1 then
+        Value := Value + #13#10 + GetFieldOrCustomField(StrToInt(Field,0));
+      SetFieldOrCustomField(StrToInt(Field,0), Value);
+      if GetOption('Vider champ origine') = 1 then
+        SetFieldOrCustomField(StrToInt(Field1,0), '');
+    end else
+    begin
+      abort := 'O';
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION SUPPRIME TITRE EN DOUBLE
+//------------------------------------------------------------------------------
+procedure DeleteTitre(Title : Integer);
+begin
+  if (confirm('Vous allez supprimer le titre en double / You will delete duplicate title.') = True) then
+  begin
+    DeleteTitle(Title);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION QUI AFFICHE LE CHOIX DU TITRE A SUPPRIMER
+//------------------------------------------------------------------------------
+procedure menuTitre();
+begin
+  if (FirstExec <> 'N') then
+  begin
+    PickTreeClear;
+    if CheckVersion(4,1,2) = True then
+      PickTreeTitle('Sélectionner un champ (Field selection)');
+    PickTreeAdd('Choisir le champ en double que vous souhaitez supprimer / Select the duplicate field to delete :', '');
+    PickTreeAdd('Titre Original (Original Title)', IntToStr(fieldOriginalTitle));
+    PickTreeAdd('Titre Traduit (Translated Title)', IntToStr(fieldTranslatedTitle));
+    PickTreeExec(Field);
+  end;
+
+  DeleteTitre(StrToInt(Field,0));
+
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME UN MOT D'UNE CHAINE
+//------------------------------------------------------------------------------
+
+procedure deleteWord(Champ : Integer);
+var
+  i,j, fin, finTitle : Integer;
+  title, temp, avant, apres : String;
+begin
+  if (confirm('Vous allez supprimer un mot d''un champ / You will delete a word of the field.') = True) then
+  begin
+    title := ' '+GetFieldOrCustomField(Champ)+' ';
+    if (NewField = '') then
+      Input('Delete a Word by ScorEpioN', 'Entrez le mot à supprimer / Word to delete :', NewField);
+    NewField := StringReplace(NewField, '#13#10', #13#10);
+    i:=pos(NewField,title);
+    if i <> 0 then
+    begin
+      fin := length(NewField);
+      avant := copy(title,i-1,1);
+      apres := copy(title,i+fin,1);
+      if (avant = ' ') and (apres = ' ') then
+      begin
+        finTitle := length(title);
+        title := copy(title,1,i-1)+copy(title,i+fin,finTitle-i-fin+1);
+        title := StringReplace(title, '  ', ' ');
+      end;
+    end;
+    SetFieldOrCustomField(Champ, Trim(title));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// REMPLACE UN MOT DANS UN CHAMP
+//------------------------------------------------------------------------------
+
+procedure replaceWord(Champ : Integer);
+begin
+  if (confirm('Vous allez remplacer un mot dans un champ / You will subtitute a word in the field.') = True) then
+  begin
+    if (NewField = '') then
+      Input('Replace a Word by ScorEpioN', 'Entrez le mot à remplacer / Word you replace :', NewField);
+    NewField := StringReplace(NewField, '#13#10', #13#10);
+    if (NewValue = '') then
+      Input('Replace a Word by ScorEpioN', 'Entrez le nouveau mot / New word :', NewValue);
+    SetFieldOrCustomField(Champ, StringReplace(GetFieldOrCustomField(Champ), NewField, NewValue));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// REMPLACE LE CONTENU D'UN CHAMP
+//------------------------------------------------------------------------------
+
+procedure replaceField(Champ : Integer);
+begin
+  if (confirm('Vous allez remplacer le contenu d''un champ / You will replace the field contents.') = True) then
+  begin
+    if (NewField = '') then
+      Input('Replace a Field by ScorEpioN', 'Entrez la nouvelle valeur du champ / Enter the new contents of field :', NewField);
+    SetFieldOrCustomField(Champ, NewField);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// EFFACE LE CONTENU D'UN CHAMP
+//------------------------------------------------------------------------------
+
+procedure deleteField(Champ : Integer);
+begin
+  if (confirm('Vous allez effacer le contenu d''un champ / You will delete field contents.') = True) then
+  begin
+    SetFieldOrCustomField(Champ, '');
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// COCHE LE FILM SI LE CONTENU DU CHAMP EST VIDE
+//------------------------------------------------------------------------------
+
+procedure checkEmptyField(Champ : Integer);
+begin
+  if (confirm('Vous allez cocher les films ayant le champ choisi vide / You will check empty selected field.') = True) then
+  begin
+    if (GetFieldOrCustomField(Champ) = '') then
+      SetField(fieldChecked, 'x')
+    else
+      SetField(fieldChecked, '');
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// IMPORTER UNE IMAGE A PARTIR DE SON URL
+//------------------------------------------------------------------------------
+
+procedure NewImage();
+begin
+  if (confirm('Vous allez importer une nouvelle image / You will import picture.') = True) then
+  begin
+    if (NewField = '') then
+      Input('Import Image by URL', 'Entrez l''URL de l''image / Enter URL of picture :', NewField);
+    GetPicture(NewField);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// TRANSFORME LES NATIONALITES EN PAYS
+//------------------------------------------------------------------------------
+
+procedure transformPays();
+begin
+  if (confirm('Vous allez transformer les nationalités du champ Pays, en nom de pays / You will change the nationality in field country to country.') = True) then
+  begin
+    if CanSetField(fieldCountry) then
+      SetField(fieldCountry, transformCountry(GetField(fieldCountry)));
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// CLASSE PAR ORDRE CROISSANT LES VALEURS D'UN CHAMP
+//------------------------------------------------------------------------------
+
+procedure range(Champ : Integer);
+var
+  aList: TStringListEx;
+  lpos: longint;
+begin
+  if (confirm('Vous allez ranger les valeurs du champ par ordre croissant. / You will order value of field by ascendant order.') = True) then
+  begin
+    NewField := Trim(GetFieldOrCustomField(Champ));
+    if NewField <> '' then
+    begin
+      lpos := length(NewField);
+      if (StrGet(NewField, lpos) = '.') then
+        Delete(NewField, lpos, 1);
+      aList := TStringListEx.Create;
+      aList.DelimitedAMCText := NewField;
+      aList.Sort;
+      NewField := aList.DelimitedAMCText;
+      aList.Free;
+      SetFieldOrCustomField(Champ, NewField);
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+procedure rangeOld(Champ : Integer);
+var
+  OrdField : TStringList;
+  i1, i2, imin: Integer;
+  min, min2: String;
+begin
+  i2 := 0;
+  if (confirm('Vous allez ranger les valeurs du champ par ordre croissant. / You will order value of field by ascendant order.') = True) then
+  begin
+    NewField := GetFieldOrCustomField(Champ);
+    if Pos(',', NewField) > 0 then
+    begin
+      repeat
+        i2 := i2 + 1 ;
+        NewField := copy(NewField, Pos(',', NewField) + 1, Length(NewField));
+      until (Pos(',', NewField) = 0);
+    end
+    NewField := GetFieldOrCustomField(Champ);
+    OrdField := TStringList.Create;
+    for i1 := 0 to i2 do
+    begin
+      min := TextBefore(NewField, ',' , '');
+      if min = '' then
+      min := NewField;
+      Delete(NewField, 1, Pos(',', NewField) + 1);
+      OrdField.Add(min);
+    end;
+    SortList(OrdField);
+    NewField := OrdField.Text;
+    NewField := StringReplace(NewField, #13#10, ', ');
+    NewField := copy(NewField, 1, Length(NewField)-2);
+    OrdField.Free;
+    SetFieldOrCustomField(Champ, NewField);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// PROCEDURE POUR METTRE LA TAILLE TOTALE DES FICHIERS
+//------------------------------------------------------------------------------
+procedure tailleFichier();
+var
+  i, Total: Integer;
+  s: string;
+begin
+  i := 1;
+  Total := 0;
+  s := GetField(fieldSize);
+  while i <= Length(s) do
+  begin
+    if (StrGet(s, i) >= '0') and (StrGet(s, i) <= '9') then
+      i := i + 1
+    else
+    begin
+      if i > 1 then
+        Total := Total + StrToInt(Copy(s, 1, i - 1), 0);
+      Delete(s, 1, i);
+      i := 1;
+    end;
+  end;
+  if i > 1 then
+  begin
+    Total := Total + StrToInt(Copy(s, 1, i - 1), 0);
+    SetField(fieldSize, IntToStr(Total));
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// TRADUIT LE CHAMP DESCRIPTION
+//------------------------------------------------------------------------------
+
+procedure translateSynopsis(Champ : Integer);
+var
+   Adresse, Parametre, Description, Resultat, Line : String;
+   BeginPos, EndPos : Integer;
+begin
+  if (confirm('Vous allez traduire le champ choisi. / You will translate the selected field.') = True) then
+  begin
+    if (NewField = '') then
+    begin
+      PickTreeClear;
+      if CheckVersion(4,1,2) = True then
+        PickTreeTitle('Sélectionner une traduction (Translation selection)');
+      PickTreeAdd('Sélectionner les langues source et cible / Select the original language and the wanted :', '');
+      PickTreeAdd('Du chinois simpl. vers l''anglais / chinese to english', 'zh_en');
+      PickTreeAdd('Du chinois trad. vers l''anglais / traditional chinese to english', 'zt_en');
+      PickTreeAdd('De l''anglais vers le chinois simpl. / english to chinese', 'en_zh');
+      PickTreeAdd('De l''anglais vers le chinois trad. / english to traditional chinese', 'en_zt');
+      PickTreeAdd('De l''anglais vers le hollandais / english to danish', 'en_nl');
+      PickTreeAdd('De l''anglais vers le français / english to french', 'en_fr');
+      PickTreeAdd('De l''anglais vers l''allemand / english to dutch', 'en_de');
+      PickTreeAdd('De l''anglais vers le grec / english to greek', 'en_el');
+      PickTreeAdd('De l''anglais vers l''italien / english to italian', 'en_it');
+      PickTreeAdd('De l''anglais vers le japonais / english to japanese', 'en_ja');
+      PickTreeAdd('De l''anglais vers coréen / english to korean', 'en_ko');
+      PickTreeAdd('De l''anglais vers le portugais / english to portugese', 'en_pt');
+      PickTreeAdd('De l''anglais vers le russe / english to russian', 'en_ru');
+      PickTreeAdd('De l''anglais vers l''espagnol / english to spanish', 'en_es');
+      PickTreeAdd('Du hollandais vers l''anglais /  danish to english', 'nl_en');
+      PickTreeAdd('Du hollandais vers le français /  danish to french', 'nl_fr');
+      PickTreeAdd('Du français vers le hollandais /  french to danish', 'fr_nl');
+      PickTreeAdd('Du français vers l''anglais /  french to english', 'fr_en');
+      PickTreeAdd('Du français vers l''allemand /  french to dutch', 'fr_de');
+      PickTreeAdd('Du français vers le grec /  french to greek', 'fr_el');
+      PickTreeAdd('Du français vers l''italien /  french to italian', 'fr_it');
+      PickTreeAdd('Du français vers le portugais /  french to portugese', 'fr_pt');
+      PickTreeAdd('Du français vers l''espagnol /  french to spanish', 'fr_es');
+      PickTreeAdd('De l''allemand vers l''anglais /  dutch to english', 'de_en');
+      PickTreeAdd('De l''allemand vers le français /  dutch to french', 'de_fr');
+      PickTreeAdd('Du grec vers l''anglais /  greek to english', 'el_en');
+      PickTreeAdd('Du grec vers le français /  greek to french', 'el_fr');
+      PickTreeAdd('De l''italien vers l''anglais /  italian to english', 'it_en');
+      PickTreeAdd('De l''italien vers le français /  italian to french', 'it_fr');
+      PickTreeAdd('Du japonais vers l''anglais /  japanese to english', 'ja_en');
+      PickTreeAdd('Du coréen vers l''anglais /  korean to english', 'ko_en');
+      PickTreeAdd('Du portugais vers l''anglais /  portugese to english', 'pt_en');
+      PickTreeAdd('Du portugais vers le français /  portugese to french', ' pt_fr');
+      PickTreeAdd('Du russe vers l''anglais /  russian to english', 'ru_en');
+      PickTreeAdd('De l''espagnol vers l''anglais /  spanish to english', 'es_en');
+      PickTreeAdd('De l''espagnol vers le français /  spanish to french', 'es_fr');
+      PickTreeAdd('Du Chinois simp. vers chinois trad. /  chinese to traditional chinese', 'zh_zt');
+      PickTreeAdd('Du Chinois trad. vers chinois simp. /  traditional chinese to chinese', 'zt_zh');
+      PickTreeExec(NewField);
+    end;
+   Description := GetFieldOrCustomField(Champ);
+   Description := StringReplace(Description , #13#10, ' ');
+   Adresse := URLEncode('http://babelfish.altavista.com/tr');
+   Parametre := 'doit =done&intl=1&tt=urltext&trtext='+Description+'&lp='+NewField;
+   Line := PostPage(Adresse,Parametre);
+   BeginPos := Pos('<div id="result"><div', Line);
+   Delete(Line, 1, BeginPos+44);
+   EndPos := Pos('</div></div>', Line);
+   Resultat := Copy(Line, 1, EndPos-1 );
+   Resultat := StringReplace(Resultat, #13#10, ' ');
+   Resultat := StringReplace(Resultat,'&#039 ;', '"');
+   HTMLDecode(Resultat);
+   HTMLRemoveTags(Resultat);
+   SetFieldOrCustomField(Champ, Resultat);
+  end else
+  begin
+    abort := 'O';
+  end;    
+end;
+
+//------------------------------------------------------------------------------
+// TRANSFORME UN CHEMIN RELATIF EN CHEMIN ABSOLU SI LE CHEMIN RENSEIGNE EXISTE
+//------------------------------------------------------------------------------
+
+procedure transformToRelPath(Champ : Integer);
+var
+  path: string;
+begin
+  if (confirm('Vous allez transformer les chemins absolus en chemins relatifs / You will transform absolute paths to relative paths.') = True) then
+  begin
+    if dirCurrentCatalog = '' then
+      exit; // Catalog has not been saved yet so we can not manage relative paths
+    path := GetFieldOrCustomField(Champ);
+    if Length(path) < 2 then
+      exit; // Path can not be an absolute path
+    if StrGet(path, 2) <> ':' then
+      exit; // Path is not an absolute path
+    if FileExists(path) then
+    begin
+      path := ExtractRelativePath(dirCurrentCatalog, path);
+      SetFieldOrCustomField(Champ, path);
+    end;
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// TRANSFORME UN CHEMIN ABSOLU EN CHEMIN RELATIF SI LE CHEMIN RENSEIGNE EXISTE
+//------------------------------------------------------------------------------
+
+procedure transformToAbsPath(Champ : Integer);
+var
+  path: string;
+begin
+  if (confirm('Vous allez transformer les chemins relatifs en chemins absolus / You will transform relative paths to absolute paths.') = True) then
+  begin
+    if dirCurrentCatalog = '' then
+      exit; // Catalog has not been saved yet so we can not manage relative paths
+    path := GetFieldOrCustomField(Champ);
+    if Length(path) >= 2 then
+      if StrGet(path, 2) = ':' then
+        exit; // Path is already an absolute path
+    path := ExpandFileName(path);
+    if FileExists(path) then
+      SetFieldOrCustomField(Champ, path);
+  end else
+  begin
+    abort := 'O';
+  end;
+end;
+//------------------------------------------------------------------------------
+// FONCTION QUI AFFICHE LE MENU ET RETOURNE L'ACTION CHOISIE
+//------------------------------------------------------------------------------
+function menu() : String;
+begin
+  PickTreeClear;
+  if CheckVersion(4,1,2) = True then
+    PickTreeTitle('Sélectionner une action (Action selection)');
+  PickTreeAdd('Importer une image depuis son url (Import Image by URL)', 'NewImage');
+  PickTreeAdd('Dupliquer le contenu d''une fiche (Duplicate card)', 'Duplicate');
+  PickTreeAdd('Déplacer les commentaires dans la description (Move Comments -> Description)', 'Move');
+  PickTreeAdd('Changer la casse en fonction de l''option choisie (Change letter format with option)', 'Casse');
+  PickTreeAdd('Cocher les films si champ vide (Check Empty Field)', 'checkEmptyField');
+  PickTreeAdd('Supprimer des titres les tags (Remove title tags)', 'Tags');
+  PickTreeAdd('Copier titre si un titre vide (Copy Title If Empty Title)', 'Copier');
+  PickTreeAdd('Copier titre si format audio vide (Copy Title If Empty Audio Format)', 'Local');
+  PickTreeAdd('Copier champ1 dans champ2 (Copy field1 in field2)', 'Champ');
+  PickTreeAdd('Supprimer titre en double (Delete Double Title)', 'DeleteDouble');
+  PickTreeAdd('Supprimer le contenu d''un champ (Delete a field)', 'deleteF');
+  PickTreeAdd('Remplacer le contenu d''un champ (Replace a field)', 'replaceF');
+  PickTreeAdd('Supprimer un mot dans un champ (Delete a word)', 'deleteW');
+  PickTreeAdd('Remplacer un mot dans un champ (Replace a word)', 'replaceW');
+  PickTreeAdd('Transformer Nationalité en Pays  (Transform Nationality to Country)', 'transformPays');
+  PickTreeAdd('Format ''Somme'' pour la taille des fichiers  (Sum Format to Size Field)', 'tailleFichier');
+  PickTreeAdd('Traduire la description avec Altavista (Translate Synopsis with Altavista)', 'Translate');
+  PickTreeAdd('Classe les valeurs du champ par ordre croissant (Class field value by ascendant order)', 'Order');
+  PickTreeAdd('Transformer les chemins absolus en chemins relatifs (Transform absolute paths into relative paths)', 'transformToRelPath');
+  PickTreeAdd('Transformer les chemins relatifs en chemins absolus (Transform relative paths into absolute paths)', 'transformToAbsPath');
+  PickTreeExec(Update);
+  result := Update;
+end;
+
+//------------------------------------------------------------------------------
+// FONCTION QUI AFFICHE LA LISTE DES CHAMPS
+//------------------------------------------------------------------------------
+procedure menuChamps(lAction : String);
+var
+  selectedField: Integer;
+begin
+  if (FirstExec <> 'N') then
+  begin
+    if lAction = 'Champ' then
+      selectedField := SelectFieldOrCustomField2('Sélectionner un champ (Field selection)', 'Sélectionner le champ source (Select source field) :')
+    else if lAction = 'Champ2' then
+      selectedField := SelectFieldOrCustomField2('Sélectionner un champ (Field selection)', 'Sélectionner le champ destination (Select target field) :')
+    else
+      selectedField := SelectFieldOrCustomField2('Sélectionner un champ (Field selection)', '');
+    if selectedField <> -1 then
+      Field := IntToStr(selectedField)
+    else
+      Field := '';
+  end;
+
+  if Field <> '' then
+  begin
+    if (lAction = 'checkEmptyField') then
+    begin
+      checkEmptyField(StrToInt(Field,0));
+    end else
+    if (lAction = 'Champ') then
+    begin
+      CopyField(StrToInt(Field,0));
+    end else
+    if (lAction = 'Champ2') then
+    begin
+    end else
+    if (lAction = 'deleteW') then
+    begin
+      deleteWord(StrToInt(Field,0));
+    end else
+    if (lAction = 'deleteF') then
+    begin
+      deleteField(StrToInt(Field,0));
+    end else
+    if (lAction = 'Order') then
+    begin
+      range(StrToInt(Field,0));
+    end else
+    if (lAction = 'replaceW') then
+    begin
+      replaceWord(StrToInt(Field,0));
+    end else
+    if (lAction = 'Translate') then
+    begin
+       translateSynopsis(StrToInt(Field,0));
+    end else
+    if (lAction = 'replaceF') then
+    begin
+      replaceField(StrToInt(Field,0));
+    end else
+    if (lAction = 'transformToRelPath') then
+    begin
+      transformToRelPath(StrToInt(Field,0));
+    end else
+    if (lAction = 'transformToAbsPath') then
+    begin
+      transformToAbsPath(StrToInt(Field,0));
+    end;
+  end else
+    abort := 'O';
+end;
+
+//------------------------------------------------------------------------------
+// PROCEDURE POUR EXECUTER LA TACHE CHOISIE
+//------------------------------------------------------------------------------
+procedure executeTask();
+begin
+   if (Update = 'NewImage') then
+   begin
+     NewImage();
+   end else if (Update = 'checkEmptyField') then
+   begin
+     menuChamps('checkEmptyField');
+   end else if (Update = 'transformPays') then
+   begin
+     transformPays();
+   end else if (Update = 'Move') then
+   begin
+     moveComment();
+   end else if (Update = 'Tags') then
+   begin
+     SetField(fieldTranslatedTitle, casse(cleanTitle(GetField(fieldTranslatedTitle)),GetOption('Casse Choisie')));
+     SetField(fieldOriginalTitle, casse(cleanTitle(GetField(fieldOriginalTitle)),GetOption('Casse Choisie')));
+   end else if (Update = 'Casse') then
+   begin
+     UpdateCasse();
+   end else if (Update = 'tailleFichier') then
+   begin
+     tailleFichier();
+   end else if (Update = 'DeleteDouble') then
+   begin
+     menuTitre();
+   end else if (Update = 'Copier') then
+   begin
+     CopyTitle();
+   end else if (Update = 'Local') then
+   begin
+     CopyLocal();
+   end else if (Update = 'Champ') then
+   begin
+     menuChamps('Champ');
+   end else if (Update = 'deleteW') then
+   begin
+     menuChamps('deleteW');
+   end else if (Update = 'deleteF') then
+   begin
+     menuChamps('deleteF');
+   end else if (Update = 'replaceW') then
+   begin
+     menuChamps('replaceW');
+   end else if (Update = 'replaceF') then
+   begin
+     menuChamps('replaceF');
+   end else if (Update = 'Order') then
+   begin
+     menuChamps('Order');
+   end else if (Update = 'Translate') then
+   begin
+     menuChamps('Translate');
+   end else if (Update = 'Duplicate') then
+   begin
+     duplicateFields();
+   end else if (Update = 'transformToRelPath') then
+   begin
+     menuChamps('transformToRelPath');
+   end else if (Update = 'transformToAbsPath') then
+   begin
+     menuChamps('transformToAbsPath');
+   end;
+end;
+
+//------------------------------------------------------------------------------
+// Vérifie s'il existe une nouvelle version du script
+// et propose de la télécharger
+//------------------------------------------------------------------------------
+procedure CheckScriptVersion();
+var
+  Page, Script: TStringList;
+  Line, ScriptsDirectory, FileName, ScriptText, Fich: string;
+  LineNr, BeginPos, EndPos: Integer;
+  CurrentVersion, NewVersion: real;
+
+begin
+  Page := TStringList.Create;
+  FileName := UrlEncode(ScriptName);
+  FileName := UrlEncode(SiteUrl) + FileName;
+  FileName := StringReplace(FileName, '%2E', '.');
+  FileName := StringReplace(FileName, '+', '%20');
+  FileName := StringReplace(FileName, '%3A', ':');
+  FileName := StringReplace(FileName, '%2F', '/');
+  Page.Text := GetPage(FileName);
+  ScriptsDirectory := dirScripts;
+  LineNr := FindLine('Version=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Version=', Line) + 8;
+    EndPos := pos(' du', Line);
+    CurrentVersion := StrToFloat(copy(VersionScript, 1, pos('du', VersionScript) - 2));
+    NewVersion := StrToFloat(copy(Line, BeginPos, EndPos - BeginPos));
+    if (NewVersion > CurrentVersion) then
+    begin
+      if ShowConfirmation('Une nouvelle version du script est disponible : ' + copy(Line, BeginPos, EndPos - BeginPos)+ #13#10#13#10 + '- Cliquez sur ''''Oui'''' pour effectuer la mise à jour.' + #13#10#13#10 + '- Cliquez sur ''''Non'''' dans le cas contraire.') = True then
+        begin
+          FileName := ScriptName;
+          Sleep(500);
+          ScriptText := Page.Text;
+          Script := TStringList.Create;
+          Script.Add(ScriptText);
+          FileName := StringReplace(FileName, '%20', ' ');
+          Script.SaveToFile(ScriptsDirectory + FileName);
+          Maj := 1;
+          ShowInformation('Vous avez mis à jour le script, quitter la fenêtre de scripts et relancez la.');
+          Script.Free;
+        end;
+    end else
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  PMaj := PMaj+ 1;
+  if CheckVersion(4,1,2) then
+  begin
+    Maj := 0;
+    if (GetOption('Mise à jour') = 1) and (PMaj = 1) then
+    begin
+       CheckScriptVersion();
+       if Maj = 1 then exit;
+    end;
+    if (Abort <> 'O') then
+    begin
+      if (Update = '') then
+        Update := menu();
+      executeTask();
+      FirstExec := 'N';
+    end else
+    begin
+      exit;
+    end;
+  end else
+    ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 4.1.2)');
+    exit;
+end.

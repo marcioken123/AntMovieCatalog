@@ -1,0 +1,356 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Karamov Ilshat aka KAA (kaa2@pisem.net)
+Title=Kinoafisha (RU)
+Description=Import from www.kinoafisha.ru
+Site=www.kinoafisha.ru
+Language=RU
+Version=1.0
+Requires=3.5.0
+Comments=Доступ к описаниям фильмов, размещенных на сайте www.kinoafisha.ru
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Kinoafisha_ru;
+
+const
+  BaseAddress = 'http://www.kinoafisha.ru/';
+
+var
+  MovieName: string;
+
+//==============================================================================
+  procedure AnalyzePage(Address: string);
+  var
+    Page: TStringList;
+    BeginPos, EndPos: Integer;
+    AddressText, HTMLText : string;
+  begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  HTMLText := Page.Text;
+
+  PickTreeClear;
+  PickTreeAdd('Доступные фильмы', '');
+
+  if Pos('Результаты поиска на KinoAfisha.ru', HTMLText) <> 0 then
+  begin
+    BeginPos := Pos('Найдены фильмы:</b></td></tr>', HTMLText)+Length('Найдены фильмы:</b></td></tr>');
+    if BeginPos=0 then
+       BeginPos := Pos('Найдены фильмы:</td></tr>', HTMLText)+Length('Найдены фильмы:</td></tr>');
+    HTMLText := Copy(HTMLText, BeginPos, Length(HTMLText));
+    EndPos :=  Pos(' </TABLE>', HTMLText);
+    HTMLText := Copy(HTMLText, 0, EndPos);
+    Page.Text:=Trim(HTMLText);
+
+    AddMoviesTitles(Page);
+    if PickTreeExec(AddressText) then
+    begin
+      Page.Text := GetPage(AddressText);
+      // URL
+      if CanSetField(fieldURL) then
+        SetField(fieldURL, AddressText);
+      AnalyzeVideoPage(Page);
+    end;
+  end
+  else
+  begin
+    if Pos('Извините, ничего не найдено', HTMLText) = 0 then
+    begin
+      // Наименование
+      BeginPos := Pos('<title>', HTMLText)+Length('<title>');
+      EndPos := Pos(' - Киноафиша Ру', HTMLText);
+      MovieName := Copy(HTMLText, BeginPos, EndPos-BeginPos);
+      PickTreeAdd(MovieName, Address);
+      if PickTreeExec(AddressText) then
+      begin
+        // URL
+        if CanSetField(fieldURL) then
+          SetField(fieldURL, Address);
+        Page.Text := HTMLText;
+        AnalyzeVideoPage(Page);
+      end;
+    end;
+  end;
+
+  Page.Free;
+end;
+
+
+//==============================================================================
+  procedure AddMoviesTitles(Page: TStringList);
+  var
+    i: integer;
+    Line: string;
+    MovieTitle, MovieAddress: string;
+    StartPos, EndPos: Integer;
+  begin
+    for  i:=0  to Page.Count-1 do
+    begin
+      Line := Page.GetString(i);
+      if Line='' then
+        Continue;
+      StartPos := Pos('<a href="', Line)+Length('<a href="');
+      Line := Copy(Line, StartPos, Length(Line));
+      EndPos := Pos('">', Line);
+      MovieAddress := BaseAddress+Copy(Line, 0, EndPos-1);
+      StartPos := Pos('">', Line);
+      EndPos := Pos('</td></tr>', Line);
+      MovieTitle := Copy(Line, StartPos+Length('">'), EndPos);
+      HTMLRemoveTags(MovieTitle);
+      PickTreeAdd(MovieTitle, MovieAddress);
+    end;
+  end;
+
+//==============================================================================
+  procedure AnalyzeVideoPage(Page: TStringList);
+  var
+    HTMLText, HTMLText1: string;
+    BeginPos, EndPos: Integer;
+    MovieName, MovieNameTrans, MovieNameOrig, MovieDirector,
+               MovieYear, MovieCategory, MovieRating,
+               MoviePictureAddress, MovieLength, MovieCountry,
+               MovieDescription, MovieActors, MovieProducer,
+               MovieComments: string;
+  begin
+  HTMLText:=Page.Text;
+  if Pos('Киноафиша Ру', HTMLText) = 0 then
+     exit;
+
+  // Наименование
+  BeginPos := Pos('<title>', HTMLText)+Length('<title>');
+  EndPos := Pos(' - Киноафиша Ру', HTMLText);
+  MovieName := Copy(HTMLText, BeginPos, EndPos-BeginPos);
+  EndPos := Pos(' - ', MovieName);
+  MovieNameTrans := Copy(MovieName, 0, EndPos);
+  BeginPos := Pos(' - ', MovieName)+Length(' - ');
+  MovieNameOrig := Copy(MovieName, BeginPos, Length(MovieName));
+  
+  if CanSetField(fieldTranslatedTitle) then
+    SetField(fieldTranslatedTitle, MovieNameTrans);
+
+  // Оригинальное наименование
+  if CanSetField(fieldOriginalTitle) then
+     SetField(fieldOriginalTitle, MovieNameOrig);
+
+  // Режиссеры
+  if CanSetField(fieldDirector) then
+    begin
+    if Pos('<b>Режиссер</b><br><a', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Режиссер</b><br><a', HTMLText)+Length('<b>Режиссер</b><br><a');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        BeginPos := Pos('>', HTMLText1)+Length('>');
+        EndPos := Pos('</a></td></tr></table><br>', HTMLText1);
+        MovieDirector := Copy(HTMLText1, BeginPos, EndPos-BeginPos);
+
+        HTMLRemoveTags(MovieDirector);
+        MovieDirector:=Trim(MovieDirector);
+        SetField(fieldDirector, Trim(MovieDirector));
+      end
+      else
+      begin
+        if Pos('Режиссёр:', HTMLText) <> 0 then
+          begin
+            BeginPos := Pos('Режиссёр:', HTMLText)+Length('Режиссёр:');
+            HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+            EndPos := Pos('.', HTMLText1);
+            MovieDirector := Trim(Copy(HTMLText1, 0, EndPos-1));
+            HTMLRemoveTags(MovieDirector);
+            SetField(fieldDirector, MovieDirector);
+          end
+        if Pos('Режиссер:', HTMLText) <> 0 then
+          begin
+            BeginPos := Pos('Режиссер:', HTMLText)+Length('Режиссер:');
+            HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+            EndPos := Pos('.', HTMLText1);
+            MovieDirector := Trim(Copy(HTMLText1, 0, EndPos-1));
+            HTMLRemoveTags(MovieDirector);
+            SetField(fieldDirector, MovieDirector);
+          end
+      end;
+    end;
+
+  // Год
+  if CanSetField(fieldYear) then
+    begin
+    if Pos('(<span class="year">', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('(<span class="year">', HTMLText)+Length('(<span class="year">');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('</span>)', HTMLText1);
+        MovieYear := Copy(HTMLText1, 0, EndPos-1);
+        SetField(fieldYear, MovieYear);
+      end;
+    end;
+
+  // Жанр
+  if CanSetField(fieldCategory) then
+    begin
+    if Pos('Жанр:</b> <font color="#0000df">', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('Жанр:</b> <font color="#0000df">', HTMLText)+Length('Жанр:</b> <font color="#0000df">');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('</font>', HTMLText1);
+        MovieCategory := Copy(HTMLText1, 0, EndPos-1);
+        SetField(fieldCategory, MovieCategory);
+      end;
+    end;
+
+   // Рейтинг
+  if CanSetField(fieldRating) then
+    begin
+    if Pos('<b>Наш рейтинг:</b>', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Наш рейтинг:</b>', HTMLText)+Length('<b>Наш рейтинг:</b>');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        BeginPos := Pos('<b>', HTMLText1)+Length('<b>');
+        EndPos := Pos('</b>', HTMLText1);
+        MovieRating := Copy(HTMLText1, BeginPos, EndPos-BeginPos);
+        SetField(fieldRating, MovieRating);
+      end;
+    end;
+
+   // Продолжительность
+  if CanSetField(fieldLength) then
+    begin
+    if Pos('<b>Продолжительность:</b>', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Продолжительность:</b>', HTMLText)+Length('<b>Продолжительность:</b>');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('минут<br>', HTMLText1);
+        MovieLength := Trim(Copy(HTMLText1, 0, EndPos-1));
+        SetField(fieldLength, MovieLength);
+      end;
+    end;
+    
+   // Страна
+  if CanSetField(fieldCountry) then
+    begin
+    if Pos('<b>Страна:</b>', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Страна:</b>', HTMLText)+Length('<b>Страна:</b>');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('<br>', HTMLText1);
+        MovieCountry := Trim(Copy(HTMLText1, 0, EndPos-1));
+        SetField(fieldCountry, MovieCountry);
+      end;
+    end;
+    
+   // Фабула
+  if CanSetField(fieldDescription) then
+    begin
+    if Pos('<b>Фабула:</b>', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Фабула:</b>', HTMLText)+Length('<b>Фабула:</b>');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('<br>', HTMLText1);
+        MovieDescription := Trim(Copy(HTMLText1, 0, EndPos-1));
+        SetField(fieldDescription, MovieDescription);
+      end;
+    end;
+
+   // Актеры
+  if CanSetField(fieldActors) then
+    begin
+    if Pos('В ролях:', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('В ролях:', HTMLText)+Length('В ролях:');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('.', HTMLText1);
+        MovieActors := Trim(Copy(HTMLText1, 0, EndPos-1));
+        SetField(fieldActors, MovieActors);
+      end
+      else
+      begin
+        if Pos('<b>Звезды:</b>', HTMLText) <> 0 then
+          begin
+            BeginPos := Pos('<b>Звезды:</b>', HTMLText)+Length('<b>Звезды:</b>');
+            HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+            EndPos := Pos('<br>', HTMLText1);
+            MovieActors := Trim(Copy(HTMLText1, 0, EndPos-1));
+            HTMLRemoveTags(MovieActors);
+            SetField(fieldActors, MovieActors);
+          end
+      end;
+    end;
+
+   // Продюсеры
+  if CanSetField(fieldProducer) then
+    begin
+    if Pos('Продюсер:', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('Продюсер:', HTMLText)+Length('Продюсер:');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('.', HTMLText1);
+        MovieProducer := Trim(Copy(HTMLText1, 0, EndPos-1));
+        SetField(fieldProducer, MovieProducer);
+      end
+      else
+      begin
+        if Pos('Продюсеры:', HTMLText) <> 0 then
+          begin
+            BeginPos := Pos('Продюсеры:', HTMLText)+Length('Продюсеры:');
+            HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+            EndPos := Pos('.', HTMLText1);
+            MovieProducer := Trim(Copy(HTMLText1, 0, EndPos-1));
+            SetField(fieldProducer, MovieProducer);
+          end
+      end;
+    end;
+
+   // Коментарий
+  if CanSetField(fieldComments) then
+    begin
+    if Pos('<b>Рецензия', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('<b>Рецензия', HTMLText);//+Length('<b>Рецензия');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        EndPos := Pos('<table', HTMLText1);
+        MovieComments := Trim(Copy(HTMLText1, 0, EndPos-1));
+        HTMLRemoveTags(MovieComments);
+        SetField(fieldComments, MovieComments);
+      end;
+    end;
+
+  // Картинка
+  if CanSetPicture then
+    begin
+    if Pos('poster.jpg', HTMLText) <> 0 then
+      begin
+        BeginPos := Pos('filmname', HTMLText)+Length('filmname');
+        HTMLText1:=Copy(HTMLText, BeginPos, Length(HTMLText));
+        BeginPos := Pos('><tr><td><a href="', HTMLText1)+Length('><tr><td><a href="');
+        EndPos := Pos('"><img', HTMLText1);
+        MoviePictureAddress := Copy(HTMLText1, BeginPos, EndPos-BeginPos);
+        GetPicture(MoviePictureAddress);
+      end;
+    end;
+  //DisplayResults;
+end;
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+
+    if Input('Import from Kinoafisha.ru', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.kinoafisha.ru/search.php3?find=all&search='+UrlEncode(MovieName));
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

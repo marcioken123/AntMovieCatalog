@@ -1,0 +1,713 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Andrea Cristaudo (<link>achris@tiscalinet.it</link>) & Stefano Mora (<link>stefano.mora@libero.it</link>) & Necrodeath & AttSta (<link>supertramp7@gmail.com</link>) & Fulvio53s03 & MrObama
+Title=Cinematografo.it
+Description=Script per il sito Cinematografo.it
+Site=http://www.cinematografo.it
+Language=IT
+Version=1.19 - 17.03.2018 MrObama
+Requires=3.5.0
+Comments=(c) 2003 Andrea Cristaudo (<link>achris@tiscalinet.it</link>)|(c) 2005 Necrodeath|(c) 2009 Stefano Mora (<link>stefano.mora@libero.it</link>)|(c) 2012 AttSta (<link>supertramp7@gmail.com</link>)|(c) 2012 Fulvio53s03
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+NoPersonaggio=1|1|1=Non riporto il nome del personaggio|0=Riporto il nome del personaggio
+NoTrattoDa=0|0|1=Non inserisco la descrizione 'Tratto da'|0=Includo l'eventuale descrizione 'Tratto da'
+NoNote=0|0|1=Non riporto le 'Note'|0=Riporto le 'Note'
+
+[Parameters]
+
+***************************************************)
+
+program Cinematografo;
+var
+  MovieName, titolo_tradotto, titolo_originale: string;
+  idx : integer;
+
+const
+  PATHLOG = 'c:\Programmi\Ant Movie Catalog\Log\Cinematografo\';
+  //MOVIE = '';
+  SITE = 'http://www.cinematografo.it';
+  SITE1 = 'http://wwwd.cinematografo.glauco.it/bancadati/consultazione/';
+  SITE3 = '&completa=si';
+  
+// -- Formatta la stringa cercando le prime lettere rendendole maiuscole
+function PrimeMaiu(str: string): string;
+begin
+  str := AnsiLowerCase(str);
+  str := AnsiMixedCase(str, ' -/');
+  Result := str;
+end;
+
+// ---
+
+function RemoveTabs(Pattern: string): string;
+begin
+  repeat
+    Delete(Pattern, 1, 1);
+  until ord(copy(Pattern, 1, 1)) <> 9;
+  result := Pattern;
+end;
+
+function Space2html(Url: string): string;
+var
+  Temp : string;
+  SpacePos : Integer;
+begin
+  repeat
+    SpacePos := pos(' ', Url);
+    if SpacePos <> 0 then
+      begin
+        Temp := copy(Url, 1, SpacePos -1);
+        Delete(Url, 1, SpacePos);
+        Temp := Temp + '%20' + Url;
+        Url := Temp;
+      end;
+  until pos(' ', Url) = 0;
+
+  result := Url;
+end;
+
+//Elimina il personaggio interpretato dall'attore --- Necrodeath (2005)
+
+Function TogliPersonaggio(Line : string) : string;
+var
+  lunghezza, i : integer;
+  tmp, t: string;
+  elimino : boolean;
+  
+Begin
+  lunghezza := length(Line);
+  i := 0;
+  
+  while i <= lunghezza do
+  Begin
+    i := i+1;
+    tmp := copy(Line, i, 1);
+    elimino := false;
+    if (tmp = ':')  then
+      Begin
+        elimino := true;
+        while elimino = true do
+          Begin
+            tmp := copy(Line, i, 1);
+            i := i+1;
+            if (tmp = '@') then
+              Begin
+                if (i <>  lunghezza + 1) then
+                  begin
+                    t := t + tmp;
+                  end
+              elimino := false;
+            end;
+          end;
+      end
+    else
+      Begin
+        t := t + tmp;
+    end;
+  end;
+  TogliPersonaggio := t;
+end;
+
+
+// ---
+
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+// ----
+// Analizza la lista dei risultati ricerca
+procedure AnalyzeResults(Address: string);
+var
+  Page: TStringList;
+  LineNr: integer;
+  BeginPos: integer;
+  Line: string;
+  xPos: integer;
+  yPos: integer;
+begin
+  //ShowMessage(Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  idx := 0;
+
+  // Debug
+  //Page.SaveToFile(PATHLOG+MovieName+'.lst');
+  //Page.LoadFromFile(PATHLOG+MOVIE+'.res0');
+  //AnalyzeMoviePage(Page);
+  //exit procedure;
+  // Debug
+  
+  LineNr := FindLine('>0</b> risultati per ricerca', Page, 0);
+  if LineNr <> -1 then
+  begin
+    ShowError('Spiacente, nessun film trovato');
+  end
+  else  // Trovati film ! Nota: possono esserci + pagine -> non ancora gestito !
+  begin
+    // Crea la lista di film
+    PickTreeClear;
+    PickTreeAdd('Risultati ricerca per "' + MovieName + '":', '');
+    Address := AddMoviesTitles(Page);
+	// Se Address non è una stringa vuota vuol dire che ho trovato un unico risultato la cui url è memorizzata proprio dentro Address
+	// diversamente ho trovato 0 risultati o più di un risultati e quindi procedo col PickTreeExec(Address) e richiedo all'utente di fare la scelta
+	if Address = '' then PickTreeExec(Address);
+    if Address <> '' then
+      begin
+        // Elimina il jsessionid dall'URL --- AttSta (2010)
+        xPos := pos(';', Address);
+        yPos := pos('?', Address);
+        if (xPos > 0) then
+        begin
+          if xPos < yPos then
+          begin
+            Address := copy(Address,1,xPos-1) + copy(Address,yPos,length(Address));
+          end
+          else
+          begin
+            Address := copy(Address,1,xPos-1);
+          end;
+        end;
+        // ---
+        SetField(fieldURL, Address);    // Memorizza il campo URL
+        // La pagina viene ridiretta quindi costruisco il nuovo Address
+        Page.Text := GetPage(Address);  // Richiede la pagina che verrà ridiretta
+        // Page.SaveToFile(PATHLOG+MovieName+'Redir.page');
+        LineNr := FindLine('sch=', Page, 0);
+        if LineNr = -1 then
+        begin
+          ShowError('Errore nella pagina rediretta');
+          Page.Free;
+          exit;
+        end
+        Line := Page.GetString(LineNr);   // Recupera il codice del film
+        BeginPos := pos('sch=', Line)+3;
+        Delete(Line, 1, BeginPos);
+        BeginPos := pos('"', Line);
+        Line := copy(Line, 1, BeginPos - 1);
+        
+        Address := SITE1+'/schedafilm_2009.jsp?codice='+Line+SITE3;
+        // ShowMessage(Address);
+        Page.Text := GetPage(Address);  // Richiede la pagina del film
+        AnalyzeMoviePage(Page);         // Analizza la pagina del film
+      end;
+  end;
+  Page.Free;
+end;
+
+// ---
+// Analisi ed estrazione dati dalla pagina del film
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line: string;
+  Line2: string;
+  Line3: string;
+  Line4: string;
+  act: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+  Field: integer;
+  ErrorMsg: string;
+begin
+
+  ErrorMsg := '';
+
+  //Debug
+  //Page.SaveToFile(PATHLOG+MovieName+'.film');
+  //Page.LoadFromFile(PATHLOG+Movie+'.film');
+
+  // Immagine
+  LineNr := FindLine('class="imgScheda"', Page, 0);
+  if LineNr>-1 then
+  begin
+    Line := Page.GetString(LineNr);
+    if pos('src="', Line) <> 0 then
+    begin
+        BeginPos := pos('src="', Line);
+        Delete(Line, 1, BeginPos + 4);
+        EndPos := pos('" ', Line);
+        Line := SITE1 + copy(Line, 1, EndPos - 1);
+        Line := Space2html(Line);
+        //  ShowMessage(Line);
+        GetPicture(Line);
+        // Verifica eventuali scarti --- AttSta (2010)
+        if length(Line)=0 then
+        begin
+          ErrorMsg := ErrorMsg + #13#10 + 'Immagine';
+        end;
+        // ---
+    end;
+  end;
+
+  // Cerca il titolo
+  LineNr := FindLine('"td_titolo"', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Estrae titolo
+    Line := Page.GetString(LineNr+1);
+    //ShowMessage(Line);
+    HTMLRemoveTags(Line);
+    Line := Trim(Line);
+    titolo_tradotto := AnsiMixedCase(AnsiLowerCase(Line), ' ');
+    titolo_originale := titolo_tradotto;
+    SetField(fieldTranslatedTitle, titolo_tradotto);
+    SetField(fieldOriginalTitle, titolo_tradotto);
+  end;
+
+  // Cerca il titolo originale
+  LineNr := FindLine('>Titolo Originale<', Page, 0);
+  if LineNr > -1 then
+  begin
+    //Estrae titolo originale
+    Line2 := Page.GetString(LineNr+3);
+    HTMLRemoveTags(Line2);
+    Line := Trim(Line2);
+    // ShowMessage(Line2);
+    titolo_originale := AnsiMixedCase(AnsiLowerCase(Line), ' ');
+  end;
+    if  titolo_originale <> titolo_tradotto then
+      SetField(fieldOriginalTitle, titolo_originale)
+    else
+      SetField(fieldOriginalTitle, '');
+
+  // Cerca l'anno
+  LineNr := FindLine('>Anno<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    HTMLRemoveTags(Line);
+    SetField(fieldYear, Line);
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Anno';
+    end;
+    // ---
+  end;
+
+  // Cerca la durata
+  LineNr := FindLine('>Durata<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line2 := Page.GetString(LineNr+3);
+    // ShowMessage('Dur:'+Line2);
+    HTMLRemoveTags(Line2);
+    line2 := trim(line2);
+    SetField(fieldLength, Line2);
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line2)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Durata';
+    end;
+    // ---
+  end;
+
+  // Nazione
+  LineNr := FindLine('>Origine<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    HTMLRemoveTags(Line);
+    SetField(fieldCountry, PrimeMaiu(Trim(Line)));
+  end;
+
+  // Cerca genere
+  LineNr := FindLine('>Genere<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line2 := Page.GetString(LineNr+3);
+    //ShowMessage(Line2);
+    HTMLRemoveTags(Line2);
+    Line2 := Trim(Line2);
+    SetField(fieldCategory, PrimeMaiu(Line2));
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line2)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Genere';
+    end;
+    // ---
+  end;
+  
+  LineNr := FindLine('>Produzione<', Page, 0);
+  if LineNr > -1 then
+  begin
+    // Produzione/Distribuzione
+    Line := Page.GetString(LineNr+3);
+    HTMLRemoveTags(line);
+    line := Trim(line);
+    //ShowMessage('Distr:'+Line);
+    SetField(fieldProducer, PrimeMaiu(Line));
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Produzione/Distribuzione';
+    end;
+    // ---
+  end;
+
+  // Tratto da ... (opzionale)
+  Line3 := '';
+  if GetOption('NoTrattoDa')=0 then
+  begin
+    LineNr := FindLine('>Tratto da<', Page, 0);
+    if LineNr > -1 then
+    begin
+      line := Page.GetString(LineNr+3);
+      // ShowMessage(line);
+      line3 := trim(line);
+//      line3 := 'Tratto da: ' + line3 + #13#10;
+      line3 := line3 + #13#10;
+      // Verifica eventuali scarti --- AttSta (2010)
+      if length(line3)=0 then
+      begin
+        ErrorMsg := ErrorMsg + #13#10 + 'Tratto da';
+      end;
+      // ---
+    end;
+  end;
+  
+  // Aggiunge Note ai Commenti --- AttSta (2010)
+
+  // Note ... (opzionale)
+  Line4 := '';
+  if GetOption('NoNote')=0 then
+  begin
+    LineNr := FindLine('>Note<', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      // ShowMessage (Line);
+      BeginPos := pos('>Note<', Line)+35;
+      Delete(Line, 1, BeginPos);
+      BeginPos := 1;
+      EndPos := pos('</font>', Line);
+      Line := copy(Line,BeginPos,EndPos-BeginPos);
+      Line4 := trim(Line);
+      Line4 := StringReplace(Line4, '<br>', #13#10);
+      if copy(Line4,1,1)='-' then
+      begin
+        Line4 := #13#10 + Line4;
+      end;
+      HTMLRemoveTags(Line4);
+      HTMLDecode(Line4);
+      Line4 := 'Note: ' + Line4;
+      //ShowMessage ('['+Line4+']');
+      // Verifica eventuali scarti --- AttSta (2010)
+      if length(Line4)=0 then
+      begin
+        ErrorMsg := ErrorMsg + #13#10 + 'Note';
+      end;
+      // ---
+
+    end;
+  end;
+
+  // Cerca regia
+  LineNr := FindLine('>Regia<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('_top', Line)+5;
+    delete( line, 1, beginpos); beginpos:=1;
+    EndPos := pos('<', Line);
+    Line2 := copy(Line,BeginPos,EndPos-BeginPos);
+    HTMLDecode(Line2);
+//fs2012.04.02    line2 := copy(Line,BeginPos,EndPos-BeginPos);
+//fs2012.04.02    Line2 := StringReplace(Line2, ' <a href', ', <a href');
+//fs2012.04.02    Line2 := StringReplace(Line2, 'width="100%">&nbsp;', '');
+    //Line2 := line;       //fs2012.04.02
+    //HTMLRemoveTags(Line2);
+    //HTMLDecode(Line2);
+    //Line2 := StringReplace(Line2, '  ', ' ');
+    //Line2 := StringReplace(Line2, '")', '"),  ');
+    SetField(fieldDirector, Trim(Line2));
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Trim(Line2))=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Regia';
+    end;
+    // ---
+
+  end;
+
+  // Attori
+  LineNr := FindLine('>Attori<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    //ShowMessage ('ATT:'+Line);
+    BeginPos := pos('>Attori<', Line)+6;     //fs era +78
+    Delete(Line, 1, BeginPos);
+    BeginPos := 1;
+    EndPos := pos('<td colspan="2"', Line);
+    Line2 := copy(Line,BeginPos,EndPos-BeginPos);
+    //Line2 := Line;
+
+    Line2 := StringReplace(Line2, '<a>', ',');
+//    Line2 := StringReplace(Line2, '</div>', '), ');
+    //ShowMessage ('ATT:'+Line2);
+    HTMLRemoveTags(Line2);
+    HTMLDecode(Line2);
+    Line2 := Trim(Line2);
+    //if Line2<>'' then Line2 := Trim(Line2) + ')';
+    //ShowMessage ('ATT:'+Line2);
+
+    if GetOption('NoPersonaggio')=1 then
+    begin
+//fs 2012.04.02      Line2 := Stringreplace(Line2, '))', ')');
+      Line2 := Stringreplace(Line2, '))', '), ');              //fs 2012.04.02
+      Line2 := Stringreplace(Line2, ') ', '), ');              //fs 2012.04.02
+      BeginPos := pos(' (', Line2);
+      while BeginPos<>0 do
+      begin
+        EndPos := pos(')', Line2);
+        Delete( Line2, BeginPos, EndPos-BeginPos+1);
+        BeginPos := pos(' (', Line2);
+        //ShowMessage (Line2);
+      end;
+    end;
+
+    if GetOption('NoPersonaggio')=0 then
+    begin
+//fs 2012.04.02      Line2 := Stringreplace(Line2, '))', ')');
+      Line2 := Stringreplace(Line2, '))', '), ');              //fs 2012.04.02
+      Line2 := Stringreplace(Line2, ') ', '), ');              //fs 2012.04.02
+      Line2 := Stringreplace(Line2, '( ', '(');                //fs 2012.04.02
+    end;
+
+    Line2 := StringReplace(Line2, ', Soggetto', '.');
+    Line2 := StringReplace(Line2, ', ).', '.');                 //fs 2012.04.02
+    Line2 := StringReplace(Line2, ',  ).', '.');                //fs 2012.04.02
+    Line2 := StringReplace(Line2, '_', ' ');                    //fs 2012.11.09
+    Line2 := Stringreplace(Line2, ' ()', '');
+    //ShowMessage (Line2);
+    SetField(fieldActors, Line2);
+  end;
+  // Critica
+  Line2 := '';
+  LineNr := FindLine('>Critica<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    // ShowMessage ('ATT:'+Line);
+    BeginPos := pos('>Critica<', Line)+15;
+    Delete(Line, 1, BeginPos);
+    BeginPos := 1;
+    EndPos := pos('<br><br><font ', Line);
+    // Verifica terminazione campo Critica --- AttSta (2010)
+    // Se non era presente il campo Note, saltava tutto il campo Critica
+    if EndPos = 0 then
+    begin
+      Line2 := StringReplace(Line, '<br><br>', #13#10 );
+      HTMLRemoveTags(Line2);
+      //ShowMessage ('['+Line2+']');
+    end
+    else //if EndPos > 0 then
+    begin
+    line2 := copy(Line,BeginPos,EndPos-BeginPos);
+    //ShowMessage ('ATT:'+Line);
+    Line2 := StringReplace(Line2, '<br><br>', #13#10 );
+    // ---
+    HTMLRemoveTags(Line2);
+    HTMLDecode(Line2);
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line2)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Critica';
+    end;
+    // ---
+  end;
+
+  // Formatta i campi Critica + Note --- AttSta (2010)
+  if length(Line2) > 0 then
+  begin
+    if length(Line4) > 0 then
+    begin
+      SetField(fieldComments, line3 + Line2 + #13#10 + Line4);
+    end
+    else
+    begin
+      SetField(fieldComments, line3 + Line2);
+    end;
+  end
+  else
+  begin
+    if length(Line4) > 0 then
+    begin
+      SetField(fieldComments, line3 + Line4);
+    end;
+  end;
+  // ---
+  end;
+
+  // Trama
+  LineNr := FindLine('>Trama<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    //ShowMessage('T:'+line);
+    BeginPos := pos('>Trama<', Line)+5;
+    Delete( Line, 1, BeginPos);
+    BeginPos := 1;
+    // ShowMessage('T:'+line);
+    EndPos := pos('</font><br>', Line);
+    line2 := copy(Line,BeginPos,EndPos-BeginPos);
+    // Gestisce Trama Breve/Trama Lunga --- AttSta (2010)
+    if pos('TRAMA LUNGA<br>', line2) > 0 then
+    begin
+      line2 := StringReplace(line2, 'TRAMA LUNGA<br>', #13#10 +'TRAMA LUNGA:'+#13#10);
+      //ShowMessage('['+line2+']');
+      if (pos('TRAMA BREVE<br>', line2) > 0) or (pos('TRAMA CORTA<br>', line2) > 0) then
+      begin
+        //ShowMessage('['+line2+']');
+        line2 := StringReplace(line2, 'TRAMA BREVE<br>', 'TRAMA BREVE:'+#13#10);
+        line2 := StringReplace(line2, 'TRAMA CORTA<br>', 'TRAMA BREVE:'+#13#10);
+        //ShowMessage('['+line2+']');
+      end
+      else
+      begin
+        HTMLRemoveTags(line2);
+        HTMLdecode(line2);
+        line2 := trim(line2);
+        line2 := 'TRAMA BREVE:' + #13#10 + line2;
+      end;
+    end
+    else
+    begin
+      line2 := StringReplace(line2, 'TRAMA BREVE<br>', 'TRAMA BREVE:'+#13#10);
+    end;
+    // ---
+    HTMLRemoveTags(line2);
+    HTMLdecode(line2);
+    line2 := trim(line2);
+//    SetField(fieldDescription, line3+Line2);
+    SetField(fieldDescription, Line2);
+    //ShowMessage(line3+line2);
+    // Verifica eventuali scarti --- AttSta (2010)
+    if length(Line2)=0 then
+    begin
+      ErrorMsg := ErrorMsg + #13#10 + 'Trama';
+    end;
+    // ---
+  end;
+
+  // Stampa messaggio di eventuali scarti --- AttSta (2010)
+  if length(ErrorMsg)>0 then
+  begin
+    ShowMessage('Possibili errori sui campi:' + ErrorMsg);
+  end;
+end;
+
+// ---
+// Riempie la lista con i film trovati
+// Restituisce una stringa vuota se ha trovato più di un film o nessun film, diversamente restituisce la url dell'unico film trovato
+function AddMoviesTitles(Page: TStringList):string;
+var
+  LineNr: Integer;
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  BeginPos, EndPos: Integer;
+  Pagina: TStringList;
+  TotMoviesFound: Integer;
+
+begin
+  TotMoviesFound := 0;
+  repeat
+
+    LineNr := 0;
+    LineNr := FindLine('href="schedafilm',Page,LineNr);
+    Line := Page.GetString(LineNr);
+    // ShowMessage(Line);
+  
+    // I titoli sono tutti sulla stessa riga
+    BeginPos := pos('"schedafilm',Line);  // Punta all'inizio id scheda
+    while BeginPos > 0 do
+      begin
+        Delete(Line, 1, BeginPos);      // Cancella tutti i char precedenti
+    
+        BeginPos := 1;            // Nuovo inizio
+        EndPos := pos('">',Line); // Fine url
+
+        // Crea l'url per la pagina completa del film
+        MovieAddress := SITE1 + copy(Line,BeginPos,EndPos-BeginPos) + SITE3;
+        // ShowMessage(MovieAddress);
+
+        // Estrazione nome film + anno
+        BeginPos := pos('<b>', Line);
+        EndPos := pos('</a>', Line);
+        MovieTitle := AnsiUpFirstLetter(copy(Line,BeginPos,EndPos-BeginPos));
+        // Ripulisce il titolo
+        HTMLRemoveTags(MovieTitle);
+        HTMLDecode(MovieTitle);
+        PickTreeAdd(MovieTitle, MovieAddress);
+		TotMoviesFound := TotMoviesFound + 1;
+    
+        // Prossimo film nella stringa
+        Delete( Line, 1, EndPos);
+        BeginPos := pos('"schedafilm',Line);  // Punta all'inizio id scheda
+
+      end;  // while
+  
+    // Controlla se ci sono altre pagine di risultati
+    LineNr := FindLine('Pagina Successiva',Page,0);
+    if LineNr<>-1 then
+      begin
+        idx := idx+1;
+
+        Line := Page.GetString(LineNr);
+        // Estrae l'URL della pagina successiva
+        BeginPos := pos('href="', Line)+5;
+        Delete( Line, 1, BeginPos);
+        BeginPos := 1;
+        EndPos := pos('"', Line);
+        Line := SITE1 + copy(Line, BeginPos, endPos-BeginPos);
+        //ShowMessage(Line);
+        // Richiama la pagina successiva e la analizza
+        Page.text := GetPage(Line);
+      end;
+
+  until (LineNr=-1); // repeat
+  if TotMoviesFound <> 1 then AddMoviesTitles := ''
+  else AddMoviesTitles := MovieAddress;
+end;
+
+
+// ----- main()
+
+Var
+  TempVar: String;
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('Cinematografo.it', 'Nome del film:', MovieName) then
+    begin
+      TempVar := 'http://wwwd.cinematografo.glauco.it/bancadati/consultazione/trovatitoli.jsp?word='+UrlEncode(MovieName)+'&tipo=CONTIENEPAROLE&I2.x=13&I2.y=11';
+      AnalyzeResults(TempVar);
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

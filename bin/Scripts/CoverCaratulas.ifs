@@ -1,0 +1,543 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Raulsara
+Title=CoverCaratulas
+Description=Extrae información de la web CoverCaratulas.com
+Site=www.CoverCaratulas.com
+Language=ES
+Version=2.01
+Requires=3.5.0
+Comments=Tiene buscador se puede poner cualquier palabra|Previous script by Legrad
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+
+[Parameters]
+
+***************************************************)
+
+program CoverCaratulasImportar;
+
+//
+// Creado por Raulsara
+//
+
+uses
+  StringUtils1;
+
+var
+  Title: string;
+  Titleorig: string;
+  c: Char;
+  Index: Integer;
+
+
+//
+// Función que suprime los acentos
+//
+
+function Sinacento(Conacento : String): String;
+
+var
+  Acento, Noacento : String;
+  i : integer;
+begin
+  Acento := 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÌÍÎÏìíîïÙÚÛÜùúûüÿ';
+  Noacento := 'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeIIIIiiiiUUUUuuuuy';
+ for i := 1  to Length(Acento) do
+    Conacento := StringReplace(Conacento,copy(Acento, i, 1),copy(Noacento, i, 1));
+  result := Conacento;
+end;
+
+//
+// Función que quita el primer espacio del string
+//
+
+function QuitaEspacio (Item: string): string;
+var
+  Item2 : string;
+
+  begin
+    Item2 := Copy(Item , 1 , 1);
+    If item2 = ' ' then
+      begin
+        Delete (Item , 1 , 1);
+      end;
+     result := Item;
+  end;
+
+//
+// Función para convertir a ascii
+//
+
+function Caracter(str1: string) : string;
+begin
+  str1 := StringReplace(str1, 'Ã¡'  , 'á');
+  str1 := StringReplace(str1, 'Ã©' , 'é');
+  str1 := StringReplace(str1, 'Ã­' , 'í');
+  str1 := StringReplace(Str1, 'Ã³' , 'ó');
+  str1 := StringReplace(str1, 'Ãº' , 'ú');
+  str1 := StringReplace(str1, 'Ã±' , 'ñ');
+  str1 := StringReplace(str1, 'Ã‰' , 'É');
+  str1 := StringReplace(str1, 'Ã?' , 'Í');
+  str1 := StringReplace(str1, 'Ã“' , 'Ó');
+  str1 := StringReplace(str1, 'Ãš' , 'Ú');
+  str1 := StringReplace(str1, 'Ã‘' , 'Ñ');
+  str1 := StringReplace(str1, 'Â'  ,  '');
+  str1 := StringReplace(str1, 'Ã¢' , 'â');
+  str1 := StringReplace(str1, 'Ãª' , 'ê');
+  str1 := StringReplace(str1, 'Ã®' , 'î');
+  str1 := StringReplace(str1, 'Ã´' , 'ô');
+  str1 := StringReplace(str1, 'Ã»' , 'û');
+  str1 := StringReplace(str1, 'Ã¨' , 'è');
+  str1 := StringReplace(str1, 'Ã¬' , 'ì');
+  str1 := StringReplace(str1, 'Ã²' , 'ò');
+  str1 := StringReplace(str1, 'Ã¹' , 'ù');
+  str1 := StringReplace(str1, 'Ã¤' , 'ä');
+  str1 := StringReplace(str1, 'Ã«' , 'ë');
+  str1 := StringReplace(str1, 'Ã¯' , 'ï');
+  str1 := StringReplace(str1, 'Ã¶' , 'ö');
+  str1 := StringReplace(str1, 'Ã¼' , 'ü');
+  str1 := StringReplace(str1, 'Ã' , 'Á');
+  str1 := StringReplace(str1, 'Ã' ,  'à');
+  str1 := StringReplace(str1, '¥' ,  'å');
+  str1 := StringReplace(str1 , '&#8220;' , '"'  );
+  str1 := StringReplace(str1 , '&#8221;' , '"'  );
+  str1 := StringReplace(str1 , '&#8217;' , '''' );
+  str1 := StringReplace(str1 , '&#8216;' , '''' );
+  str1 := StringReplace(str1 , '&amp;'   , '&'  );
+  str1 := StringReplace(str1 , '&#8211;' , '-'  );
+  str1 := StringReplace(str1 , '&#038;'  , '&'  );
+  str1 := StringReplace(str1 , '&#8243;' , '"'  );
+  str1 := StringReplace(str1 , '&#8230;' , '...');
+  str1 := StringReplace(str1 , '&nbsp;' , '');
+//  Str1 := Sinacento (Str1);
+  result := str1;
+  
+end;
+
+
+//
+// Funcion que borra signos y quita acentos
+//
+
+function PreparaTitulo(T: string): string;
+
+var
+  i: Integer;
+  
+begin
+  HTMLDecode(result);
+  result := AnsiLowerCase(T);
+  result := StringReplace(result, chr(146), '');
+  result := StringReplace(result, chr(39), '');
+  result := StringReplace(result, '´', '');
+  result := StringReplace(result, '`', '');
+  result := StringReplace(result, '"', '');
+  result := StringReplace(result, '¿', '');
+  result := StringReplace(result, '?', '');
+  result := StringReplace(result, '¡', '');
+  result := StringReplace(result, '!', '');
+  result := StringReplace(result, '.', '');
+  result := StringReplace(result, ':', '');
+  result := StringReplace(result, ';', '');
+  result := StringReplace(result, '-', '');
+  result := StringReplace(result, '/', '');
+  result := StringReplace(result, '\', '');
+  result := StringReplace(result, '_', '');
+  result := StringReplace(result, 'á', 'a');
+  result := StringReplace(result, 'Á', 'a');
+  result := StringReplace(result, 'À', 'a');
+  result := StringReplace(result, 'é', 'e');
+  result := StringReplace(result, 'í', 'i');
+  result := StringReplace(result, 'ó', 'o');
+  result := StringReplace(result, 'ú', 'u');
+  result := StringReplace(result, 'ä', 'a');
+  result := StringReplace(result, 'ë', 'e');
+  result := StringReplace(result, 'ï', 'i');
+  result := StringReplace(result, 'ö', 'o');
+  result := StringReplace(result, 'ü', 'u');
+  result := StringReplace(result, 'â€“', '-'  );
+  result := StringReplace(result, 'â€¦', '...');
+  result := Caracter (result);
+end;
+
+//
+// Quitar tags
+//
+
+function DeleteTags(var S: string): string;
+var
+  n,len, tag: Integer;
+  c: char;
+  t: String;
+begin
+  tag := 0;
+  t := '';
+  len := length(s);
+  for n :=1 to len do
+  begin
+    c := Copy(s,n,1);
+      if c = #9 then
+        c := ' ';
+      if(tag=1) then
+      begin
+        if(c='>') then tag := 0;
+          continue;
+      end
+      else
+      begin
+        if(c='<') then
+        begin
+          tag := 1;
+          continue;
+        end;
+          t := t + c;
+      end;
+  end
+  s := t;
+  result := t;
+end;
+
+//
+//
+//   P R O C E D U R E
+//
+//
+
+//
+//  Crea la URL para la sección de Carteles, de Divx y de DVD
+//
+
+Procedure GestionaSecciones (Titulo : string);
+
+var
+
+  Page : TStringList;
+  Line, PageWeb, Encontrado : string;
+  LineNr  : Integer;
+
+begin
+
+  Encontrado := '0';  // Si encontrado = '0' es que no se encuentra la pelicula
+  PickTreeClear;
+  PickTreeAdd(' Resultados de la búsqueda para "' + Titulo + '" (www.CoverCaratulas.com):', '');
+  Titulo := UrlEncode (Titulo);
+  
+// Busca caratulas en formato Cartel
+  
+  PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=carteles&lim=1';
+  Encontrado := BuscaPelisCartelesDVD (Titulo, Pageweb);
+  
+// Busca caratulas en formato Divx/VCD
+
+  PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=divx&lim=1';
+  Encontrado := BuscaPelisDivx (Titulo, Pageweb);
+
+// Busca caratulas en formato DVD
+
+  PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=dvd&lim=1';
+  Encontrado := BuscaPelisCartelesDVD (Titulo, Pageweb);
+
+  if (Encontrado = '1') then                                            // Si '1' es que ha encontrado alguna pelicula
+      begin
+
+        PickTreeSort;
+
+        if PickTreeExec(pageweb) then                                    // Selecciona que nos interese y va a buscar la caratula
+          begin
+            AnalizaPaginaPelicula (PageWeb);                            // Muestra los carteles seleccionados y busca la caratula
+          end
+      end
+   else
+     If (Encontrado = '0') then
+       begin
+         ShowMessage('Titulo ' + Titulo + ' no encontrado en CoverCaratulas');
+       end;
+end;
+
+
+//
+// Crea la lista de las peliculas en formato CARTELES que contengan el titulo introducido
+//
+
+function BuscaPelisCartelesDVD (Titulo, PageWeb : string): string;
+
+var
+
+  Page : TStringList;
+  Line, TitleWeb, Encontrado, SwFin, TitleWebSin, NumeroPelis, PageWebList, PageWebBefore : string;
+  LineNr, ContPagina, NumeroPelisInt : Integer;
+
+begin
+
+    Encontrado := '0';
+    Page := TStringList.Create;
+    Page.text := GetPage3(pageweb,'','usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');   //GetPage3 es por que se tiene que registar con usuario
+    Sleep (2000);                                                                                // Sleep es porque va muy rapido el script o lenta la pagina y no da tiempo a que entre con el usuario
+    Page.Text := Caracter (Page.Text);
+    LineNr := 1;
+    SwFin := '0';
+    ContPagina := 1;
+    
+    If FindLine ('SOLO SE HA ENCONTRADO' , Page , LineNr) > 0 then                         // Cuando solo hay una respuesta va directa a la pelicula
+      begin
+        LineNr := FindLine('SOLO SE HA ENCONTRADO', Page, LineNr);
+        Line  := Page.GetString(LineNr);
+        PageWebBefore := PageWeb;
+        PageWeb := 'http://www.covercaratulas.com/' + TextBetween (Line , 'href="' , '">');
+        If Pos('carteles' , Line) > 0 then
+          begin                                                                            // Esta función sirve para Carteles y DVD
+            TitleWeb := TextBetween (Line , 'carteles-' , '-');
+            TitleWeb := StringReplace (TitleWeb , '_' , ' ' );
+            PickTreeAdd('Carteles - ' + TitleWeb, PageWeb);
+          end
+        else
+          begin
+            TitleWeb := TextBetween (Line , 'dvd-' , '-');
+            TitleWeb := StringReplace (TitleWeb , '_' , ' ' );
+            PickTreeAdd('DVD       - ' + TitleWeb, PageWeb);
+          end;
+        
+        
+        Encontrado := '1';
+        result := encontrado;
+      end;
+
+    If FindLine ('&#9679;', Page, LineNr) > 0 then                                       // Esto es cuando hay muchas peliculas seleccionadas
+      begin
+        Repeat
+          If FindLine ('&#9679;' , Page , LineNr) > 0 then
+            begin
+              LineNr := FindLine('&#9679;', Page, LineNr);
+              Line  := Page.GetString(LineNr);
+              TitleWeb := TextBetween (Line, 'l">' , '</a>');
+              TitleWeb := QuitaEspacio (Titleweb);
+              DeleteTags (TitleWeb);
+              LineNr := LineNr + 1;
+              TitleWebSin := Sinacento(Titleweb);
+              Titulo := UrlDecode (Titulo);
+              TitleWebSin  := PreparaTitulo(TitleWebSin);
+              PageWebList := TextBetween (Line, 'href="' , '">');
+              PageWebList := 'http://www.covercaratulas.com/' + PageWebList;
+              if Pos(Titulo, TitleWebSin) > 0 then                           // Verifica si el titulo de la web coincide con el texto
+                begin
+                  If Pos('carteles' , Line) > 0 then
+                    PickTreeAdd('Carteles - ' + TitleWeb, PageWebList)
+                  else
+                    PickTreeAdd('DVD       - ' + TitleWeb, PageWebList);
+                Encontrado := '1';
+                result := encontrado;
+                end
+              else
+                begin
+                  SwFin:= '1';
+                end
+            end
+          else
+            begin
+              LineNr := LineNr - 4;
+              Line  := Page.GetString(LineNr);
+              NumeroPelis := TextBetween (Line, '<center>' , '</center>');
+              NumeroPelisInt := (Strtoint(Numeropelis, NumeroPelisint));
+              If ((NumeroPelisInt mod 100) = 0) and (Encontrado = '1') then                 // Si hay mas de 100 peliculas abre otra pagina para seguir mostrando
+                begin
+                  ContPagina := ContPagina + 1;
+                  Titulo := UrlEncode (Titulo);
+                  PageWebBefore := PageWeb;
+                  If Pos('carteles' , Pageweb) > 0 then
+                    begin
+                      PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=carteles&lim=' + (inttostr(ContPagina));
+                    end
+                  else
+                    begin
+                      PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=dvd&lim=' + (inttostr(ContPagina));
+                      Page := TStringList.Create;
+                      Page.text := GetPage3(pageweb,'' ,'usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');
+                      Page.Text := Caracter (Page.Text);
+                      Sleep (2000);
+                      LineNr := 1;
+                    end
+                end
+              else
+                begin
+                  SwFin := '1';
+                end
+            end
+        until (SwFin = '1');
+      end;
+
+end;
+
+
+//
+// Crea la lista de las peliculas en formato DIVX que contengan el titulo introducido
+//
+
+function BuscaPelisDivx (Titulo, PageWeb : string): string;
+
+var
+
+  Page : TStringList;
+  Line, TitleWeb, Encontrado, SwFin, TitleWebSin, NumeroPelis, PageWebList, PageWebBefore : string;
+  LineNr, ContPagina, NumeroPelisInt : Integer;
+
+begin
+
+    Encontrado := '0';
+    Page := TStringList.Create;
+    Page.text := GetPage3(pageweb,'','usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');
+    Sleep (2000);
+    Page.Text := Caracter (Page.Text);
+    LineNr := 1;
+    SwFin := '0';
+    ContPagina := 1;
+    
+    If FindLine ('SOLO SE HA ENCONTRADO' , Page , LineNr) > 0 then
+      begin
+        LineNr := FindLine('SOLO SE HA ENCONTRADO', Page, LineNr);
+        Line  := Page.GetString(LineNr);
+        PageWebBefore := PageWeb;
+        PageWeb := 'http://www.covercaratulas.com/' + TextBetween (Line , 'href="' , '">');
+        TitleWeb := TextBetween (Line , 'divx-' , '-');
+        TitleWeb := StringReplace (TitleWeb , '_' , ' ' );
+        PickTreeAdd('Divx       - ' + TitleWeb, PageWeb);
+        Encontrado := '1';
+        result := encontrado;
+      end;
+
+    If FindLine ('">Frontal', Page, LineNr) > 0 then
+      begin
+        Repeat
+          If FindLine ('">Frontal' , Page , LineNr) > 0  then
+            begin
+              LineNr := FindLine('">Frontal', Page, LineNr);
+              Line  := Page.GetString(LineNr);
+              PageWebList := TextBetween (Line, 'href="' , '">');
+              Line := Page.GetString(LineNr - 3);
+              TitleWeb := TextAfter (Line, '</font> ');
+              DeleteTags (TitleWeb);
+              TitleWeb := QuitaEspacio (Titleweb);
+              LineNr := LineNr + 1;
+              TitleWebSin := Sinacento(Titleweb);
+              Titulo := UrlDecode (Titulo);
+              TitleWebSin  := PreparaTitulo(TitleWebSin);
+              PageWebList := 'http://www.covercaratulas.com/' + PageWebList;
+              if Pos(Titulo, TitleWebSin) > 0 then                           // Verifica si el titulo de la web coincide con el texto
+                begin
+                  PickTreeAdd('Divx       - ' + TitleWeb, PageWebList);
+                  Encontrado := '1';
+                  result := encontrado;
+                end
+              else
+                begin
+                  SwFin:= '1';
+                end
+            end
+          else
+            begin
+              LineNr := LineNr - 7;
+              Line  := Page.GetString(LineNr);
+              NumeroPelis := TextBetween (Line, '<center>' , '</center>');
+              NumeroPelisInt := (Strtoint(Numeropelis, NumeroPelisint));
+              If ((NumeroPelisInt mod 100) = 0) and (Encontrado = '1') then
+                begin
+                  ContPagina := ContPagina + 1;
+                  Titulo := UrlEncode (Titulo);
+                  PageWebBefore := PageWeb;
+                  PageWeb := 'http://www.covercaratulas.com/seccion.php?name=caratula&op=Buscar&busca=' + titulo + '&tipo=divx&lim=' + (inttostr(ContPagina));
+                  Page := TStringList.Create;
+                  Page.text := GetPage3(pageweb,'' ,'usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');
+                  Page.Text := Caracter (Page.Text);
+                  Sleep (2000);
+                  LineNr := 1;
+                end
+              else
+                begin
+                  SwFin := '1';
+                end
+            end
+        until (SwFin = '1');
+      end;
+
+end;
+
+
+
+//
+// Caratula.
+//
+
+//
+// Accede a la web para extraer la caratula, primero va a una web intermedia y despues accede a la caratula
+//
+ 
+procedure AnalizaPaginaPelicula(PageWeb : string);
+
+var
+   Page: TStringList;
+   LineNr, Posini, Posend : Integer;
+   Line : string;
+
+begin
+
+   Page := TStringList.Create;
+   Page.Text := GetPage3(PageWeb , '' , 'usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');
+   Sleep (2000);
+   RemovePicture;
+
+   If FindLine ('caratula/zoom/' , Page , LineNr) > 0 then
+     begin
+       LineNr := FindLine('caratula/zoom/', Page, LineNr);
+       Line  := Page.GetString(LineNr);
+       Posini := Pos (' <a href="' , Line);
+       PosEnd := Pos ('" class=' , Line);
+       PageWeb := 'http://www.covercaratulas.com/' + Copy (Line , PosIni + 10 , PosEnd - 14);
+       Page.Free;
+       Page := TStringList.Create;
+       Page.text := GetPage3(Pageweb, '' ,'usuario=MzYwMzY2OnJhdWxzYXJhOjZhNTUzOWQ1MDU2OTRiNDlkMTZiNzgzMjgyM2YzOGQ3');
+       Sleep (2000);
+       LineNr := 1;
+       LineNr := FindLine('si solamente', Page, LineNr);
+       Line  := Page.GetString(LineNr);
+       If FindLine ('si solamente' , Page , LineNr) > 0 then
+         begin
+           Line  := Page.GetString(LineNr);
+           PageWeb := TextBetween (Line, 'src="' , '" width=');
+           PageWeb := StringReplace (PageWeb, ' ' , '%20');
+           Getpicture (PageWeb);
+         end
+       else
+         ShowMessage('Titulo no encontrado en CoverCaratulas')
+     end
+   else
+     ShowMessage('Titulo no encontrado en CoverCaratulas');
+end;
+
+//
+// Inicio
+//
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    Title := GetField(fieldTranslatedTitle);
+    if Title = '' then
+      Title := GetField(fieldOriginalTitle);
+      Title := PreparaTitulo(Title);
+    if Input('Importar de CoverCaratulas', 'Por favor, introduce el titulo:', Title) then
+      begin
+        Titleorig := Title;
+        Title := PreparaTitulo(Title);
+        GestionaSecciones(Title);
+      end;
+  end
+    else
+      ShowMessage('Este script necesita una versión superior de Ant Movie Catalog (al menos la version 3.5.0)');
+end.

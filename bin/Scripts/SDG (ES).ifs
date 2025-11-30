@@ -1,0 +1,244 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Icecubix
+Title=SDG.org (ES)
+Description=Movie importation script for SDG
+Site=http://www.sdg-es.org
+Language=ES
+Version=2.0
+Requires=3.5.0
+Comments=
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.|
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program SDG_org;
+
+const
+  BaseURL = 'http://www.sdg-es.org/foro/sdge.php';
+  BaseURL2 = 'http://www.sdg-es.org/';
+
+var
+  ModoBatch : boolean;
+  BuscarCaratula : boolean;
+  MovieName: string;
+  Page: TStringList;
+
+//------------------------------------------------------------------------------------
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(AnsiUpperCase(Pattern), AnsiUpperCase(List.GetString(i))) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+
+function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+  longEnd: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  Delete(S, 1, InitialPos + Length(StartTag) - 1);
+  if( Length(EndTag)>0) then
+  begin
+    InitialPos := Pos(EndTag, S);
+    result := copy(S, 1, InitialPos - 1);
+    Delete(S, 1, InitialPos + 1);
+  end else
+  begin
+    result := copy(S, 1, Length(S));
+  end
+end;
+//------------------------------------------------------------------------------------
+
+
+function TextBetween_noDelete(S: string; StartTag: string; EndTag: string): string;
+var
+  InicioPos: Integer;
+  s2: String;
+begin
+  S2 := S;
+  InicioPos := Pos(StartTag, S2);
+  Delete(S2, 1, InicioPos + Length(StartTag) - 1);
+  InicioPos := Pos(EndTag, S2);
+  result := copy(S2, 1, InicioPos - 1);
+end;
+
+
+procedure BuscarPelicula(Nombrepeli: string);
+var
+  LineNr: Integer;
+  Line, LineAux: string;
+  MovieTitle, MovieAddress: string;
+  Elementos: Integer;
+  Item: string;
+
+  Enlace, Titulo, Linea: string;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := PostPage(BaseURL, URLEncode('do=buscando&busquedarapida=1&cadena=') + Nombrepeli);
+
+  if Pos('<strong><a href="sdge.php?do=verelink', Page.Text) = 0 then
+  begin
+    ShowMessage('No se ha podido establecer la conexion.');
+  end else
+  begin
+    if not ModoBatch then
+    begin
+       PickTreeClear;
+       LineNr := 0;
+       LineNr := FindLine('<strong><a href="sdge.php?do=verelink', Page, LineNr);
+       PickTreeAdd('SDG. Películas por: "' + MovieName + '"', '');
+       while LineNr > 0 do
+       begin
+         Linea := Page.GetString(LineNr);
+         Titulo := TextBetween_noDelete(Linea, '">', '</a>');
+         Enlace := TextBetween_noDelete(Linea, 'a href="sdge.php', '">');
+         Enlace := BaseURL + TextBetween_noDelete(Linea, 'a href="sdge.php', '">');
+         PickTreeAdd(Titulo, Enlace);
+         LineNr := FindLine('<strong><a href="sdge.php?do=verelink', Page, LineNr+1);
+       end;
+       Page.Free;
+       if PickTreeExec(Enlace) then
+         AnalyzePage(Enlace);
+    end else
+    if not ModoBatch then
+      ShowMessage('No se ha encontrado ninguna coincidencia por título');
+  end
+end;
+//------------------------------------------------------------------------------------
+
+function AnalyzePage(Address: string): Integer;
+var
+  LineNr, LineNrAux, aux, numCds, found, multiplier: Integer;
+  Size, SizeLimit: Double;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Description: string;
+  isDual, isSubtitExt, isSonidoExt: Boolean;
+  Idiomas: string;
+  Subtit: String;
+  strAux: string;
+  delimiter: string;
+  SonidoExt: string;
+  TitOriginal: string;
+
+begin
+  Comments := '';
+  Actors := '';
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Titulo traducido
+  Item := buscaCampo('Detalles del Elink', 0, '>', '</a>');
+  SetField(fieldTranslatedTitle, Item);
+
+  // Caratula
+  LineNr := FindLine('>Información<', Page, 0);
+  LineNr := LineNr + 8;
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, 'imagenes/elinks/', '"');
+  GetPicture (BaseURL2 + 'imagenes/elinks/' + Item);
+
+  // Descripcion
+  Item := buscaCampo('<b>Descripción:', 1, '<br>', '');
+  SetField(fieldDescription, Trim (Item));
+
+  // Titulo original NO HAY!!
+  //SetField(fieldOriginalTitle, Item);
+
+  // Direccion
+  Item := buscaCampo('<b>Dirección:', 0, '</b>', '');
+  SetField(fieldDirector, Trim (Item));
+
+  // Interpretacion
+  Item := buscaCampo('<b>Interpretación:', 0, '</b>', '');
+  SetField(fieldActors, Trim (Item));
+
+  // Genero
+  Item := buscaCampo('<b>Género:', 0, '</b>', '');
+  SetField(fieldCategory, Trim (Item));
+
+  // Duracion
+  Item := buscaCampo('<b>Duración:', 0, '</b>' , 'min');
+  SetField(fieldLength, Trim (Item));
+
+  // Pais
+  Item := buscaCampo('<b>País:', 0, '</b>', '');
+  SetField(fieldCountry, Trim (Item));
+
+  // Year
+  Item := buscaCampo('<b>Año:', 0, '</b>', '');
+  SetField(fieldYear, Trim (Item));
+
+end;
+
+
+function buscaCampo(patron: String; offset: integer; ini, fin: string): String;
+var
+  i, LineNr: Integer;
+  Line: string;
+  Item: string;
+begin
+  Result := '';
+  LineNr := FindLine(patron, Page, 0);
+  if LineNr > 0 then
+  begin
+    LineNr := LineNr + offset;
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, ini, fin);
+    HTMLDecode(Item);
+    Item := Trim(Item);
+    //borramos el punto final, si lo hay:
+    i := Length(Item);
+    if copy(Item,i,i) = '.' then
+      Item := copy(Item,0,i-1);
+    result := Item;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    BuscarCaratula        := true; //getOption('BuscarCaratula') <> 0;
+    ModoBatch             := false; //getOption('ModoBatch') = 1;
+
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+    if ModoBatch or Input('Importar de SDG', 'Introduzca el titulo de la pelicula:', MovieName) then
+      if (Trim(MovieName)<> '') then
+         BuscarPelicula(UrlEncode(MovieName));
+  end
+  else
+    ShowMessage('Este script requiere una version mas reciente de Ant Movie Catalog (por lo menos la version 3.5.0)');
+end.

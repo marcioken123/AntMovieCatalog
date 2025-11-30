@@ -1,0 +1,1892 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAjCwAAIwsAABAAAAAQAAAAAAAAAGYAAACYAAAA/2VlAAAAqgAAAP0AqqqqAMzMzAD/y8sA7u7uAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAKqqqqqqqqqqAAAAAAAAAAAEREREREREQARVVVVVVVVQBFUihVVVVVAEUiIlVVVVUAElIlgiIiIwASVXWCIiIjABJXdYIiIiMAElVVciIiIwBnd3d3d3d5AGd3d3d3d3kAZ3d3d3d3eQBpmZmZmZmZAAAAAAAAAAAKqqqqqqqqqq
+Name=Slovak
+LocalName=Slovenskı
+Encoding=windows-1250
+Version=4.1.2
+VersionFormat=4.2.2
+Comments=translation rewritten by Artam (previously made for ver.3.4.3 by Berry)
+Authors=Artam|peterki@hotmail.com|Berry|berry@pobox.sk
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=Novı
+ActionFileNew.Hint=Novı|Vytvori novı súbor
+ActionFileOpen.Caption=Otvori...
+ActionFileOpen.Hint=Otvori...|Otvori...
+ActionFileOpenNoRecent.Caption=iaden poslednı súbor
+ActionFileSave.Caption=Uloi
+ActionFileSave.Hint=Uloi|Uloi
+ActionFileSaveAs.Caption=Uloi ako...
+ActionFileSaveAs.Hint=Uloi ako...|Uloi pod inım názvom
+ActionFilePrint.Caption=&Tlaèi...
+ActionFilePrint.Hint=Vytlaèi zoznam|Vytlaèi obsah zoznamu z aktuálneho katalógu
+ActionFileImport.Caption=Importova...
+ActionFileImport.Hint=Importova...|Importova dáta z iného súborového formátu
+ActionFileExport.Caption=Exportova...
+ActionFileExport.Hint=Exportova...|Exportova katalóg do iného súborového formátu
+ActionFileProperties.Caption=Vlastnosti...
+ActionFileProperties.Hint=Vlastnosti...|Zobrazí vlastnosti súboru a informáce o katalógu
+
+ActionExit.Caption=Ukonèi
+ActionExit.Hint=Ukonèi|Ukonèí aplikáciu
+ActionOptions.Caption=Nastavenia...
+ActionOptions.Hint=Nastavenia...|Zmeni nastavenia programu
+ActionLanguage.Caption=Jazyky...
+ActionLanguage.Hint=Jazyky...|Zmeni jazyk pre pouívate¾skı interfejs
+ActionLoan.Caption=Poièané filmy...
+ActionLoan.Hint=Poièané filmy...|Zoznam filmov ktoré sú teraz poièané
+ActionToolsScripting.Caption=S&kriptovanie...
+ActionToolsScripting.Hint=Skriptovanie...|Poui skript na oznaèené filmy
+ActionToolsGrid.Caption=Z&obrazi ako mrieku
+ActionToolsGrid.Hint=zobrazi ako mrieku|Zobrazi zoznam ako mrieku so všekımi filmami
+ActionStretchList.Caption=&Roztiahnu zoznam
+ActionStretchList.Hint=Roztiahnu zoznam|Roztiahnu zoznam doprava
+ActionDisplayHTML.Caption=&Zobrazi HTML
+ActionDisplayHTML.Hint=Zobrazi HTML|Zobrazi informácie o filme pod¾a HTML šablóny
+ActionSelectHTML.Caption=&Vo¾ba HTML
+ActionSelectHTML.Hint=Vo¾ba HTML|Vo¾ba HTML šablóny
+ActionDisplayThumbnails.Caption=Zobrazi ako &miniatúry
+ActionDisplayThumbnails.Hint=Zobrazi ako miniatúry|Zobrazi zoznam filmov ako miniatúry
+ActionSortAscend.Caption=Vzostupne
+ActionSortAscend.Hint=|Zoradi vo vzostupnom poradí
+ActionSortDescend.Caption=Zostupne
+ActionSortDescend.Hint=|Zoradi v zostupnom poradí
+ActionSortAdvanced.Caption=Rozšírené...
+ActionSortAdvanced.Hint=|Rozšírené zoraïovanie
+ActionGroupNone.Caption=< iadny >
+ActionGroupNone.Hint=|Neradi filmy do skupín
+ActionManageFields.Caption=Spravova &polia...
+ActionManageFields.Hint=Spravova polia...|Spravova vlastné polia v aktuálnom katalógu
+ActionManagePictures.Caption=Spravova &obrázky...
+ActionManagePictures.Hint=Spravova obrázky...|Spravova obrázky v aktuálnom katalógu
+ActionHTMLEditor.Caption=&HTML editor...
+ActionHTMLEditor.Hint=HTML editor...|Úprava HTML šablón
+
+ActionHelpIndex.Caption=Pomoc
+ActionHelpIndex.Hint=Pomoc|Spustí pomocníka k programu
+ActionHelpAbout.Caption=O programe...
+ActionHelpAbout.Hint=O programe...|Informáce o programe
+ActionHelpVersion.Caption=&Verzie...
+ActionHelpVersion.Hint=Verzie...|Zobrazí informácie o verzii súboru
+
+ActionMovieAdd.Caption=Prida...
+ActionMovieAdd.Hint=Prida...|Prida novı film
+ActionMovieUndo.Caption=Odobra zmeny
+ActionMovieUndo.Hint=Odobra zmeny|Odobra zmeny vykonané v tomto filme
+ActionMovieDelete.Caption=Vymaza
+ActionMovieDelete.Hint=Vymaza|Vymaza tento film
+ActionMovieCopy.Caption=Kopírova
+ActionMovieCopy.Hint=Kopírova|Skopírova informácie o filme do schránky
+ActionMoviePaste.Caption=Vloi
+ActionMoviePaste.Hint=Vloi|Vloi informácie o filme zo schránky
+ActionMovieRenumber.Caption=Preèíslova...
+ActionMovieRenumber.Hint=Preèíslova filmy...|Zmeni èísla filmov (zaèa 1 a pokraèova)
+ActionMovieFind.Caption=H¾ada...
+ActionMovieFind.Hint=H¾ada...|Nájs film na základe èasti názvu
+ActionFindFindNext.Caption=Nájs ïalší
+ActionFindFindNext.Hint=|Nájs ïalší film zodpovedajúci zadanım podmienkam
+ActionFindWholeField.Caption=Len celé pole
+ActionFindWholeField.Hint=|Zobrazí len tie filmy u ktorıch celé pole zodpovedá zadanej hodnote
+ActionFindReverse.Caption=&Obráti vısledky
+ActionFindReverse.Hint=|Obráti vısledky vyh¾adávania
+ActionFindDisplay.Caption=Zobrazi vısledky
+ActionFindDisplay.Hint=|Zobrazí všetky filmy zodpovedajúce zadanım podmienkam (filtrované zobrazenie)
+LField.Caption=H¾ada v poli:
+LValue.Caption=H¾ada hodnotu:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Zmeni èíslo...
+ActionMovieNumber.Hint=Zmeni èíslo|Zmeni èíslo filmu
+ActionMovieStats.Caption=&Štatistiky...
+ActionMovieStats.Hint=Štatistiky...|Zobrazí štatistiky o katalógu a filmoch ktoré obsahuje
+ActionMovieImportFiles.Caption=Zo &súborov...
+ActionMovieImportFiles.Hint=Získa informácie zo súborov...|Získanie informácií o filme zo súborov
+ActionMovieImportScript.Caption=Z internetu s pouitím &skriptu...
+ActionMovieImportScript.Hint=Získa informácie z internetu s pouitím skriptu...|Získanie informácií z internetu pomocou súboru so skriptom
+ActionMovieSearch.Caption=&H¾ada na internete
+ActionMovieSearch.Hint=Nájs informácie na internete|Nájs informácie o tomto filme na internete
+ActionMovieRandom.Caption=&Náhodnı vıber
+ActionMovieRandom.Hint=Náhodnı vıber|Náhodnı vıber
+ActionMoviePictureShow.Caption=Ukáza obrázok
+ActionMoviePictureShow.Hint=Ukáza alebo skry obrázok|Ukáza alebo skry okno s obrázkom
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Vybra...
+ActionPicSelect.Hint=Vyberte obrázok...|Vyberte pre tento film obrázok na import alebo odkaz
+ActionPicDelete.Caption=Vymaza
+ActionPicDelete.Hint=Vymaza|Vymaza obrázok
+ActionPicUndock.Caption=Prichyti/Uvo¾ni
+ActionPicUndock.Hint=Prichyti/Uvo¾ni|Okno s obrázkom: Prichytené (integrované v hlavnom okne) alebo Uvo¾nené (vo¾né okno)
+ActionPicSaveAs.Caption=Uloi ako...
+ActionPicSaveAs.Hint=Uloi obrázok ako...|Uloi kópiu obrázku do iného súboru
+ActionPicCopy.Caption=&Kopírova
+ActionPicCopy.Hint=Kopírova do schránky|Skopírova obrázok do schránky
+ActionPicPaste.Caption=&Vloi
+ActionPicPaste.Hint=Vloi zo schránky|Vloi obrázok zo schránky
+ActionMovieUrl.Caption=URL
+ActionMovieUrl.Hint=URL|URL filmu
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=Súbor
+ActionMenuMovie.Caption=Film
+ActionMenuDisplay.Caption=&Zobrazi
+ActionMenuTools.Caption=Nástroje
+ActionMenuHelp.Caption=Pomoc
+ActionMenuPicture.Caption=&Obrázok
+ActionMenuPicture.Hint=Obrázok filmu|Príkazy obrázku filmu
+ActionMenuGet.Caption=&Získa informácie
+ActionMenuGet.Hint=Získa informácie|Získa informácie o filme
+ActionMenuGridFields.Caption=&Polia v mrieke
+ActionMenuGridFields.Hint=Polia v mrieke|Vybra polia v mrieke na zbrazenie alebo skrytie
+ActionMenuSort.Caption=Zo&radi
+ActionMenuSort.Hint=Zoradi filmy|Zoradi filmy v zozname pod¾a zvoleného po¾a
+ActionMenuGroup.Caption=&Zoskupi
+ActionMenuGroup.Hint=Zoskupi filmy|Zoskupi filmy zo zoznamu pod¾a zvoleného po¾a
+ActionRefresh.Caption=&Obnovi
+ActionRefresh.Hint=Obnovi zoznam|Obnovi zoznam filmov
+ActionMenuGroupsFormat.Caption=F&ormátovanie skupín
+ActionMenuGroupsFormat.Hint=Formátova názvy skupín|Formátovanie názvov skupín pod¾a zvolenıch moností
+ActionGroupsFormatNone.Caption=< iad&ne >
+ActionGroupsFormatNone.Hint=|Neformátova názvy skupín
+MnuGpf1L.Caption=Vybra prvé písmeno
+MnuGpf2L.Caption=Vybra dve prvé písmená
+MnuGpf3L.Caption=Vybra tri prvé písmená
+MnuGpf4L.Caption=Vybra štyri prvé písmená
+MnuGpf5L.Caption=vybra pä prvıch písmen
+MnuGpfDateY.Caption=Vybra rok z dátumov
+MnuGpfDateYM.Caption=Vybra rok a mesiac z dátumov
+MnuGpfRound0001.Caption=Zaokrúhli èísla na 0,001
+MnuGpfRound001.Caption=Zaokrúhli èísla na 0,01
+MnuGpfRound01.Caption=Zaokrúhli èísla na 0,1
+MnuGpfRound1.Caption=Zaokrúhli èísla na 1
+MnuGpfRound10.Caption=Zaokrúhli èísla na 10
+MnuGpfRound100.Caption=Zaokrúhli èísla na 100
+MnuGpfRound1000.Caption=Zaokrúhli èísla na 1000
+MnuGpfRoundType.Caption=&Spôsob zaokrúhlenia
+MnuGpfRoundDown.Caption=Zaokrúhli na&dol
+MnuGpfRoundNearest.Caption=Zaokrúhli na &najblišie
+MnuGpfRoundUp.Caption=Zaokrúhli na&hor
+
+MnuSelect.Caption=Vybra
+ActionMovieSelGroup.Caption=Oznaèi skupinu
+ActionMovieSelGroup.Hint=Oznaèi skupinu|Oznaèi všetky filmy tejto skupiny
+ActionMovieSelCheck.Caption=Oznaèené
+ActionMovieSelCheck.Hint=Vybra oznaèené|Vybra filmy, ktoré sú oznaèené
+ActionMovieSelUncheck.Caption=Neoznaèené
+ActionMovieSelUncheck.Hint=Vybra neoznaèené|Vybra filmy, ktoré nie sú oznaèené
+
+MnuSelected.Caption=Vybrané filmy
+ActionMovieCheck.Caption=Oznaèi vybrané
+ActionMovieCheck.Hint=Oznaèi vybrané|Oznaèi vybrané filmy
+ActionMovieUncheck.Caption=Odznaèi vybrané
+ActionMovieUncheck.Hint=Odznaèi vybrané|Zruši oznaèenie vybranıch filmov
+
+ActionDisplayPictureToolbar.Caption=Ovládací panel &Obrázok
+ActionDisplayPictureToolbar.Hint=Zobrazi ovládací panel Obrázok|Zobrazi alebo skry ovládací panel Obrázok
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=&Hlavnı ovládací panel
+ActionDisplayMainToolbar.Hint=Zobrazi hlavnı ovládací panel|Zobrazi alebo skry hlavnı ovládací panel
+ActionDisplayStatusBar.Caption=&Stavovı riadok
+ActionDisplayStatusBar.Hint=Zobrazi stavovı riadok|Zobrazí alebo skryje statvovı riadok
+
+ActionURLOpen.Caption=Otvori URL
+ActionURLOpen.Hint=|Otvori URL alebo súbor uvedenı v poli
+ActionURLExplore.Caption=Otvori prieèinok
+ActionURLExplore.Hint=|Otvori prieèinok, obsahujúci film, uvedenı vo zvolenom poli
+ActionURLCopy.Caption=Kopírova URL
+ActionURLCopy.Hint=|Kopírova URL alebo film, ivedenı vo zvolenom poli
+ActionURLBrowse.Caption=Prechádza...
+ActionURLBrowse.Hint=|Prechádza súbory a zvolenı vloi do po¾a
+
+MnuHtmlCopy.Caption=Kopírova
+MnuHtmlCopy.Hint=|Kopírova oznaèenı text
+MnuHtmlEdit.Caption=Upravi...
+MnuHtmlEdit.Hint=|Upravi HTML šablónu
+MnuTlsBrowseHTML.Caption=Prechádza...
+
+ToolbarMenu.Caption=Menu
+ToolbarMain.Caption=Hlavnı Ovládací Panel
+ToolbarPicture.Caption=Ovládací Panel Obrázku
+ToolbarPictureWindow.Caption=Obrázok
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=H¾ada
+
+Listview1.HeaderSections.Item[0].Text=È.
+Listview1.HeaderSections.Item[1].Text=Názov
+
+MoviePicture.Hint=|Kliknte pre zobrazenie obrázku v pôvodnom rozlíšení
+
+ThumbsSizer.Hint=|Zmeni ve¾kos obrázkov
+ThumbsDisplayTitle.Caption=Názov
+ThumbsDisplayTitle.Hint=|Zobrazi názov filmu
+
+Messages.Strings.String[0]=Naozaj chcete vymaza film %s : %s?
+Messages.Strings.String[1]=Naozaj chcete vráti pôvodné informácie o tomto filme?
+Messages.Strings.String[2]=%d filmov
+Messages.Strings.String[3]=(%d vybranıch, %d oznaèenıch, %d vidite¾nıch)
+Messages.Strings.String[4]=Tento súbor bol zmenenı. Chcete ho uloit?
+Messages.Strings.String[5]=Nabudúce nechcie potvrdenie
+Messages.Strings.String[6]=Upravené
+Messages.Strings.String[7]=Obrázok
+Messages.Strings.String[8]=Uloi kópiu obrázku do nového súboru
+Messages.Strings.String[9]=Importujem %s...
+Messages.Strings.String[10]=Ukladám %s...
+Messages.Strings.String[11]=Nahrávam %s...
+Messages.Strings.String[12]=Vybra obrázok
+Messages.Strings.String[13]=Tımto zmaete obrázok. Pokraèovat?
+Messages.Strings.String[14]=Nemôem poui tento obrázok: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Vybra súbory z ktorıch sa majú získa informácie
+Messages.Strings.String[17]=Nájs informácie na %0:s|Nájs informácie o tomto filme na %0:s
+Messages.Strings.String[18]=iadny nedávno pouitı súbor súbor
+Messages.Strings.String[19]=Tento katalóg obsahuje obrázky. Pre uloenie katalógu do XML musia by obrázky v samostatnıch súboroch.|Ak stále chcete uloi ako XML, kliknite OK na konverziu tıchto obrázkov, alebo zvo¾te Ignorova, ak ich nechcete zachova (odkazy na obrázky sa zachovajú).|Názvy obrázkov budú odvodené od hodnoty "Pomenovanie obrázkov" na strane "Import obrázku" v okne nastavení programu.
+Messages.Strings.String[20]=|Zoskupovat pod¾a %s
+Messages.Strings.String[21]=< iadne >
+Messages.Strings.String[22]=Chcete pri odstaòovaní odkazu na obrázok zmazat aj vlastnı súbor obrázku z disku? (%s)
+Messages.Strings.String[23]=Tento film obsahuje odkaz na obrázok. Ak ho nahradíte odkazom na inı obrázok, chcete starı obrázok zmaza? (%s)
+Messages.Strings.String[24]=Obrázok sa nedá skopírova do katalógu ak je v òom rovnaké meno u pouívané; ulote ho niekam inam a skúste to znova
+Messages.Strings.String[25]=Uloené v katalógu ako %s
+Messages.Strings.String[26]=Externı súbor: %s
+Messages.Strings.String[27]=%.0n bajtov
+Messages.Strings.String[28]=Naèítanie ukáky tlaèe
+Messages.Strings.String[29]=H¾adanie tlaèiarne
+Messages.Strings.String[30]=Vybra súbor ako referenciu v poli URL
+Messages.Strings.String[31]=< ostatné >
+Messages.Strings.String[32]=Všetky
+Messages.Strings.String[33]=|Triedi pod¾a %s
+Messages.Strings.String[34]=Polia filmu
+Messages.Strings.String[35]=Vlastné polia
+Messages.Strings.String[36]=Súbor "%s" neexistuje
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+Messages.Strings.String[38]=Získanie informácií zo súborov...
+Messages.Strings.String[39]=Vybra pod¾a farebnej znaèky|Vybra filmy, ktoré sú oznaèené rovnakou farebnou znaèkou
+Messages.Strings.String[40]=Oznaèi farebnou znaèkou|Oznaèi vybrané filmy farebnou znaèkou
+Messages.Strings.String[41]=Všetky polia
+Messages.Strings.String[42]=Zvolili ste prepísanie existujúceho katalógu. Chcete zmaza uloené obrázky pre tento katalóg?
+Messages.Strings.String[43]=Kopírova/Vloi film "%s"
+Messages.Strings.String[44]=Zmaza staré uloené obrázky...
+Messages.Strings.String[45]=Kopírova obrázky do podprieèinka s obrázkami
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Èíslo
+Fields.Strings.String[1]=Oznaèené
+Fields.Strings.String[2]=Farebná znaèka
+Fields.Strings.String[3]=Štítok média
+Fields.Strings.String[4]=Druh média
+Fields.Strings.String[5]=Zdroj
+Fields.Strings.String[6]=Dátum pridania
+Fields.Strings.String[7]=Poièané
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Hodnotenie
+Fields.Strings.String[11]=Pôvodnı názov
+Fields.Strings.String[12]=Preloenı názov
+Fields.Strings.String[13]=Formátovanı názov
+Fields.Strings.String[14]=Reisér
+Fields.Strings.String[15]=Producent
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=Herci
+Fields.Strings.String[19]=Štát
+Fields.Strings.String[20]=Rok
+Fields.Strings.String[21]=Dåka
+Fields.Strings.String[22]=Kategória
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Popis
+Fields.Strings.String[26]=Komentáre
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Formát Videa
+Fields.Strings.String[29]=Bitrate Videa
+Fields.Strings.String[30]=Formát Audia
+Fields.Strings.String[31]=Bitrate Audia
+Fields.Strings.String[32]=Rozlíšenie
+Fields.Strings.String[33]=Snímky/s
+Fields.Strings.String[34]=Jazyky
+Fields.Strings.String[35]=Titulky
+Fields.Strings.String[36]=Ve¾kosti súborov
+Fields.Strings.String[37]=Poèet diskov
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+Media.Strings.String[0]=Názov disku
+Media.Strings.String[1]=Cesta k súboru
+Media.Strings.String[2]=Cesta + Názov súboru
+Media.Strings.String[3]=Cesta + Názov súboru + Prípona
+Media.Strings.String[4]=Názov súboru
+Media.Strings.String[5]=Názov súboru (filtrovanı)
+Media.Strings.String[6]=Názov súboru + Prípona
+Media.Strings.String[7]=Názov prieèinka
+Media.Strings.String[8]=Názov prieèinka (filtrovanı)
+Media.Strings.String[9]=Prípona súboru
+Media.Strings.String[10]=Prípona súboru (bez bodky)
+Media.Strings.String[11]=Ve¾kos (text - "650+530")
+Media.Strings.String[12]=Ve¾kos (suma - "1180")
+Media.Strings.String[13]=Disky
+Media.Strings.String[14]=Obrázok
+Media.Strings.String[15]=Dåka
+Media.Strings.String[16]=Rozlíšenie ("šírka x vıška")
+Media.Strings.String[17]=Rozlíšenie (širka)
+Media.Strings.String[18]=Rozlíšenie (vıška)
+Media.Strings.String[19]=Snímky/s
+Media.Strings.String[20]=Video kodek
+Media.Strings.String[21]=Video bitrate
+Media.Strings.String[22]=Audio kodek
+Media.Strings.String[23]=Audio kanály
+Media.Strings.String[24]=Audio kodek + audio kanály
+Media.Strings.String[25]=Audio bitrate
+Media.Strings.String[26]=Jazyky
+Media.Strings.String[27]=Titulky
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Upozornenie
+Captions.Strings.String[1]=Chyba
+Captions.Strings.String[2]=Informácie
+Captions.Strings.String[3]=Potvrdenie
+Captions.Strings.String[4]=&Áno
+Captions.Strings.String[5]=&Nie
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Zruši
+Captions.Strings.String[8]=&Preruši
+Captions.Strings.String[9]=&Znovu
+Captions.Strings.String[10]=&Ignorova
+Captions.Strings.String[11]=&Všetko
+Captions.Strings.String[12]=Nie všetko
+Captions.Strings.String[13]=Áno všetko
+Captions.Strings.String[14]=&Pomoc
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=OK
+btn1.Caption=Zruši
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=O tomto programe
+Btn3.Caption=Zatvori
+btn2.Caption=Verzia súborov
+Btn1.Caption=Tvorcovia
+Messages.Strings.String[0]=%s : verzia %s (vytvorené dòa %s)
+Messages.Strings.String[1]=(stlaète Ctrl+C ak chcete kopírova tieto informácie do schránky)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Vıber èísla filmu
+Btn2.Caption=OK
+Btn1.Caption=Zruši
+LEnterNumber.Caption=Vloi èíslo filmu:
+btnFindNum.Hint=Nájs vo¾né èíslo|
+grpNotUnique.Caption=Film s tımto èíslom u existuje...
+grpNotUnique.Items.String[0]=&Akceptova duplicitné
+grpNotUnique.Items.String[1]=&Da existujúcemu filmu iné èíslo
+grpNotUnique.Items.String[2]=&Posunú èísla filmov a kım nebudú duplicitné
+CBDoNotAsk.Caption=Nepıta sa znova; poui automatické èíslovanie
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+Btn2.Caption=OK
+Btn1.Caption=Zruši
+Caption=Nastavenie katalógu
+LHOwnerInfo.Caption=Informácie o majite¾ovi
+LFileName.Caption=Súbor:
+LFileSize.Caption=Ve¾kos:
+LFileVersion.Caption=Formát:
+LHXMLHeader.Caption=XML Hlavièka
+LEncoding.Caption=Kódovanie:
+LOwnerName.Caption=Meno:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=Web:
+LDescription.Caption=Popis:
+EOwnerMail.ButtonHint=Posla e-mail
+EOwnerSite.ButtonHint=Choï na stránku
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Poièané filmy
+Btn2.Caption=Zatvori
+Btn1.Caption=Pomoc
+
+ActionBorrowerAdd.Caption=Prida...
+ActionBorrowerAdd.Hint=Prida dlníka|Prida nového èloveka do zoznamu
+ActionBorrowerDel.Caption=Vymaza
+ActionBorrowerDel.Hint=Vymaza dlníka|Vymaza oznaèeného èloveka zo zoznamu
+ActionCheckOut.Caption=Oznaèi
+ActionCheckOut.Hint=Prida|Pridá oznaèenı film do zoznamu
+ActionCheckIn.Caption=Odobra
+ActionCheckIn.Hint=Odobra|Odobra oznaèenı film zo zoznamu
+ActionMovieGetBorrower.Caption=Nájs
+ActionMovieGetBorrower.Hint=Nájs|Nájs: v zozname, dlníka alebo oznaèenı film
+ActionMovieFindNext.Caption=Nájs ïalší
+ActionMovieFindNext.Hint=Nájs ïalší|Nájs ïalší film s názvom obsahujíci urèenı text
+ActionOptions.Caption=&Monosti
+ActionOptions.Hint=Monosti|Monosti pre oznaèenie a odznaèenie
+ActionOptionsIncNum.Caption=Zahrnú filmy s rovnakım èí&slom
+ActionOptionsIncNum.Hint=Zahrnú filmy s rovnakım èíslom|Do oznaèenia alebo odznaèenia zahrnú aj iné filmy, ktoré majú rovnaké èíslo ako vybranı film
+ActionOptionsIncLab.Caption=Zahrnú filmy s rovnakım š&títkom
+ActionOptionsIncLab.Hint=Zahrnú filmy s rovnakım štítkom|Do oznaèenia alebo odznaèenia zahrnú aj iné filmy, ktoré majú rovnakı štítok média ako vybranı film
+
+LvMovies.HeaderSections.Item[0].Text=È.
+LvMovies.HeaderSections.Item[1].Text=Štítok
+LvMovies.HeaderSections.Item[2].Text=Názov
+LvMovies.HeaderSections.Item[3].Text=Poièané komu
+LvNames.HeaderSections.Item[0].Text=Poièané komu
+LvNames.HeaderSections.Item[1].Text=Poèet
+LvLent.HeaderSections.Item[0].Text=È.
+LvLent.HeaderSections.Item[1].Text=Štítok
+LvLent.HeaderSections.Item[2].Text=Názov
+
+Messages.Strings.String[0]=Toto zmae "%s" zo zoznamu dlníkov, a odznaèí všetky filmy poièané tejto osobe.
+Messages.Strings.String[1]=Nahrávam zoznam...
+Messages.Strings.String[2]=Tento film je u niekomu poièanı
+Messages.Strings.String[3]=Prosím vlote meno
+Messages.Strings.String[4]=Nasledujúce filmy sú u poièané niekomu inému:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Vlote meno
+Messages.Strings.String[7]=Novı dlník
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Exportova do iného súborového formátu
+lvFormat.Columns.Item[0].Caption=Podporované formáty súborov
+Btn3.Caption=Exportova...
+Btn2.Caption=Zatvori
+Btn1.Caption=Pomoc
+grpImages.Caption=Obrázok
+CBCopyPictures.Caption=Exportova spolu so súborom
+CBCopyPictures.Hint=Kopírova obrázky do rovnakého prieèinka ako exportovanı súbor
+CBCopyPicturesInPicDir.Caption=Do podprieèinka
+CBCopyPicturesInPicDir.Hint=Kopírova obrázky do podprieèinka s obrázkami
+CBCopyPicturesNew.Caption=Len ak ešte neexistuje
+CBCopyPicturesNew.Hint=Kopírova len také obrázky k súboru, ktoré ešte neexistujú (t.j. neprepísa)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Vyberte formát...
+
+LCSVDelimiter.Caption=Odde¾ovaè polí:
+ECSVDelimiter.Hint=|Znak, odde¾ujúci hodnoty v poliach
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Odde¾ovaè textov:
+ECSVBloc.Hint=|Znak okolo textovıch reazcov (nechaj prázdne, ak sa nepouíva)
+LCSVLinebreaks.Caption=Nahradi lámanie riadkov:
+ECSVLinebreaks.Hint=|Znak sa pouije na oznaèenie lámania riadkov v popisoch a komentároch
+CBCSVColumnTitles.Caption=Vloi názvy ståpcov
+LSQLTableName.Caption=Názov tabu¾ky:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Aktualizova" namiesto "Vloi"
+LSQLCommands.Caption=Vloi SQL príkazy:
+LSQLLinebreaks.Caption=Nahradi lámanie riadkov:
+LOrigonsLink.Caption=Tento formát umoní zverejni váš zoznam na stránke Origons<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Pole na export:
+FieldsSQL.LSelected.Caption=Pole na export:
+LAMCNote.Caption=Môete exportova tie ako AMC (bez vo¾by moností) z hlavného okna pomocou príkazu Súbor -> Uloi ako, potom zvoli AMC formát súboru. Tento súbor potom bude moné otvori a poui v Ant Movie Catalog ako normálny katalóg.
+LXMLNote.Caption=Môete exportova tie ako XML (bez vo¾by moností) z hlavného okna pomocou príkazu Súbor -> Uloi ako, potom zvoli XML formát súboru. Tento súbor potom bude moné otvori a poui v Ant Movie Catalog ako normálny katalóg.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Zoraïujem zoznam...
+Messages.Strings.String[1]=Exportujem do %s...
+Messages.Strings.String[2]=Kopírujem súbory...
+Messages.Strings.String[3]=Export do HTML
+Messages.Strings.String[4]=Export do CSV
+Messages.Strings.String[5]=Export do SQL
+Messages.Strings.String[6]=Exportova obrázky
+Messages.Strings.String[7]=Exportova do súboru pre Origons.com
+Messages.Strings.String[8]=Exportova do AMC
+Messages.Strings.String[9]=Exportova do XML
+Messages.Strings.String[10]=Nemôete exportova katalóg na rovnaké miesto, kde je aktuálny katalóg!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Importova z iného súborového formátu
+Btn3.Caption=&Import...
+Btn2.Caption=Zatvori
+Btn1.Caption=Pomoc
+lvFormat.Columns.Item[0].Caption=Podporované formáty súborov
+lvFormat.Items.Item[5].Caption=Mediálne súbory
+Messages.Strings.String[0]=H¾adám mediálne súbory...
+Messages.Strings.String[1]=Nájdené mediálne súbory:
+Messages.Strings.String[2]=Import mediálnych informácií...
+Messages.Strings.String[3]=Import z %s...
+Messages.Strings.String[4]=Niektoré súbory alebo prieèinky nie je moné preh¾ada, pretoe obsahujú nepodporované znaky:
+
+[TImportFrame]
+lblLink.Caption=Toto umoní import súborov z %s
+grpSettings.Caption=Nastavenia
+chkAllowDup.Caption=Povoli duplicitné èísla
+chkAllowClear.Caption=Vyèisti obsah polí, ak je nová hodnota prázdna
+chkAutoAssign.Caption=Pokúsi sa priradi polia k ståpcom automaticky
+lblPictures.Caption=Spôsob importovania obrázkov:
+cmbPictures.Items.String[0]=1 - Uloi do katalógu
+cmbPictures.Items.String[1]=2 - Kopírova do prieèinka katalógu a vytvori relativny odkaz
+cmbPictures.Items.String[2]=3 - Kopírova do prieèinka katalógu len ak ešte nebol uloenı
+cmbPictures.Items.String[3]=4 - Kopírova do prieèinka s obrázkami a vytvori relativny odkaz
+cmbPictures.Items.String[4]=5 - Kopírova do prieèinka s obrázkami len ak ešte nebol uloenı
+cmbPictures.Items.String[5]=6 - Vytvori absolútne odkazy na aktuálne obrázky
+cmbPictures.Items.String[6]=7 - Vytvori relatívne odkazy na aktuálne obrázky
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=Zdrojovı súbor
+btnBrowse.Hint=Prechádza...|Vybra súbor na import
+btnReload.Caption=Znovu naèíta
+grpPreview.Caption=Náh¾ad
+lblPreview.Caption=Klikni na hlavièky ståpcov na priradenie polí
+btnFieldsLoad.Hint=Naèíta polia|Naèíta uloené priradenia polí na ståpce
+btnFieldsSave.Hint=Uloi polia|Uloí aktuálne priradenia polí na ståpce
+btnFieldsAutoLoad.Hint=Automaticky naèíta polia|Automaticky naèíta priradenia polí na ståpce po ich uloení
+btnColumnsAutoResize.Hint=Automatická šírka st¾lpcov|Automaticky prispôsobuje šírku ståpcov
+ActionListCheck.Caption=&Oznaèi vybrané
+ActionListCheck.Hint=Oznaèi vybrané|Oznaèí vybrané poloky
+ActionListUncheck.Caption=O&dznaèi vybrané
+ActionListUncheck.Hint=Odznaèi vybrané|Zruší oznaèenie vybranıch poloiek
+ActionListAll.Caption=Oznaèi &všetko
+ActionListAll.Hint=Oznaèi všetky|Oznaèí všetky poloky
+ActionListNone.Caption=Od&znaèi všetko
+ActionListNone.Hint=Odznaèi všetky|Zruší oznaèenie všetkıch poloiek
+ActionListCheckExists.Caption=Oznaèi existujúce filmy
+ActionListCheckExists.Hint=Oznaèi existujúce filmy|Oznaèí existujúce filmy v databáze
+ActionListUncheckExists.Caption=Odznaèi existujúce filmy
+ActionListUncheckExists.Hint=Odznaèi existujúce filmy|Zruší oznaèenie existujúcich flmov v databáze
+ActionSortAscend.Caption=Zoradi vzostupne
+ActionSortAscend.Hint=Zoradi vzostupne|Zoradí hodnoty v ståpci vo vzostupnom poradí
+ActionSortDescend.Caption=Zoradi zostupne
+ActionSortDescend.Hint=Zoradi zostupne|Zoradí hodnoty v ståpci v zostupnom poradí
+ActionDefineKeyField.Caption=Definova ako k¾úèové pole
+ActionDefineKeyField.Hint=|Pouije toto k¾úèové pole pri porovnávaní filmov
+ActionHeaderNoImport.Caption=Neimportuj toto pole
+MnuMov.Caption=Polia filmu
+MnuMovCF.Caption=Vlastné polia
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=Nie je iaden film na import
+Messages.Strings.String[1]=iadnemu ståpcu ste nepriradili pole. Kliknite na hlavièky ståpcov na priradenie.
+Messages.Strings.String[2]=Pre tento spôsob importu musí ma katalóg názov; prosím, ulote ho niekam a skúste zonva
+Messages.Strings.String[3]=Zvo¾ prieèinok:
+Messages.Strings.String[4]=%s filmov nájdenıch!
+Messages.Strings.String[5]=%s filmov pridanıch!
+Messages.Strings.String[6]=%s filmov aktualizovanıch!
+Messages.Strings.String[7]=Hodnoty k¾úèového po¾a nie sú v databáze jedineèné.|Film v zozname sa môe zhodova s viacerımi filmami v databáze.
+Messages.Strings.String[8]=Na vykonanie tejto akcie musíte najprv vybra k¾úèové pole pre porovnávanie filmov (kliknutím na hlavièku ståpca).
+Messages.Strings.String[9]=Import filmov do aktuuálneho katalógu...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Prvı riadok obsahuje hlavièku
+lblDelim.Caption=Odde¾ovaè polí:
+edtDelim.Hint=|Znak odde¾ujúci hodnoty v poliach
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Odde¾ovaè textov:
+edtQuote.Hint=|Znak okolo textovıch reazcov (nechaj prázdne, ak sa nepouíva)
+lblLinebreaks.Caption=Lámanie riadku:
+edtLinebreaks.Hint=|Tento znak sa prekonvertuje na lámanie riadku v popisoch a komentároch
+
+[TImportFrameQuery]
+grpQuery.Caption=Dotaz na vykonanie
+btnQueryExec.Hint=Vykona|Vykona dotaz
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Zdrojovı prieèinok
+Messages.Strings.String[11]=Prechádza...|Prechádza prieèinkami na preh¾adanie
+Messages.Strings.String[12]=&Preh¾ada prieèinok
+lblExtractProcess.Caption=Proces zisovania:
+cmbExtractProcess.Items.String[0]=1 - Zísti rozšírené informácie o médiu poèas preh¾adávania
+cmbExtractProcess.Items.String[1]=2 - Zisti rozšírené informácie o médiu len pri koneènom importe
+cmbExtractProcess.Items.String[2]=3 - Nezisova rozšírené informácie o médiu
+chkInternalAVI.Caption=Poui vnútornı nástroj pre import AVI (rıchlejší)
+chkMultiDisks.Caption=Zlúèi info o médiu vo viac-èastiach/diskoch
+lblDiskTag.Caption=Oznaèi disk:
+edtDiskTag.Hint=|Napr. oznaèi 'cd' pre názvy ako 'nazovfilmu.cd1', 'nazovfilmu.cd2',...
+lblBrowseDepth.Caption=Prechádza podprieèinky do úrovne:
+edtBrowseDepth.Hint=|0 = iadne, * = prechádza všetky
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Filtrova názov súboru
+lblExtVideo.Caption=Prípony:
+btnDefaultExtVideo.Caption=Základné
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+Caption=Spôsob importu
+btn2.Caption=OK
+btn1.Caption=Zruši
+LMsg1.Caption=Vybrali ste k¾úèové pole na porovnanie oznaèenıch filmov v zozname s filmami v aktuálnom katalógu.
+LMsg2.Caption=Všetky oznaèené filmy budú importované do katalógu. Na porovnanie, èi u existujú, môete definova k¾úèové pole kliknutím na hlavièku ståpca v zozname.
+grpImportMethod.Caption=Èo chcete urobi ?
+grpImportMethod.Items.String[0]=Importova všetky filmy
+grpImportMethod.Items.String[1]=Importova len nové filmy
+grpImportMethod.Items.String[2]=Iba aktualizova existujúce filmy
+grpImportMethod.Items.String[3]=Importova nové a aktualizova existujúce filmy
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Nastavenia
+Btn3.Caption=OK
+Btn2.Caption=Zruši
+Btn1.Caption=Pomoc
+
+LvCat.Items.Item[0].Text=Všeobecné zobrazenie
+LHToolbar.Caption=Ovládacie panely
+LIconSet.Caption=Sada ikon:
+LColorType.Caption=Farby:
+cbxColorType.Items.String[0]=Automaticky
+cbxColorType.Items.String[1]=Šedá keï neaktívna
+cbxColorType.Items.String[2]=Zmiešaná svetlá keï neaktívna
+cbxColorType.Items.String[3]=Zmiešaná tmavá keï neaktívna
+cbxColorType.Items.String[4]=Vdy farebné
+CBOfficeXP.Caption=Štıl Office XP
+CBMenuImages.Caption=Obrázky v menu
+LHMainWindow.Caption=Hlavné okno
+CBSoftBorders.Caption=Mäkké okraje pre Zoznam Filmov, Panel informácií o filme a Rámèek s obrázkom
+CBNatCmp.Caption=Poui prirodzené porovnávanie (automaticky detekova èísla) pre triedenie textov
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+CBAutoFocus.Hint=|Dáva fokus na komponent, nad ktorım je kurzor myši
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Po spustení
+CBLogo.Caption=Zobrazi logo
+
+LvCat.Items.Item[1].Text=Upravi ovládací panel
+LHCustomizeToolbar.Caption=Vybra ikony, ktoré majú by zobrazené v hlavnom ovládacom paneli
+
+LvCat.Items.Item[2].Text=Súbory
+LHSaving.Caption=Katalógy
+CBBackup.Caption=Vdy vytvára zálonú kópiu
+CBAutoLoad.Caption=Po štarte automaticky otvori tento súbor namiesto prázdneho:
+EAutoLoad.ButtonHint=Prechádza...|Vybra súbor
+CBAutoLoadLast.Caption=Otvori naposledy pouitı súbor
+CBAutoLoadCF.Caption=Pre nové katalógy automaticky importova vlastné polia z tohto súboru:
+EAutoLoadCF.ButtonHint=Prechádza...|Vybra súbor
+LRecentFiles.Caption=Poèet pouitıch súborov zobrazovanıch v menu:
+LRepairAssociations.Caption=Pre priradenie súborov *.amc k Ant Movie Catalogu kliknite na tlaèidlo:
+BtnRepairAssoc.Caption=Opravi priradenie súborov
+LHHistory.Caption=História pôièiek
+CBHistory.Caption=Uklada históriu pôièiek do tohoto súboru (pouije tab-delimited formát):
+EHistoryFile.ButtonHint=Prechádza...|Vybra súbor
+LHHTMLTemplate.Caption=HTML šablóna
+EHTMLTemplate.ButtonHint=Prechádza...|Vybra súbor
+
+LvCat.Items.Item[3].Text=Zoznam filmov
+LHDisplay.Caption=Zobrazenie
+CBCheckboxes.Caption=Zaškrtávacie pole (pravı klik zmení farbu oznaèenia filmu)
+CBCheckboxesInThumbs.Caption=Zaškrtávacie polia v zobrazení náh¾adov
+CBCheckboxesColor.Caption=Zaškrtávacie polia s farbou pozadia pod¾a farebného oznaèenia filmu
+CBLinesColor.Caption=Riadky s farbou pozadia pod¾a farebného oznaèenia filmu
+CBHotTrack.Caption=Podèiarknu názov pri zobrazení
+CBEnhScrollbars.Caption=Rozšírenı posúvaè
+CBMovieNumColumn.Caption=Ståpec "Èíslo filmu"
+LGridTextSize.Caption=Poèet znakov v ståpci pri zobrazení v mrieke (0 = bez obmedzenia):
+LGridTextSize.Hint=|Netıka sa ståpcov FormatedTitle, OriginalTitle a TranslatedTitle
+CBAutoStretchListGrid.Caption=Automaticky roztiahnú zoznam v zobrazení ako mrieka
+CBAutoStretchListThumbs.Caption=Automaticky roztiahnu zoznam v zobrazení ako miniatúry
+LHOperations.Caption=Operácie
+CBDelete.Caption=Potvrdenie vymazania
+CBUndo.Caption=Potvrdenie odobratia zmien
+LHShortcut.Caption=Linky
+LShortcutPrev.Caption=Minulı film
+LShortcutNext.Caption=Ïalší film
+
+LvCat.Items.Item[4].Text=Formátovanie názvu
+LHFormatting.Caption=Formátovanie názvu
+LTitleColumn.Caption=Názov na zobrazenie:
+cbxTitle.Items.String[0]=Pôvodny názov
+cbxTitle.Items.String[1]=Preloenı názov
+cbxTitle.Items.String[2]=Pôvodnı názov (Preloenı názov)
+cbxTitle.Items.String[3]=Preloenı názov (Pôvodnı názov)
+cbxTitle.Items.String[4]=Štítok média
+cbxTitle.Items.String[5]=Vlastnı názov
+LTitleTemplate.Caption=Šablóna pre názov:
+BtnInsertFieldTag.Hint=|Vloi špeciálnu hodnotu, ktorá bude nahradená hodnotou z filmu
+CBPrefixes.Caption=Prida tieto predpony na koniec názvu:
+LPrefixes1.Caption=Budú rozpoznané len slová nasledované medzerou alebo úvodzovkou v názve.
+LPrefixes2.Caption=Vloi ich do zozamu, kadı bude na jednom riadku bez koncovej medzery alebo úvodzovky.
+
+LvCat.Items.Item[5].Text=Vytváranie skupín
+LHGrouping.Caption=Skupiny
+CBGroupCount.Caption=Zobrazi poèet skupín
+CBGroupExpand.Caption=Štandardne plne expandované
+CBGroupMulti.Caption=Vytvori skupiny s údajmi v kombinovanom poli, oddelenımi:
+CBGroupMulti.Hint=|Pre kombinované polia ako Kategória, Herci, Jazyky, Titulky...
+EGroupMultiSep.Hint=|Odde¾ovaè údajov vo kombinovanom poli
+CBGroupMultiRmAllP.Caption=Odstráni údaje v zátvorkách pre všetky kombinované polia
+CBGroupMultiRmAllP.Hint=|Pole Herci ako základ + Ostatné kombinované polia
+CBGroupMultiAddPatch.Caption=Vınimka pre ignorovanie zátvoriek (I, (II, (II, (IV... (XXX
+CBSortGroupsByCount.Caption=Zoradi skupiny pod¾a ich èísla
+LHCommonGroups.Caption=Spoloèné skupiny
+lblGroupLocation.Caption=Umiestnenie:
+RBGroupsAbove.Caption=Nad spoloènımi skupinami
+RBGroupsBelow.Caption=Pod spoloènımi skupinami
+CBGroupUnique.Caption=Do špeciálnej spoloènej skupiny da poloky, ktoré by v skupine ostali osamotené
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Pridanie nového filmu
+CBAskNumber.Caption=Spıta sa na èíslo
+CBFirstAvailable.Caption=Poui prvné vo¾né èíslo namiesto najvyššieho + 1
+CBAddOpenScript.Caption=Otvori okno "Získa informácie s pouitím skriptu"
+CBAddOpenFiles.Caption=Otvori okno "Získa informácie zo súboru"
+LDefaultValues.Caption=Pre úpravu štandardnıch nastavení pre novı film kliknite na tlaèidlo:
+BtnDefaultValues.Caption=Upravi štandardné nastavenia filmov
+CBSetCurrentDate.Caption=Do po¾a "Dátum pridania" vyplni aktuálny dátum namiesto uvedeného dátumu
+CBChecked.Caption=Zapnuté
+LColorTag.Caption=Fareb. znaèka:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Hodnotenie
+CBRatingTrunc.Caption=Nezobrazova desatinné miesta v hlavnom okne, pri exporte a tlaèi
+LHPictureWindow.Caption=Obrázok
+LPictureBackground.Caption=Farba pozadia:
+CBFitPicture.Caption=Prispôsobi obrázok oknu
+CBShowPicInfo.Caption=Zobrazi ve¾kos obrázku, formát a jeho cestu v celoobrázkovom okne
+LHMovieFrame.Caption=Panel polí filmu
+LMovieFrameBackground.Caption=Farba pozadia:
+
+LvCat.Items.Item[8].Text=Prvky zoznamov
+LHComboBoxItems.Caption=Prvky
+CBComboSameForAll.Caption=Rovnaké nastavenia pre všetky zoznamy (neovplyvní obsah zoznamu)
+LListOptions.Caption=Nastavenia pre zoznam:
+CBComboSort.Caption=Zoradi prvky
+CBComboAutoComplete.Caption=Automaticky doplòova pri písaní
+CBComboCatalogValues.Caption=Poui hodnoty tohto katalógu namiesto prednastavenıch
+CBComboAutoAdd.Caption=Automaticky pridáva prvky, ktoré nie sú v zozname
+LListEdit.Caption=Upravi poloky:
+
+LvCat.Items.Item[9].Text=Import média súborov
+LHVideoDragDrop.Caption=Drag && Drop / Získanie informácie zo súborov
+CBDNDMediaLabel.Caption=Import štítku média
+CBDNDFileName.Caption=Import názvu súboru ako názov filmu
+btnFilterFileName.Caption=Filtrova názov filmu
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Import cesty k súboru do po¾a URL
+CBDNDSize.Caption=Import ve¾kosti:
+RBDNDString.Caption=Vytvori reazec, napr. "650+530"
+RBDNDSum.Caption=Urobi súèet, napr. "1180"
+LDNDSizeUnit.Caption=Jednotka:
+cbxDNDSizeUnit.Items.String[0]=Bajty
+cbxDNDSizeUnit.Items.String[1]=Kilobajty (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabajty (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabajty (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Import dåky
+CBDNDAllowClear.Caption=Vyèisti obsah polí, ak je nová hodnota prázdna
+CBDNDInternalAVI.Caption=Pre import AVI poui internı nástroj (rıchlejší), ne MediaInfo DLL
+LExtVideo.Caption=Prípony:
+btnDefaultExtVideo.Caption=Základné
+LHGetInfoVideo.Caption=Info na prevzatie z video stôp
+CBDNDResolution.Caption=Importova rozlíšenie
+CBDNDFramerate.Caption=Importova poè. snímok/s
+CBDNDVideoCodec.Caption=Importova kodek videa
+CBDNDVideoBitrate.Caption=Importova bitrate videa
+LHGetInfoAudio.Caption=Info na prevzatie z audio stôp
+CBDNDAudioCodec.Caption=Importova kodek audia
+CBDNDAudioChannels.Caption=Importova audio kanály
+CBDNDAudioBitrate.Caption=Importova bitrate audia
+CBDNDLanguages.Caption=Importova jazyky
+CBDNDSubtitles.Caption=Importova titulky
+
+LvCat.Items.Item[10].Text=Import obrázku
+LHImportPic.Caption=Import obrázkov z externıch zdrojov
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=Pre drag && drop / Získanie informácie zo súborov
+CBPicImportGetInfoNoAsk.Caption=Nepıta sa na metódu importu obrázkov; vdy poui vyššie uvedenú vo¾bu
+PicImportScripting.grp.Caption=Internetové skriptovanie
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Poznámka: Ak je názov obrázku pouívanı inım filmom, vytvorí sa náhodnı názov. Ak neexistuje pôvodnı názov (napr. pri konverzii z amc do xml formátu), pouije sa názov filmu.
+
+LvCat.Items.Item[11].Text=H¾ada na internete
+LHSearch.Caption=H¾ada na internete
+LSearchEdit.Caption=Upravi vybranı riadok:
+btnSearchAdd.Hint=Prida|Prida novú poloku nad oznaèenú
+btnSearchDel.Hint=Zmaza|Zmaza vybranú poloku
+btnSearchUp.Hint=Posunú hore|Posunú hore vybranú poloku
+btnSearchDown.Hint=Posunú dole|Posunú dole vybranú poloku
+LSearchNotes.Caption=Poznámky:
+LSearchNote1.Caption=- Názov musí by originálny
+LSearchNote2.Caption=- V adrese vlote %s tam, kam má program da názov filmu
+LSearchNote3.Caption=- Pre vloenie oddelovaèa do zoznamu vytvorte (originálny) názov zaèínajúci pomlèkou "-"
+
+LvCat.Items.Item[12].Text=Skriptovanie
+LHScript.Caption=Nastavenie pre skripty
+CBAutorunScript.Caption=Automaticky spusti naposledy pouitı skript pri "Získa informáciu s pouitím skriptu"
+LScriptPicImport.Caption=Nastavenia pre import obrázku nájdete na stránke <LINK>Import obrázkov</LINK>
+LHConnection.Caption=Pripojenie k internetu
+CBProxy.Caption=Poui proxy server pri prístupe na internet:
+LProxyServer.Caption=Server:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Meno:
+LProxyPassword.Caption=Heslo:
+CBKeepConnection.Caption=Udra aktívne spojenie
+CBHTTP10.Caption=Obmedzi na HTTP 1.0 (vyadujú niektoré proxy servery)
+
+LvCat.Items.Item[13].Text=Export
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Automaticky nahra poslednú predlohu
+LLineBreaks.Caption=Lámanie riadku bude nahradené nasledujúcim prvkom:
+ELineBreaks.Hint=|Nechajte toto pole prázdne pokia¾ nechcete nahradzova konce riadkov
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Necha vo¾né ak nechcete zmeni šírku
+EForcePicSizeH.Hint=|Necha vo¾né ak nechcete zmeni vıšku
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Formát dátumu (vlote špeciálne znaky medzi úvodzovky):
+ESQLDate.Hint=|Pre štandardné nastavenia Windows nechajte vo¾né
+LHExportFileNames.Caption=Názvy súborov
+CBLastFileName.Caption=Zapamäta si názov naposledy exportovaného súboru
+CBOpenExportedFile.Caption=Otvori súbor po ukonèení exportu
+ExpFileNamingFrame.grp.Caption=Štıl názvov individuálnych stránok a obrázkov
+LExpFileExt.Caption=Prida príponu:
+EExpFileExt.Hint=|Necha vo¾né ak chcete poui rovnakú príponu ako hlavnı exportovanı súbor
+LHPictures.Caption=Obrázky
+CBCopyPictures.Caption=Kopírova obrázky do rovnakého prieèinka ako exportovanı súbor
+CBCopyPicturesInPicDir.Caption=Kopírova obrázky do prieèinka s obrázkami
+CBCopyPicturesNew.Caption=Kopírova len keï cie¾ovı súbor neexistuje
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Prieèinky
+LHFoldersDialogs.Caption=Dialógové okná
+LFolderToUse.Caption=Prieèinky pre pouitie
+cbxWindow.Items.String[0]=Nahra/uloi katalógy
+cbxWindow.Items.String[1]=Nahra obrázok filmu
+cbxWindow.Items.String[2]=Export
+cbxWindow.Items.String[3]=Nahra/uloi predlohy
+cbxWindow.Items.String[4]=Import
+cbxWindow.Items.String[5]=Získa informácie zo súborov
+cbxWindow.Items.String[6]=Uloi grafiku
+cbxWindow.Items.String[7]=Nahra/Uloi skripty
+cbxWindow.Items.String[8]=Naèíta/Uloi vlastné polia
+cbxWindow.Items.String[9]=Naèíta/Uloi filtre
+RBFolderDefault.Caption=Windows prednastavené (vısledok záleí na verzii Windows)
+RBFolderRemember.Caption=Pamäta si naposledy pouitı prieèinok
+RBFolderSpecified.Caption=Poui tento prieèinok:
+EFolderSpecified.ButtonHint=Prechádza...|
+CBSameForAll.Caption=Rovnaké nastavenia pre všetky okná
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Upravi štandardné hodnoty filmu
+Btn3.Caption=Štandardné
+Btn3.Hint=|Obnovi štandardné hodnoty
+Btn2.Caption=OK
+Btn1.Caption=Zruši
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Štandardné
+Btn3.Hint=|Obnovi štandardné hodnoty
+Btn2.Caption=OK
+Btn1.Caption=Zruši
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Zvo¾te jazyk
+Btn2.Caption=OK
+Btn1.Caption=Zruši
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Názov
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Miestny Názov
+LanguageFrame.lblVersion.Caption=Verzia:
+LanguageFrame.lblMadeBy.Caption=Vyrobil:
+LanguageFrame.lblComments.Caption=Komentár:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Pokroèilé nastavenie zoradenia
+Fields.LSelected.Caption=Vybrané polia:
+BtnSortOrder.Hint=Obráti zoradenie|Obráti postupnos zoradenia vo vybranom poli
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Štatistiky
+btn1.Caption=Zatvori
+ActionSaveAs.Caption=Uloi ako...
+ActionSaveAs.Hint=Uloi ako...|Uloi obrázok do súboru
+ActionCopy.Caption=Kopírova
+ActionCopy.Hint=Kopírova|Kopírova obrázok do schránky
+ActionCopyWMF.Caption=Ako Metasúbor
+ActionCopyWMF.Hint=Kopírova ako metasúbor|Kopírova obrázok do schránky ako metasúbor (dá sa meni ve¾kos)
+ActionCopyBMP.Caption=Ako Bitmap
+ActionCopyBMP.Hint=Kopírova ako bitmap|Kopírova obrázok do schránky ako bitmap
+ActionOptions.Caption=Nastavenia
+ActionOptions.Hint=Nastavenia|Zmeni nastavenia tabu¾ky
+ActionOptionsLegend.Caption=Legenda
+ActionOptionsLegend.Hint=Zobrazi legendu|Zobrazí legendu na pravej strane tabu¾ky
+ActionOptionsLabels.Caption=Grafy
+ActionOptionsLabels.Hint=Zobrazi Grafy|Zobrazi grafy v tabu¾ke
+ActionOptionsEmpty.Caption=Prázdné mesiace
+ActionOptionsEmpty.Hint=Zobrazi prázdne mesiace|Zobrazi mesiace, v ktorıch je v tabu¾ke nula pridaní
+ActionOptionsGroup.Caption=Zoskupi hodnoty
+ActionOptionsGroup.Hint=Zoskupi hodnoty|Graf: Zoskupi hodnoty v intervaloch; Koláè: Zoskupi malé hodnoty
+Messages.Strings.String[0]=%.1f minút
+Messages.Strings.String[1]=< iadne >
+Messages.Strings.String[2]=Uloi tabu¾ku
+Messages.Strings.String[3]=%d dní %d hodín %d minút
+Messages.Strings.String[4]=< ostatné >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Poèet filmov
+lstGeneral.Items.Item[1].Caption=Priemerná dåka filmu
+lstGeneral.Items.Item[2].Caption=Celková dåka filmu
+lstGeneral.Items.Item[3].Caption=Celková ve¾kos súborov filmu
+lstGeneral.Items.Item[4].Caption=Celkovı poèet diskov
+lstCategories.Items.String[0]=Všeobecné informácie
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Skriptovanie
+btn2.Caption=&Zatvori
+btn1.Caption=Pomoc
+ActionFileNew.Caption=Novı
+ActionFileNew.Hint=Novı|Vytvori novı skript
+ActionFileOpen.Caption=Otvori...
+ActionFileOpen.Hint=Otvori...|Otvori súbor so skriptom
+ActionFileNoRecent.Caption=iadny nedávny súbor
+ActionFileSave.Caption=Uloi
+ActionFileSave.Hint=Uloi|Uloi tento skript
+ActionFileSaveAs.Caption=Uloi ako...
+ActionFileSaveAs.Hint=Uloi ako...|Uloi tento skript pod novım menom
+ActionFileProperties.Caption=Vlastnosti...
+ActionFileProperties.Hint=Vlastnosti a monosti...|Editova vlastnosti a monosti skriptu
+ActionDebugRun.Caption=Spusti
+ActionDebugRun.Hint=Spusti skript|Spusti skript
+ActionDebugStop.Caption=Zastavi
+ActionDebugStop.Hint=Zastavi skript|Zastavi beh skriptu
+ActionDebugBreakpoint.Caption=Bod prerušenia
+ActionDebugBreakpoint.Hint=Prepína bod prerušenia|Povoli alebo zakáza prerušenie na aktuálnom riadku
+ActionDebugBreakpointClear.Caption=Odstráni body prerušenia
+ActionDebugBreakpointClear.Hint=Odstráni body prerušenia|Odstráni všetky body prerušenia
+ActionDebugStep.Caption=Krokova
+ActionDebugStep.Hint=Krokova|Spusti ïalší riadok zdrojového kódu
+ActionDebugRunToCursor.Caption=Spusti po kurzor
+ActionDebugRunToCursor.Hint=Spusti po kurzor|Spusti program a do oznaèenej pozície
+ActionDebugEval.Caption=Vyhodnoti...
+ActionDebugEval.Hint=Vyhodnoti premennú...|Zobrazi obsah vybranej premennej
+ActionDebugWatchAdd.Caption=Prida sledovanie
+ActionDebugWatchAdd.Hint=Prida sledovanie premennej|Prida vybranú premenú do zoznamu na sledovanie
+ActionDebugWatchRemove.Caption=Zruši sledovanie
+ActionDebugWatchRemove.Hint=Zruši sledovanie premennej|Odstráni vybranú premenú zo zoznamu na sledovanie
+ActionDebugWatchClear.Caption=Vyèisti zoznam
+ActionDebugWatchClear.Hint=Vyèisti zoznam sledovania|Odstráni všetky premené zo zoznamu na sledovanie
+ActionListCheck.Caption=&Oznaèi vybrané
+ActionListCheck.Hint=Oznaèi vybrané|Oznaèi vybrané poloky
+ActionListUncheck.Caption=O&dznaèi vybrané
+ActionListUncheck.Hint=Odznaèi vybrané|Zruši oznaèenie vybranıch poloiek
+ActionListAll.Caption=Oznaèi &všetko
+ActionListAll.Hint=Oznaèi všetko|Oznaèi všetky poloky
+ActionListNone.Caption=Odz&naèi všetko
+ActionListNone.Hint=Odznaèi všetko|Zruši oznaèenie všetkıch poloiek
+ActionDisplayScripts.Caption=Skripty
+ActionDisplayScripts.Hint=Vybra skript|Zobrazí dostupné skripty
+ActionDisplayEditor.Caption=Editor
+ActionDisplayEditor.Hint=Editor skriptov|Zobrazí editor skriptov
+ActionViewFilter.Caption=&Jazykovı filter
+ActionViewFilter.Hint=Jazykovı filter|Filter vám umoní skry skripty získavajúce informácie vo vybranom jazyku 
+ActionViewList.Caption=Zoznam
+ActionViewList.Hint=Zobrazi zoznam|Zobrazí skripty ako zoznam
+ActionViewDetailed.Caption=Podrobnosti
+ActionViewDetailed.Hint=Zobrazi podrobnosti|Zobrazí skripty v dvoch ståpcoch (s ich popisom)
+ActionOptionsEdit.Caption=Zmeni...
+ActionOptionsEdit.Hint=Zmeni hodnotu...|Zmeni hodnotu vybranej vo¾by
+ActionOptionsDefault.Caption=Základné hodnoty
+ActionOptionsDefault.Hint=Základné hodnoty|Vráti zvolené nastavenia na ich základné hodnoty
+lstScripts.Hint=|Vyberte skript a kliknite "Spusti", olebo dvakrát kliknite na názov skriptu, alebo stlaète F9 alebo Enter.
+lstScripts.Columns.Item[0].Caption=Názov
+lstScripts.Columns.Item[1].Caption=Popis
+ActionEditUndo.Caption=&Spä
+ActionEditCut.Caption=V&ystrihnú
+ActionEditCopy.Caption=&Kopírova
+ActionEditPaste.Caption=&Vloi
+ActionEditDelete.Caption=Vy&maza
+ActionEditSelectAll.Caption=Vybrat vš&etko
+ActionEditFind.Caption=Nájs...
+ActionEditfind.Hint=Nájs|Nájs v reazec v texte
+ActionEditFindNext.Caption=Nájs ïalšie
+ActionEditFindNext.Hint=Nájs ïalšie|Nájs ïalší zhodnı reazec v texte
+DockpanelExec.Caption=Monosti spustenia
+CBShowResults.Caption=Zob&razi okno vısledkov
+CBShowResults.Hint=Zobrazí staré a nové hodnoty v poliach pre kadı film pre ruènú vo¾bu, ktoré z polí sa má zachova
+CBCloseThis.Caption=Zatvori toto okno na &konci
+CBCloseThis.Hint=Zatvorí toto okno, ak sa vykonanie skriptu úspešne skonèí
+CBAllowClear.Caption=&Povoli vymazanie polí
+CBAllowClear.Hint=Povolí skriptu nahradi hodnoty prázdnymi polokami, ak je to v skripte špecifikované
+DockpanelOptions.Caption=Nastavenia skriptu
+DockpanelOptions.Hint=|Dvojitım kliknutím na vo¾bu ju zmeníte. Poznámka: Nastavenia sa uloia len po spustení skriptu.
+DockpanelParameters.Caption=Parametre skriptu
+DockpanelParameters.Hint=|Dvakrát kliknite na parameter na jeho zmenu. Poznámka: Parametre sa ukladajú len poèas vykonania skriptu.
+DockpanelLimitations.Caption=Obmedzenia skriptu
+grpLimitFields.Caption=Modifikovate¾né polia
+lstLimitFields.Hint=|Poznámka: Vıber polí sa uloí len po spustení skriptu.
+grpScriptInfo.Caption=Informácie
+tabScriptInfo.Tabs.String[0]=Všeobecné
+tabScriptInfo.Tabs.String[1]=Poznámky
+tabScriptInfo.Tabs.String[2]=Licencia
+DockpanelWatch.Caption=Zoznam sledovanıch
+
+Messages.Strings.String[0]=Chyba skriptu v "%s": %s na riadku %d
+Messages.Strings.String[1]=Aktuálny skript bol zmenenı. Chcete ho uloi?
+Messages.Strings.String[2]=neznáma
+Messages.Strings.String[3]=Súhlasím
+Messages.Strings.String[4]=Nenašiel sa iaden film kvôli nastavenım obmedzeniam v aktuálnom skripte (%s: %s)
+Messages.Strings.String[5]=Chcete preruši beh skriptu ?
+Messages.Strings.String[6]=Zmenenı
+Messages.Strings.String[7]=Hodnota pre vo¾bu "%s"
+Messages.Strings.String[8]=Hodnota pre parameter "%s"
+Messages.Strings.String[9]=Nájs
+Messages.Strings.String[10]=Vlote text, ktorı má nájs:
+Messages.Strings.String[11]=Nebol nájdenı ïalší text obsahujúci: "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Vıber filmu
+btnView.Caption=Zobraz stránku
+btnView.Hint=Spusti WEB prehliadaè|
+btn3.Caption=OK
+btn2.Caption=Nájs ïalšie
+btn1.Caption=Zruši
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Vıber popisu
+btn2.Caption=OK
+btn1.Caption=Zruši
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+Caption=Vlastnosti skriptu, nastavenia a parametre
+btn3.Caption=&Uloi
+btn2.Caption=&Zruši
+btn1.Caption=&Pomoc
+lstProperties.TitleCaptions.String[0]=Vlastnos
+lstProperties.TitleCaptions.String[1]=Hodnota
+grpOptions.Caption=Nastavenia
+btnOptionAdd.Hint=Prida|Prida nové nastavenie
+btnOptionDel.Hint=Vymaza|Vymaza vybrané nastavenie
+btnOptionUp.Hint=Presunú vyššie|Vybrané nastavenie presuú vyššie
+btnOptionDown.Hint=Presunú nišie|Vybrané nastavenie presunú nišie
+grpValues.Caption=Dostupné hodnoty pre vybrané nastavenie
+lblValueDefault.Caption=Základné:
+btnValueAdd.Hint=Prida|Prida novú hodnotu
+btnValueDel.Hint=Zmaza|Zmaza vybranú hodnotu
+btnValueUp.Hint=Presunú vyššie|Vybranú hodnotu presunú vyššie
+btnValueDown.Hint=Presunú nišie|Vybranú hodnotu presunú nišie
+grpParameters.Caption=Parametre
+btnParameterAdd.Hint=Prida|Prida novı parameter
+btnParameterDel.Hint=Zmaza|Zmaza vybranı parameter
+btnParameterUp.Hint=Presunú vyššie|Vybranı parameter presunú vyššie
+btnParameterDown.Hint=Presunú nišie|Vybranı parameter presunú nišie
+
+Messages.Strings.String[0]=Autor skriptu:
+Messages.Strings.String[1]=Názov skriptu:
+Messages.Strings.String[2]=Popis:
+Messages.Strings.String[3]=Adresa stránky:
+Messages.Strings.String[4]=Jazyk stránky:
+Messages.Strings.String[5]=Verzia skriptu:
+Messages.Strings.String[6]=Vyaduje minimálne:
+Messages.Strings.String[7]=Poznámky:
+Messages.Strings.String[8]=Licencia skriptu:
+Messages.Strings.String[9]=Získa info z webu:
+Messages.Strings.String[10]=Vyaduje filmy:
+Messages.Strings.String[11]=Hodnota
+Messages.Strings.String[12]=Popis
+Messages.Strings.String[13]=Tımto sa zmae nastavenie "%s"
+Messages.Strings.String[14]=Názov nastavenia:
+Messages.Strings.String[15]=Premenova nastavenie "%s"
+Messages.Strings.String[16]=Nastavenie s názvom "%s" u existuje!
+Messages.Strings.String[17]=Názov
+Messages.Strings.String[18]=Základá hodnota
+Messages.Strings.String[19]=Popis
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Vısledok vykonania skriptu
+btn4.Caption=&Uloi
+btn4.Hint=|Uloi informácie pre tento film
+btn3.Caption=Uloi &všetko
+btn3.Hint=|Uloi tento film a všetky nasledujúce
+btn2.Caption=Pres&koèi
+btn2.Hint=|Preskoèi tento film
+btn1.Caption=&Preruši
+btn1.Hint=|Preruši proces skriptu
+listValues.HeaderSections.Item[0].Text=Pole
+listValues.HeaderSections.Item[1].Text=Predchádzajúca hodnota
+listValues.HeaderSections.Item[2].Text=Nová hodnota
+ActionListCheck.Caption=&Oznaèi vybrané
+ActionListCheck.Hint=Oznaèi vybrané|Oznaèi vybrané poloky
+ActionListUncheck.Caption=O&dznaèi vybrané
+ActionListUncheck.Hint=Odznaèi vybrané|Zruši oznaèenie vybranıch poloiek
+ActionListAll.Caption=Oznaèi &všetko
+ActionListAll.Hint=Oznaèi všetko|Oznaèi všetky poloky
+ActionListNone.Caption=Odz&naèi všetko
+ActionListNone.Hint=Odznaèi všetko|Zruši oznaèenie všetkıch poloiek
+
+Messages.Strings.String[0]=Vısledky skriptu "%s" pre film %d
+Messages.Strings.String[1]=Ve¾kos: %.0n KB, kliknite sem pre zobrazenie
+Messages.Strings.String[2]=Chcete zapamäta, ktoré polia zachova pre spustenie tohto skriptu pre ïalšie filmy? (ak odpoviete Nie, pouijú sa všetky polia zmenené tımto skriptom)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Preèíslova filmy
+SortBy.grp.Caption=Pred preèíslovaním zoradi pod¾a:
+btn2.Caption=OK
+btn1.Caption=Zruši
+
+Messages.Strings.String[0]=Preèíslujem filmy...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=Tlaè...
+btn2.Caption=Zatvori
+btn1.Caption=Pomoc
+ActionFileLoad.Caption=Naèita predlohu...
+ActionFileLoad.Hint=Naèita predlohu|Naèita inú predlohu
+ActionFileDesigner.Caption=Dizajnér...
+ActionFileDesigner.Hint=Otvori dizajnér|Otvori dizajnér
+ActionPrint.Caption=Tlaè...
+ActionPrint.Hint=Tlaè|Tlaèi aktuálny zoznam
+ActionPreviewRefresh.Caption=Obnovi
+ActionPreviewRefresh.Hint=Obnovi náh¾ad|Obnovi náh¾ad
+ActionPreviewPageFirst.Caption=Prvá stránka
+ActionPreviewPageFirst.Hint=Prvá stránka|Prejs na prvú stránku
+ActionPreviewPagePrevious.Caption=Predchádzajúca stránka
+ActionPreviewPagePrevious.Hint=Predchádzajúca stránka|Prejs na predchádzajúcu stránku
+ActionPreviewPageNext.Caption=Ïalšia stránka
+ActionPreviewPageNext.Hint=Ïalšia stránka|Prejs na ïalšiu stránku
+ActionPreviewPageLast.Caption=Posledná stránka
+ActionPreviewPageLast.Hint=Posledná stránka|Prejs na poslednú stránku
+ActionPreviewPageFull.Caption=Celá stránka
+ActionPreviewPageFull.Hint=Celá stránka|Zoom na celú stránku
+ActionPreviewPageTwo.Caption=Dve stránky
+ActionPreviewPageTwo.Hint=Dve stránky|Zoom na dve stránky
+ActionPreviewPageWidth.Caption=Šírka stránky
+ActionPreviewPageWidth.Hint=Prispôsobi na šírku stránky|Zoom na šírku stránky
+ActionPreviewZoomOut.Caption=Oddiali
+ActionPreviewZoomOut.Hint=Oddiali|Zmeši zoom
+ActionPreviewZoomIn.Caption=Priblíi
+ActionPreviewZoomIn.Hint=Priblíi|Zväèši zoom
+LvScripts.Columns.Item[0].Caption=Dostupné predlohy
+Messages.Strings.String[0]=Tlaè - %s
+Messages.Strings.String[1]=<nebol zvolenı súbor>
+Messages.Strings.String[2]=Nemono naèíta predlohu pre náh¾ad: %s
+Messages.Strings.String[3]=Neviem nájs Dizajnér. %s musí by v tom istom prieèinku ako Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Import obrázku
+Btn3.Caption=OK
+Btn2.Caption=Zruši
+Btn1.Caption=&Pomoc
+CBDoNotAsk.Caption=Nepıta sa znova, zapamäta nastavenia pre budúce importy
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+Caption=Správca vlastnıch polí
+btn2.Caption=OK
+btn1.Caption=Zruší
+btnDel.Hint=Zmaza pole|Zmaza vlastné pole
+btnClearAll.Hint=Zmaza všetky polia|Zmaza všetky vlastné polia
+btnImport.Hint=Import polí|Importova vlastné polia
+btnExport.Hint=Export polí|Exportova vlastné polia
+LField.Caption=Pole:
+LTag.Caption=Skratka:
+LName.Caption=Názov:
+LExt.Caption=Prípona:
+LType.Caption=Typ:
+LDefaultValue.Caption=Základná hodnota:
+LTemplate.Caption=Šablóna:
+btnInsertFieldTag.Hint=|Vloi špeciálnu hodnotu, ktorá bude nahradená hodnotou z filmu
+LMediaInfo.Caption=Prevzia media info:
+LMultiValues.Caption=Viacnásobné údaje:
+EMultiValues.Hint=|Vytvori skupiny s údajmi v kombinovanom poli
+LMultiValuesSep.Caption=Odde¾ovaè:
+LMultiValuesRmp.Caption=Zmaza zátvorky:
+EMultiValuesRmp.Hint=|Zmaza hodnoty v zátvorkách
+LMultiValuesPatch.Caption=Vınimka:
+EMultiValuesPatch.Hint=|Poui vınimku pre ignorovanie niektorıch zátvoriek
+ListValues.Caption=Zoznam hodnôt
+EListSort.Caption=Automaticky zoradi poloky
+EListAutoComplete.Caption=Automaticky doplòova poèas písania
+EListCatalogValues.Caption=Poui hodnoty z aktuálneho katalógu namiesto preddefinovaného zoznamu
+EListAutoAdd.Caption=Automaticky prida hodnoty, ktoré nie sú v zozname
+Messages.Strings.String[0]=Importova vlastné polia
+Messages.Strings.String[1]=Exportova vlastné polia
+Messages.Strings.String[2]=Prida pole|Prida vlastné pole
+Messages.Strings.String[3]=Zmeni znaèku|Zmeni skratku vlastného po¾a
+Messages.Strings.String[4]=--- Nové pole ---
+Messages.Strings.String[5]=String
+Messages.Strings.String[6]=Integer
+Messages.Strings.String[7]=Reálne (1 desat.miesto)
+Messages.Strings.String[8]=Reálne (2 desat.miesta)
+Messages.Strings.String[9]=Reálne (3 desat.miesta)
+Messages.Strings.String[10]=Boolean
+Messages.Strings.String[11]=Zoznam
+Messages.Strings.String[12]=Dátum
+Messages.Strings.String[13]=Text
+Messages.Strings.String[14]=URL
+Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+Caption=Filter
+LNote1.Caption=Poznámka: Tento filter nahradí kadı vıraz náhradnım vırazom v zobrazenom poradí.
+LNote2.Caption=Môete poui regulérny vıraz, ak ho zaènete znakmi '::>'.
+LNote3.Caption=Na zobrazenie príkladu s regulérnymi vırazmi stlaète tlaèidlo 'Základnı'.
+LNote4.Caption=Viac podrobností syntaxe regulérnych vırazov nájdete v pomoci na webovej stránke regexpstudio.com
+LExprString.Caption=Zvolenı vıraz
+LReplaceString.Caption=Náhradnı vıraz
+btn1.Caption=Zruši
+btn2.Caption=OK
+btn3.Caption=Základnı
+btn3.Hint=Základnı|Obnoví základnı filter
+btnClearAll.Hint=Zmaza všetky|Zmaza všetky vırazy
+btnImport.Hint=Import|Filter pre import
+btnExport.Hint=Export|Filter pre export
+btnAdd.Hint=Pridad|Prida novı vıraz pod zvolenım vırazom
+btnDel.Hint=Zmaza|Zmaza zvolenı vıraz
+btnUp.Hint=Presuò hore|Presunú zvolenı vıraz hore
+btnDown.Hint=Presuò dolu|Presunú zvolenı vıraz dolu
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+Caption=Správca obrázkov
+btn2.Caption=OK
+btn1.Caption=Zruši
+
+Messages.Strings.String[0]=Poui zmeny na obrázky k filmom...
+Messages.Strings.String[1]=Nie je moné poui zmeny na obrázky k filmu "%s": %s
+Messages.Strings.String[2]=Po pouití tıchto zmien sa musí katalóg uloi, aby zostal konzistentnı! Chcete katalóg uloi automaticky po pouití tıchto zmien?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+Caption=HTML editor šablón
+Btn2.Caption=&Zatvori
+Btn1.Caption=&Pomoc
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Štítok média:
+LMediaType.Caption=Druh média:
+LSource.Caption=Zdroj:
+LDate.Caption=Pridané:
+LBorrower.Caption=Poièané:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Hodnotenie:
+LOriginalTitle.Caption=Pôvodnı názov:
+LTranslatedTitle.Caption=Preloenı názov:
+LDirector.Caption=Reisér:
+LProducer.Caption=Producent:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Štát:
+LCategory.Caption=Kategória:
+  LCertification.Caption=Certification:
+LYear.Caption=Rok:
+LLength.Caption=Dåka:
+LLengthMin.Caption=min.
+LActors.Caption=Herci:
+LURL.Caption=Oficiálna URL:
+LDescription.Caption=Popis:
+LComments.Caption=Komentár:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Formát videa:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Formát audia:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Rozlíšenie:
+LFramerate.Caption=Snímky/s:
+LFramerateFPS.Caption=fps
+LSize.Caption=Ve¾kos:
+LDisks.Caption=Disky:
+LLanguages.Caption=Jazyk:
+LSubtitles.Caption=Titulky:
+
+EMedia.Hint=|Štítok média, èíslo alebo èiarovı kód
+EMediaType.Hint=|Médium/typ podpory
+ESource.Hint=|Zdroj (kde/ako ste zohnal(a) tento film)
+EDate.Hint=|Dátum pridania - Dátum (formát záleí na lokálnom nastavení)
+EBorrower.Hint=|Poièané
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Hodnotenie
+EOriginalTitle.Hint=|Pôvodnı názov
+ETranslatedTitle.Hint=|Preloenı názov
+EDirector.Hint=|Reisér
+EProducer.Hint=|Producent
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Štát
+ECategory.Hint=|Kategória
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|Rok
+ELength.Hint=|Dåka (minúty)
+EActors.Hint=|Zoznam hercov
+EURL.Hint=|Web
+EDescription.Hint=|Popis
+EComments.Hint=|Komentár
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Formát videa/kodek
+EVideoBitrate.Hint=|Bitrate videa
+EAudioFormat.Hint=|Formát audia/kodek
+EAudioBitrate.Hint=|Bitrate audia
+EResolution.Hint=|Rozlíšenie videa
+EFramerate.Hint=|Poèet snímok zobrazenıch za sekundu
+ESize.Hint=|Ve¾kosti súborov
+EDisks.Hint=|Poèet diskov alebo kaziet
+ELanguages.Hint=|Jazyky
+ESubtitles.Hint=|Titulky
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Prida vlastné pole
+ActionAddCustomField.Hint=|Prida vlastné pole
+ActionModifyCustomField.Caption=Zmeni vlastné pole
+ActionModifyCustomField.Hint=|Zmeni vlastné pole
+ActionDeleteCustomField.Caption=Zmaza vlastné pole
+ActionDeleteCustomField.Hint=|Zmaza vlastné pole
+ActionMoveResizeCustomFields.Caption=Presunú vlastné polia
+ActionMoveResizeCustomFields.Hint=|Presunú vlastné polia a zmena ve¾kosti
+ActionDefaultPositioning.Caption=Základné rozmiestnenie
+ActionDefaultPositioning.Hint=|Obnovi základné rozmiestnenie vlastnıch polí
+ActionAutoStretchWidth.Caption=Auto roztiahnu šírku
+ActionAutoStretchWidth.Hint=Automaticky roztiahnu šírku po¾a pri zmene ve¾kosti
+ActionAutoStretchHeight.Caption=Auto roztiahnu vıšku
+ActionAutoStretchHeight.Hint=Auto roztiahnu vıšku po¾a pri zmene ve¾kosti
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Dostupné polia:
+LSelected.Caption=Vybrané polia:
+BtnAdd.Hint=Prida|Prida oznaèené pole
+BtnRem.Hint=Odobra|Odobra oznaèené pole
+BtnAddAll.Hint=Prida Všetky|Prida všetky polia
+BtnRemAll.Hint=Odobra Všetky|Odobra všetky polia
+BtnUp.Hint=Hore|Presunie oznaèenú poloku hore
+BtnDown.Hint=Dole|Presunie oznaèenú poloku dole
+
+[TSortByFrame]
+grp.Caption=Zoradi pod¾a
+BtnAdvSort.Caption=Pokroèilé...
+EOrderBy.Items.String[4]=Pokroèilé nastavenie triedenia...
+BtnSortDescend.Hint=|Zoradi v zostupnom poradí
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=Zahrnú filmy
+rbtAll.Caption=Všetky
+rbtSelected.Caption=Vybrané
+rbtChecked.Caption=Oznaèené
+rbtVisible.Caption=Vidite¾né
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Spôsob importu obrázkov
+rbtStorePic.Caption=&Uloi obrázok do katalógu
+rbtCopyPicInCatDir.Caption=Kopírova obrázok do prieèinka &katalógu a v katalógu vytori odkaz
+rbtCopyPicInPicDir.Caption=Kopírova obrázok do prieèinka s &obrázkami a v katalógu vytvori odkaz
+rbtLinkPic.Caption=Iba &odkaz na obrázok
+chkLinkRelative.Caption=Vytvori &relatívnu cestu pod¾a monosti
+
+[TPictureOperationFrame]
+grp.Caption=Operácie s obrázkami
+rbtStore.Caption=Uloi obrázok do katalógu
+rbtStoreIfCopied.Caption=Uloi obrázok do katalógu len ak je uloenı v katalógu alebo prieèinku s obrázkami
+rbtCopyInCatDir.Caption=Kopírova obrázok do prieèinka katalógu a v katalógu vytvori odkaz
+rbtCopyInCatDirIfStored.Caption=Kopírova obrázok do prieèinka katalógu len ak je uloenı v katalógu
+rbtCopyInCatDirIfCopied.Caption=Kopírova obrázok do prieèinka katalógu len ak je uloenı v prieèinku s obrázkami
+rbtCopyInPicDir.Caption=Kopírova obrázok do prieèinka s obrázkami a v katalógu vytvori odkaz
+rbtCopyInPicDirIfStored.Caption=Kopírova obrázok do prieèinka s obrázkami len ak je uloenı v katalógu
+rbtCopyInPicDirIfCopied.Caption=Kopírova obrázok do prieèinka s obrázkami len ak je uloenı v prieèinku katalógu
+rbtRenameIfCopied.Caption=Premenova obrázok ak je uloenı v katalógu alebo v prieèinku s obrázkami
+rbtAbsToRelLink.Caption=Transformova absolútny odkaz na relatívny
+rbtRelToAbsLink.Caption=Transformova relatívny odkaz na absolútny
+rbtDelete.Caption=Zmaza obrázok (aj súbor obrázku, ak je uloenı v katalógu alebo prieèinku s obrázkami)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+grp.Caption=Spôsob exportu obrázkov
+rbtNoChangeAMC.Caption=Rovnakı ako v aktuálnom katalógu
+rbtNoChangeXML.Caption=Rovnakı ako v aktuálnom katalógu (uloené obrázky sa stratia)
+rbtStore.Caption=Uloi obrázok v katalógu
+rbtStoreIfCopied.Caption=Uloi obrázok do katalógu len ak je obrázok uloenı v katalógu alebo v prieèinku s obrázkami
+rbtCopyInCatDir.Caption=Kopírova obrázok do prieèinka katalógu a v katalógu vytvori odkaz
+rbtCopyInCatDirIfStored.Caption=Kopírova obrázok do prieèinka katalógu len ak je obrázok uloenı v katalógu
+rbtCopyInPicDir.Caption=Kopírova obrázok do prieèinka s obrázkami a v katalógu vytvori odkaz
+rbtCopyInPicDirIfStored.Caption=Kopírova obrázok do prieèinka s obrázkami len ak je obrázok uloenı v katalógu
+rbtDelete.Caption=Zmaza obrázok
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Novı
+ActionHTMLNew.Hint=Nová šablóna|Vytvori novú šablónu
+ActionHTMLOpen.Caption=Nahra
+ActionHTMLOpen.Hint=Nahra...|Nahra existujúcu šablónu
+ActionHTMLNoRecent.Caption=iadne súbory
+ActionHTMLSave.Caption=Uloi
+ActionHTMLSave.Hint=Uloi|Uloi túto šablónu
+ActionHTMLSaveAs.Caption=Uloi ako...
+ActionHTMLSaveAs.Hint=Uloi ako...|Uloi túto šablónu pod novım menom
+ActionInsertTag.Caption=&Vloi špeciálnu znaèku
+ActionInsertTag.Hint=|Vloí špeciálny text, ktorı bude nahradenı informáciou z katalógu alebo filmu
+ActionEditUndo.Caption=&Spä
+ActionEditCut.Caption=V&ystrihnú
+ActionEditCopy.Caption=&Kopírova
+ActionEditPaste.Caption=&Vloi
+ActionEditDelete.Caption=&Vymaza
+ActionEditSelectAll.Caption=Vybra Vš&etko
+ActionExportBoth.Caption=Exportova obidva
+ActionExportBoth.Hint=|Exportuje "plnú" a "individuálnu" šablónu
+ActionExportSelected.Caption=Exportova oznaèené
+ActionExportSelected.Hint=|Exportova len oznaèené šablóny
+ActionDisplayFull.Caption=Plná
+ActionDisplayFull.Hint=Zobrazi plnú šablónu|Zobrazi HTML stránku, ktorá bude pouitá pre celı zoznam filmov
+ActionDisplayIndividual.Caption=Individuálna
+ActionDisplayIndividual.Hint=Zobrazi individuálnu šablónu|Zobrazi HTML stránku, ktorá bude pouitá pre individuálne stránky filmov
+
+MnuGen.Caption=Hlavnı
+MnuGenDte.Caption=Dátum
+MnuGenTme.Caption=Èas
+MnuCat.Caption=Katalóg
+MnuCatNme.Caption=Názov súboru
+MnuCatPth.Caption=Názov súboru s celou cestou
+MnuCatNbr.Caption=Poèet filmov
+MnuCatDsk.Caption=Poèet diskov
+MnuOwnNam.Caption=Majite¾
+MnuOwnEml.Caption=E-mail majite¾a
+MnuOwnWeb.Caption=Web majite¾a
+MnuCatDsc.Caption=Popis
+MnuMovBeg.Caption=Zaèiatok zoznamu
+MnuMovEnd.Caption=Koniec zoznamu
+MnuMovRec.Caption=Èíslo záznamu
+MnuMovInd.Caption=Názov súboru alebo individuálna stránka
+
+MnuMov.Caption=Polia &filmu
+MnuMovCF.Caption=&Vlastné polia
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Obrázok
+MnuMovPfn.Caption=Názov súboru s obrázkom
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+MnuMovR04.Caption=Hodnotenie (0 a 4 bez desatín)
+MnuMovR10.Caption=Hodnotenie (0 a 10 bez desatín)
+MnuMovApp.Caption=Hodnotenie
+MnuMovA10.Caption=Ocenenie (0 a 10 hviezdièiek)
+MnuMovFT1.Caption=Formátovanı názov: Originál (Preloenı)
+MnuMovFT2.Caption=Formátovanı názov: Preloenı (Originál)
+MnuMovHtm.Caption=Farebná znaèka (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+MnuLab.Caption=&Labels movie fields
+MnuLabCF.Caption=&Labels custom fields
+  MnuLabExtras.Caption=&Labels extra fields
+MnuLabPic.Caption=Picture
+MnuLabUAF.Caption=Jednotka pre audio bitrate
+MnuLabUVF.Caption=Jednotka pre video bitrate
+MnuLabUFS.Caption=Jednotka pre ve¾kos súboru
+MnuLabUFP.Caption=Jednotka pre snímky/s
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Nemôem uloit súbor "%s": %s
+Messages.Strings.String[1]=Nemôem nahra súbor "%s": %s
+Messages.Strings.String[2]=HTML šablóna bola zmenená. Chcete ju uloi?
+Messages.Strings.String[3]=HTML šablóna pre plnı zoznam bola zmenená. Chcete ju uloit?
+Messages.Strings.String[4]=HTML šablóna pre individuálny zoznam bola zmenená. Chcete ju uloit?

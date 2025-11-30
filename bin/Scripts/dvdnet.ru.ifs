@@ -1,0 +1,167 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=
+Title=DVDnet.ru
+Description=Imports big picture from DVDnet.ru
+Site=DVDnet.ru
+Language=RU
+Version=
+Requires=3.5.0
+Comments= Based on a script written Kamik aka SlawDD
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DVDnet_PICT;
+const
+  BaseAddress = 'http://www.dvdnet.ru/';
+var
+  MovieName: string;
+  MovieName2: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AddMoviesTitlesDVD(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos: Integer;
+begin
+  LineNr := FindLine('<b>‘»Ћ№ћџ (жанр и актЄры, играющие главные роли):</b><br>', Page, 0);
+  Line := Page.GetString(LineNr);
+  repeat
+     WHILE pos('<a href="index', Line)>0 DO
+     BEGIN
+       StartPos := pos('<a href="index', Line) + 9;
+       MovieAddress := copy(Line, StartPos, pos('">', Line) - StartPos);
+       StartPos := pos('">', Line) + 2;
+       MovieTitle := copy(Line, StartPos, pos('</i>', Line) - StartPos);
+       Delete(Line, 1, pos(' </a><br><', Line));
+       HTMLDecode(Movietitle);
+       HTMLRemoveTags(MovieTitle);
+       PickTreeAdd(MovieTitle, BaseAddress + MovieAddress);
+     end;
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+  until (pos('<b>ћ”Ћ№“‘»Ћ№ћџ:</b><br>', Line)>0) or (pos('</table>', Line)>0);
+end;
+
+procedure AddAnimeTitlesDVD(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos: Integer;
+begin
+  LineNr := FindLine('<b>ћ”Ћ№“‘»Ћ№ћџ:</b><br>', Page, 0);
+  Line := Page.GetString(LineNr);
+  repeat
+    WHILE pos('<a href="index', Line)>0 DO
+    begin
+      StartPos := pos('<a href="index', Line) + 9;
+      MovieAddress := copy(Line, StartPos, pos('">', Line) - StartPos);
+      StartPos := pos('">', Line) + 2;
+      MovieTitle := copy(Line, StartPos, pos('</i>', Line) - StartPos);
+      Delete(Line, 1, pos(' </a><br><', Line));
+      HTMLDecode(Movietitle);
+      HTMLRemoveTags(MovieTitle);
+      PickTreeAdd(MovieTitle, BaseAddress + MovieAddress);
+    end;
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+  until (pos('</table>', Line)>0);
+end;
+
+procedure AddPictureDVD(Page: TStringList);
+var
+  Line, Value : string;
+  LineNr, BeginPos, EndPos: Integer;
+begin
+// Get Picture
+  LineNr := FindLine('window.open("pict', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"pict', Line);
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('"', Line);
+    Value := BaseAddress + copy(Line, 1, EndPos - 1);
+    GetPicture(Value); // False = do not store picture externally ; store it in the catalog file
+  end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, StartPos, EndPos, L: Integer;
+  Line: string;
+  MovieAddress, FindMovieName : string;
+
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if (pos('ѕо вашему запросу в базе найдено:', Page.Text)>0) then
+  begin
+        PickTreeAdd('Ќайдено на www.dvdnet.ru', '');
+        LineNr := FindLine('<b>‘»Ћ№ћџ (жанр и актЄры, играющие главные роли):</b><br>', Page, 0);
+        if LineNr >-1 then
+          begin
+            PickTreeAdd('‘ильмы', '');
+            AddMoviesTitlesDVD(Page, LineNr);
+          end;
+        LineNr := FindLine('<b>ћ”Ћ№“‘»Ћ№ћџ:</b><br>', Page, 0);
+        if LineNr > -1 then
+          begin
+            PickTreeAdd('ћультфильмы', '');
+            AddAnimeTitlesDVD(Page, LineNr);
+          end;
+        if PickTreeExec(Address) then
+          begin
+            Page := TStringList.Create;
+            Page.Text := GetPage(Address);
+            AddPictureDVD(Page);
+          end;
+  Page.Free;
+  end;
+  //DisplayResults;
+end;
+
+begin
+  PickListClear;
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import picture from DVDNet.ru', 'Enter the title of the movie:', MovieName) then
+    begin
+      MovieName2:=MovieName;
+      MovieName:=StringReplace(MovieName, 'Т', Chr(39));
+         MovieName:=AnsiLowerCase(MovieName);
+         MovieName:=AnsiUpFirstLetter(MovieName);
+         if pos('The ', MovieName)=1 then MovieName:=StringReplace(MovieName, 'The ', '');
+         AnalyzePage('http://www.dvdnet.ru/index.php?p=9&searching=y&checkform=y&search='+UrlEncode(MovieName));
+    end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+  end;
+end.

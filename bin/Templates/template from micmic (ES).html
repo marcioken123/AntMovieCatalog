@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang='es'>
+
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1'>
+<title>Catalogo de $$OWNER_NAME</title>
+
+<style TYPE="text/css">
+  html {
+    font-family:   'Trebuchet MS', Verdana, Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    background-color: #000;
+  }
+  body {
+    color: #000;
+    background-color: #eef;
+    padding: 10pt;
+  }
+  h1 {
+    color: #f00;
+    background-color: transparent;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    border-bottom: #390 2px solid;
+    padding-top: 0px;
+    margin-top: 0px;
+  }
+  h2 {
+    color: #60c;
+    background-color: #c99;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    text-align: left;
+    padding-left:   3pt;
+    -moz-border-radius: 10px;
+  }
+  h3 {
+    color: #369;
+    background-color: transparent;
+    border-top: #900 1px dashed;
+  }
+  h4 {
+    color: #66c;
+    background-color: transparent;
+  }
+  div {
+    padding-left: 20px;
+  }
+ 
+  .top {
+    top: 0;
+    left: 0;
+    width: 80%;
+    background-color: #fff;
+    padding: 10px;
+    border: #903 1px solid;
+    -moz-border-radius: 10px;
+  }
+  .datos {
+    margin-top: 10pt;
+  }
+  .datos_tec {
+    float: left;
+    position: relative;
+    padding: 10px;
+    background-color: transparent;
+    width: 20%;
+    border: #903 1px solid;
+    -moz-border-radius: 10px;
+  }
+  .datos_nor {
+    float: right;
+    position: relative;
+    padding: 0px;
+    background-color: transparent;
+    width: 70%;
+  }
+  .clear {
+    clear: both;
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class='top'>
+  <p>Catálogo de $$OWNER_NAME creado el $$DATE con <a href='http://www.antp.be/software/moviecatalog/' target='_blank'>Ant Movie Catalog</a>.</p>
+
+  <select name='selector' onChange='if(options[selectedIndex].value) window.location.href=(options[selectedIndex].value)'>
+    <option selected value='#'>Elige película</option>
+    $$ITEM_BEGIN
+    <option value='#$$ITEM_NUMBER'>$$ITEM_NUMBER.&nbsp;$$ITEM_FORMATTEDTITLE2</option>
+    $$ITEM_END
+  </select>
+</div>
+<div class='clear'>&nbsp;</div>
+
+$$ITEM_BEGIN
+<div class='datos'>
+  <a name='$$ITEM_NUMBER'></a><h2>$$ITEM_TRANSLATEDTITLE&nbsp;</h2>
+
+  <div class='datos_tec'>
+    $$ITEM_NUMBER&nbsp;$$ITEM_APPRECIATION<br />$$ITEM_PICTURE<br />
+    $$ITEM_TYPE<br />
+    $$ITEM_VIDEOFORMAT&nbsp;$$ITEM_VIDEOBITRATE<br />
+    $$ITEM_AUDIOFORMAT&nbsp;$$ITEM_AUDIOBITRATE<br />
+    $$ITEM_FRAMERATE
+  </div>
+
+  <div class='datos_nor'>
+    <h3>$$ITEM_ORIGINALTITLE</h3>
+      <h4>$$ITEM_DIRECTOR</h4>
+    <h3>Sinopsis</h3>
+      $$ITEM_DESCRIPTION
+    <h3>Reparto</h3>
+      $$ITEM_ACTORS
+  </div>
+</div>
+<div class='clear'>&nbsp;</div>
+$$ITEM_END
+
+<p>Total: $$TOTALMOVIES películas</p>
+
+</body></html>

@@ -1,0 +1,1892 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAjCwAAIwsAABAAAAAQAAAAAAAAAP0AAAD9MgAA/5kzAACZzAAAy/0AZf7/AP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHd3d3d3d3d3AAAAAAAAAAABERRBERERIAEiJVIiIiIwASIlUiIiIjABIiVSIiIiMAEiJVIiIiIwBFVVVVVVVWAEVVVVVVVVYAEiJVIiIiIwASIlUiIiIjABIiVSIiIiMAEiJVIiIiIwAjM2YzMzMzAAAAAAAAAAAHd3d3d3d3d3
+Name=Swedish
+LocalName=Svenska
+Encoding=windows-1252
+Version=4.1.2
+VersionFormat=4.2.2
+Comments=Vill du uppdatera den här översättningen? Öppna filen Swedish.lng i till exempel Anteckningar och gör ändringarna där.
+Authors=Karin Andersson|karin@supportdata.net
+
+; Om du uppdaterar översättningen, ber jag dig att skicka den nya filen till amc-translation@antp.be så att den kommer med i nästa uppdatering.
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=&Ny
+ActionFileNew.Hint=Ny|Skapa ny fil
+ActionFileOpen.Caption=Öppna...
+ActionFileOpen.Hint=Öppna...|Öppna fil
+ActionFileOpenNoRecent.Caption=Ingen tidigare fil
+ActionFileSave.Caption=&Spara
+ActionFileSave.Hint=Spara|Spara fil
+ActionFileSaveAs.Caption=Sp&ara som...
+ActionFileSaveAs.Hint=Spara som...|Spara fil under nytt namn
+ActionFilePrint.Caption=Skriv ut...
+ActionFilePrint.Hint=Skriv ut lista|Skriv ut en lista med innehållet i databasen
+ActionFileImport.Caption=&Importera...
+ActionFileImport.Hint=Importera...|Importera data från annat format
+ActionFileExport.Caption=&Exportera...
+ActionFileExport.Hint=Exportera...|Exportera katalogen till annat format
+ActionFileProperties.Caption=Inställningar...
+ActionFileProperties.Hint=Inställningar...|Visa filinställningar och databasinformation
+
+ActionExit.Caption=Stäng
+ActionExit.Hint=Stäng|Stäng programmet
+ActionOptions.Caption=Inställningar...
+ActionOptions.Hint=Inställningar...|Ändra programinställningar
+ActionLanguage.Caption=Språk...
+ActionLanguage.Hint=Språk...|Växla programspråk
+ActionLoan.Caption=&Lån...
+ActionLoan.Hint=Lån...|Visa en lista med utlånade filmer 
+ActionToolsScripting.Caption=S&kript...
+ActionToolsScripting.Hint=Skript...|Kör skript på markerade filmer
+ActionToolsGrid.Caption=Visa som lista
+ActionToolsGrid.Hint=Visa som lista|Visa filmdatabasen som lista
+ActionStretchList.Caption=Utvidga &listan
+ActionStretchList.Hint=Utvidga listan|Utvidga listan åt höger
+ActionDisplayHTML.Caption=&Visa HTML
+ActionDisplayHTML.Hint=Visa som HTML|Visa filminformationen i vald HTML-mall
+ActionSelectHTML.Caption=&Välj HTML
+ActionSelectHTML.Hint=Välj HTML|Välj HTML-mall
+ActionDisplayThumbnails.Caption=Visa som &miniatyrer
+ActionDisplayThumbnails.Hint=Visa som miniatyrer|Visa filmlistan som miniatyrer
+ActionSortAscend.Caption=Stigande
+ActionSortAscend.Hint=|Sortera i stigande ordning
+ActionSortDescend.Caption=Fallande
+ActionSortDescend.Hint=|Sortera i fallande ordning
+ActionSortAdvanced.Caption=Avancerad...
+ActionSortAdvanced.Hint=|Avancerad sortering
+ActionGroupNone.Caption=< ingen >
+ActionGroupNone.Hint=|Gruppera inte filmer
+ActionManageFields.Caption=Hantera &fält...
+ActionManageFields.Hint=Hantera fält...|Hantera egna fält i aktuell katalog
+ActionManagePictures.Caption=Hantera b&ilder...
+ActionManagePictures.Hint=Hantera bilder...|Hantera bilder i aktuell katalog
+ActionHTMLEditor.Caption=&HTML-redigerare...
+ActionHTMLEditor.Hint=HTML-redigerare...|Redigera HTML-mallar
+
+ActionHelpIndex.Caption=&Hjälp
+ActionHelpIndex.Hint=Hjälp|Visa programhjälpen
+ActionHelpAbout.Caption=&Om...
+ActionHelpAbout.Hint=Om...|Om programmet
+ActionHelpVersion.Caption=&Versioner...
+ActionHelpVersion.Hint=Versioner...|Visa information om filversioner
+
+ActionMovieAdd.Caption=Lägg till...
+ActionMovieAdd.Hint=Lägg till...|Lägg till film
+ActionMovieUndo.Caption=Ångra ändringar
+ActionMovieUndo.Hint=Ångra ändringar|Ångra ändringar som gjorts för aktuell film
+ActionMovieDelete.Caption=Ta bort
+ActionMovieDelete.Hint=Ta bort|Ta bort aktuell film
+ActionMovieCopy.Caption=Kopiera
+ActionMovieCopy.Hint=Kopiera|Kopiera filminformationen till urklipp
+ActionMoviePaste.Caption=Klistra in
+ActionMoviePaste.Hint=Klistra in|Klistra in filminformation från urklipp
+ActionMovieRenumber.Caption=Num&rera om...
+ActionMovieRenumber.Hint=Numrera om filmer...|Numrera om filmer, med början från film 1
+ActionMovieFind.Caption=Sök...
+ActionMovieFind.Hint=Sök...|Sök en film genom villkoren i ett angivet fält
+ActionFindFindNext.Caption=Sök nästa
+ActionFindFindNext.Hint=|Sök nästa film som stämmer med sökvillkoren
+ActionFindWholeField.Caption=Endast hela fältet
+ActionFindWholeField.Hint=|Ta endast med filmer där hela det angivna sökvärdet stämmer
+ActionFindReverse.Caption=&Sök åt motsatt håll
+ActionFindReverse.Hint=|Sök åt motsatt håll
+ActionFindDisplay.Caption=Visa alla träffar
+ActionFindDisplay.Hint=|Visa alla filmer som matchar sökvillkoren
+LField.Caption=Sök i fält:
+LValue.Caption=Sök efter värde:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=Ändra &nummer...
+ActionMovieNumber.Hint=Ändra nummer|Ändra filmens nummer
+ActionMovieStats.Caption=&Statistik...
+ActionMovieStats.Hint=Statistik...|Visa statistik om databasen och dess innehåll
+ActionMovieImportFiles.Caption=Från &filer...
+ActionMovieImportFiles.Hint=Hämta filminformation från filer...|Hämta filminformation från filer
+ActionMovieImportScript.Caption=Från internet med ett skript...
+ActionMovieImportScript.Hint=Använd skript för att hämta information från internet...|Använd skript för att hämta information från internet
+ActionMovieSearch.Caption=&Sök på internet
+ActionMovieSearch.Hint=Sök information på internet|Sök information för den här filmen på internet
+ActionMovieRandom.Caption=&Slumpa
+ActionMovieRandom.Hint=Slumpa|Slumpurval
+ActionMoviePictureShow.Caption=Visa bild
+ActionMoviePictureShow.Hint=Visa/Dölj filmens bild|Dölj/Visa filmbildsfönstret
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=&Välj...
+ActionPicSelect.Hint=Välj en bild...|Välj en bild att importera eller länka till aktuell film
+ActionPicDelete.Caption=Ta bort
+ActionPicDelete.Hint=Ta bort|Ta bort nuvarande bild
+ActionPicUndock.Caption=Docka/Ta bort dockning
+ActionPicUndock.Hint=Docka/Ta bort dockning|Bildfönstret: Docka (placerat i huvudfönstret) eller ta bort dockning (flyttbart fönster)
+ActionPicSaveAs.Caption=&Spara som...
+ActionPicSaveAs.Hint=Spara bild som...|Spara kopia till ny fil
+ActionPicCopy.Caption=Kopiera
+ActionPicCopy.Hint=Kopiera till urklipp|Kopiera bild till urklipp
+ActionPicPaste.Caption=&Klistra in
+ActionPicPaste.Hint=Klistra in från urklipp|Klistra in bild från klipphanteraren
+ActionMovieUrl.Caption=URL
+ActionMovieUrl.Hint=URL|Film-URL
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=Arkiv
+ActionMenuMovie.Caption=Fil&m
+ActionMenuDisplay.Caption=&Visa
+ActionMenuTools.Caption=Verk&tyg
+ActionMenuHelp.Caption=&Hjälp
+ActionMenuPicture.Caption=B&ild
+ActionMenuPicture.Hint=Filmbild|Filmbildskommandon
+ActionMenuGet.Caption=Hämta information
+ActionMenuGet.Hint=Hämta information|Hämta filminformation
+ActionMenuGridFields.Caption=Ange listans &fält
+ActionMenuGridFields.Hint=Listans fält|Välj vilka fält som skall visas i listan
+ActionMenuSort.Caption=&Sortera efter
+ActionMenuSort.Hint=Sortera filmer|Sortera filmerna efter angivet fält
+ActionMenuGroup.Caption=&Gruppera efter
+ActionMenuGroup.Hint=Gruppera filmer|Gruppera filmerna i databasen efter ett specifikt fält
+ActionRefresh.Caption=Uppdate&ra
+ActionRefresh.Hint=Uppdatera listan|Uppdatera filmlistan
+ActionMenuGroupsFormat.Caption=Gruppf&ormatering
+ActionMenuGroupsFormat.Hint=Formatera gruppnamnen|Formatera gruppnamnen efter dina val
+ActionGroupsFormatNone.Caption=< &ingen >
+ActionGroupsFormatNone.Hint=|Formatera inte gruppnamnen
+MnuGpf1L.Caption=Gruppera på första bokstaven
+MnuGpf2L.Caption=Gruppera på de två första bokstäverna
+MnuGpf3L.Caption=Gruppera på de tre första bokstäverna
+MnuGpf4L.Caption=Gruppera på de fyra första bokstäverna
+MnuGpf5L.Caption=Gruppera på de fem första bokstäverna
+MnuGpfDateY.Caption=Gruppera på årtalet i datumet
+MnuGpfDateYM.Caption=Gruppera på år och månad i datumet
+MnuGpfRound0001.Caption=Ange som tusental
+MnuGpfRound001.Caption=Ange som hundratal
+MnuGpfRound01.Caption=Ange som tiotal
+MnuGpfRound1.Caption=Gruppera efter normalt nummer
+MnuGpfRound10.Caption=Gruppera i tiotal
+MnuGpfRound100.Caption=Gruppera i hundratal
+MnuGpfRound1000.Caption=Gruppera i tusental
+MnuGpfRoundType.Caption=&Typ av gruppering
+MnuGpfRoundDown.Caption=Runda av n&edåt
+MnuGpfRoundNearest.Caption=Runda av till &närmaste
+MnuGpfRoundUp.Caption=Runda av &uppåt
+
+MnuSelect.Caption=Välj
+ActionMovieSelGroup.Caption=Hel grupp
+ActionMovieSelGroup.Hint=Markera grupp|Välj alla filmer i den här gruppen
+ActionMovieSelCheck.Caption=Markerade
+ActionMovieSelCheck.Hint=Välj markerade|Välj bara markerade filmer
+ActionMovieSelUncheck.Caption=Omarkerade
+ActionMovieSelUncheck.Hint=Välj omarkerade|Välj bara filmer som inte är markerade
+
+MnuSelected.Caption=Valda filmer
+ActionMovieCheck.Caption=Markera
+ActionMovieCheck.Hint=Markera valda filmer|Markera de valda filmerna
+ActionMovieUncheck.Caption=Avmarkera
+ActionMovieUncheck.Hint=Ta bort markering|Ta bort markering på valda filmer
+
+ActionDisplayPictureToolbar.Caption=&Bildmeny
+ActionDisplayPictureToolbar.Hint=Visa filmbildsmenyn|Visa/Dölj bildmenyn
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=&Huvudmeny
+ActionDisplayMainToolbar.Hint=Visa huvudmeny|Visa/Dölj
+ActionDisplayStatusBar.Caption=&Statusfält
+ActionDisplayStatusBar.Hint=Visa statusfält|Visa/Dölj statusfältet
+
+ActionURLOpen.Caption=Gå till URL
+ActionURLOpen.Hint=|Öppna URL eller fil som angivits i fältet
+ActionURLExplore.Caption=Öppna mapp
+ActionURLExplore.Hint=|Öppna mappen med filmen som angivits i fältet
+ActionURLCopy.Caption=Kopiera URL
+ActionURLCopy.Hint=|Kopiera URL eller fil som angivits i fältet
+ActionURLBrowse.Caption=Bläddra...
+ActionURLBrowse.Hint=|Bläddra fram det filnamn som skall anges i fältet
+
+MnuHtmlCopy.Caption=Kopiera
+MnuHtmlCopy.Hint=|Kopiera markerad text
+MnuHtmlEdit.Caption=Redigera...
+MnuHtmlEdit.Hint=|Redigera HTML-mall
+MnuTlsBrowseHTML.Caption=Bläddra...
+
+ToolbarMenu.Caption=Menylistan
+ToolbarMain.Caption=Huvudverktygsmeny
+ToolbarPicture.Caption=Bildverktygsmeny
+ToolbarPictureWindow.Caption=Bild
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=Sök
+
+Listview1.HeaderSections.Item[0].Text=Nr
+Listview1.HeaderSections.Item[1].Text=Titel
+
+MoviePicture.Hint=|Klicka för att visa bilden i fullstorlek
+
+ThumbsSizer.Hint=|Ändra storlek på bilder
+ThumbsDisplayTitle.Caption=Titel
+ThumbsDisplayTitle.Hint=|Visa filmtitel
+
+Messages.Strings.String[0]=Vill du ta bort filmen %s : %s?
+Messages.Strings.String[1]=Vill du återgå till föregående information för aktuell film?
+Messages.Strings.String[2]=%d filmer
+Messages.Strings.String[3]=(%d valda, %d markerade, %d synliga)
+Messages.Strings.String[4]=Nuvarande fil har blivit ändrad. Vill du spara den?
+Messages.Strings.String[5]=Fråga inte efter bekräftelse igen
+Messages.Strings.String[6]=Ändrad
+Messages.Strings.String[7]=Bild
+Messages.Strings.String[8]=Spara en kopia av bilden till en ny fil
+Messages.Strings.String[9]=Importerar %s...
+Messages.Strings.String[10]=Sparar %s...
+Messages.Strings.String[11]=Laddar %s...
+Messages.Strings.String[12]=Välj en bild
+Messages.Strings.String[13]=Detta kommer att ta bort bilden. Är du säker?
+Messages.Strings.String[14]=Kan inte använda den här bilden: %s
+; följande rad används som enhet för filstorlekar i huvudfönstret(B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Markera filer att få information från
+Messages.Strings.String[17]=Sök information på %0:s|Sök information på %0:s om den här filmen
+Messages.Strings.String[18]=Ingen nyligen öppnad fil
+Messages.Strings.String[19]=Den här katalogen innehåller bilder För att katalogen skall sparas som XML måste bilderna befinna sig i individuella filer.|Om du ändå vill spara filen som XML, kan du klicka på OK för att konvertera dessa bilder eller på Ignorera för att inte behålla dem (länkade bilder sparas).|Namnen på bilderna skapas enligt valet i "Inställningar för bildnamn" under "Bildimport" i "Inställningar".
+Messages.Strings.String[20]=|Gruppera efter %s
+Messages.Strings.String[21]=< ingen >
+Messages.Strings.String[22]=Tillägg till bildborttagning: Vill du även ta bort bilden från lagringsmedian? (%s)
+Messages.Strings.String[23]=Den här filmen har en länkad bild. Vill du, när denna länk ersätts av en annan bild, ta bort den gamla bildfilen från lagringsmedian? (%s)
+Messages.Strings.String[24]=Bilden kan inte kopieras till katalogmappen förrän katalogen har ett namn; spara katalogen på valfri plats och försök igen.
+Messages.Strings.String[25]=Lagrad i katalogen som %s
+Messages.Strings.String[26]=Extern fil: %s
+Messages.Strings.String[27]=%.0n byte
+Messages.Strings.String[28]=Laddar förhandsgranskning för utskrift
+Messages.Strings.String[29]=Söker efter skrivare
+Messages.Strings.String[30]=Välj en fil att referera till i URL-fältet
+Messages.Strings.String[31]=< andra >
+Messages.Strings.String[32]=Alla
+Messages.Strings.String[33]=|Sortera efter %s
+Messages.Strings.String[34]=Filmfält
+Messages.Strings.String[35]=Egna fält
+Messages.Strings.String[36]=Filen "%s" finns inte
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+Messages.Strings.String[38]=Hämta information från filer...
+Messages.Strings.String[39]=Välj samma färgtagg|Välj bara filmer som har samma färgtagg
+Messages.Strings.String[40]=Markera valda med färgtagg|Markera alla valda filmer med en färgtagg
+Messages.Strings.String[41]=Alla fält
+Messages.Strings.String[42]=Du har valt att ersätta en existerande katalog. Vill du ta bort de gamla kopierade bilderna i denna katalog?
+Messages.Strings.String[43]=Kopiera/klistra in på filmen "%s"
+Messages.Strings.String[44]=Ta bort gamla kopierade bilder...
+Messages.Strings.String[45]=Kopiera bilder till en undermapp med bilder
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=Nummer
+Fields.Strings.String[1]=Markerad
+Fields.Strings.String[2]=Färgtagg
+Fields.Strings.String[3]=Mediaetikett
+Fields.Strings.String[4]=Mediatyp
+Fields.Strings.String[5]=Källa
+Fields.Strings.String[6]=Tillagd datum
+Fields.Strings.String[7]=Utlånad till
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=Betyg
+Fields.Strings.String[11]=Originaltitel
+Fields.Strings.String[12]=Översatt titel
+Fields.Strings.String[13]=Formaterad titel
+Fields.Strings.String[14]=Regissör
+Fields.Strings.String[15]=Producent
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=Skådespelare
+Fields.Strings.String[19]=Land
+Fields.Strings.String[20]=År
+Fields.Strings.String[21]=Längd
+Fields.Strings.String[22]=Kategori
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=URL
+Fields.Strings.String[25]=Beskrivning
+Fields.Strings.String[26]=Kommentarer
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=Videoformat
+Fields.Strings.String[29]=Video-bitrate
+Fields.Strings.String[30]=Audioformat
+Fields.Strings.String[31]=Audio-bitrate
+Fields.Strings.String[32]=Upplösning
+Fields.Strings.String[33]=Framerate
+Fields.Strings.String[34]=Språk
+Fields.Strings.String[35]=Textning
+Fields.Strings.String[36]=Filstorlekar
+Fields.Strings.String[37]=Antal skivor
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+Media.Strings.String[0]=Volymetikett
+Media.Strings.String[1]=Filsökväg
+Media.Strings.String[2]=Sökväg + filnamn
+Media.Strings.String[3]=Sökväg + filnamn + filtillägg
+Media.Strings.String[4]=Filnamn
+Media.Strings.String[5]=Filnamn (filtrerat)
+Media.Strings.String[6]=Filnamn + filtillägg
+Media.Strings.String[7]=Mappnamn 
+Media.Strings.String[8]=Mappnamn (filtrerat)
+Media.Strings.String[9]=Filtillägg
+Media.Strings.String[10]=Filtillägg (utan punkt)
+Media.Strings.String[11]=Storlek (sträng - "650+530")
+Media.Strings.String[12]=Storlek (summa - "1180")
+Media.Strings.String[13]=Skivor
+Media.Strings.String[14]=Bild
+Media.Strings.String[15]=Längd
+Media.Strings.String[16]=Upplösning ("bredd x höjd")
+Media.Strings.String[17]=Upplösning (bredd)
+Media.Strings.String[18]=Upplösning (höjd)
+Media.Strings.String[19]=Framerate
+Media.Strings.String[20]=Video-codec
+Media.Strings.String[21]=Video-bitrate
+Media.Strings.String[22]=Audio-codec
+Media.Strings.String[23]=Audiokanaler
+Media.Strings.String[24]=Audio-codec + audiokanaler
+Media.Strings.String[25]=Audio-bitrate
+Media.Strings.String[26]=Språk
+Media.Strings.String[27]=Textning
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Varning
+Captions.Strings.String[1]=Fel
+Captions.Strings.String[2]=Information
+Captions.Strings.String[3]=Bekräfta
+Captions.Strings.String[4]=&Ja
+Captions.Strings.String[5]=&Nej
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Avbryt
+Captions.Strings.String[8]=&Avbryt
+Captions.Strings.String[9]=Fö&rsök igen
+Captions.Strings.String[10]=&Ignorera
+Captions.Strings.String[11]=&Alla
+Captions.Strings.String[12]=Nej till alla
+Captions.Strings.String[13]=Ja till alla
+Captions.Strings.String[14]=&Hjälp
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=OK
+btn1.Caption=Avbryt
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=Om programmet
+btn3.Caption=Stäng
+btn2.Caption=Versioner...
+btn1.Caption=Erkännanden...
+Messages.Strings.String[0]=%s : version %s (skapad %s)
+Messages.Strings.String[1]=(tryck Ctrl+C om du vill kopiera den här information till urklipp)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Val av film nr
+btn2.Caption=OK
+btn1.Caption=Avbryt
+LEnterNumber.Caption=Välj ett nummer för filmen:
+btnFindNum.Hint=Sök ett tillgängligt nummer|
+grpNotUnique.Caption=Det finns redan en film med detta nummer...
+grpNotUnique.Items.String[0]=&Tillåt dubblett
+grpNotUnique.Items.String[1]=&Byt nummer på den existerande filmen
+grpNotUnique.Items.String[2]=&Byt filmnummer tills alla dubbletter är borta
+CBDoNotAsk.Caption=Fråga inte igen; använd automatisk numrering
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=OK
+btn1.Caption=Avbryt
+Caption=Kataloginställningar
+LHOwnerInfo.Caption=Ägarinformation
+LFileName.Caption=Namn:
+LFileSize.Caption=Storlek:
+LFileVersion.Caption=Format:
+LHXMLHeader.Caption=XML Header
+LEncoding.Caption=Kodning:
+LOwnerName.Caption=Namn:
+LOwnerMail.Caption=E-post:
+LOwnerSite.Caption=Hemsida:
+LDescription.Caption=Beskrivning:
+EOwnerMail.ButtonHint=Skicka e-post
+EOwnerSite.ButtonHint=Gå till URL
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Lån
+btn2.Caption=Stäng
+btn1.Caption=Hjälp
+
+ActionBorrowerAdd.Caption=Lägg till...
+ActionBorrowerAdd.Hint=Lägg till låntagare|Lägg till en ny låntagare till listan
+ActionBorrowerDel.Caption=Ta bort
+ActionBorrowerDel.Hint=Ta bort låntagare|Ta bort markerad låntagare från listan
+ActionCheckOut.Caption=Utlånad
+ActionCheckOut.Hint=Utlånad|Lägg till markerad film till låntagarens lista
+ActionCheckIn.Caption=Tillbakalämnad
+ActionCheckIn.Hint=Tillbakalämnad|Ta bort markerad film från låntagarens lista
+ActionMovieGetBorrower.Caption=Sök låntagare
+ActionMovieGetBorrower.Hint=Sök låntagare|Sök i låntagarens lista, låntagaren eller markerad film
+ActionMovieFindNext.Caption=Sök nästa
+ActionMovieFindNext.Hint=Sök nästa|Sök nästa film som innehåller angiven text
+ActionOptions.Caption=&Val
+ActionOptions.Hint=Val|Val för utlån och återlämnade
+ActionOptionsIncNum.Caption=Ta med filmer med samma &nummer
+ActionOptionsIncNum.Hint=Ta med filmer med samma nummer|Ta vid utlån och återlämnande med filmer som har samma nummer som den valda
+ActionOptionsIncLab.Caption=Ta med filmer med samma &etikett
+ActionOptionsIncLab.Hint=Ta med filmer med samma etikett|Ta vid utlån och återlämnande med filmer som har samma mediaetikett som den valda
+
+LvMovies.HeaderSections.Item[0].Text=Nr
+LvMovies.HeaderSections.Item[1].Text=Etikett
+LvMovies.HeaderSections.Item[2].Text=Titel
+LvMovies.HeaderSections.Item[3].Text=Utlånad till
+LvNames.HeaderSections.Item[0].Text=Utlånad till
+LvNames.HeaderSections.Item[1].Text=Antal
+LvLent.HeaderSections.Item[0].Text=Nr
+LvLent.HeaderSections.Item[1].Text=Etikett
+LvLent.HeaderSections.Item[2].Text=Titel
+
+Messages.Strings.String[0]=Det här tar bort "%s" från låntagarens lista, och anger "återlämnad" på alla filmer som lånats av personen.
+Messages.Strings.String[1]=Laddar lista...
+Messages.Strings.String[2]=Den här filmen är redan utlånad
+Messages.Strings.String[3]=Var god ange namn
+Messages.Strings.String[4]=Följande filmer är redan utlånade till någon annan:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Ange ett namn
+Messages.Strings.String[7]=Ny låntagare
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Exportera till annat filformat
+lvFormat.Columns.Item[0].Caption=Följande filformat kan användas
+Btn3.Caption=Exportera...
+Btn2.Caption=Stäng
+Btn1.Caption=Hjälp
+grpImages.Caption=Bilder
+CBCopyPictures.Caption=Kopiera med exporterad fil
+CBCopyPictures.Hint=Kopiera bilder till samma mapp som den exporterade filen
+CBCopyPicturesInPicDir.Caption=Till undermapp
+CBCopyPicturesInPicDir.Hint=Kopiera bilder till en undermapp för bilder
+CBCopyPicturesNew.Caption=Endast om de inte redan existerar
+CBCopyPicturesNew.Hint=Kopiera bara bildfiler som inte redan existerar (ingen överskrivning)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=Ange format...
+
+LCSVDelimiter.Caption=Fältavgränsare:
+ECSVDelimiter.Hint=|Tecken för att avgränsa fält
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=Värdeavgränsare:
+ECSVBloc.Hint=|Tecken för att avgränsa textsträngar (lämna tomt om sådana inte används)
+LCSVLinebreaks.Caption=Ersätt radmatning med:
+ECSVLinebreaks.Hint=|Tecken som ger en radmatning i t.ex. beskrivningar och kommentarer
+CBCSVColumnTitles.Caption=Lägg till kolumntitlar
+LSQLTableName.Caption=Tabellnamn:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Skriv över" i stället för "Sätt in"
+LSQLCommands.Caption=SQL-kommandon att inkludera:
+LSQLLinebreaks.Caption=Ersätt radmatning med:
+LOrigonsLink.Caption=Det här formatet tillåter dig att att lägga upp din filmlista online på Origons hemsida<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Fält att exportera:
+FieldsSQL.LSelected.Caption=Fält att exportera:
+LAMCNote.Caption=Du kan även exportera till AMC (utan exportval) genom att använda Arkiv -> Spara som, där du väljer AMC som filformat. Denna fil kan sedan öppnas som en vanlig katalog i Ant Movie Catalog.
+LXMLNote.Caption=Du kan även exportera till XML (utan exportval) genom att använda Arkiv -> Spara som, där du väljer XML som filformat. Denna fil kan sedan öppnas som en vanlig katalog i Ant Movie Catalog.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=Sorterar lista...
+Messages.Strings.String[1]=Exporterar till %s...
+Messages.Strings.String[2]=Kopierar filer...
+Messages.Strings.String[3]=Exportera till HTML
+Messages.Strings.String[4]=Exportera till CSV
+Messages.Strings.String[5]=Exportera till SQL
+Messages.Strings.String[6]=Exportera bilder
+Messages.Strings.String[7]=Exportera till en fil för Origons.com
+Messages.Strings.String[8]=Exportera till AMC
+Messages.Strings.String[9]=Exportera till XML
+Messages.Strings.String[10]=Du kan inte exportera katalogen till samma plats som den aktuella katalogen!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Importera från ett annat format
+Btn3.Caption=&Importera...
+Btn2.Caption=Stäng
+Btn1.Caption=Hjälp
+lvFormat.Columns.Item[0].Caption=Följande filformat kan användas
+lvFormat.Items.Item[5].Caption=Mediafiler
+Messages.Strings.String[0]=Söker mediafiler...
+Messages.Strings.String[1]=Hittade mediafiler:
+Messages.Strings.String[2]=Importerar mediainformation...
+Messages.Strings.String[3]=Importerar från %s...
+Messages.Strings.String[4]=Vissa filer eller mappar kan inte skannas därför att de innehåller tecken som inte stöds:
+
+[TImportFrame]
+lblLink.Caption=Detta tillåter import av filmer från %s
+grpSettings.Caption=Inställningar
+chkAllowDup.Caption=Tillåt dubblettnummer
+chkAllowClear.Caption=Tillåt att fält töms när det nya värdet är tomt
+chkAutoAssign.Caption=Försök att automatiskt placera fält i kolumner
+lblPictures.Caption=Metod för bildimport:
+cmbPictures.Items.String[0]=1 - Lagra i katalogen
+cmbPictures.Items.String[1]=2 - Kopiera till katalogmappen och skapa relativ länk
+cmbPictures.Items.String[2]=3 - Kopiera till katalogmappen om den inte har lagrats
+cmbPictures.Items.String[3]=4 - Kopiera till bildmappen och skapa relativ länk
+cmbPictures.Items.String[4]=5 - Kopiera till bildmappen om den inte har lagrats
+cmbPictures.Items.String[5]=6 - Skapa absoluta länkar till aktuella bilder
+cmbPictures.Items.String[6]=7 - Skapa relativa länkar till aktuella bilder
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=Källfil
+btnBrowse.Hint=Bläddra...|Välj en fil att importera
+btnReload.Caption=&Ladda om filen
+grpPreview.Caption=Förhandsgranska
+lblPreview.Caption=Klicka på kolumnrubriker för att tilldela fält
+btnFieldsLoad.Hint=Ladda fält|Ladda fält- och kolumnlänk som tidigre sparats
+btnFieldsSave.Hint=Spara fält|Spara aktuella fält- och kolumnlänk
+btnFieldsAutoLoad.Hint=Ladda automatiskt om fält- och kolumnlänkar|Ladda automatiskt om fält- och kolumnlänkar som tidigare sparats
+btnColumnsAutoResize.Hint=Anpassa automatiskt kolumnernas storlek|Anpassa automatiskt kolumnernas storlek
+ActionListCheck.Caption=Markera valda
+ActionListCheck.Hint=Markera valda|Markera valda filmer
+ActionListUncheck.Caption=Avmarkera valda
+ActionListUncheck.Hint=Avmarkera valda|Avmarkera valda filmer
+ActionListAll.Caption=Markera &alla
+ActionListAll.Hint=Markera alla|Markera alla filmer
+ActionListNone.Caption=Avmarkera a&lla
+ActionListNone.Hint=Avmarkera alla|Avmarkera alla filmer
+ActionListCheckExists.Caption=Markera existerande filmer
+ActionListCheckExists.Hint=Markera existerande filmer|Markera existerande filmer i aktuell katalog
+ActionListUncheckExists.Caption=Avmarkera existerande filmer
+ActionListUncheckExists.Hint=Avmarkera existerande filmer|Avmarkera existerande filmer i aktuell katalog
+ActionSortAscend.Caption=Sortera stigande
+ActionSortAscend.Hint=Sortera stigande|Sortera kolumnen i stigande ordning
+ActionSortDescend.Caption=Sortera fallande
+ActionSortDescend.Hint=Sortera fallande|Sortera kolumnen i fallande ordning
+ActionDefineKeyField.Caption=Ange som nyckelfält
+ActionDefineKeyField.Hint=|Använd detta nyckelfält för att jämföra filmer
+ActionHeaderNoImport.Caption=Importera inte detta fält
+MnuMov.Caption=Filmfält
+MnuMovCF.Caption=Egna fält
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=Ingen film att importera
+Messages.Strings.String[1]=Ett fält är inte tilldelat någon kolumn. Klicka på kolumnrubriken för att göra detta.
+Messages.Strings.String[2]=För bildimport med denna metod måste katalogen ha ett namn. Spara katalogen på valfri plats och försök igen.
+Messages.Strings.String[3]=Välj mapp:
+Messages.Strings.String[4]=%s film(er) hittades!
+Messages.Strings.String[5]=%s film(er) lades till!
+Messages.Strings.String[6]=%s film(er) uppdaterades!
+Messages.Strings.String[7]=Värdena på nyckelfältet är inte unika i aktuell katalog.|En film i listan kan matcha flera filmer i aktuell katalog.
+Messages.Strings.String[8]=För att göra detta måste du först välja ett nyckelfält att jämföra filmer med (klicka på kolumnrubriken i listan).
+Messages.Strings.String[9]=Importera filmer till aktuell katalog...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Första raden innehåller rubriker
+lblDelim.Caption=Fältavgränsare:
+edtDelim.Hint=|Tecken för att avgränsa fält
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=Värdeavgränsare:
+edtQuote.Hint=|Tecken för att avgränsa textsträngar (lämna tomt om sådana inte används)
+lblLinebreaks.Caption=Ersätt radmatning med:
+edtLinebreaks.Hint=|Tecken som ger en radmatning i t.ex. beskrivningar och kommentarer
+
+[TImportFrameQuery]
+grpQuery.Caption=Fråga att utföra
+btnQueryExec.Hint=Utför|Utför fråga
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Källmapp
+Messages.Strings.String[11]=Bläddra...|Välj mapp att skanna
+Messages.Strings.String[12]=&Skanna mapp
+lblExtractProcess.Caption=Hämta följande:
+cmbExtractProcess.Items.String[0]=1 - Hämta avancerad mediainformation under skanningen
+cmbExtractProcess.Items.String[1]=2 - Hämta avancerad mediainformation endast under den slutliga importen
+cmbExtractProcess.Items.String[2]=3 - Hämta inte avancerad mediainformation
+chkInternalAVI.Caption=Använd intern metod för AVI-import (snabbare)
+chkMultiDisks.Caption=Koppla ihop mediainformation från flera filer/skivor
+lblDiskTag.Caption=Skivtagg:
+edtDiskTag.Hint=|Välj t.ex. taggen 'cd' till namn som 'filmnamn.cd1', 'filmnamn.cd2',...
+lblBrowseDepth.Caption=Bläddra genom undermappar till nivån:
+edtBrowseDepth.Hint=|0 = ingen, * = alla
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Filtrera filnamn
+lblExtVideo.Caption=Tillägg:
+btnDefaultExtVideo.Caption=Standard
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+Caption=Metod för filmimport
+btn2.Caption=OK
+btn1.Caption=Avbryt
+LMsg1.Caption=Du har valt ett nyckelfält för att jämföra markerade filmer med filmerna i den aktuella katalogen.
+LMsg2.Caption=Du kommer att importera alla markerade filmer från listan i den aktuella katalogen. För att kontrollera att filmerna inte redan finns, kan du ange ett nyckelfält, som gör att du kan jämföra dem. Klicka på en kolumnrubrik i listan.
+grpImportMethod.Caption=Vad vill du göra?
+grpImportMethod.Items.String[0]=Importera alla filmer
+grpImportMethod.Items.String[1]=Importera bara nya filmer 
+grpImportMethod.Items.String[2]=Uppdatera bara existerande filmer
+grpImportMethod.Items.String[3]=Importera nya filmer och uppdatera redan existerande
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Inställningar
+Btn3.Caption=OK
+Btn2.Caption=Avbryt
+Btn1.Caption=Hjälp
+
+LvCat.Items.Item[0].Text=Allmänt
+LHToolbar.Caption=Verktygsfält och menyer
+LIconSet.Caption=Ikoner:
+LColorType.Caption=Färg:
+cbxColorType.Items.String[0]=Automatiskt
+cbxColorType.Items.String[1]=Grålagd när inaktiv
+cbxColorType.Items.String[2]=Ljus när inaktiv
+cbxColorType.Items.String[3]=Mörk när inaktiv
+cbxColorType.Items.String[4]=Alltid färgad
+CBOfficeXP.Caption=Office XP-stil
+CBMenuImages.Caption=Bilder i menyer
+LHCaption=Huvudfönster
+CBSoftBorders.Caption=Mjuka lister för filmlistan, panelen för filminformation och bildfönstret
+CBNatCmp.Caption=Använd naturlig jämförelse (utnyttja automatiskt nummer) för att sortera strängar
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+CBAutoFocus.Hint=|Fokusera den komponent som muspekaren rör sig över
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=Start
+CBLogo.Caption=Visa logga
+
+LvCat.Items.Item[1].Text=Ställ in verktygsfält
+LHCustomizeToolbar.Caption=Välj ikoner som skall synas i huvudverktygsfältet
+
+LvCat.Items.Item[2].Text=Filer
+LHSaving.Caption=Kataloger
+CBBackup.Caption=Skapa alltid en säkerhetskopia
+CBAutoLoad.Caption=Öppna vid programstart automatiskt följande fil i stället för att skapa en ny:
+EAutoLoad.ButtonHint=Bläddra...|Välj fil
+CBAutoLoadLast.Caption=Öppna senast använda fil
+CBAutoLoadCF.Caption=Importera automatiskt egna fält från följande fil till nya kataloger:
+EAutoLoadCF.ButtonHint=Bläddra...|Välj fil
+LRecentFiles.Caption=Antal senast öppnade filer att visa i menyn:
+LRepairAssociations.Caption=Associera .amc-filer med Ant Movie Catalog genom att klicka på knappen nedan:
+BtnRepairAssoc.Caption=Reparera filassociationer
+LHHistory.Caption=Lånhistorik
+CBHistory.Caption=Lagra lånhistoriken i följande fil (använd tab-avgränsat format):
+EHistoryFile.ButtonHint=Bläddra...|Välj fil
+LHHTMLTemplate.Caption=HTML-mall
+EHTMLTemplate.ButtonHint=Bläddra...|Välj fil
+
+LvCat.Items.Item[3].Text=Filmlistan
+LHDisplay.Caption=Visa
+CBCheckboxes.Caption=Kryssrutor (högerklicka för att ändra filmens färgtagg)
+CBCheckboxesInThumbs.Caption=Kryssrutor i miniatyrvisning
+CBCheckboxesColor.Caption=Kryssrutor med bakgrundsfärg samma som filmens färgtagg
+CBLinesColor.Caption=Rader med bakgrundsfärg samma som filmens färgtagg
+CBHotTrack.Caption=Understykning under muspekaren
+CBEnhScrollbars.Caption=Utökade rullgardinslistor
+CBMovieNumColumn.Caption=Filmnummerkolumn
+LGridTextSize.Caption=Antal tecken per kolumn i listvisning (0 = ingen begränsning):
+LGridTextSize.Hint=|Kolumnerna "Formaterad titel", "Originaltitel" och "Översatt titel" påverkas inte
+CBAutoStretchListGrid.Caption=Autoanpassa listbredd vid listvisning
+CBAutoStretchListThumbs.Caption=Autoanpassa listbredd vid miniatyrvisning
+LHOperations.Caption=Åtgärder
+CBDelete.Caption=Bekräfta borttagning
+CBUndo.Caption=Bekräfta ångra
+LHShortcut.Caption=Genvägar
+LShortcutPrev.Caption=Föregående film
+LShortcutNext.Caption=Nästa film
+
+LvCat.Items.Item[4].Text=Titelformatering
+LHFormatting.Caption=Formatering
+LTitleColumn.Caption=Titel att visa:
+cbxTitle.Items.String[0]=Originaltitel
+cbxTitle.Items.String[1]=Översatt titel
+cbxTitle.Items.String[2]=Originaltitel (Översatt titel)
+cbxTitle.Items.String[3]=Översatt titel (Originaltitel)
+cbxTitle.Items.String[4]=Mediaetikett
+cbxTitle.Items.String[5]=Anpassad titel
+LTitleTemplate.Caption=Mall för titel:
+BtnInsertFieldTag.Hint=|Sätt in ett speciellt värde som kommer att ersättas av filmens värde
+CBPrefixes.Caption=Flytta följande "prefix" till slutet av varje titel:
+LPrefixes1.Caption=Bara ord följda av mellanrum eller citationstecken i slutet av titeln kommer att kännas igen.
+LPrefixes2.Caption=Skriv "prefixen" på var sin rad i listan, utan mellanrummet eller citationstecknet.
+
+LvCat.Items.Item[5].Text=Gruppering
+LHGrouping.Caption=Grupper
+CBGroupCount.Caption=Visa antalet i grupperna
+CBGroupExpand.Caption=Expandera helt som standard
+CBGroupMulti.Caption=Låt grupper med värden i flera fält separeras av:
+CBGroupMulti.Hint=|För multifält som Kategori, Skådespelare, Språk, Textning...
+EGroupMultiSep.Hint=|Tecken för att avgränsa värden i multifält
+CBGroupMultiRmAllP.Caption=Ta bort värden mellan parenteser i alla multifält
+CBGroupMultiRmAllP.Hint=|Fältet Skådespelare som standard + andra multifält
+CBGroupMultiAddPatch.Caption=Lägg till funktion för att ignorera parenteser med (I, (II, (II, (IV ... (XXX-värden
+CBSortGroupsByCount.Caption=Sortera grupper efter antal i gruppen
+LHCommonGroups.Caption=Allmänna grupper
+lblGroupLocation.Caption=Plats:
+RBGroupsAbove.Caption=Grupper ovanför allmänna grupper
+RBGroupsBelow.Caption=Grupper under allmänna grupper
+CBGroupUnique.Caption=Sätt in en särskild allmän grupp för filmer som annars skulle bli ensamma i sin grupp
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=Lägger till ny film
+CBAskNumber.Caption=Fråga efter nummer
+CBFirstAvailable.Caption=Använd det första lediga numret i stället för det högsta numret + 1
+CBAddOpenScript.Caption=Öppna "Hämta information från script"-fönstret
+CBAddOpenFiles.Caption=Öppna "Hämta information från filer"-fönstret
+LDefaultValues.Caption=Klicka på knappen nedan för att modifiera standardvärden för en ny film:
+BtnDefaultValues.Caption=Redigera standardvärden för film
+CBSetCurrentDate.Caption="Tillagd datum": Använd dagens datum i stället för ett specifierat datum
+CBChecked.Caption=Markerad
+LColorTag.Caption=Färgtagg:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=Betyg
+CBRatingTrunc.Caption=Visa inte decimaler i huvudfönstret, export eller utskrift
+LHPictureWindow.Caption=Bild
+LPictureBackground.Caption=Bakgrundsfärg:
+CBFitPicture.Caption=Anpassa bilden till fönstret
+CBShowPicInfo.Caption=Visa bildens storlek, format och sökväg vid visning i fullformat
+LHMovieFrame.Caption=Rama in filmfält
+LMovieFrameBackground.Caption=Bakgrundsfärg:
+
+LvCat.Items.Item[8].Text=Rullgardinslista
+LHComboBoxItems.Caption=Objekt
+CBComboSameForAll.Caption=Samma alternativ för alla listor (påverkar inte innehållet)
+LListOptions.Caption=Alternativ för lista:
+CBComboSort.Caption=Autosortera objekt
+CBComboAutoComplete.Caption=Autokomplettera under inskrivning
+CBComboCatalogValues.Caption=Använd värden för nuvarande katalog i stället för förinställd lista
+CBComboAutoAdd.Caption=Lägg automatiskt till nya värden som inte finns med i listan
+LListEdit.Caption=Redigera objekt:
+
+LvCat.Items.Item[9].Text=Import av mediafiler
+LHVideoDragDrop.Caption=Dra && Släpp / Hämta information från filer
+CBDNDMediaLabel.Caption=Importera mediaetikett
+CBDNDFileName.Caption=Importera filnamn som titel
+btnFilterFileName.Caption=Filtrera filnamnet
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=Importera fullständig sökväg till URL-fältet
+CBDNDSize.Caption=Importstorlek:
+RBDNDString.Caption=Gör en kedja, t.ex "650+530"
+RBDNDSum.Caption=Gör en summa, t.ex "1180"
+LDNDSizeUnit.Caption=Enhet:
+cbxDNDSizeUnit.Items.String[0]=Byte
+cbxDNDSizeUnit.Items.String[1]=Kilobyte (kB)
+cbxDNDSizeUnit.Items.String[2]=Megabyte (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabyte (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=Importera längd
+CBDNDAllowClear.Caption=Tillåt att fält rensas när nya värdet är tomt
+CBDNDInternalAVI.Caption=Använd intern metod i stället för MediaInfo DLL vid AVI-import (snabbare)
+LExtVideo.Caption=Filtillägg:
+btnDefaultExtVideo.Caption=Standard
+LHGetInfoVideo.Caption=Information att hämta från videoströmmar
+CBDNDResolution.Caption=Importera upplösning
+CBDNDFramerate.Caption=Importera framerate
+CBDNDVideoCodec.Caption=Importera video-codec
+CBDNDVideoBitrate.Caption=Importera video-bitrate
+LHGetInfoAudio.Caption=Information att hämta från audioströmmar
+CBDNDAudioCodec.Caption=Importera audio-codec
+CBDNDAudioChannels.Caption=Import audio-channels
+CBDNDAudioBitrate.Caption=Importera audio-bitrate
+CBDNDLanguages.Caption=Importera språk
+CBDNDSubtitles.Caption=Importera textning
+
+LvCat.Items.Item[10].Text=Bildimport
+LHImportPic.Caption=Importera bilder från externa källor
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=För dra && släpp / Hämta information från filer
+CBPicImportGetInfoNoAsk.Caption=Fråga inte efter metod för bildimport; använd alltid metoden ovan
+PicImportScripting.grp.Caption=För internetskript
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=OBS: Om bildnamnet redan används av en annan film, skapas ett slumpat namn. Om det inte finns ett originalnamn (t.ex. vid konvertering från amc till xml) används filmens titel.
+
+LvCat.Items.Item[11].Text=Sök på internet
+LHSearch.Caption=Sök på internet
+LSearchEdit.Caption=Redigera markerad rad:
+btnSearchAdd.Hint=Lägg till|Lägg till ett nytt objekt över markerat objekt
+btnSearchDel.Hint=Ta bort|Ta bort markerat objekt
+btnSearchUp.Hint=Flytta upp|Flytta upp markerat objekt
+btnSearchDown.Hint=Flytta ned|Flytta ned markerat objekt
+LSearchNotes.Caption=OBS:
+LSearchNote1.Caption=- Namnet måste vara unikt
+LSearchNote2.Caption=- Lägg till % i adressen där programet skall placera filmtiteln
+LSearchNote3.Caption=- För att lägga till avgränsare i listan, ange ett unikt namn som börjar med bindestreck "-"
+
+LvCat.Items.Item[12].Text=Skript
+LHScript.Caption=Inställningar för skript
+CBAutorunScript.Caption=Välj automatiskt senast använda skript vid "Hämta information -> Från Internet med ett skript"
+LScriptPicImport.Caption=Inställningar för bildimport, se sidan <LINK>Bildimport</LINK>
+LHConnection.Caption=Internetanslutning
+CBProxy.Caption=Använd proxy vid anslutning till internet:
+LProxyServer.Caption=Server:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Användarnamn:
+LProxyPassword.Caption=Lösenord:
+CBKeepConnection.Caption=Håll anslutning öppen
+CBHTTP10.Caption=Endast HTTP 1.0 (krävs av vissa proxyservrar)
+
+LvCat.Items.Item[13].Text=Exportera
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Öppna automatiskt senast använda mall
+LLineBreaks.Caption=Radbyte kommer att ersättas med följande tagg:
+ELineBreaks.Hint=|Lämna det här fältet tomt om du inte vill ersätta radbyten
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|Lämna tomt om du inte vill tvinga breddvärdet
+EForcePicSizeH.Hint=|Lämna tomt om du inte vill tvinga höjdvärdet
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=Datumformat (sätt speciella tecken mellan citattecken):
+ESQLDate.Hint=|Lämna tomt för Windows standard
+LHExportFileNames.Caption=Filnamn
+CBLastFileName.Caption=Kom ihåg filnamn för senast exporterade fil
+CBOpenExportedFile.Caption=Öppna exporterad fil när exporten är klar
+ExpFileNamingFrame.grp.Caption=Stil för individuella sidor och bilders filnamn
+LExpFileExt.Caption=Följande filformat kan användas:
+EExpFileExt.Hint=|Lämna tomt för att använda samma filformat som exporterade huvudfilnamnet
+LHPictures.Caption=Bilder
+CBCopyPictures.Caption=Kopiera bilder till samma mapp som den exporterade filen
+CBCopyPicturesInPicDir.Caption=Kopiera bilder till en undermapp för bilder
+CBCopyPicturesNew.Caption=Kopiera inte om målfilen redan finns
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=Mappar
+LHFoldersDialogs.Caption=Dialogrutor
+LFolderToUse.Caption=Mapp att använda för:
+cbxWindow.Items.String[0]=Öppna/spara kataloger
+cbxWindow.Items.String[1]=Ladda filmbild
+cbxWindow.Items.String[2]=Exportera
+cbxWindow.Items.String[3]=Öppna/spara mallar
+cbxWindow.Items.String[4]=Importera
+cbxWindow.Items.String[5]=Hämta information från filer
+cbxWindow.Items.String[6]=Spara grafik
+cbxWindow.Items.String[7]=Öppna/spara skript
+cbxWindow.Items.String[8]=Öppna/spara egna fält
+cbxWindow.Items.String[9]=Öppna/spara filter
+RBFolderDefault.Caption=Windows-standard (resultatet beror på Windows-versionen)
+RBFolderRemember.Caption=Kom ihåg senast använda mapp
+RBFolderSpecified.Caption=Använd den här mappen:
+EFolderSpecified.ButtonHint=Öppna...|Välj mapp
+CBSameForAll.Caption=Samma alternativ för alla fönster
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Redigera standardvärden för film
+Btn3.Caption=Standard
+Btn3.Hint=|Återställ standardvärden
+Btn2.Caption=OK
+Btn1.Caption=Avbryt
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=Standard
+Btn3.Hint=|Återställ standardvärden
+Btn2.Caption=OK
+Btn1.Caption=Avbryt
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Välj språk
+Btn2.Caption=OK
+Btn1.Caption=Avbryt
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Namn
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Lokalt namn
+LanguageFrame.lblVersion.Caption=Version:
+LanguageFrame.lblMadeBy.Caption=Gjord av:
+LanguageFrame.lblComments.Caption=Kommentarer:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Avancerade sorteringsalternativ
+Fields.LSelected.Caption=Fält att inkludera i sorteringen:
+BtnSortOrder.Hint=Omvänd sorteringsordning|Omvänd sorteringsordning i valda fält
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Statistik
+btn1.Caption=Stäng
+ActionSaveAs.Caption=Spara som...
+ActionSaveAs.Hint=Spara som...|Spara bild till en fil
+ActionCopy.Caption=Kopiera
+ActionCopy.Hint=Kopiera|Kopiera bild till urklipp
+ActionCopyWMF.Caption=Som metafil
+ActionCopyWMF.Hint=Kopiera som metafil|Kopiera bild till urklipp som metafil
+ActionCopyBMP.Caption=Som bitmap
+ActionCopyBMP.Hint=Kopiera som bitmap|Kopiera bild till urklipp som bitmap
+ActionOptions.Caption=Alternativ
+ActionOptions.Hint=Alternativ|Ändra vissa alternativ för diagrammet
+ActionOptionsLegend.Caption=Beskrivning
+ActionOptionsLegend.Hint=Visa beskrivning|Visa beskrivning till höger om diagrammet
+ActionOptionsLabels.Caption=Etiketter
+ActionOptionsLabels.Hint=Visa etiketter|Visa etiketter i diagrammet
+ActionOptionsEmpty.Caption=Tomma månader
+ActionOptionsEmpty.Hint=Visa tomma månader|Visa månader där diagrammet inte innehåller ett värde
+ActionOptionsGroup.Caption=Gruppera värden
+ActionOptionsGroup.Hint=Gruppera värden|Tabell: Gruppera värden med intervall; Cirkeldiagram: Gruppera låga värden tillsammans
+Messages.Strings.String[0]=%.1f minuter
+Messages.Strings.String[1]=< ingen >
+Messages.Strings.String[2]=Spara diagram
+Messages.Strings.String[3]=%d dagar %d timmar %d minuter
+Messages.Strings.String[4]=< andra >
+; följande rad används som enhet för filstorlekar i statistikfönster (B/kB/MB/GB)
+Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Totalt antal filmer
+lstGeneral.Items.Item[1].Caption=Genomsnittlig filmlängd
+lstGeneral.Items.Item[2].Caption=Total filmlängd
+lstGeneral.Items.Item[3].Caption=Total storlek på filmfiler
+lstGeneral.Items.Item[4].Caption=Totalt antal skivor
+lstCategories.Items.String[0]=Allmän information
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Skript
+btn2.Caption=Stäng
+btn1.Caption=Hjälp
+ActionFileNew.Caption=Ny
+ActionFileNew.Hint=Ny|Skapa ett nytt skript
+ActionFileOpen.Caption=Öppna...
+ActionFileOpen.Hint=Öppna...|Öppna en skriptfil
+ActionFileNoRecent.Caption=Ingen senaste fil
+ActionFileSave.Caption=Spara
+ActionFileSave.Hint=Spara|Spara aktuellt skript
+ActionFileSaveAs.Caption=Spara som...
+ActionFileSaveAs.Hint=Spara som...|Spara aktuellt skript under ett nytt namn
+ActionFileProperties.Caption=Egenskaper...
+ActionFileProperties.Hint=Egenskaper och val...|Redigera skriptets egenskaper och inställningar
+ActionDebugRun.Caption=Kör
+ActionDebugRun.Hint=Kör script|Kör skript
+ActionDebugStop.Caption=Stopp
+ActionDebugStop.Hint=Stoppa skript|Stoppa körning av skriptet
+ActionDebugBreakpoint.Caption=Brytpunkt
+ActionDebugBreakpoint.Hint=Växla brytpunkt|Växla mellan "tillåt" och "tillåt inte" brytpunkt på aktuell rad
+ActionDebugBreakpointClear.Caption=Ta bort brytpunkter
+ActionDebugBreakpointClear.Hint=Ta bort brytpunkter|Ta bort alla brytpunkter
+ActionDebugStep.Caption=Stega
+ActionDebugStep.Hint=Stega|Kör nästa rad i koden
+ActionDebugRunToCursor.Caption=Kör till markör
+ActionDebugRunToCursor.Hint=Kör till markör|Kör programmet fram till aktuell markörplacering
+ActionDebugEval.Caption=Utvärdera...
+ActionDebugEval.Hint=Utvärdera variabel...|Visa innehållet i den valda variabeln
+ActionDebugWatchAdd.Caption=Lägg till bevakning
+ActionDebugWatchAdd.Hint=Lägg till variabelbevakning|Lägg till vald variabel i bevakningslistan
+ActionDebugWatchRemove.Caption=Ta bort
+ActionDebugWatchRemove.Hint=Ta bort variabelbevakning|Ta bort vald variabel ur bevakningslistan
+ActionDebugWatchClear.Caption=Töm listan
+ActionDebugWatchClear.Hint=Töm listan med variabelbevakning|Ta bort alla variabler ur bevakningslistan
+ActionListCheck.Caption=Markera valda
+ActionListCheck.Hint=Markera valda|Markera valda objekt
+ActionListUncheck.Caption=Avmarkera valda
+ActionListUncheck.Hint=Avmarkera valda|Avmarkera valda objekt
+ActionListAll.Caption=Markera &alla
+ActionListAll.Hint=Markera alla|Markera alla objekt
+ActionListNone.Caption=Avmarkera a&lla
+ActionListNone.Hint=Avmarkera alla|Avmarkera alla objekt
+ActionDisplayScripts.Caption=Skript
+ActionDisplayScripts.Hint=Välj skript|Visa tillgängliga skript
+ActionDisplayEditor.Caption=Redigerare
+ActionDisplayEditor.Hint=Skriptredigerare|Visa skriptredigerare
+ActionViewFilter.Caption=&Språkfilter
+ActionViewFilter.Hint=Språkfilter|Filter som gör att du kan välja vilka språk du vill hämta information från
+ActionViewList.Caption=Lista
+ActionViewList.Hint=Lista|Visa skripten som lista
+ActionViewDetailed.Caption=Detaljerad
+ActionViewDetailed.Hint=Detaljerad lista|Visa skripten i två spalter med beskrivning
+ActionOptionsEdit.Caption=Ändra...
+ActionOptionsEdit.Hint=Ändra värde...|Ändra det valda värdet
+ActionOptionsDefault.Caption=Standardvärden
+ActionOptionsDefault.Hint=Standardvärden|Återställ till standardvärden
+lstScripts.Hint=|Välj ett skript och klicka sedan på "Kör", eller dubbelklicka på skriptets namn
+lstScripts.Columns.Item[0].Caption=Titel
+lstScripts.Columns.Item[1].Caption=Beskrivning
+ActionEditUndo.Caption=Ångra
+ActionEditCut.Caption=Klipp ut
+ActionEditCopy.Caption=Kopiera
+ActionEditPaste.Caption=Klistra in
+ActionEditDelete.Caption=Radera
+ActionEditSelectAll.Caption=Välj alla
+ActionEditFind.Caption=Sök...
+ActionEditfind.Hint=Sök|Sök ett strängvärde i texten
+ActionEditFindNext.Caption=Sök nästa
+ActionEditFindNext.Hint=Sök nästa|Sök nästa matchande strängvärde i texten
+DockpanelExec.Caption=Inställningar för skriptkörning
+CBShowResults.Caption=Visa &resultatfönster
+CBShowResults.Hint=Visar tidigare och nytt fältvärde för manuellt val av vilket värde som skall behållas
+CBCloseThis.Caption=Stäng detta fönster efter skriptkörningen
+CBCloseThis.Hint=Stäng detta fönster när skriptkörningen har genomförts
+CBAllowClear.Caption=&Tillåt att fält töms
+CBAllowClear.Hint=Tillåt skriptet att ersätta värden med tomma fält när skriptet anger det
+DockpanelOptions.Caption=Skriptinställningar
+DockpanelOptions.Hint=|Dubbelklicka på en inställning för att ändra den. OBS: Inställningarna sparas först när skriptet körs.
+DockpanelParameters.Caption=Skriptparametrar
+DockpanelParameters.Hint=|Dubbelklicka på en parameter för att ändra den. OBS: Parametrarna sparas först när skriptet körs.
+DockpanelLimitations.Caption=Skriptbegränsningar
+grpLimitFields.Caption=Modifierbara fält
+lstLimitFields.Hint=|OBS: Fältinställningarna sparas först när skriptet körs.
+grpScriptInfo.Caption=Information
+tabScriptInfo.Tabs.String[0]=Allmänt
+tabScriptInfo.Tabs.String[1]=Kommentarer
+tabScriptInfo.Tabs.String[2]=Licens
+DockpanelWatch.Caption=Bevakningslista
+
+Messages.Strings.String[0]=Skriptfel i "%s": %s på rad %d
+Messages.Strings.String[1]=Skriptet har ändrats. Vill du spara det?
+Messages.Strings.String[2]=okänt
+Messages.Strings.String[3]=jag godkänner
+Messages.Strings.String[4]=Ingen film hittades med aktuell inställning för skriptbegränsningar (%s: %s)
+Messages.Strings.String[5]=Vill du avbryta processen?
+Messages.Strings.String[6]=Modifierat
+Messages.Strings.String[7]=Värde för inställning "%s"
+Messages.Strings.String[8]=Värde för parameter "%s"
+Messages.Strings.String[9]=Sök
+Messages.Strings.String[10]=Skriv text som skall sökas:
+Messages.Strings.String[11]=Inga fler träffar för "%s"
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Val av film
+btnView.Caption=Se sida
+btnView.Hint=Starta webbläsaren|
+btn3.Caption=OK
+btn2.Caption=Sök fler
+btn1.Caption=Avbryt
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Välj beskrivning
+btn2.Caption=OK
+btn1.Caption=Avbryt
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+Caption=Skriptets egenskaper, inställningar och parametrar
+btn3.Caption=&Spara
+btn2.Caption=&Avbryt
+btn1.Caption=&Hjälp
+lstProperties.TitleCaptions.String[0]=Egenskap
+lstProperties.TitleCaptions.String[1]=Värde
+grpOptions.Caption=Val
+btnOptionAdd.Hint=Lägg till|Lägg till nytt val
+btnOptionDel.Hint=Ta bort|Ta bort markerat val
+btnOptionUp.Hint=Flytta upp|Flytta upp markerat val
+btnOptionDown.Hint=Flytta ned|Flytta ned markerat val
+grpValues.Caption=Tillgängliga värden för det markerade valet
+lblValueDefault.Caption=Standard:
+btnValueAdd.Hint=Lägg till|Lägg till nytt värde
+btnValueDel.Hint=Ta bort|Ta bort markerat värde
+btnValueUp.Hint=Flytta upp|Flytta upp markerat värde
+btnValueDown.Hint=Flytta ned|Flytta ned markerat värde
+grpParameters.Caption=Parametrar
+btnParameterAdd.Hint=Lägg till|Lägg till ny parameter
+btnParameterDel.Hint=Ta bort|Ta bort markerad parameter
+btnParameterUp.Hint=Flytta upp|Flytta upp markerad parameter
+btnParameterDown.Hint=Flytta ned|Flytta ned markerad parameter
+
+Messages.Strings.String[0]=Skriptförfattare:
+Messages.Strings.String[1]=Skriptets titel:
+Messages.Strings.String[2]=Beskrivning:
+Messages.Strings.String[3]=Webbadress:
+Messages.Strings.String[4]=Sidans språk:
+Messages.Strings.String[5]=Skriptversion:
+Messages.Strings.String[6]=Kräver minst:
+Messages.Strings.String[7]=Kommentarer:
+Messages.Strings.String[8]=Skriptlicens:
+Messages.Strings.String[9]=Hämta information från webben:
+Messages.Strings.String[10]=Kräver filmer:
+Messages.Strings.String[11]=Värde
+Messages.Strings.String[12]=Beskrivning
+Messages.Strings.String[13]=Detta raderar valet "%s"
+Messages.Strings.String[14]=Valets namn:
+Messages.Strings.String[15]=Nytt namn på valet "%s"
+Messages.Strings.String[16]=Ett val med namnet "%s" finns redan!
+Messages.Strings.String[17]=Namn
+Messages.Strings.String[18]=Standardvärde
+Messages.Strings.String[19]=Beskrivning
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Resultat av skriptkörningen
+btn4.Caption=&Spara
+btn4.Hint=|Spara informationen för den här filmen
+btn3.Caption=Spara a&lla
+btn3.Hint=|Spara denna fil och alla följande
+btn2.Caption=&Hoppa över
+btn2.Hint=|Hoppa bara över den här filmen
+btn1.Caption=&Avbryt
+btn1.Hint=|Avbryt skriptkörningen
+listValues.HeaderSections.Item[0].Text=Fält
+listValues.HeaderSections.Item[1].Text=Föregående värde
+listValues.HeaderSections.Item[2].Text=Nytt värde
+ActionListCheck.Caption=Markera valda
+ActionListCheck.Hint=Markera valda|Markera valda objekt
+ActionListUncheck.Caption=Avmarkera valda
+ActionListUncheck.Hint=Avmarkera valda|Avmarkera valda objekt
+ActionListAll.Caption=Markera &alla
+ActionListAll.Hint=Markera alla|Markera alla objekt
+ActionListNone.Caption=Avmarkera a&lla
+ActionListNone.Hint=Avmarkera alla|Avmarkera alla objekt
+
+Messages.Strings.String[0]=Skriptresultat "%s" för filmen %d
+Messages.Strings.String[1]=Storlek: %.0n kB, klicka här för att granska
+Messages.Strings.String[2]=Vill du spara valen av fält som skall behållas till följande filmer i den här skriptkörningen? (Om du svarar Nej kommer alla fält som ändrats av skriptet att användas.)
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Numrera om filmer
+SortBy.grp.Caption=Sortera före omnumrering efter:
+btn2.Caption=OK
+btn1.Caption=Avbryt
+
+Messages.Strings.String[0]=Numrerar om filmer...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=Skriv ut...
+btn2.Caption=Stäng
+btn1.Caption=Hjälp
+ActionFileLoad.Caption=Öppna mall...
+ActionFileLoad.Hint=Öppna mall|Öppna en annan mall
+ActionFileDesigner.Caption=Designer...
+ActionFileDesigner.Hint=Öppna designer|Öppna rapportdesigner
+ActionPrint.Caption=Skriv ut...
+ActionPrint.Hint=Skriv ut|Skriv ut aktuell rapport
+ActionPreviewRefresh.Caption=Uppdatera
+ActionPreviewRefresh.Hint=Uppdatera förhandsgranskning|Uppdatera förhandsgranskning
+ActionPreviewPageFirst.Caption=Första sidan
+ActionPreviewPageFirst.Hint=Första sidan|Gå till första sidan
+ActionPreviewPagePrevious.Caption=Föregående sida
+ActionPreviewPagePrevious.Hint=Föregående sida|Gå till föregående sida
+ActionPreviewPageNext.Caption=Nästa sida
+ActionPreviewPageNext.Hint=Nästa sida|Gå till nästa sida
+ActionPreviewPageLast.Caption=Sista sidan
+ActionPreviewPageLast.Hint=Sista sidan|Gå till sista sidan
+ActionPreviewPageFull.Caption=Helsida
+ActionPreviewPageFull.Hint=Helsida|Zooma till helsida
+ActionPreviewPageTwo.Caption=Två sidor
+ActionPreviewPageTwo.Hint=Två sidor|Zooma till två sidor
+ActionPreviewPageWidth.Caption=Sidbredd
+ActionPreviewPageWidth.Hint=Anpassa sidbredd|Zooma till sidbredd
+ActionPreviewZoomOut.Caption=Zooma ut
+ActionPreviewZoomOut.Hint=Zooma ut|Minska zoom-faktorn
+ActionPreviewZoomIn.Caption=Zooma in
+ActionPreviewZoomIn.Hint=Zooma in|Öka zoom-faktorn
+LvScripts.Columns.Item[0].Caption=Tillgängliga mallar
+Messages.Strings.String[0]=Skriv ut - %s
+Messages.Strings.String[1]=<Ingen fil markerad>
+Messages.Strings.String[2]=Kan inte öppna mallen för förhandsgranskning: %s
+Messages.Strings.String[3]=Kan inte hitta rapportdesignern. %s måste ligga i samma mapp som Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Importera en bild
+Btn3.Caption=OK
+Btn2.Caption=Avbryt
+Btn1.Caption=&Hjälp
+CBDoNotAsk.Caption=Fråga inte igen. Kom ihåg mina val vid framtida importer.
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+Caption=Hantera egna fält
+btn2.Caption=OK
+btn1.Caption=Avbryt
+btnDel.Hint=Radera fält|Radera eget fält
+btnClearAll.Hint=Rensa alla fält|Rensa alla egna fält
+btnImport.Hint=Importera fält|Importera egna fält
+btnExport.Hint=Exportera fält|Exportera egna fält
+LField.Caption=Fält:
+LTag.Caption=Tagg:
+LName.Caption=Namn:
+LExt.Caption=Tillägg:
+LType.Caption=Typ:
+LDefaultValue.Caption=Standardvärde:
+LTemplate.Caption=Mall:
+btnInsertFieldTag.Hint=|Sätt in ett specialvärde som kommer att ersättas av filmvärdet
+LMediaInfo.Caption=Importera mediainformation:
+LMultiValues.Caption=Multipla värden:
+EMultiValues.Hint=|Skapa grupper med multipla fältvärden
+LMultiValuesSep.Caption=Avgränsare:
+LMultiValuesRmp.Caption=Radera parenteser:
+EMultiValuesRmp.Hint=|Radera värden mellan parenteser
+LMultiValuesPatch.Caption=Fix:
+EMultiValuesPatch.Hint=|Ignorera vissa parenteser
+LListValues.Caption=Listvärden:
+EListSort.Caption=Sortera objekt automatiskt
+EListAutoComplete.Caption=Komplettera under inskrivning
+EListCatalogValues.Caption=Använd värden från aktuell katalog i stället för från en fördefinierad lista
+EListAutoAdd.Caption=Lägg automatiskt till värden som inte finns i listan
+Messages.Strings.String[0]=Importera egna fält
+Messages.Strings.String[1]=Exportera egna fält
+Messages.Strings.String[2]=Lägg till fält|Lägg till eget fält
+Messages.Strings.String[3]=Ändra tagg|Ändra tagg för eget fält
+Messages.Strings.String[4]=--- Nytt fält ---
+Messages.Strings.String[5]=Strängvärde
+Messages.Strings.String[6]=Integer
+Messages.Strings.String[7]=Realvärde (1 decimal)
+Messages.Strings.String[8]=Realvärde (2 decimaler)
+Messages.Strings.String[9]=Realvärde (3 decimaler)
+Messages.Strings.String[10]=Booleanskt
+Messages.Strings.String[11]=Lista
+Messages.Strings.String[12]=Datum
+Messages.Strings.String[13]=Text
+Messages.Strings.String[14]=URL
+Messages.Strings.String[15]=Virtuellt
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+Caption=Filter
+LNote1.Caption=Förklaring: Det här filtret ersätter varje stränguttryck med tillhörande ersättningssträng i listans ordning.
+LNote2.Caption=Du kan använda reguljära uttryck om du inleder uttrycket med strängen '::>'.
+LNote3.Caption=Exempel på reguljära uttryck visas om du klickar på Standard.
+LNote4.Caption=Läs mer om syntaxen för reguljära uttryck på  regexpstudio.com
+LExprString.Caption=Uttryckssträng
+LReplaceString.Caption=Ersättningssträng
+btn1.Caption=Avbryt
+btn2.Caption=OK
+btn3.Caption=Standard
+btn3.Hint=Standard|Återställ standardfiltret
+btnClearAll.Hint=Ta bort allt|Ta bort alla uttryck
+btnImport.Hint=Importera|Importera filter
+btnExport.Hint=Exportera|Exportera filter
+btnAdd.Hint=Lägg till|Lägg till ett nytt uttryck under det markerade uttrycket
+btnDel.Hint=Ta bort|Ta bort det markerade uttrycket
+btnUp.Hint=Flytta upp|Flytta upp det markerade uttrycket
+btnDown.Hint=Flytta ned|Flytta ned det markerade uttrycket
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+Caption=Bildhantering
+btn2.Caption=OK
+btn1.Caption=Avbryt
+
+Messages.Strings.String[0]=Utför ändringar på filmbilder...
+Messages.Strings.String[1]=Kan inte utföra ändringen på bilden till filmen "%s": %s
+Messages.Strings.String[2]=När dessa ändringar utförts, måste katalogen sparas för att förbli konsekvent. Vill du spara automatiskt när ändringarna har utförts?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+Caption=HTML-mallredigerare
+Btn2.Caption=&Stäng
+Btn1.Caption=&Hjälp
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Mediaetikett:
+LMediaType.Caption=Mediatyp:
+LSource.Caption=Källa:
+LDate.Caption=Tillagd datum:
+LBorrower.Caption=Utlånad till:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=Betyg:
+LOriginalTitle.Caption=Originaltitel:
+LTranslatedTitle.Caption=Översatt titel:
+LDirector.Caption=Regissör:
+LProducer.Caption=Producent:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=Land:
+LCategory.Caption=Kategori:
+  LCertification.Caption=Certification:
+LYear.Caption=År:
+LLength.Caption=Längd:
+LLengthMin.Caption=min.
+LActors.Caption=Skådespelare:
+LURL.Caption=URL:
+LDescription.Caption=Beskrivning:
+LComments.Caption=Kommentarer:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=Videoformat:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Audioformat:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Upplösning:
+LFramerate.Caption=Framerate:
+LFramerateFPS.Caption=fps
+LSize.Caption=Filstorlekar:
+LDisks.Caption=Skivor:
+LLanguages.Caption=Språk:
+LSubtitles.Caption=Textning:
+
+EMedia.Hint=|Mediaetikett, nummer eller märkning
+EMediaType.Hint=|Typ av media
+ESource.Hint=|Källa (varifrån fick du fick du filmen)
+EDate.Hint=|Datum när filmen lades till i databasen
+EBorrower.Hint=|Utlånad till
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|Betyg, från 0 till 10
+EOriginalTitle.Hint=|Originaltitel
+ETranslatedTitle.Hint=|Översatt titel
+EDirector.Hint=|Regissör
+EProducer.Hint=|Producent
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|Land
+ECategory.Hint=|Kategori
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|År
+ELength.Hint=|Längd (minuter)
+EActors.Hint=|Skådespelare
+EURL.Hint=|Hemsida
+EDescription.Hint=|Beskrivning
+EComments.Hint=|Kommentarer
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|Videoformat/codec
+EVideoBitrate.Hint=|Video-bitrate
+EAudioFormat.Hint=|Audioformat/codec
+EAudioBitrate.Hint=|Audio-bitrate
+EResolution.Hint=|Videoupplösning
+EFramerate.Hint=|Video-framerate
+ESize.Hint=|Filstorlekar
+EDisks.Hint=|Antal skivor/band
+ELanguages.Hint=|Språk
+ESubtitles.Hint=|Textning
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Lägg till eget fält
+ActionAddCustomField.Hint=|Lägg till eget fält
+ActionModifyCustomField.Caption=Ändra eget fält
+ActionModifyCustomField.Hint=|Ändra eget fält
+ActionDeleteCustomField.Caption=Radera eget fält
+ActionDeleteCustomField.Hint=|Radera eget fält
+ActionMoveResizeCustomFields.Caption=Flytta egna fält
+ActionMoveResizeCustomFields.Hint=|Flytta egna fält och ändra storlek på dem
+ActionDefaultPositioning.Caption=Standardplacering
+ActionDefaultPositioning.Hint=|Återställ egna fältens standardplacering
+ActionAutoStretchWidth.Caption=Autobredd
+ActionAutoStretchWidth.Hint=Bredda fältet automatiskt vid storleksändring
+ActionAutoStretchHeight.Caption=Autohöjd
+ActionAutoStretchHeight.Hint=Ändra fältets höjd automatiskt vid storleksändring
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=Tillgängliga fält:
+LSelected.Caption=Valda fält:
+BtnAdd.Hint=Lägg till|Lägg till markerat fält
+BtnRem.Hint=Ta bort|Ta bort markerat fält
+BtnAddAll.Hint=Lägg till alla|Lägg till alla fält
+BtnRemAll.Hint=Ta bort alla|Ta bort alla fält
+BtnUp.Hint=Flytta upp|Flytta upp markerat objekt
+BtnDown.Hint=Flytta ned|Flytta ned markerat objekt
+
+[TSortByFrame]
+grp.Caption=Sortera efter
+BtnAdvSort.Caption=Avancerat...
+EOrderBy.Items.String[4]=Avancerade sorteringsalternativ...
+BtnSortDescend.Hint=|Sortera i fallande ordning
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=Filmer att ta med
+rbtAll.Caption=Alla
+rbtSelected.Caption=Valda
+rbtChecked.Caption=Markerade
+rbtVisible.Caption=Synliga
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Metod för bildimport
+rbtStorePic.Caption=&Spara bilden i katalogen
+rbtCopyPicInCatDir.Caption=Kopiera bilden till &katalogmappen och länka den till katalogen
+rbtCopyPicInPicDir.Caption=Kopiera bilden till katalogens &bildmapp och länka den till katalogen
+rbtLinkPic.Caption=&Länka bara bilden
+chkLinkRelative.Caption=Skapa om möjligt &relativ sökväg
+
+[TPictureOperationFrame]
+grp.Caption=Gör följande med bilder
+rbtStore.Caption=Lagra bilden i katalogen
+rbtStoreIfCopied.Caption=Lagra bilden i katalogen, men bara om bilden är kopierad till katalog- eller bildmappen
+rbtCopyInCatDir.Caption=Kopiera bilden till katalogmappen och länka den till katalogen
+rbtCopyInCatDirIfStored.Caption=Kopiera bilden till katalogmappen, men bara om bilden är lagrad i katalogen
+rbtCopyInCatDirIfCopied.Caption=Kopiera bilden till katalogmappen, men bara om bilden är kopierad till bildmappen
+rbtCopyInPicDir.Caption=Kopiera bilden till katalogens bildmapp och länka den till katalogen
+rbtCopyInPicDirIfStored.Caption=Kopiera bilden till bildmappen, men bara om bilden är lagrad i katalogen
+rbtCopyInPicDirIfCopied.Caption=Kopiera bilden till bildmappen, men bara om bilden är kopierad till katalogmappen
+rbtRenameIfCopied.Caption=Döp om filen om den är kopierad till katalog- eller bildmappen
+rbtAbsToRelLink.Caption=Om bilden bara är länkad: Ändra om möjligt absoluta länkar till relativa
+rbtRelToAbsLink.Caption=Om bilden bara är länkad: Ändra relativa länkar till absoluta
+rbtDelete.Caption=Radera bild (och bildfil om den är kopierad till katalog- eller bildmappen)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+grp.Caption=Exportmetod för bilder
+rbtNoChangeAMC.Caption=Samma som aktuell katalog
+rbtNoChangeXML.Caption=Samma som aktuell katalog (lagrade bilder tas bort)
+rbtStore.Caption=Lagra bilden i katalogen
+rbtStoreIfCopied.Caption=Lagra bilden i katalogen, men bara om bilden är kopierad till katalog- eller bildmappen
+rbtCopyInCatDir.Caption=Kopiera bilden till katalogmappen och länka den till katalogen
+rbtCopyInCatDirIfStored.Caption=Kopiera bilden till katalogmappen, men bara om bilden är lagrad i katalogen
+rbtCopyInPicDir.Caption=Kopiera bilden till katalogens bildmapp och länka den till katalogen
+rbtCopyInPicDirIfStored.Caption=Kopiera bilden till bildmappen, men bara om bilden är lagrad i katalogen
+rbtDelete.Caption=Ta bort bilden
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Ny
+ActionHTMLNew.Hint=Ny mall|Skapa ny mall
+ActionHTMLOpen.Caption=Öppna
+ActionHTMLOpen.Hint=Öppna...|Öppna en existerande mall
+ActionHTMLNoRecent.Caption=Ingen nyligen använd fil
+ActionHTMLSave.Caption=Spara
+ActionHTMLSave.Hint=Spara|Spara nuvarande mall
+ActionHTMLSaveAs.Caption=Spara som...
+ActionHTMLSaveAs.Hint=Spara som...|Spara nuvarande mall under ett nytt namn
+ActionInsertTag.Caption=&Infoga specialtagg
+ActionInsertTag.Hint=|Infoga ett speciellt värde som kommer att ersätytas av information från katalogen eller en film
+ActionEditUndo.Caption=Ångra
+ActionEditCut.Caption=Klipp u&t
+ActionEditCopy.Caption=Kopiera
+ActionEditPaste.Caption=Klistra in
+ActionEditDelete.Caption=Ta bort
+ActionEditSelectAll.Caption=Markera &alla
+ActionExportBoth.Caption=Exportera båda
+ActionExportBoth.Hint=|Exportera både "fullständiga" och "individuella" mallar
+ActionExportSelected.Caption=Exportera markerat
+ActionExportSelected.Hint=|Exportera bara den markerade mallen
+ActionDisplayFull.Caption=Fullständig
+ActionDisplayFull.Hint=Visa mallen för fullständig lista|Visa en HTML-sida som kommer att användas för fullständig filmlista
+ActionDisplayIndividual.Caption=Individuell
+ActionDisplayIndividual.Hint=Visa mallen för individuell lista|Visa en HTML-sida som kommer att användas för individuella filmsidor
+
+MnuGen.Caption=Allmänt
+MnuGenDte.Caption=Nuvarande datum
+MnuGenTme.Caption=Nuvarande tid
+MnuCat.Caption=Katalog
+MnuCatNme.Caption=Filnamn
+MnuCatPth.Caption=Filnamn med fullständig sökväg
+MnuCatNbr.Caption=Antal filmer
+MnuCatDsk.Caption=Antal skivor
+MnuOwnNam.Caption=Ägarens namn
+MnuOwnEml.Caption=Ägarens e-post
+MnuOwnWeb.Caption=Ägarens hemsida
+MnuCatDsc.Caption=Beskrivning
+MnuMovBeg.Caption=Börja lista
+MnuMovEnd.Caption=Sluta lista
+MnuMovRec.Caption=Skivnummer
+MnuMovInd.Caption=Filnamn för individuell filmsida
+
+MnuMov.Caption=&Filmfält
+MnuMovCF.Caption=&Egna fält
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=Bild
+MnuMovPfn.Caption=Bildens filnamn
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+MnuMovR04.Caption=Betyg (0 till 4 utan decimaler)
+MnuMovR10.Caption=Betyg (0 till 10 utan decimaler)
+MnuMovApp.Caption=Omdöme (0 till 4 stjärnor)
+MnuMovA10.Caption=Omdöme (0 till 10 stjärnor)
+MnuMovFT1.Caption=Formaterad titel: Original (Översatt)
+MnuMovFT2.Caption=Formaterad titel: Översatt (Original)
+MnuMovHtm.Caption=Färgtagg (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+MnuLab.Caption=&Etiketter filmfält
+MnuLabCF.Caption=&Etiketter egna fält
+  MnuLabExtras.Caption=&Labels extra fields
+MnuLabPic.Caption=Bild
+MnuLabUAF.Caption=Enhet audio-bitrate
+MnuLabUVF.Caption=Enhet video-bitrate
+MnuLabUFS.Caption=Enhet filstorlek
+MnuLabUFP.Caption=Enhet framerate
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]=Kunde inte spara filen "%s": %s
+Messages.Strings.String[1]=Kunde inte öppna filen "%s": %s
+Messages.Strings.String[2]=HTML-mallen har ändrats. Vill du spara den?
+Messages.Strings.String[3]=HTML-mallen för fullständig listning har ändrats. Vill du spara den?
+Messages.Strings.String[4]=HTML-mallen för individuell listning har ändrats. Vill du spara den?

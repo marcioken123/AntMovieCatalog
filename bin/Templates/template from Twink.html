@@ -1,0 +1,151 @@
+<!-- Ant Movie Catalogue Template - Created By Twink - TwinkMan666@hotmail.com -->
+<html>
+<title>$$OWNER_NAME's Movie List</title>
+<script language="javascript">
+<!--
+//Toggles a Named Control Visible or Hidden
+function dToggle(x){
+if (x.style.display==""){
+x.style.display="none";
+}
+else{
+x.style.display="";
+}
+}
+
+//Remembers Name of Previous Movie
+var lastm = " "
+function lastmovie(x){
+var oldlastm = lastm;
+lastm = x;
+return oldlastm;
+}
+
+//Checks Letter of Current Movie Again that of Previous One
+function newletter(x){
+var last = lastmovie(x);
+if(x.charAt(0)!=last.charAt(0)){
+document.write("<a name='",x.charAt(0),"'>"); //Insert link for first item of each letter
+writeletters();
+} else {
+document.write("<tr><td colspan='7' class='blk'></td></tr>");
+}
+}
+
+//Output 0-9 A-Z Links
+function writeletters(){
+var alphabet = new Array("0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z");
+document.write("<td colspan='1' class='blk'><b><head2>",lastm.charAt(0),"</head2></b></td>");
+document.write("<td colspan='6' class='blk'><center><b>");
+for(var a=0;a<36;a++){
+document.write("<a href ='#",alphabet[a],"'>",alphabet[a],"</a>&nbsp;&nbsp;");
+}
+document.write("</b></center></td></tr>");
+}
+-->
+</script>
+
+<head>
+<style TYPE="text/css">
+text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+HR { color: black; }
+A:link { COLOR: #FFFFFF; background: black; }
+A:visited { COLOR: #FFFFFF; background: black; }
+A:hover { COLOR: #CC0000; background: black; }
+A:active { COLOR: #CC0000; background: black; }
+td.blk { color: white; background: black; border: solid; border-color: black; }
+table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+p.title { font-size: 18pt; font-weight: bold; }
+</style></head><body>
+<p>Last updated on $$DATE<BR>
+Total: $$TOTALMOVIES movies<br>
+</p>
+
+
+<script>
+<!-- Waiting Picture/Message In here
+document.write("<table id = 'wait' class='blk' border='1' cellspacing='0' cellpadding='5'>");
+document.write("<tr><td>Please wait while list loads...</td></tr>");
+document.write("</table>");
+-->
+</script>
+
+
+<div id="list" >
+<table class="blk" border='1' cellspacing='0' cellpadding='5'><tr>
+<thead>
+<td class="blk" nowrap></td>
+<td class="blk" nowrap>Title</td>
+<td class="blk" nowrap>Lent To</td>
+<td class="blk" nowrap>Genre</td>
+<td class="blk" nowrap>Length</td>
+<td class="blk" nowrap>Source</td>
+<td class="blk" nowrap>Format</td>
+</thead>
+<tbody>
+<div id = 'letter_null'>
+</tr>$$ITEM_BEGIN<tr>
+
+<script>
+<!-- Insert 0-9 A-Z Links When new letter is detected
+newletter("$$ITEM_ORIGINALTITLE")
+-->
+</script>
+
+<td rowspan="2" class="lgt">
+<script>
+<!-- Insert Picture and Link if Item exists
+if("$$ITEM_URL"!="")document.write("<a href = $$ITEM_URL>");
+if("$$ITEM_PICTUREFILENAME"!=""){
+document.write("<img src='$$ITEM_PICTUREFILENAME' width='98' height='140'>");
+}else{
+document.write("<img src='nopic.gif' width='98' height='140'>");
+}
+if("$$ITEM_URL"!="")document.write("</a>");
+-->
+</script>
+<center>$$ITEM_APPRECIATION</center>
+</td>
+<td class="lgt" style="cursor:hand;" onclick="dToggle(Detail_$$ITEM_NUMBER);">
+
+<strong>$$ITEM_ORIGINALTITLE&nbsp;</strong>
+</td>
+<td class="lgt">$$ITEM_BORROWER&nbsp;</td>
+<td class="lgt">$$ITEM_CATEGORY&nbsp;</td>
+<td class="lgt">$$ITEM_LENGTH&nbsp;Minutes</td>
+<td class="lgt">$$ITEM_SOURCE&nbsp;</td>
+<td class="lgt">$$ITEM_VIDEOFORMAT&nbsp;</td>
+</tr>
+<tr>
+<td colspan="6" class="lgt">$$ITEM_DESCRIPTION&nbsp;</td>
+</tr>
+
+<tr id="Detail_$$ITEM_NUMBER" style="display:'none';" VALIGN=top> <td rowspan="1" class="lgt">
+<strong>
+Director:<br>Producer:<br>Actors:
+</strong>
+</td>
+<td colspan="6" class="lgt">
+$$ITEM_DIRECTOR&nbsp;<br>
+$$ITEM_PRODUCER&nbsp;<br>
+$$ITEM_ACTORS&nbsp;<br>
+</td>
+</tr>
+
+$$ITEM_END
+</tbody>
+
+</table>
+</div>
+
+
+<script>
+<!-- Hide Wait Message When Finished Loading
+dToggle(wait);
+-->
+</script>
+
+
+</body></html>

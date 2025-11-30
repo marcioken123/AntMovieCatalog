@@ -1,0 +1,62 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=ChangeLetterDrive
+Description=Change the letter drive of file path.
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=EN
+Version=1.1 (29/07/2012)
+Requires=4.1.0
+Comments=Run the script, select the field where file path is stored and enter the new letter drive. 
+License=
+GetInfo=0
+
+[Options]
+
+***************************************************)
+
+program ChangeLetterDrive;
+uses
+  FieldsUtils;
+
+var
+  letter, value : string;
+  field, nb : Integer;
+
+begin
+  if GetIteration = 0 then
+  begin
+    field := SelectFieldOrCustomField;
+    if field = -1 then
+      Exit;
+    Input('New letter drive', 'Please enter the new letter drive:', letter);
+    letter := AnsiUpperCase(letter);
+    if (Length(letter) <> 1) then
+    begin
+      ShowError('You don''t enter 1 letter. Job canceled!');
+      Exit;
+    end
+    else if (StrGet(letter, 1) < 'A') or (StrGet(letter, 1) > 'Z') then
+    begin
+      ShowError('You don''t enter a valid letter. Job canceled!');
+      Exit;
+    end;
+    nb := 0;
+  end;
+
+  value := GetFieldOrCustomField(field);
+  if (Length(value) >= 3) then
+    if (StrGet(value, 2) = ':') and (StrGet(value, 3) = '\') then
+    begin
+      StrSet(StrGet(letter, 1), 1, value);
+      SetFieldOrCustomField(field, value);
+      nb := nb+1;
+    end;
+  
+  if GetIteration = GetIterationCount-1 then
+    ShowInformation(IntToStr(nb) + ' letter(s) drive replaced!');
+end.

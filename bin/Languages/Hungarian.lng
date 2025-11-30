@@ -1,0 +1,1923 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAjCwAAIwsAABAAAAAQAAAAAAAAABM1EwAAVAAAAJkAAAAAqgAAAP0AZWX/AKqqqgDMzMwA7u7uAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAKqqqqqqqqqqAAAAAAAAAAABERERERERIAEiIiIiIiIwASIiIiIiIjABIiIiIiIiMAeIiIiIiIiQB4iIiIiIiJAHiIiIiIiIkAeIiIiIiIiQBFVVVVVVVWAEVVVVVVVVYARVVVVVVVVgBWZmZmZmZmAAAAAAAAAAAKqqqqqqqqqq
+Name=Hungarian
+LocalName=Magyar
+Encoding=windows-1250
+Version=4.2.0
+VersionFormat=4.2.2
+Comments=AMC 4.2.0 bõvített változatához
+Authors=Kovács György László|kgytopi@gmail.com|(Herczeg József Tamás)|hdodi@freemail.hu
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+; Listview1.BkColor=$FF00FF 
+; Movie list header text color 
+; Listview1.Font.Color=$0000FF 
+; Movie list item text color 
+; Listview1.TextColor=$00FF00 
+
+; Thumbs viewer background color 
+; ThumbsViewer.Color=$FF00FF 
+; Thumbs viewer item text color 
+; ThumbsViewer.Font.Color=$00FF00 
+
+; FrmMovie.EDescription.Font.Size=12
+; FrmMovie.EComments.Font.Size=12
+; FrmMovie.EActors.Font.Size=12
+; FrmMovie.EOriginalTitle.Font.Size=12
+; FrmMovie.ETranslatedTitle.Font.Size=12
+; cOLOR SORREND - B G R 
+; FrmMovie.EOriginalTitle.Color=$87BEDE
+; FrmMovie.ETranslatedTitle.Color=$DDA0DD
+
+;ListView1.Font.Size=12
+;ListView1.bkColor=blue
+;ThumbsViewer.Font.Size=12
+;ListView1.Font.Size=12
+;ListView1.bkColor=blue
+;ThumbsViewer.Font.Size=12
+
+;ListView1.Font.Size=12
+;ListView1.bkColor=blue
+;ThumbsViewer.Font.Size=12
+ActionFileNew.Caption=Új
+ActionFileNew.Hint=Új|Új fájl létrehozása
+ActionFileOpen.Caption=M&egnyitás...
+ActionFileOpen.Hint=Megnyitás...|Fájl megnyitása
+ActionFileOpenNoRecent.Caption=Nincs legutóbbi fájl
+ActionFileSave.Caption=Mentés
+ActionFileSave.Hint=Mentés|A jelenlegi fájl mentése
+ActionFileSaveAs.Caption=Menté&s másként...
+ActionFileSaveAs.Hint=Mentés másként...|A jelenlegi fájl mentése új néven
+ActionFilePrint.Caption=&Nyomtatás...
+ActionFilePrint.Hint=Lista nyomtatása|A jelenlegi katalógus tartalma listájának nyomtatása
+ActionFileImport.Caption=&Importálás...
+ActionFileImport.Hint=Importálás...|Adatok importálása egy másik fájlformátumból
+ActionFileExport.Caption=&Exportálás...
+ActionFileExport.Hint=Exportálás...|A katalógus exportálás másik fájlformátumba
+ActionFileProperties.Caption=&Tulajdonságok...
+ActionFileProperties.Hint=Tulajdonságok...|Fájltulajdonságok és katalógus információ megjelenítése
+
+ActionExit.Caption=&Kilépés
+ActionExit.Hint=Kilépés|Az alkalmazás bezárása
+ActionOptions.Caption=&Beállítások...
+ActionOptions.Hint=Beállítások...|A program beállításainak módosítása
+ActionLanguage.Caption=Nyelv...
+ActionLanguage.Hint=Nyelv...|Megváltoztatja a program nyelvét
+ActionLoan.Caption=&Kölcsönzések...
+ActionLoan.Hint=Kölcsönzések...|A jelenleg kölcsönadott filmek listája
+ActionToolsScripting.Caption=&Parancsfájl...
+ActionToolsScripting.Hint=Parancsfájl...|Parancsfájl alkalmazása a kijelölt filmekre
+ActionToolsGrid.Caption=&Megjelenítés táblázatként
+ActionToolsGrid.Hint=Megjelenítés táblázatként|A filmjegyzék megjelenítése az összes filmet tartalmazó nagy táblázatban
+ActionStretchList.Caption=Teljesképernyõs &lista
+ActionStretchList.Hint=Teljesképernyõs lista|Teljesképernyõn mutatja a filmlistát
+ActionDisplayHTML.Caption=&HTML nézet
+ActionDisplayHTML.Hint=HTML nézet|Kijelzi a filmadatokat a HTML minta alapján
+ActionSelectHTML.Caption=&HTML minta kiválasztás
+ActionSelectHTML.Hint=HTML minta kiválasztás|Kiválasztja a HTML mintát
+ActionDisplayThumbnails.Caption=Miniképek (Thumbnails)
+ActionDisplayThumbnails.Hint=Miniképek (Thumbnails)|Kijelzi a filmborítóit miniképként
+ActionSortAscend.Caption=Növekvõ
+ActionSortAscend.Hint=|Rendezés növekvõ sorrendben
+ActionSortDescend.Caption=Csökkenõ
+ActionSortDescend.Hint=|Rendezés csökkenõ sorrendben
+ActionSortAdvanced.Caption=Bõvített...
+ActionSortAdvanced.Hint=|Bõvített rendezés
+ActionGroupNone.Caption=< nincs >
+ActionGroupNone.Hint=|Nincs filmcsoportosítás
+ActionManageFields.Caption=&Mezõszerkesztõ...
+ActionManageFields.Hint=Mezõszerkesztõ...|Saját mezõk szerkesztése az aktuális katalógusban
+ActionManagePictures.Caption=Képek menedzselése...
+ActionManagePictures.Hint=Képek menedzselése...|AZ aktuális katalógushoz tartozó képek menedzselése
+ActionHTMLEditor.Caption=&HTML szerkesztõ...
+ActionHTMLEditor.Hint=HTML szerkesztõ...|HTML sablon szerkesztése
+
+ActionHelpIndex.Caption=&Tárgymutató
+ActionHelpIndex.Hint=Tárgymutató|A program súgójának indítása
+ActionHelpAbout.Caption=&Névjegy...
+ActionHelpAbout.Hint=Névjegy...|Névjegy
+ActionHelpVersion.Caption=&Verziók...
+ActionHelpVersion.Hint=Verziók...|Kijelzi a verzió információkat
+
+ActionMovieAdd.Caption=&Hozzáadás...
+ActionMovieAdd.Hint=Hozzáadás...|Új film hozzáadása
+ActionMovieUndo.Caption=&Visszavonás
+ActionMovieUndo.Hint=Visszavonás|A jelenlegi film adatmódosításainak visszavonása
+ActionMovieDelete.Caption=&Törlés
+ActionMovieDelete.Hint=Törlés|A jelenlegi film törlése
+ActionMovieCopy.Caption=&Másolás
+ActionMovieCopy.Hint=Másolás|A filminformáció másolása a vágólapra
+ActionMoviePaste.Caption=&Beillesztés
+ActionMoviePaste.Hint=Beillesztés|A filminformáció beillesztése a vágólapról
+ActionMovieRenumber.Caption=Átszá&mozás...
+ActionMovieRenumber.Hint=Filmek átszámozása...|A filmek átszámozása, 1-tõl kezdve folyamatos számozással
+ActionMovieFind.Caption=K&eresés...
+ActionMovieFind.Hint=Keresés...|Film keresése egy adott mezõ alapján
+ActionFindFindNext.Caption=Tovább
+ActionFindFindNext.Hint=|A keresési feltételeknek megfelelõ következõ film keresése
+ActionFindWholeField.Caption=Csak a teljes mezõ
+ActionFindWholeField.Hint=|Csak azokat a filmeket tartalmazza, ahol a teljes mezõ egyenlõ a megadott értékkel
+ActionFindReverse.Caption=&Fordított eredmény
+ActionFindReverse.Hint=|A keresés eredményét megfordítja
+ActionFindDisplay.Caption=Eredmények megjelenítése
+ActionFindDisplay.Hint=|A keresési feltételeknek megfelelõ filmek megjelenítése (szûréses nézet)
+LField.Caption=Keresés mezõben:
+LValue.Caption=Keresendõ érték:
+BtnInsertFieldTag.Caption=Mezõk
+BtnInsertFieldTag.Hint=|Berak egy mezõt a keresõkifejezésbe
+BtnInsertOperator.Caption=Mûveleti jel
+BtnInsertOperator.Hint=|Berak egy mûveleti jelet a keresõkifejezésbe
+ActionMovieNumber.Caption=&Számcsere...
+ActionMovieNumber.Hint=Sorszám lecserélése|A film sorszámának lecserélése
+ActionMovieStats.Caption=&Statisztika...
+ActionMovieStats.Hint=Statisztika...|A katalógus és az abban lévõ filmek statisztikájának megjelenítése
+ActionMovieImportFiles.Caption=&Fájlokból...
+ActionMovieImportFiles.Hint=Információ gyûjtése fájlokból...|Filminformáció kiolvasása fájlokból
+ActionMovieImportScript.Caption=Az internetrõl script használatával...
+ActionMovieImportScript.Hint=Filminformáció keresése az Interneten script használatával...|Filminformáció keresése az Interneten script használatával
+ActionMovieSearch.Caption=&Keresés az Interneten
+ActionMovieSearch.Hint=Információ keresése az Interneten|Információ keresése a filmrõl az Interneten
+ActionMovieRandom.Caption=&Véletlenszám
+ActionMovieRandom.Hint=Véletlenszám|Kiválasztás véletlenszerûen
+ActionMoviePictureShow.Caption=&Kép megjelenítése
+ActionMoviePictureShow.Hint=Filmkép megjelenítése vagy elrejtése|A filmkép panel megjelenítése vagy elrejtése
+ActionMovieExtrasShow.Caption=Megjeleníti az &extrákat
+ActionMovieExtrasShow.Hint=Megjeleníti vagy elrejti az extra filmadatokat|Megjeleníti vagy elrejti az extra ablakot
+ActionPicSelect.Caption=&Kiválasztás...
+ActionPicSelect.Hint=Kiválaszt egy képet...|Kiválaszt egy képet az importhoz vagy az aktuális filmhez linkeli
+ActionPicDelete.Caption=&Törlés
+ActionPicDelete.Hint=Törlés|A jelenlegi kép törlése
+ActionPicUndock.Caption=Rögzítés/&Feloldás
+ActionPicUndock.Hint=Rögzítés/Feloldás|Kép panel: Rögzítés (beépülve a fõablakba) vagy Feloldás (lebegõ ablak)
+ActionPicSaveAs.Caption=Menté&s másként...
+ActionPicSaveAs.Hint=Kép mentése másként...|A kép másolatának mentése új fájlba
+ActionPicCopy.Caption=Másolás
+ActionPicCopy.Hint=Másolás a vágólapra|A kép másolása a vágólapra
+ActionPicPaste.Caption=&Beillesztés
+ActionPicPaste.Hint=Beillesztés a vágólapról|Beilleszti a vágólapon lévõ képet
+ActionMovieUrl.Caption=Weblap (URL)
+ActionMovieUrl.Hint=Weblap (URL)|A film weblap címe
+ActionMovieFilePath.Caption=File útvonal
+ActionMovieFilePath.Hint=File útvonal|A film file útvonala
+
+ActionMenuFile.Caption=&Fájl
+ActionMenuMovie.Caption=Fil&m
+ActionMenuDisplay.Caption=&Nézet
+ActionMenuTools.Caption=&Eszközök
+ActionMenuHelp.Caption=&Súgó
+ActionMenuPicture.Caption=&Kép
+ActionMenuPicture.Hint=Filmkép|Filmkép parancsok
+ActionMenuGet.Caption=Információ &kérése
+ActionMenuGet.Hint=Információ kiolvasása|Filminformáció kiolvasása
+ActionMenuGridFields.Caption=A táblázat oszlopai
+ActionMenuGridFields.Hint=Táblaforma|A táblaoszlopok megjelenítése vagy elrejtése
+ActionMenuSort.Caption=&Rendezés
+ActionMenuSort.Hint=Filmek rendezése|A filmlista rendezése egy megadott mezõ szerint
+ActionMenuGroup.Caption=&Csoportosítás
+ActionMenuGroup.Hint=Filmek csoportosítása|A jegyzékben található filmek csoportosítása egy adott mezõ alapján
+ActionRefresh.Caption=&Frissítés
+ActionRefresh.Hint=Jegyzék frissítése|A filmjegyzék frissítése
+ActionMenuGroupsFormat.Caption=Csoportok kialakítása
+ActionMenuGroupsFormat.Hint=Csoportnevet képez|A kiválasztott opciótól függõen alakítja ki a csoportneveket
+ActionGroupsFormatNone.Caption=< &Nem változtat >
+ActionGroupsFormatNone.Hint=|Nem alakítja ki a csoportneveket
+MnuGpf1L.Caption=Az elsõ betûbõl képez csoportot
+MnuGpf2L.Caption=Az elsõ 2 betûbõl képez csoportot
+MnuGpf3L.Caption=Az elsõ 3 betûbõl képez csoportot
+MnuGpf4L.Caption=Az elsõ 4 betûbõl képez csoportot
+MnuGpf5L.Caption=Az elsõ 5 betûbõl képez csoportot
+MnuGpfDateY.Caption=A dátum ÉV adatából képez csoportot
+MnuGpfDateYM.Caption=A dátum ÉV_HÓ adatából képez csoportot
+MnuGpfRound0001.Caption=Számok kerekítése ezredre
+MnuGpfRound001.Caption=Számok kerekítése századra
+MnuGpfRound01.Caption=Számok kerekítése tízedre
+MnuGpfRound1.Caption=Számok kerekítése egyesre
+MnuGpfRound10.Caption=Számok kerekítése tízesre
+MnuGpfRound100.Caption=Számok kerekítése százasra
+MnuGpfRound1000.Caption=Számok kerekítése ezresre
+MnuGpfRoundType.Caption=&Kerekítés fajtája
+MnuGpfRoundDown.Caption=Kerekítés &lefelé
+MnuGpfRoundNearest.Caption=Kerekítés a &közelebbi felé
+MnuGpfRoundUp.Caption=Kerekítés &felfelé
+
+MnuSelect.Caption=Kiválasztás
+ActionMovieSelGroup.Caption=Az egész csoport
+ActionMovieSelGroup.Hint=Csoport kijelölése|A csoport összes filmjének kijelölése
+ActionMovieSelCheck.Caption=Jelölt
+ActionMovieSelCheck.Hint=Jelöltek kiválasztása|Csak azokat választja ki, amelyiknél a checkbox jelölve van 
+ActionMovieSelUncheck.Caption=Jelöletlen
+ActionMovieSelUncheck.Hint=Jelöletlen|Csak azokat választja ki, amelyiknél a checkbox nincs bejelölve
+
+MnuSelected.Caption=Kiválasztott filmek
+ActionMovieCheck.Caption=Jelölt
+ActionMovieCheck.Hint=Kiválasztottak bejelölése|A kiválasztott filmek megjelölése kijelöltként
+ActionMovieUncheck.Caption=Jelöletlen
+ActionMovieUncheck.Hint=Kiválasztottak kijelöletlenek|A kijelölt filmek megjelölése kijelöletlenként
+
+ActionDisplayPictureToolbar.Caption=&Kép eszköztár
+ActionDisplayPictureToolbar.Hint=Kép eszköztár megjelenítése|A kép eszköztár megjelenítése vagy elrejtése
+ActionDisplayExtrasToolbar.Caption=&Extra eszköztár
+ActionDisplayExtrasToolbar.Hint=Megjeleníti az extra eszköztárat|Megjeleníti vagy elrejti az extra eszköztárat
+ActionDisplayMainToolbar.Caption=&Fõ eszköztár
+ActionDisplayMainToolbar.Hint=Fõ eszköztár megjelenítése|A fõ eszköztár megjelenítése vagy elrejtése
+ActionDisplayStatusBar.Caption=Álla&potsor
+ActionDisplayStatusBar.Hint=Az állapotsor megjelenítése|Az állapotsor megjelenítése vagy elrejtése
+
+ActionURLOpen.Caption=URL megnyitása
+ActionURLOpen.Hint=|Megnyit egy URL-t vagy egy a mezõben definált filet
+ActionURLExplore.Caption=Könyvtár nyitása
+ActionURLExplore.Hint=|A mezõben megadott könyvtár útvonal megadása
+ActionURLCopy.Caption=URL másolása
+ActionURLCopy.Hint=|URL vagy file másolása
+ActionURLBrowse.Caption=Tallózás...
+ActionURLBrowse.Hint=|Filenév tallózása
+
+MnuHtmlCopy.Caption=Másolás
+MnuHtmlCopy.Hint=|Kiválasztott szöveg másolása
+MnuHtmlEdit.Caption=Szerkeszt...
+MnuHtmlEdit.Hint=|HTML sablon szerkesztése
+MnuTlsBrowseHTML.Caption=Tallózás...
+
+ToolbarMenu.Caption=Menüsor
+ToolbarMain.Caption=Fõ eszköztár
+ToolbarPicture.Caption=Kép eszköztár
+ToolbarPictureWindow.Caption=Kép
+ToolbarPictureWindow.Caption=Extrák
+ToolbarFind.Caption=Keresés
+
+Listview1.HeaderSections.Item[0].Text=Sor
+Listview1.HeaderSections.Item[1].Text=Cím
+
+MoviePicture.Hint=|Kattintson rá a kép megtekintéséhez teljes méretben
+
+ThumbsSizer.Hint=|A kép méretének változtatása
+ThumbsDisplayTitle.Caption=Filmcím látszik
+ThumbsDisplayTitle.Hint=|Filmcím kijelzése
+
+Messages.Strings.String[0]=Biztos, hogy törli a(z) %s filmet : %s ?
+Messages.Strings.String[1]=Biztos, hogy visszaállítja az elõzõ információt a jelenlegi filmhez?
+Messages.Strings.String[2]=%d film
+Messages.Strings.String[3]=(%d kiválasztott, %d megjelölt, %d látható)
+Messages.Strings.String[4]=A jelenlegi fájl megváltozott. Kívánja menteni a változtatásokat?
+Messages.Strings.String[5]=Nincs ismételt megerõsítés kérés
+Messages.Strings.String[6]=Módosítva
+Messages.Strings.String[7]=Kép
+Messages.Strings.String[8]=A kép másolatának mentése új fájlba
+Messages.Strings.String[9]=%s importálása...
+Messages.Strings.String[10]=%s mentése...
+Messages.Strings.String[11]=%s betöltése...
+Messages.Strings.String[12]=Válassza ki a képet
+Messages.Strings.String[13]=Ez törölni fogja képet. Biztos benne?
+Messages.Strings.String[14]=A következõ képet nem lehet használni: %s
+; A következõ sorban a fõ ablakban használt fileméret mértékegységét adhatja meg (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=Válassza ki a fájlokat, melyekrõl információra van szüksége
+Messages.Strings.String[17]=Információ keresése: %0:s|Információ keresése %0:s errõl a filmrõl
+Messages.Strings.String[18]=Nincs utoljára használt fájl
+Messages.Strings.String[19]=A képek a katalógusban vannak letárolva.XML fileba mentéskor a képek önálló fileként lesznek letárolva.|Ha XML mentéskor a képeket is le akarod menteni, akkor klikk az OK-ra, vagy ha nem akarod a képeket is lementeni, akkor klikk az Ignore-ra (linkelt képeket megtartja).|A képek neve a "Picture naming" menü "Picture importation" lapon a Beállítások ablakban beállított érték szerint képzõdik.
+Messages.Strings.String[20]=|Csoportosítás %s alapján
+Messages.Strings.String[21]=< nincs >
+Messages.Strings.String[22]=A kép hivatkozásának eltávolításán kívül a képfájlt is kívánja törölni a lemezrõl? (%s)
+Messages.Strings.String[23]=Ennek a filmhez jelenleg van hozzákapcsolva egy kép, amikor lecseréled ezt a linket egy másik képre, akkor a régi képet törölni akarod a lemezrõl?(%s)
+Messages.Strings.String[24]=A képet nem másolhatod a katalógusdossziéba, amíg a katalógusnak ugyanaz a neve; Mentsd máshová és próbáld újra
+Messages.Strings.String[25]=A katalógusban tárolva mint %s
+Messages.Strings.String[26]=Külsõ file: %s
+Messages.Strings.String[27]=%.0n bytes
+Messages.Strings.String[28]=Nyomtatási kép betöltése
+Messages.Strings.String[29]=Nyomtatók keresése
+Messages.Strings.String[30]=Válassz ki egy file-t az URL mezõ alapján
+Messages.Strings.String[31]=< egyéb >
+Messages.Strings.String[32]=Mind
+Messages.Strings.String[33]=|Rendezés %s szerint
+Messages.Strings.String[34]=AMC mezõk
+Messages.Strings.String[35]=Saját mezõk
+Messages.Strings.String[36]=File "%s" nem található
+Messages.Strings.String[37]=Ez a katalógus saját és/vagy extra mezõket tartalmaz. Ha AMC 3.5 formátumban mented a filet, akkor a saját és/vagy extra mezõk adatai ELVESZNEK!. Biztos, hogy AMC 3.5 formátumban akarod elmenteni az adatokat?
+Messages.Strings.String[38]=Információkérés fájlokból...
+Messages.Strings.String[39]=Kiválasztás színjelzõ szerint|Csak az egyezõ színûeket választja ki
+Messages.Strings.String[40]=A kiválasztottak jelölése színnel|A kiválasztottakak megjelölése színnel
+Messages.Strings.String[41]=Összes mezõ
+Messages.Strings.String[42]=Egy létezõ katalógus felülírását választottad. Törölni akarod a régebbi képeket ebbõl a katalógusból?
+Messages.Strings.String[43]=Filmek másolása/beillesztése "%s"
+Messages.Strings.String[44]=Törölje a régebbi képeket...
+Messages.Strings.String[45]=Másolja a képeket egy alkönyvtárba
+Messages.Strings.String[46]=Extrák
+Messages.Strings.String[47]=Ez a katalógus extra mezõket tartalmaz. Ha AMC 4.1 formátumban mented a filet, akkor az extra mezõk adatai ELVESZNEK!. Biztos, hogy AMC 4.1 formátumban akarod elmenteni az adatokat?
+Messages.Strings.String[48]=Bõvített...
+
+Fields.Strings.String[0]=Sorszám
+Fields.Strings.String[1]=Jelölt
+Fields.Strings.String[2]=Színjelzõ
+Fields.Strings.String[3]=Cimke
+Fields.Strings.String[4]=Médiatípus
+Fields.Strings.String[5]=Forrás
+Fields.Strings.String[6]=Hozzáadva
+Fields.Strings.String[7]=Kölcsönvevõ
+Fields.Strings.String[8]=Mikor látta
+Fields.Strings.String[9]=Saját érték
+Fields.Strings.String[10]=Értékelés
+Fields.Strings.String[11]=Eredeti cím
+Fields.Strings.String[12]=Cím fordítása
+Fields.Strings.String[13]=Formázott cím
+Fields.Strings.String[14]=Rendezõ
+Fields.Strings.String[15]=Producer
+Fields.Strings.String[16]=Író
+Fields.Strings.String[17]=Zeneszerzõ
+Fields.Strings.String[18]=Szereplõk
+Fields.Strings.String[19]=Ország
+Fields.Strings.String[20]=Év
+Fields.Strings.String[21]=Játékidõ
+Fields.Strings.String[22]=Kategória
+Fields.Strings.String[23]=Besorolás
+Fields.Strings.String[24]=Weblap
+Fields.Strings.String[25]=Leírás
+Fields.Strings.String[26]=Megjegyzés
+Fields.Strings.String[27]=File útvonal
+Fields.Strings.String[28]=Video formátum
+Fields.Strings.String[29]=Video bitsebesség
+Fields.Strings.String[30]=Audió formátum
+Fields.Strings.String[31]=Audió bitsebesség
+Fields.Strings.String[32]=Felbontás
+Fields.Strings.String[33]=Képkockasûrûség
+Fields.Strings.String[34]=Nyelv
+Fields.Strings.String[35]=Felirat
+Fields.Strings.String[36]=Fájlméret
+Fields.Strings.String[37]=Lemezek száma
+Fields.Strings.String[38]=A kép státusza
+Fields.Strings.String[39]=Extrák száma
+
+ExtraFields.Strings.String[0]=Szám
+ExtraFields.Strings.String[1]=Jelölve
+ExtraFields.Strings.String[2]=Tag
+ExtraFields.Strings.String[3]=Megnevezés
+ExtraFields.Strings.String[4]=Kategória
+ExtraFields.Strings.String[5]=URL
+ExtraFields.Strings.String[6]=Leírás
+ExtraFields.Strings.String[7]=Megjegyzés
+ExtraFields.Strings.String[8]=Készítette
+ExtraFields.Strings.String[9]=A kép státusza
+
+PictureStatus.Strings.String[1]=1 - A kép a katalógusban tárolva
+PictureStatus.Strings.String[2]=2 - A kép a katalógus mappájába másolva
+PictureStatus.Strings.String[3]=3 - A kép a Pictures mappába másolva
+PictureStatus.Strings.String[4]=4 - Külsõ kép relativ csatolással
+PictureStatus.Strings.String[5]=5 - Külsõ kép teljes útvonal megadással
+PictureStatus.Strings.String[6]=6 - Nincs kép
+
+Media.Strings.String[0]=Volume Label
+Media.Strings.String[1]=File útvonal
+Media.Strings.String[2]=Útvonal + Filenév
+Media.Strings.String[3]=Útvonal + Filenév + Kiterjesztés
+Media.Strings.String[4]=Filenév
+Media.Strings.String[5]=Filenév (szûrve)
+Media.Strings.String[6]=Filenév + Kiterjesztés
+Media.Strings.String[7]=Mappa neve
+Media.Strings.String[8]=Mappa neve (szûrve)
+Media.Strings.String[9]=File Kiterjesztés
+Media.Strings.String[10]File Kiterjesztés (pont nélkül)
+Media.Strings.String[11]Méret (String - "650+530")
+Media.Strings.String[12]=Méret (Sum - "1180")
+Media.Strings.String[13]=Lemezek
+Media.Strings.String[14]=Kép
+Media.Strings.String[15]=Hossz
+Media.Strings.String[16]=Felbontás("szélesség x magasság")
+Media.Strings.String[17]=Felbontás(szélesség)
+Media.Strings.String[18]=Felbontás(magasság)
+Media.Strings.String[19]=Framerate
+Media.Strings.String[20]=Video Codec
+Media.Strings.String[21]=Video Bitrate
+Media.Strings.String[22]=Audio Codec
+Media.Strings.String[23]=Audio csatornák
+Media.Strings.String[24]=Audio Codec + Audio csatornák
+Media.Strings.String[25]=Audio Bitrate
+Media.Strings.String[26]=Nyelvek
+Media.Strings.String[27]=Feliratok
+
+Operators.Strings.String[0]=Vagy
+Operators.Strings.String[1]=És
+Operators.Strings.String[2]=Not
+Operators.Strings.String[4]=Egyenlõ
+Operators.Strings.String[5]=Nem egyenlõ
+Operators.Strings.String[6]=Tartalmaz
+  Operators.Strings.String[7]=Match RegExp
+Operators.Strings.String[8]=Nagyobb mint
+Operators.Strings.String[9]=Nagyobb vagy egyenlõ mint
+Operators.Strings.String[10]=Kisebb mint
+Operators.Strings.String[11]=Kisebb vagy egyenlõ mint
+Operators.Strings.String[13]=Összeadás
+Operators.Strings.String[14]=Kivonás
+Operators.Strings.String[15]=Szorzás
+Operators.Strings.String[16]=Osztás
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+Operators.Strings.String[24]=Kifejezést kiértékel
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=Figyelmeztetés
+Captions.Strings.String[1]=Hiba
+Captions.Strings.String[2]=Információ
+Captions.Strings.String[3]=Megerõsítés
+Captions.Strings.String[4]=&Igen
+Captions.Strings.String[5]=&Nem
+Captions.Strings.String[6]=&OK
+Captions.Strings.String[7]=&Mégse
+Captions.Strings.String[8]=&Megszakítás
+Captions.Strings.String[9]=&Ismét
+Captions.Strings.String[10]=&Kihagyás
+Captions.Strings.String[11]=Min&d
+Captions.Strings.String[12]=Egyiket sem
+Captions.Strings.String[13]=Igen, mindet
+Captions.Strings.String[14]=&Súgó
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=OK
+btn1.Caption=Mégsem
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=A program névjegye
+btn3.Caption=Bezárás
+btn2.Caption=Fájlok verziószáma
+btn1.Caption=Köszönet
+Messages.Strings.String[0]=%s : %s-s verzió (létrehozva: %s)
+Messages.Strings.String[1]=(a Ctrl+C megnyomásával másolhatja a vágólapra ezeket az adatokat)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=Filmek sorszámozása
+btn2.Caption=OK
+btn1.Caption=Mégsem
+LEnterNumber.Caption=Írja be a film sorszámát:
+btnFindNum.Hint=Keressen egy kiadható sorszámot|
+grpNotUnique.Caption=Már létezik film ezzel a sorszámmal...
+grpNotUnique.Items.String[0]=&Dupla megengedett
+grpNotUnique.Items.String[1]=&Adjon másik számot a létezõ filmnek
+grpNotUnique.Items.String[2]=&Tolja el a sorszámokat,amíg nincs duplázás
+CBDoNotAsk.Caption=Nem kérdez rá ismét; automatikus sorszámozás
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=OK
+btn1.Caption=Mégse
+Caption=Katalógus tulajdonságai
+LHOwnerInfo.Caption=Tulajdonosi információ
+LFileName.Caption=Név:
+LFileSize.Caption=Méret:
+LFileVersion.Caption=Formátum:
+LHXMLHeader.Caption=XML fejléc
+LEncoding.Caption=Kódolás:
+LOwnerName.Caption=Név:
+LOwnerMail.Caption=E-mail:
+LOwnerSite.Caption=Weblap:
+LDescription.Caption=Leírás:
+EOwnerMail.ButtonHint=Levél küldése
+EOwnerSite.ButtonHint=Ugrás a weblapra
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=Kölcsönzések
+btn2.Caption=Bezárás
+btn1.Caption=Súgó
+
+ActionBorrowerAdd.Caption=&Hozzáadás...
+ActionBorrowerAdd.Hint=Kölcsönvevõ hozzáadása|Új kölcsönvevõ felvétele a listára
+ActionBorrowerDel.Caption=&Törlés
+ActionBorrowerDel.Hint=Kölcsönvevõ törlése|A kijelölt kölcsönvevõ törlése a listáról
+ActionCheckOut.Caption=Ellenõrzés
+ActionCheckOut.Hint=Kiadás|A kijelölt film felvétele a kölcsönvevõk listájára
+ActionCheckIn.Caption=Visszavétel
+ActionCheckIn.Hint=Visszavétel|A kijelölt film eltávolítása a kölcsönvevõk listájáról
+ActionMovieGetBorrower.Caption=Kölcsönvevõ keresése
+ActionMovieGetBorrower.Hint=Kölcsönvevõ keresése|A kölcsönvevõ vagy a kijelölt film keresése a kölcsönvevõk listájában
+ActionMovieFindNext.Caption=&Továbbkeresés
+ActionMovieFindNext.Hint=Továbbkeresés|Film keresése, melynek a címe tartalmazza az adott szöveget
+ActionOptions.Caption=&Opciók
+ActionOptions.Hint=Options|A jelölés be és jelölés ki opciói
+ActionOptionsIncNum.Caption=Az azonos &számú filmek
+ActionOptionsIncNum.Hint=Az azonos számú filmek|Include in check in and check out other movies that have the same number than the selected one
+ActionOptionsIncLab.Caption=Az azonos &cimkéjû filmek
+ActionOptionsIncLab.Hint=Az azonos cimkéjû filmek|Include in check in and check out other movies that have the same media label than the selected one
+
+LvMovies.HeaderSections.Item[0].Text=S.sz.
+LvMovies.HeaderSections.Item[1].Text=Label
+LvMovies.HeaderSections.Item[2].Text=Cím
+LvMovies.HeaderSections.Item[3].Text=Kölcsönvevõ
+LvNames.HeaderSections.Item[0].Text=Kölcsönvevõ
+LvNames.HeaderSections.Item[1].Text=Mennyiség
+LvLent.HeaderSections.Item[0].Text=S.sz.
+LvLent.HeaderSections.Item[1].Text=Label
+LvLent.HeaderSections.Item[2].Text=Cím
+
+Messages.Strings.String[0]=Ez törli "%s"-t a kölcsönvevõk listájáról, és jelölje be az összes filmet, amiket ennek a személynek adott kölcsön.
+Messages.Strings.String[1]=Lista betöltése...
+Messages.Strings.String[2]=Ezt a filmet valakinek már kölcsönadta
+Messages.Strings.String[3]=Írjon be egy nevet
+Messages.Strings.String[4]=A következõ filmeket már kölcsönadták valaki másnak:
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=Írjon be egy nevet
+Messages.Strings.String[7]=Új kölcsönvevõ
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=Exportálás egy másik fájlformátumba
+lvFormat.Columns.Item[0].Caption=Támogatott file formátumok
+Btn3.Caption=&Exportálás...
+Btn2.Caption=Bezárás
+Btn1.Caption=Súgó
+grpImages.Caption=Images
+CBCopyPictures.Caption=Másolja a file-al együtt
+CBCopyPictures.Hint=A képet az exportált file-al azonos könyvtárba másolja
+CBCopyPicturesInPicDir.Caption=egy alkönyvtárba
+CBCopyPicturesInPicDir.Hint=Másolja a képeket a Képek alkönyvtárába
+CBCopyPicturesNew.Caption=Csak ha nem létezik még
+CBCopyPicturesNew.Hint=Csak olyan képeket másol, amik nem léteznek még (pl. ne írja felül)
+CBCopyPicturesIncExtras.Caption=Extrákkal együtt
+CBCopyPicturesIncExtras.Hint=Extra képekkel együtt
+LSelectFormat.Caption=Válasszon ki egy formátumot...
+
+LCSVDelimiter.Caption=Mezõhatároló:
+ECSVDelimiter.Hint=|A mezõértékeket elválasztó karakter
+LCSVDelimExtras.Caption=Extra elválasztó:
+ECSVDelimExtras.Hint=|Karakter, ami a mezõértékeket elválasztja
+LCSVBloc.Caption=Szövegblokk elválasztó:
+ECSVBloc.Hint=|karakterek a text stringek körül (hagyd üresen,ha nem használod)
+LCSVLinebreaks.Caption=A sortörést cserélje erre:
+ECSVLinebreaks.Hint=|Sortörés karakter megjelenítése a Leírás és Megjegyzés mezõben
+CBCSVColumnTitles.Caption=Oszlopcímek hozzáadása
+LSQLTableName.Caption=Táblázat neve:
+LSQLTableNameExtras.Caption=Extra adatok táblaneve:
+CBSQLUpdate.Caption="Frissítés" a "Beszúrás" helyett
+LSQLCommands.Caption=Tartalmazandó SQL parancsok:
+LSQLLinebreaks.Caption=A sortörést cserélje erre:
+LOrigonsLink.Caption=Ebben a formátumban adhatja közre az Origon webhelyén a filmjegyzéket<br><br><link>www.origons.com</link>
+FieldsCSV.LSelected.Caption=Exportálandó mezõk:
+FieldsSQL.LSelected.Caption=Exportálandó mezõk:
+LAMCNote.Caption=Ki tudod exportálni AMC formátumban az adatokat (export opciók nélkül) a Fõmenüben a Mentés másként menüpontban, ha a file tipusának az AMC-t választod. Ez a file ugyanúgy megnyitható katalógusként.
+LXMLNote.Caption=Ki tudod exportálni XML formátumban az adatokat (export opciók nélkül) a Fõmenüben a Mentés másként menüpontban, ha a file tipusának az XML-t választod. Ez a file ugyanúgy megnyitható katalógusként.
+PictureOperationExportAMC.Grp.Caption=A filmek képexportálásának módja (AMC)
+PictureOperationExportXML.Grp.Caption=A filmek képexportálásának módja (XML)
+ExtraPictureOperationExportAMC.Grp.Caption=Extrák képexportálásának módja (AMC)
+ExtraPictureOperationExportXML.Grp.Caption=Extrák képexportálásának módja (XML)
+
+Messages.Strings.String[0]=Lista rendezése...
+Messages.Strings.String[1]=Exportálás: %s...
+Messages.Strings.String[2]=Fájlok másolása...
+Messages.Strings.String[3]=Exportálás: HTML
+Messages.Strings.String[4]=Exportálás: CSV
+Messages.Strings.String[5]=Exportálás: SQL
+Messages.Strings.String[6]=Képek exportálása
+Messages.Strings.String[7]=Exportálás fájlba az Origons.com részére
+Messages.Strings.String[8]=Exportálás AMC formátumban
+Messages.Strings.String[9]=Exportálás XML formátumban
+Messages.Strings.String[10]=Nem tudod kiexportálni a katalógust az aktuális katalógussal megegyezõ könyvtárba!You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=Importálás másik fájlformátumból
+Btn3.Caption=&Import...
+Btn2.Caption=Bezár
+Btn1.Caption=Súgó
+lvFormat.Columns.Item[0].Caption=Támogatott file formátumok
+lvFormat.Items.Item[5].Caption=Média file-ok
+Messages.Strings.String[0]=Média file-ok keresése...
+Messages.Strings.String[1]=Média file találatok:
+Messages.Strings.String[2]=Média info importálása...
+Messages.Strings.String[3]=Importálása innen %s...
+Messages.Strings.String[4]=Néhány fájlt vagy mappát nem olvas be, mert nem támogatott karaktereket tartalmaznak: 
+
+[TImportFrame]
+lblLink.Caption=Lehetõségek a film importáláshoz innen : %s
+grpSettings.Caption=Beállítások
+chkAllowDup.Caption=Dupla sorszám megengedett
+chkAllowClear.Caption=Törölheti a mezõt, ha az új érték üres
+chkAutoAssign.Caption=Próbálja az oszlopokat automatikusan hozzárendelni a mezõkhöz
+lblPictures.Caption=Kép importálási metódus:
+cmbPictures.Items.String[0]=1 - Tárolja a katalógusban
+cmbPictures.Items.String[1]=2 - Tárolja a katalógus mappájában és használjon relativ linket
+cmbPictures.Items.String[2]=3 - Tárolja a katalógus mappájában, de csak amelyik még nem létezik
+cmbPictures.Items.String[3]=4 - Tárolja a Képek mappájában és használjon relativ linket
+cmbPictures.Items.String[4]=5 - Tárolja a Képek mappájában, de csak amelyik még nem létezik
+cmbPictures.Items.String[5]=6 - Használjon abszolút linket az aktuális képeknél
+cmbPictures.Items.String[6]=7 - Használjon relativ linket az aktuális képeknél
+LMovie.Caption=Film
+LExtras.Caption=Extrák
+grpSourceFile.Caption=Forrás file
+btnBrowse.Hint=Tallózás...|File tallózása importhoz
+btnReload.Caption=&File újratöltése
+grpPreview.Caption=Elõnézet
+lblPreview.Caption=Klikk az oszlop tetején a mezõ hozzárendeléshez
+btnFieldsLoad.Hint=Mezõk betöltése|Az elõzõleg mentett mezõ-oszlopok betöltése
+btnFieldsSave.Hint=Mezõk mentése|Aktuális mezõ-oszlopok mentése
+btnFieldsAutoLoad.Hint=Mezõk automatikus újratöltése|Az elõzõleg mentett mezõoszlopok visszatöltése
+btnColumnsAutoResize.Hint=Oszlopok automatikus újraméretezése|Oszlopok automatikus újraméretezése
+ActionListCheck.Caption=Kijelöltek &bejelölése
+ActionListCheck.Hint=Kijelöltek bejelölése |A kiválasztott tétel bejelölése
+ActionListUncheck.Caption=Kijelölés &megszüntetése
+ActionListUncheck.Hint=A kiválasztott jelöletlen|A kiválasztott elem jelöletlen
+ActionListAll.Caption=Min&d kijelölése
+ActionListAll.Hint=Összes jelölése|Összes tétel kijelölése
+ActionListNone.Caption=Kijelölés &megszüntetése
+ActionListNone.Hint=Összes jelöletlen|Leszedi a jelölést az összes elemrõl
+ActionListCheckExists.Caption=Létezõ film jelölése
+ActionListCheckExists.Hint=Létezõ film jelölése|Létezõ film jelölése az adatbázisban
+ActionListUncheckExists.Caption=Létezõ film jelölésének megszüntetése
+ActionListUncheckExists.Hint=Létezõ film jelölésének megszüntetése|Létezõ film jelölésének megszüntetése az adatbázisban
+ActionSortAscend.Caption=Rendezés növekvõ
+ActionSortAscend.Hint=Rendezés növekvõ|Az oszlop értékeinek rendezése növekvõ sorrendben
+ActionSortDescend.Caption=Rendezés csökkenõ
+ActionSortDescend.Hint=Rendezés csökkenõ|Az oszlop értékeinek rendezése csökkenõ sorrendben
+ActionDefineKeyField.Caption=Adjon meg egy kulcsmezõt
+ActionDefineKeyField.Hint=|Használja ezt a kulcsmezõt a filmek összehasonlítására
+ActionHeaderNoImport.Caption=A mezõt ne importálja
+MnuMov.Caption=AMC mezõk
+MnuMovCF.Caption=Saját mezõk
+MnuMovExtras.Caption=Extra mezõk
+Messages.Strings.String[0]=Nincs importálható film
+Messages.Strings.String[1]=Nem jelöltél ki egy mezõt sem az oszlopokhoz. Click az oszlop tetejére.
+Messages.Strings.String[2]=Ebben a képimportálási metódusban , a katalógusnak kell legyen neve; mentsd máshová és próbáld újra
+Messages.Strings.String[3]=Válassz ki egy mappát!
+Messages.Strings.String[5]=%s film hozzáadva!
+Messages.Strings.String[6]=%s film felülírva!
+Messages.Strings.String[7]=A kulcsmezõ értéke nem egyedi az adatbázisban.|Egy film a listában több filmmel egyezik meg az adatbázisban.
+Messages.Strings.String[8]=A végrehajtáshoz elõször válassz ki egy kulcsmezõt a filmek összehasonlításához (click az oszlop tetejére).
+Messages.Strings.String[9]=Importálja a filmeket az aktuális katalógusba...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=Az elsõ sor a mezõnév
+lblDelim.Caption=Mezõhatároló:
+edtDelim.Hint=|A mezõértéket határoló karakter
+lblDelimExtras.Caption=Extra elválasztó:
+edtDelimExtras.Hint=|Extra mezõk értékeit elválasztó karakter
+lblQuote.Caption=Szövegblokk határoló:
+edtQuote.Hint=|Text határoló karakter (hagyd üresen ha nem használod)
+lblLinebreaks.Caption=Sortörések:
+edtLinebreaks.Hint=|A sortöréseket konvertálja erre a Leírásban és a Megjegyzésben
+
+[TImportFrameQuery]
+grpQuery.Caption=Lekérdezés végrehajtása
+btnQueryExec.Hint=Végrehajtás|lekérdezés végrehajtása
+
+[TImportFrameDir]
+Messages.Strings.String[10]=Forrás mappa
+Messages.Strings.String[11]=Tallózás...|Mappa tallózás scan-hez
+Messages.Strings.String[12]=&Mappa scannelése
+lblExtractProcess.Caption=Kigyûjtési folyamat:
+cmbExtractProcess.Items.String[0]=1 - Kigyûjti a media infot scanneléskor
+cmbExtractProcess.Items.String[1]=2 - Csak a végsõ importáláskor gyûjti ki a media infot
+cmbExtractProcess.Items.String[2]=3 - Nem gyûjti ki a media infot
+chkInternalAVI.Caption=Használjon belsõ motort az AVI importhoz (gyorsabb)
+chkMultiDisks.Caption=Fûzze össze a média info-t a többrészes/lemezes filmeknél
+lblDiskTag.Caption=Disk jelzõ:
+edtDiskTag.Hint=|Pl. válassza a 'cd' jelzõt a hasonló neveknél 'moviename.cd1', 'moviename.cd2',...
+lblBrowseDepth.Caption=Böngésszen az alkönyvtárban ilyen mélységig:
+edtBrowseDepth.Hint=|0 = sehol, * = mindenhol
+edtBrowseDepth.Left=244
+btnFilterFileName.Caption=Szûrés filenévre
+lblExtVideo.Caption=Kiterjesztés:
+btnDefaultExtVideo.Caption=Alapérték
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+Caption=Movies importation method
+btn2.Caption=OK
+btn1.Caption=Mégsem
+LMsg1.Caption=Kiválasztottál egy kulcsmezõt, hogy hasonlítsa össze a lista kijelölt filmjeit az aktuális katalógus filmjeivel.
+LMsg2.Caption=Az összes kijelölt filmet be fogja imnportálni az aktuális katalógusba. Ellenõrzésként, ha egy film nem létezik, ki tudsz jelölni egy kulcsmezõt az összehasonlításhoz, ha az oszlop tetejére klikkelsz a listában.
+grpImportMethod.Caption=Mit akarsz csinálni ?
+grpImportMethod.Items.String[0]=Importálja az összes filmet
+grpImportMethod.Items.String[1]=Importálja csak az új filmeket
+grpImportMethod.Items.String[2]=Csak a létezõ filmeket irja felül
+grpImportMethod.Items.String[3]=Importálja az új filmeket és irja felül a létezõket
+chkImportExtrasNew.Caption=Importálja az összes extrát az új filmekhez
+chkImportExtras.Caption=Importálja az összes extrát a létezõ filmekhez
+chkDeleteExtras.Caption=Törölje az összes extrát a létezõ filmeknél, mielõtt hozzáad egy újat
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=Beállítások
+Btn3.Caption=OK
+Btn2.Caption=Mégse
+Btn1.Caption=Súgó
+
+LvCat.Items.Item[0].Text=Általános
+LHToolbar.Caption=Eszköztárak és menük
+LIconSet.Caption=Ikonok:
+LColorType.Caption=Szín típusa:
+cbxColorType.Items.String[0]=Automatikus
+cbxColorType.Items.String[1]=Szürke, ha inaktív
+cbxColorType.Items.String[2]=Áttûnõ világos, ha inaktív
+cbxColorType.Items.String[3]=Áttûnõ sötét, ha inaktív
+cbxColorType.Items.String[4]=Mindig színes
+CBOfficeXP.Caption=Office XP stílusú
+CBMenuImages.Caption=Menük ikonokkal
+LHMainWindow.Caption=Általános
+CBSoftBorders.Caption=Vékony szegélyû Filmjegyzék, Filminformáció és Kép panel
+CBNatCmp.Caption=Természetes összehasonlítást használ(a számokat automatikusan észleli) a string rendezésnél
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+CBAutoFocus.Caption=Aktiválja az autofókuszt a filmlistában, Extra listában és a HTML megjelenítõben
+CBAutoFocus.Hint=|Átadja az autofókuszt a komponensnek, amikor az egér fölé kerül
+CBForceRefresh.Caption=Mindig frissíti a filmlistát, amikor a mezõ értéke megváltozik
+CBForceRefresh.Hint=|Alapértelmezésben,az Enter vagy Escape lenyomására frissíti a film listát
+LHStartup.Caption=Indítás
+CBLogo.Caption=Logó megjelenítése
+
+LvCat.Items.Item[1].Text=Eszköztár testreszabása
+LHCustomizeToolbar.Caption=A fõ eszköztáron látható ikonok kiválasztása
+
+LvCat.Items.Item[2].Text=Fájlok
+LHSaving.Caption=Katalógusok
+CBBackup.Caption=Biztonsági másolat készítése minden alkalommal
+CBAutoLoad.Caption=A következõ fájl automatikus megnyitása indításkor üres létrehozása helyett:
+EAutoLoad.ButtonHint=Tallózás...|Fájl kiválasztása
+CBAutoLoadLast.Caption=Utoljára használt fájl ismételt megnyitása
+CBAutoLoadCF.Caption=Automatikusan importálja a saját mezõket ebbõl a file-ból az új katalógusba:
+EAutoLoadCF.ButtonHint=Tallózás...|File kiválasztása
+LRecentFiles.Caption=A menüben látható legutóbb használt fájlok száma:
+LRepairAssociations.Caption=Ha az .amc fájlokat az Ant Movie Cataloghoz kívánja társítani, nyomja meg az alábbi gombot:
+BtnRepairAssoc.Caption=Fájltársítások helyreállítása
+LHHistory.Caption=Kölcsönzési elõzmények
+CBHistory.Caption=A kölcsönzési elõzmények tárolása a következõ fájlban (tabulátorral elválasztott formátumot használ):
+EHistoryFile.ButtonHint=Tallózás...|Fájl kiválasztása
+LHHTMLTemplate.Caption=HTML minták
+EHTMLTemplate.ButtonHint=Tallózás...|Fájl kiválasztása
+
+LvCat.Items.Item[3].Text=Filmjegyzék
+LHDisplay.Caption=Megjelenítés
+CBCheckboxes.Caption=Checkboxok látszódnak (jobb klikk hatására megváltozik a film színjelzõje)
+CBCheckboxesInThumbs.Caption=Jelölõnégyzetek a minikép kijelzéskor
+CBCheckboxesColor.Caption=Checkbox háttérszíne hozzárendelve a a film színjelzõjéhez
+CBLinesColor.Caption=Sorok háttérszíne hozzárendelve a a film színjelzõjéhez
+CBHotTrack.Caption=Gyors kijelölés
+CBEnhScrollbars.Caption=Továbbfejlesztett görgetõsávok
+CBMovieNumColumn.Caption="Film száma" oszlop
+LGridTextSize.Caption=Oszlopok karakterszáma rács módban (0 = korlátlan):
+LGridTextSize.Hint=|A Formázott cím, Eredeti cím és a Cím fordítása oszlopokra nem vonatkozik
+CBAutoStretchListGrid.Caption=Autom.váltás teljesképernyõre rács mód nézetben
+CBAutoStretchListThumbs.Caption=Autom.váltás teljesképernyõre minikép nézetben
+LHOperations.Caption=Mûveletek
+CBDelete.Caption=Törlés megerõsítése
+CBUndo.Caption=Visszavonás megerõsítése
+LHShortcut.Caption=Gyorsbillentyûk
+LShortcutPrev.Caption=Elõzõ film
+LShortcutNext.Caption=Következõ film
+
+LvCat.Items.Item[4].Text=Cím formázása
+LHFormatting.Caption=Formázás
+LTitleColumn.Caption=Megjelenítendõ cím:
+cbxTitle.Items.String[0]=Eredeti cím
+cbxTitle.Items.String[1]=Cím fordítása
+cbxTitle.Items.String[2]=Eredeti cím (Cím fordítása)
+cbxTitle.Items.String[3]=Cím fordítása (Eredeti cím)
+cbxTitle.Items.String[4]=Média márka
+cbxTitle.Items.String[5]=Egyéni cím kialakítása
+LTitleTemplate.Caption=Megjelenítendõ cím minta:
+BtnInsertFieldTag.Hint=|Beszúr egy speciális értéket amibõl összeállítja a film címet
+CBPrefixes.Caption=A következõ elemek hozzáfûzése a cím végéhez:
+LPrefixes1.Caption=Csak szóköz vagy idézõjel után következõ szavak kerülnek felismerésre.
+LPrefixes2.Caption=Vegye õket fel a listára, mindegyiket külön sorba, szóköz vagy idézõjel nélkül.
+
+LvCat.Items.Item[5].Text=Csoportosítás
+LHGrouping.Caption=Csoportok
+CBGroupCount.Caption=Csoportok számának kijelzése
+CBGroupExpand.Caption=Teljes kinyitás alapértelmezésben
+CBGroupMulti.Caption=Csináljon csoportot a felsorolás értékekbõl, amiknél az elválasztó jel:
+CBGroupMulti.Hint=|Felsorolás mezõk a Kategória, Színészek, Nyelvek, Feliratok...
+EGroupMultiSep.Hint=|A separator választja el az értékeket a Felsorolás mezõkben
+CBGroupMultiRmAllP.Caption=Kiszedi az értéket a zárójelek közül a felsorolás mezõkben
+CBGroupMultiRmAllP.Hint=|Színészek mezõ alapból + Egyéb felsorolás mezõk
+CBGroupMultiAddPatch.Caption=Kijavít, a zájójelet figyelmen kívül hagyja (I, (II, (II, (IV... (XXX értékeknél?
+CBSortGroupsByCount.Caption=Rendezze a csoportot csoportszám szerint
+LHCommonGroups.Caption=Közös csoport
+lblGroupLocation.Caption=Helyezze:
+RBGroupsAbove.Caption=Csoportok a közös csoport felett
+RBGroupsBelow.Caption=Csoportok a közös csoport alatt
+CBGroupUnique.Caption=Helyezze egy speciális közös csoportba a tételeket amelyek egyedül lettek volna a csoportjukban
+
+LvCat.Items.Item[6].Text=Extra lista
+LHExtraDisplay.Caption=Megjelenítés
+CBExtraCheckboxes.Caption=Jelölõnégyzetek
+CBExtraNumWithTitle.Caption=Mutassa az extra számot és extra megnevezést
+CBExtraInfoWhenNoPic.Caption=Megmutatja az Extra információkat a kép helyett, amikor nincs kép
+CBExtraCellBorders.Caption=Megjeleníti a keretet az extra mezõknél
+CBExtraDelete.Caption=Törléskor megerõsítést kér
+LHExtraGrouping.Caption=Csoportok
+CBExtraGroupCount.Caption=Irja ki a csoportok számát
+CBExtraGroupExpand.Caption=Alapértelmezésben mindent megjelenít
+CBExtraGroupMulti.Caption=Csináljon csoportot a felsorolás értékekbõl, amiknél az elválasztó jel:
+CBExtraGroupMulti.Hint=|Felsorolás mezõk a Kategóriában
+EExtraGroupMultiSep.Hint=|A separator választja el az értékeket a Felsorolás mezõkben
+CBExtraGroupMultiRmAllP.Caption=Kiszedi az értéket a zárójelek közül a felsorolás mezõkben
+CBExtraSortGroupsByCount.Caption=Rendezze a csoportokat csoportszám szerint
+LHExtraCommonGroups.Caption=Közös csoportok
+lblExtraGroupLocation.Caption=Helye:
+RBExtraGroupsAbove.Caption=Csoportok közös csoportok fölött
+RBExtraGroupsBelow.Caption=Csoportok közös csoportok alatt
+
+LvCat.Items.Item[7].Text=Movie / Extra információk
+LHAddMovie.Caption=Új film hozzáadása
+CBAskNumber.Caption=Sorszám kérése
+CBFirstAvailable.Caption=Az elsõ rendelkezésre álló sorszám használata a legnagyobb sorszám +1 helyett
+CBAddOpenScript.Caption="Információ kiolvasása parancsfájlból" ablak megnyitása
+CBAddOpenFiles.Caption="Információ kiolvasása fájlokból" ablak megnyitása
+LDefaultValues.Caption=Új filmnél a alapérték módosításához, klikkelj a lenti gombra:
+BtnDefaultValues.Caption=Alapértelmezett filmértékek módosítása
+CBSetCurrentDate.Caption=Feltölti a "Hozzáadás dátuma" mezõt az aktuális dátummal a megadott dátum helyett
+CBChecked.Caption=Jelölt
+LColorTag.Caption=Színjelzõ
+LDefaultPicture.Caption=Alapértelmezett kép:
+EDefaultPicture.ButtonHint=Tallózás...|Egy kép kiválasztása
+LHAddExtra.Caption=Egy új extra hozzáadása
+BtnExtraDefaultValues.Caption=Alapértelmezett extra érték szerkesztése...
+CBExtraChecked.Caption=Jelölt
+LExtraDefaultPicture.Caption=Alapértelmezett extra kép:
+EExtraDefaultPicture.ButtonHint=Tallózás...|Egy kép kiválasztása
+LHRating.Caption=Pontszám
+CBRatingTrunc.Caption=Ne jelenítse meg a tizedeseket a fõ nézetben, exportnál és nyomtatásnál
+LHPictureWindow.Caption=Kép
+LPictureBackground.Caption=Háttérszín
+CBFitPicture.Caption=Kép igazítása az ablakhoz
+CBShowPicInfo.Caption=Mutassa a kép méretét,formátumát és útvonalát a teljesméretû ablakban
+LHMovieFrame.Caption=Frame filmmezõk
+LMovieFrameBackground.Caption=Háttér szín
+
+LvCat.Items.Item[8].Text=Legördülõ listák
+LHComboBoxItems.Caption=Elemek
+CBComboSameForAll.Caption=Az összes lista némely tulajdonsága (nincs hatással a lista tartalmára)
+LListOptions.Caption=A lista tulajdonságai:
+CBComboSort.Caption=Elemek automatikus rendezése
+CBComboAutoComplete.Caption=Automatikus kiegészítés gépeléskor
+CBComboCatalogValues.Caption=A jelenlegi katalógus értékeinek használata az elõredefiniált lista helyett
+CBComboAutoAdd.Caption=A listában nem szereplõ értékek automatikus hozzáadása
+LListEdit.Caption=Elemek módosítása:
+
+LvCat.Items.Item[9].Text=Media file-ok importálása
+LHVideoDragDrop.Caption=DragDrop / Információkérés fájlokból
+CBDNDMediaLabel.Caption=Média cimke importálás
+CBDNDFileName.Caption=Fájlnév importálása címként
+btnFilterFileName.Caption=Filenevek szûrése
+CBDNDFileNameFilePath.Caption=Beimportálja a teljes útvonalat a File útvonal mezõbe
+CBDNDFileNameURL.Caption=A teljes elérési út importálása az URL mezõbe
+CBDNDSize.Caption=Importálás mérete:
+RBDNDString.Caption=String készítése, pl. "650+530"
+RBDNDSum.Caption=Összeg készítése, pl. "1180"
+LDNDSizeUnit.Caption=M.egys.:
+cbxDNDSizeUnit.Items.String[0]=Bájt
+cbxDNDSizeUnit.Items.String[1]=Kilobájt (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabájt (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabytes (GB)
+CBDNDPicture.Caption=Társított kép importálása(ugyanaz a médiafájl neve)
+CBDNDLength.Caption=Játékidõ importálása
+CBDNDAllowClear.Caption=Törli a mezõt, ha az új értén üres
+CBDNDInternalAVI.Caption=Használjon belsõ motort AVI importálásra a MediaInfo DLL helyett (gyorsabb)
+LExtVideo.Caption=Kiterjesztések:
+btnDefaultExtVideo.Caption=Alapérték
+LHGetInfoVideo.Caption=Info kinyerése video streamekbõl
+CBDNDResolution.Caption=Felbontás importálása
+CBDNDFramerate.Caption=Képkocka-sûrûség importálása
+CBDNDVideoCodec.Caption=Video kodek importálása
+CBDNDVideoBitrate.Caption=Videó bitsebesség importálása
+LHGetInfoAudio.Caption=Info kinyerése audio stream-ekbõl
+CBDNDAudioCodec.Caption=Audió kodek importálása
+CBDNDAudioChannels.Caption=Audió csatornák importálása
+CBDNDAudioBitrate.Caption=Audió bitsebesség importálása
+CBDNDLanguages.Caption=Nyelv importálása
+CBDNDSubtitles.Caption=Felirat importálása
+
+LvCat.Items.Item[10].Text=Képimportálás
+LHImportPic.Caption=Kép importálása külsõ forrásból
+RBPicImport.Caption=Filmekhez
+RBExtraPicImport.Caption=Extrákhoz
+PicImportGetInfo.grp.Caption=Drag && drog / Információ kérés file-ból
+CBPicImportGetInfoNoAsk.Caption=Ne válassz képimportálási metódust; használd a fenti opciót mindig
+PicImportScripting.grp.Caption=Internet scriptek esetén
+CBPicConvert.Caption=Átkonvertálja a képet JPG-re és átméretezi amikor a képet másolja vagy tárolja
+LMaxPicSizeW.Caption=max szélesség=
+LMaxPicSizeH.Caption=max magasság=
+LMaxPicSizeUnit.Caption=pixelben
+EMaxPicSizeW.Hint=|Hagyd üresen, ha nem akarsz max szélességet megadni
+EMaxPicSizeH.Hint=|Hagyd üresen, ha nem akarsz max magasságot megadni
+LPicCopyNote.Caption=Note: Amikor a képet ugyanabban a mappában tárolod mint a katalógus vagy a pictures mappája, akkor az törölni fogja a katalógusban nem használt képet.
+PicNamingFrame.grp.Caption=Kép megnevezése
+LPicNamingNote.Caption=Mgjegyzés: Ha a kép nevét már használja egy másik film, akkor egy véletlen nevet generál a program . Amikor nincs eredeti név (pl. amikor amc-ból xml-bõl konvertálunk), a film neve lesz használva.
+
+LvCat.Items.Item[11].Text=Keresés az Interneten
+LHSearch.Caption=Keresés az Interneten
+LSearchEdit.Caption=Kijelölt sor szerkesztése:
+btnSearchAdd.Hint=Hozzáadás|Új elem hozzáadása a kijelölt elem elé
+btnSearchDel.Hint=Törlés|A kijelölt elem törlése
+btnSearchUp.Hint=Fel|A kijelölt elem léptetése felfelé
+btnSearchDown.Hint=Le|A kijelölt elem léptetése lefelé
+LSearchNotes.Caption=Megj.:
+LSearchNote1.Caption=- A név egyedi legyen
+LSearchNote2.Caption=- A címben, a %s helyére szúrja be a program a film címét
+LSearchNote3.Caption=- Elválasztó beszúrásához a listába, az (egyedi) nevet kezdje kötõjellel "-"
+
+LvCat.Items.Item[12].Text=Parancsfájlok
+LHScript.Caption=Script beállítások
+CBAutorunScript.Caption=Az utolsó script automatikus futtatása az "Információ gyûjtése srciptbõl" használatával
+LScriptPicImport.Caption=Kép importálási preferenciákat lásd a <LINK>Kép importálása</LINK> oldalon
+LHConnection.Caption=Internet kapcsolat
+CBProxy.Caption=Proxy használata az Internethez csatlakozáskor:
+LProxyServer.Caption=Kiszolgáló:
+LProxyPort.Caption=Port:
+LProxyUsername.Caption=Felhasználó:
+LProxyPassword.Caption=Jelszó:
+CBKeepConnection.Caption=A kapcsolat fenntartása
+CBHTTP10.Caption=Restrict to HTTP 1.0 (néhány proxy server miatt szükséges)
+
+LvCat.Items.Item[13].Text=Exportálás
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=Az utoljára használt sablon automatikus frissítése
+LLineBreaks.Caption=A sortöréseket a következõ elemre cseréli:
+ELineBreaks.Hint=|Hagyja üresen ezt a mezõt, ha a sortöréseket nem akarja lecserélni
+LForcePicSize.Caption=Legyen a film képmérete:
+LForcePicSizeW.Caption=széles=
+LForcePicSizeH.Caption=magas=
+EForcePicSizeW.Hint=|Hagyja üresen, ha nem akarja használni a szélesség értékét
+EForcePicSizeH.Hint=|Hagyja üresen, ha nem akarja használni a magasság értékét
+LForceExtraPicSize.Caption=Állítsa be az extra kép méretét a magadott értékre:
+LForceExtraPicSizeW.Caption=széles=
+LForceExtraPicSizeH.Caption=magas=
+EForceExtraPicSizeW.Hint=|Hagyja üresen, ha nem akarja beállítani a szélesség értékét
+EForceExtraPicSizeH.Hint=|Hagyja üresen, ha nem akarja beállítani a magasság értékét
+LHSQL.Caption=SQL
+LSQLDate.Caption=Dátum formátuma (a speciális karaktereket tegye idézõjelbe):
+ESQLDate.Hint=|Üresen marad a Windows alapértelmezéshez
+LHExportFileNames.Caption=Fájlnevek
+CBLastFileName.Caption=Az utoljára exportált fájl nevének megjegyzése
+CBOpenExportedFile.Caption=Az exportált fájl megnyitása az exportálás befejeztével
+ExpFileNamingFrame.grp.Caption=Egyedi oldalak és kép fájlnév stílusa
+LExpFileExt.Caption=A kiterjesztés legyen:
+EExpFileExt.Hint=|Hagyja üresen, hogy ugyanazt a kiterjesztést használja, mint a fõ exportált fájlnév
+LHPictures.Caption=Képek
+CBCopyPictures.Caption=A képek másolása az exportált fájllal azonos mappába
+CBCopyPicturesInPicDir.Caption=Másolja a képet a Pictures alkönyvtárba
+CBCopyPicturesNew.Caption=Másolás csak akkor, ha a célfájl nem létezik
+CBCopyPicturesIncExtras.Caption=beleértve az extra képeket is
+
+LvCat.Items.Item[14].Text=Mappák
+LHFoldersDialogs.Caption=Dialog boxok
+LFolderToUse.Caption=Mappa használata
+cbxWindow.Items.String[0]=Katalógusok betöltéséhez/mentéséhez
+cbxWindow.Items.String[1]=Film képének betöltéséhez
+cbxWindow.Items.String[2]=Exportáláshoz
+cbxWindow.Items.String[3]=Sablonok betöltéséhez/mentéséhez
+cbxWindow.Items.String[4]=Importáláshoz
+cbxWindow.Items.String[5]=Információ kéréséhez fájlokból
+cbxWindow.Items.String[6]=Grafika mentéséhez
+cbxWindow.Items.String[7]=Parancsfájlok megnyitása/mentése
+cbxWindow.Items.String[8]=Saját mezõk töltése/mentése
+cbxWindow.Items.String[9]=Szûrések töltése/mentése
+RBFolderDefault.Caption=Windows alapértelmezés (az eredmény a Windows verziótól függ)
+RBFolderRemember.Caption=Az utoljára használt mappa megjegyzése
+RBFolderSpecified.Caption=Az alábbi mappa használata:
+EFolderSpecified.ButtonHint=Tallózás...|Mappa kijelölése
+CBSameForAll.Caption=Azonos beállítások minden ablakhoz
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=Alapértelmezett film értékek módosítása
+Btn3.Caption=Alaphelyzet
+Btn3.Hint=|Alapértelmezett értékek visszaállítása
+Btn2.Caption=OK
+Btn1.Caption=Mégse
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+Caption=Alapértelmezett extra értékek szerkesztése
+Btn3.Caption=Alaphelyzet
+Btn3.Hint=|Alapértelmezett értékek visszaállítása
+Btn2.Caption=OK
+Btn1.Caption=Mégse
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=Válasszon egy nyelvet
+Btn2.Caption=OK
+Btn1.Caption=Mégsem
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=Név
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=Helyi név
+LanguageFrame.lblVersion.Caption=Verzió:
+LanguageFrame.lblMadeBy.Caption=Készítette:
+LanguageFrame.lblComments.Caption=Megjegyzés:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=Speciális rendezési beállítások
+Fields.LSelected.Caption=A rendezésben szereplõ mezõk:
+BtnSortOrder.Hint=Fordított rendezési sorrend|A kiválasztott mezõt fordított sorrendben rendezi
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=Statisztika
+btn1.Caption=Bezárás
+ActionSaveAs.Caption=Mentés másként...
+ActionSaveAs.Hint=Mentés másként...|Kép mentése fájlba
+ActionCopy.Caption=Másolás
+ActionCopy.Hint=Másolás|Kép másolása a vágólapra
+ActionCopyWMF.Caption=Metafájlként
+ActionCopyWMF.Hint=Másolás metafájlként|Kép másolása a vágólapra metafájlként (méretezhetõ)
+ActionCopyBMP.Caption=Bitképként
+ActionCopyBMP.Hint=Másolás bitképként|Kép másolása a vágólapra bitképként
+ActionOptions.Caption=Beállítások
+ActionOptions.Hint=Beállítások|A grafikon néhány tulajdonságának megváltoztatása
+ActionOptionsLegend.Caption=Jelmagyarázat
+ActionOptionsLegend.Hint=Jelmagyarázat megjelenítése|A jelmagyarázat megjelenítése a grafikon jobb oldalán
+ActionOptionsLabels.Caption=Feliratok
+ActionOptionsLabels.Hint=Feliratok megjelenítése|Feliratok megjelenítése a grafikonon
+ActionOptionsEmpty.Caption=Üres hónapok
+ActionOptionsEmpty.Hint=Üres hónapok kijelzése|Üres hónapok megjelenítése a grafikonon, melyekben az összesítés nulla
+ActionOptionsGroup.Caption=Értékek csoportosítása
+ActionOptionsGroup.Hint=Csoport érték|Chart: Group values using intervals; Pie: Group smaller values together
+Messages.Strings.String[0]=%.1f perc
+Messages.Strings.String[1]=< nincs >
+Messages.Strings.String[2]=Grafikon mentése
+Messages.Strings.String[3]=%d napok %d órák %d percek
+Messages.Strings.String[4]=< egyebek >
+; A következõ sorban a fileméret mértékegységét adhatja meg
+Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=Filmek száma összesen
+lstGeneral.Items.Item[1].Caption=Filmek játékidejének átlaga
+lstGeneral.Items.Item[2].Caption=A film teljes hossza
+lstGeneral.Items.Item[3].Caption=A filmek teljes mérete
+lstGeneral.Items.Item[4].Caption=Lemezek száma összesen
+lstCategories.Items.String[0]=Általános információ
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=Script készítés
+btn2.Caption=&Bezár
+btn1.Caption=Súgó
+ActionFileNew.Caption=Új
+ActionFileNew.Hint=Új|Új parancsfájl létrehozása
+ActionFileOpen.Caption=Megnyitás...
+ActionFileOpen.Hint=Megnyitás...|Parancsfájl megnyitása
+ActionFileNoRecent.Caption=Nincs utoljára megnyitott fájl
+ActionFileSave.Caption=Mentés
+ActionFileSave.Hint=Mentés|A jelenlegi parancsfájl mentése
+ActionFileSaveAs.Caption=Mentés másként...
+ActionFileSaveAs.Hint=Mentés másként...|A jelenlegi parancsfájl mentése új néven
+ActionFileProperties.Caption=Tulajdonságok...
+ActionFileProperties.Hint=Tulajdonságok és opciók...|Tulajdonságok és opciók szerkesztése
+ActionDebugRun.Caption=Futtatás
+ActionDebugRun.Hint=Parancsfájl futtatása|Parancsfájl futtatása
+ActionDebugStop.Caption=Leállítás
+ActionDebugStop.Hint=Parancsfájl leállítása|A parancsfájl végrehajtásának leállítása
+ActionDebugBreakpoint.Caption=Töréspont
+ActionDebugBreakpoint.Hint=Töréspont váltás|Az aktuális sorhoz töréspontot rendel vagy felold
+ActionDebugBreakpointClear.Caption=Törli a töréspontokat
+ActionDebugBreakpointClear.Hint=Töréspontok törlése|Eltávolítja az összes töréspontot
+ActionDebugStep.Caption=Továbblép
+ActionDebugStep.Hint=Továbblép|A forráskód következõ sorának futtatása
+ActionDebugRunToCursor.Caption=Futtatás a cursortól
+ActionDebugRunToCursor.Hint=Futtatás a cursortól|program futtatása, amíg eléri az aktuális jelölõ pontot
+ActionDebugEval.Caption=Kiértékelés...
+ActionDebugEval.Hint=Változó kiértékelése...|A kiválasztott változó tartalmának megjelenítése
+ActionDebugWatchAdd.Caption=Figyelés hozzáadása
+ActionDebugWatchAdd.Hint=Változó figyelés hozzáadása|A kiválasztott változó hozzáadása a figyeléslistához
+ActionDebugWatchRemove.Caption=Eltávolítás
+ActionDebugWatchRemove.Hint=Változó figyelés eltávolítása|Eltávolítja a kiválasztott változót a figyelési listából
+ActionDebugWatchClear.Caption=Lista törlése
+ActionDebugWatchClear.Hint=Változó figyelési lista törlése|Eltávolítja az összes változót a figyelési listából
+ActionListCheck.Caption=Kijelöltek &bejelölése
+ActionListCheck.Hint=Kijelöltek bejelölése |A kiválasztott tétel bejelölése
+ActionListUncheck.Caption=Kijelölés &megszüntetése
+ActionListUncheck.Hint=A kiválasztott jelöletlen|A kiválasztott elem jelöletlen
+ActionListAll.Caption=Min&d kijelölése
+ActionListAll.Hint=Összes jelölése|Összes tétel kijelölése
+ActionListNone.Caption=Kijelölés &megszüntetése
+ActionListNone.Hint=Összes jelöletlen|Leszedi a jelölést az összes elemrõl
+ActionDisplayScripts.Caption=Parancsfájlok
+ActionDisplayScripts.Hint=Parancsfájl kiválasztása|A létezõ parancsfájlok megjelenítése
+ActionDisplayEditor.Caption=Szerkesztõ
+ActionDisplayEditor.Hint=Parancsfájlszerkesztõ|A parancsfájl szerkesztõ megjelenítése
+ActionViewFilter.Caption=&Nyelv szûrés
+ActionViewFilter.Hint=Nyelvi szûrés|A szûrés lehetõvé teszi,hogy a meghatározott nyelvû leírások jelenjenek meg
+ActionViewList.Caption=Lista
+ActionViewList.Hint=Lista nézet|Kijelzi a scripteket, mint egy listát
+ActionViewDetailed.Caption=Részletes nézet
+ActionViewDetailed.Hint=Részletes nézet|Kijelzi a scripteket két oszlopban ( A leírásukkal együtt)
+ActionOptionsEdit.Caption=Változtatás...
+ActionOptionsEdit.Hint=Érték változtatás...|Megváltoztatja az értéket a kiválasztott opciónál
+ActionOptionsDefault.Caption=Alapértékek
+ActionOptionsDefault.Hint=Alapértékek|Visszaállítja az opciókat az alapértelmezett értékeikre
+lstScripts.Hint=|A script kiválasztása után click a "Futtatás"-ra, vagy dupla-click a script nevén vagy F9 vagy Enter.
+lstScripts.Columns.Item[0].Caption=Cím
+lstScripts.Columns.Item[1].Caption=Leírás
+ActionEditUndo.Caption=&Visszavonás
+ActionEditCut.Caption=&Kivágás
+ActionEditCopy.Caption=&Másolás
+ActionEditPaste.Caption=&Beillesztés
+ActionEditDelete.Caption=&Törlés
+ActionEditSelectAll.Caption=Min&d kijelölése
+ActionEditFind.Caption=Keresés...
+ActionEditfind.Hint=Keresés|Karakterlánc keresése a szövegben
+ActionEditFindNext.Caption=Továbbkeresés
+ActionEditFindNext.Hint=Továbbkeresés|A következõ egyezõ karakterlánc keresése a szövegben
+DockpanelExec.Caption=Végrehajtási opciók
+CBShowResults.Caption=Kijelzi az &eredmény ablakot
+CBShowResults.Hint=Kijelzi a régi és új mezõértéket az összes filmnél kézi kiválasztásra, amelyik mezõt meg kell tartani
+CBCloseThis.Caption=Bezárja az ablakot, és befejezi
+CBCloseThis.Hint=Bezárja az ablakot, amikor a script sikeresen végrehajtódott
+CBAllowClear.Caption=&Mezõ törlése lehetséges
+CBAllowClear.Hint=Lehetõvé teszi, hogy a script törölje a mezõ értékét, ha a script értéke üres
+DockpanelOptions.Caption=Script opciók
+DockpanelOptions.Hint=|Dupla click az opción megváltoztatja az opciót. Megjegyzés: Az opció mentése csak a script végrehajtása után történik meg
+DockpanelParameters.Caption=Script paraméterek
+DockpanelParameters.Hint=|Dupla-clickkel lehet a paramétert megváltoztatni. Megjegyzés: A paraméterek csak a script végrehajtásakor mentõdnek le.
+DockpanelLimitations.Caption=Script korlátozások
+grpLimitFields.Caption=Módosítható mezõk
+lstLimitFields.Hint=|Megjegyzés: A mezõ kiválasztás mentése csak a script végrehajtása után történik meg.
+grpScriptInfo.Caption=Információ
+tabScriptInfo.Tabs.String[0]=Általános
+tabScriptInfo.Tabs.String[1]=Megjegyzés
+tabScriptInfo.Tabs.String[2]=License
+DockpanelWatch.Caption=Watch list
+
+Messages.Strings.String[0]=Script hiba az "%s": %s sorban %d
+Messages.Strings.String[1]=Az aktuális script módosítva lett. Akarja menteni ?
+Messages.Strings.String[2]=Ismeretlen
+Messages.Strings.String[3]=Elfogadom
+Messages.Strings.String[4]=Nem talált filmet az aktuális beállítások alapján (%s: %s)
+Messages.Strings.String[5]=Kívánja a parancsfájl csoportfolyamatot megszakítani?
+Messages.Strings.String[6]=Módosítva
+Messages.Strings.String[7]=Az opció értéke "%s"
+Messages.Strings.String[8]=A paraméter értéke "%s"
+Messages.Strings.String[9]=Keresés
+Messages.Strings.String[10]=Írja be a keresendõ szöveget:
+Messages.Strings.String[11]=Nincs több találat: "%s"
+Messages.Strings.String[12]=*Extrák hozzáadása*
+Messages.Strings.String[13]=*Extrák törlése*
+Messages.Strings.String[14]=*Extrák módosítása*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=Film kijelölés
+btnView.Caption=Oldal megtekintése
+btnView.Hint=Webböngészõ indítása|
+btn3.Caption=OK
+btn2.Caption=Több keresése
+btn1.Caption=Mégsem
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=Leírás kijelölés
+btn2.Caption=OK
+btn1.Caption=Mégse
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+Caption=Script tulajdonságok,opciók és paraméterek
+btn3.Caption=&Ment
+btn2.Caption=&Mégsem
+btn1.Caption=&Súgó
+lstProperties.TitleCaptions.String[0]=Tulajdonság
+lstProperties.TitleCaptions.String[1]=Érték
+grpOptions.Caption=Opciók
+btnOptionAdd.Hint=Hozzáad|Hozzáad egy új opciót
+btnOptionDel.Hint=Töröl|Törli a kiválasztott opciót
+btnOptionUp.Hint=Fel|Felfelé mozgatja a kiválasztott opciót
+btnOptionDown.Hint=Le|Lefelé mozgatja a kiválasztott opciót
+grpValues.Caption=Lehetséges értékek a kiválasztott opcióban
+lblValueDefault.Caption=Alapérték:
+btnValueAdd.Hint=Hozzáad|Hozzáad egy új értéket
+btnValueDel.Hint=Töröl|Törli a kiválasztott értéket
+btnValueUp.Hint=Fel|Felfelé mozgatja a kiválasztott értéket
+btnValueDown.Hint=Le|Lefelé mozgatja a kiválasztott értéket
+grpParameters.Caption=Paraméterek
+btnParameterAdd.Hint=Hozzáad|Hozzáad egy új paramétert
+btnParameterDel.Hint=Töröl|Törli a kiválasztott paramétert
+btnParameterUp.Hint=Fel|Felfelé mozgatja a kiválasztott paramétert
+btnParameterDown.Hint=Le|Lefelé mozgatja a kiválasztott paramétert
+
+Messages.Strings.String[0]=Script szerzõje:
+Messages.Strings.String[1]=Script megnevezése:
+Messages.Strings.String[2]=Leírás:
+Messages.Strings.String[3]=Site címe:
+Messages.Strings.String[4]=Site nyelve:
+Messages.Strings.String[5]=Script verzió:
+Messages.Strings.String[6]=Szükséges legalább :
+Messages.Strings.String[7]=Megjegyzés:
+Messages.Strings.String[8]=Script license:
+Messages.Strings.String[9]=Info kérés a webrõl:
+Messages.Strings.String[10]=A kért filmek:
+Messages.Strings.String[11]=Érték
+Messages.Strings.String[12]=Leírás
+Messages.Strings.String[13]=Törölni fogja az opciót "%s"
+Messages.Strings.String[14]=Opció neve:
+Messages.Strings.String[15]=Átnevezi az opciót "%s"
+Messages.Strings.String[16]=Egy opció ezzel a névvel "%s" már létezik!
+Messages.Strings.String[17]=Név
+Messages.Strings.String[18]=Alapérték
+Messages.Strings.String[19]=Leírás
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=Script végrehajtás eredménye
+btn4.Caption=&Mentés
+btn4.Hint=|Menti a film információkat
+btn3.Caption=Menti a&z összeset
+btn3.Hint=|Menti ezt a filmet és az összes következõt
+btn2.Caption=S&kip
+btn2.Hint=|Átlépi ezt a filmet
+btn1.Caption=&Leáll
+btn1.Hint=|Leállítja a script folyamatot
+listValues.HeaderSections.Item[0].Text=Mezõ
+listValues.HeaderSections.Item[1].Text=Elõzõ érték
+listValues.HeaderSections.Item[2].Text=Új érték
+ActionListCheck.Caption=Kijelöltek &bejelölése
+ActionListCheck.Hint=Kijelöltek bejelölése |A kiválasztott tétel bejelölése
+ActionListUncheck.Caption=Kijelölés &megszüntetése
+ActionListUncheck.Hint=A kiválasztott jelöletlen|A kiválasztott elem jelöletlen
+ActionListAll.Caption=Min&d kijelölése
+ActionListAll.Hint=Összes jelölése|Összes tétel kijelölése
+ActionListNone.Caption=Kijelölés &megszüntetése
+ActionListNone.Hint=Összes jelöletlen|Leszedi a jelölést az összes elemrõl
+
+Messages.Strings.String[0]=A scriptfutás eredménye "%0:s" ennél a filmnél %1:d
+Messages.Strings.String[1]=Size: %.0n KB, klikk ide, ha meg akarod nézni
+Messages.Strings.String[2]=Akarod, hogy emlékezzen melyik mezõt tartsa meg a következõ filmnél a script végrahajstásakor? (Ha NEM-et válaszolsz, az összes mezõ módosul a script használatakor)
+Messages.Strings.String[3]=*Extrák hozzáadása*
+Messages.Strings.String[4]=*Extrák törlése*
+Messages.Strings.String[5]=*Extrák módosítása*
+Messages.Strings.String[6]=Hozzáadott extrák: %d, klikk ide, ha meg akarod nézni
+Messages.Strings.String[7]=Törölt extrák: %d, klikk ide, ha meg akarod nézni
+Messages.Strings.String[8]=Módosított extrák: %d, klikk ide, ha meg akarod nézni
+Messages.Strings.String[9]=Megváltoztatott értékek: %d, klikk ide, ha meg akarod nézni
+Messages.Strings.String[10]="%s" file nem létezik
+
+[ScriptExtrasResultsWin]
+Caption=Az extrákon végrehajtott script eredménye 
+btn1.Caption=&Bezár
+btn1.Hint=|Bezárja az ablakot
+listExtras.HeaderSections.Item[0].Text=Extra
+listValues.HeaderSections.Item[0].Text=Mezõ
+listValues.HeaderSections.Item[1].Text=Elõzõ érték
+listValues.HeaderSections.Item[2].Text=Új érték
+ActionListCheck.Caption=&Kiválasztottak jelölése
+ActionListCheck.Hint=Kiválasztottak jelölése|Kiválasztott elemek jelölése
+ActionListUncheck.Caption=Kiválasztottak jelölésének megszüntetése
+ActionListUncheck.Hint=Kiválasztottak jelölésének megszüntetése|Kiválasztott elemek jelölésének megszüntetése
+ActionListAll.Caption=Összes jelölése
+ActionListAll.Hint=Összes jelölése|Összes elem jelölése
+ActionListNone.Caption=Nem jelöl semmit
+ActionListNone.Hint=Összes jelölés megszüntetése|Összes elem jelölésének megszüntetése
+
+Messages.Strings.String[0]=A scripfutás eredménye "%0:s" ennél a filmnél %1:d
+Messages.Strings.String[1]=Méret: %.0n KB, klikkelj, ha meg akarod nézni
+Messages.Strings.String[2]=Extra
+Messages.Strings.String[3]=Hozzáadva
+Messages.Strings.String[4]=Törölve
+Messages.Strings.String[5]=Módosítva
+Messages.Strings.String[6]="%s" file nem létezik
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=Filmek átszámozása
+SortBy.grp.Caption=Mielõtt átszámozza, rendezze eszerint
+btn2.Caption=OK
+btn1.Caption=Mégse
+
+Messages.Strings.String[0]=Filmek átszámozása...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=Nyomtatás...
+btn2.Caption=Bezárás
+btn1.Caption=Súgó
+ActionFileLoad.Caption=Sablon betöltése...
+ActionFileLoad.Hint=Sablon betöltése|Újabb sablon betöltése
+ActionFileDesigner.Caption=Tervezõ...
+ActionFileDesigner.Hint=A tervezõ megnyitása|A jelentéstervezõ megnyitása
+ActionPrint.Caption=Nyomtatás...
+ActionPrint.Hint=Nyomtatás|A jelenlegi jelentés nyomtatása
+ActionPreviewRefresh.Caption=Frissítés
+ActionPreviewRefresh.Hint=Elõnézet frissítése|Elõnézet frissítése
+ActionPreviewPageFirst.Caption=Elsõ oldal
+ActionPreviewPageFirst.Hint=Elsõ oldal|Ugrás az elsõ oldalra
+ActionPreviewPagePrevious.Caption=Elõzõ oldal
+ActionPreviewPagePrevious.Hint=Elõzõ oldal|Ugrás az elõzõ oldalra
+ActionPreviewPageNext.Caption=Következõ oldal
+ActionPreviewPageNext.Hint=Következõ oldal|Ugrás a következõ oldalra
+ActionPreviewPageLast.Caption=Utolsó oldal
+ActionPreviewPageLast.Hint=Utolsó oldal|Ugrás az utolsó oldalra
+ActionPreviewPageFull.Caption=Teljes oldal
+ActionPreviewPageFull.Hint=Teljes oldal|Nagyítás teljes oldalig
+ActionPreviewPageTwo.Caption=Két oldal
+ActionPreviewPageTwo.Hint=Két oldal|Nagyítás két oldalig
+ActionPreviewPageWidth.Caption=Oldal szélesség
+ActionPreviewPageWidth.Hint=Oldal szélességhez igazítás|Igazítás az oldal szélességéhez
+ActionPreviewZoomOut.Caption=Kicsinyítés
+ActionPreviewZoomOut.Hint=Kicsinyítés|A nagyítási arány csökkentése
+ActionPreviewZoomIn.Caption=Nagyítás
+ActionPreviewZoomIn.Hint=Nagyítás|A nagyítási arány növelése
+LvScripts.Columns.Item[0].Caption=Létezõ sablonok
+Messages.Strings.String[0]=Nyomtatás - %s
+Messages.Strings.String[1]=<nincs fájl kijelölve>
+Messages.Strings.String[2]=A sablon nem tölthetõ be elõnézetre: %s
+Messages.Strings.String[3]=A Jelentéstervezõ nem található. A(z) %s ugyanabban a mappában kell legyen, mint az Ant Movie Catalog.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=Kép importálása
+Btn3.Caption=OK
+Btn2.Caption=Mégsem
+Btn1.Caption=&Súgó
+
+CBDoNotAsk.Caption=Ne kérdezzen újra, emlékezzen a beállításra a késõbbi importáláskor
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+Caption=Saját mezõ szerkesztõ
+btn2.Caption=OK
+btn1.Caption=Mégsem
+btnDel.Hint=Mezõ törlése|Törli a saját mezõt
+btnClearAll.Hint=Összes saját mezõt törli|Összes saját mezõt törli
+btnImport.Hint=Mezõk importálása|Saját mezõk importálása
+btnExport.Hint=Mezõk exportálása|Saját mezõk exportálása
+LField.Caption=Mezõ:
+LTag.Caption=Változó:
+LName.Caption=Név:
+LExt.Caption=Kiterjesztés:
+LType.Caption=Típus:
+LDefaultValue.Caption=Alapérték:
+LTemplate.Caption=Minta:
+btnInsertFieldTag.Hint=|Beszúr egy speciális értéket amit fel fog váltani a filmérték
+LMediaInfo.Caption=Média info importálása:
+LMultiValues.Caption=Felsorolás értékek:
+EMultiValues.Hint=|Csináljon csoportot a felsorolás mezõ értékekbõl:
+LMultiValuesSep.Caption=Elválasztó:
+LMultiValuesRmp.Caption=Zárójeleket töröl:
+EMultiValuesRmp.Hint=|Törli a zárójelek közti értékekeket
+LMultiValuesPatch.Caption=Patch:
+EMultiValuesPatch.Hint=|Hagyja a zárójelet figyelmen kívül
+LListValues.Caption=Lista értékek:
+EListSort.Caption=Elemek autorendezése:
+EListAutoComplete.Caption=Auto-kitöltés írás közben
+EListCatalogValues.Caption=Használja az akt.katalógus értékeit az elõredefiniált lista helyett
+EListAutoAdd.Caption=A listában nem szereplõ értékeket adja hozzá
+Messages.Strings.String[0]=Saját mezõk importálása
+Messages.Strings.String[1]=Saját mezõk exportálása
+Messages.Strings.Stringz[2]=Mezõ hozzáadása|Saját mezõ hozzáadása
+Messages.Strings.String[3]=jelzõ megváltoztatása|Saját mezõ jelzõ megváltoztatása
+Messages.Strings.String[4]=--- Új mezõ ---
+Messages.Strings.String[5]=String
+Messages.Strings.String[6]=Integer
+Messages.Strings.String[7]=Real (1 tizedes)
+Messages.Strings.String[8]=Real (2 tizedes)
+Messages.Strings.String[9]=Real (3 tizedes)
+Messages.Strings.String[10]=Boolean
+Messages.Strings.String[11]=List
+Messages.Strings.String[12]=Date
+Messages.Strings.String[13]=Text
+Messages.Strings.String[14]=URL
+Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+Caption=Szûrõ
+LNote1.Caption=Megjegyzés: Ez a szûrõ lecseréli az összes kifejezés string -et a hozzárendelt helyettesítõ string-re a lista sorrendjében.
+LNote2.Caption=Használhatsz regular kifejezést, ha a kifejezés '::>' -el kezdõdik.
+LNote3.Caption=Egy példa látható regular kifejezésre, nyomd meg a 'Alapérték' gombot.
+LNote4.Caption=Még több részlet a regular kifejezés syntax-ra, regexpstudio.com website helpjében látható
+LExprString.Caption=Kifejezés string
+LReplaceString.Caption=helyettesítõ string
+btn1.Caption=Mégsem
+btn2.Caption=OK
+btn3.Caption=Alapérték
+btn3.Hint=Alapérték|Visszaállítja az alap szûrõt
+btnClearAll.Hint=Összes törlése|Törli az összes kifejezést
+btnImport.Hint=Import|Szûrõ importálása
+btnExport.Hint=Export|Szûrõ exportálása
+btnAdd.Hint=Hozzáad|Hozzáad egy új kifejezést a kiválasztott kifejezés alá
+btnDel.Hint=Töröl|Törli a kiválasztott kifejezést
+btnUp.Hint=Feljebb|Feljebb helyezi a kiválasztott kifejezést
+btnDown.Hint=Lejjebb|Lejjebb helyezi a kiválasztott kifejezést
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+Caption=Kép menedzser
+btn2.Caption=OK
+btn1.Caption=Mégsem
+
+Messages.Strings.String[0]=Hajtsa végre a változásokat a film képeken...
+Messages.Strings.String[1]=Nem tudja végrehajtani a változásokat ezen a képen "%s": %s
+Messages.Strings.String[2]=Miután végrahajtotta a változásokat, az aktuális katalógust le kell menteni, hogy ne vesszenek el a változások! Akarod automatikusan menteni a katalógust a változtatások végrahajtása után?
+Messages.Strings.String[3]=Nem tudja végrehajtani a változásokat ezen az extra képen "%0:s": %1:s
+Messages.Strings.String[4]=Figyelem, a törlés visszavonhatatlan! Valóban törölni akarod a képeket?
+Messages.Strings.String[5]=Figyelem, az átméretezés visszavonhatatlan! Valóban át akarod méretezni a képeket?
+Messages.Strings.String[6]=Figyelem, az átméretezés visszavonhatatlan! Valóban át akarod méretezni a képeket és a kapcsolódó képeket is?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+Caption=HTML sablon szerkesztõ
+Btn2.Caption=&Bezár
+Btn1.Caption=&Súgó
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+Caption=Extrák szerkesztése
+btn2.Caption=OK
+btn1.Caption=Mégsem
+LPicture.Caption=Kép:
+PreviewPicture.Hint=|Klikkelj, ha teljes méretben akarod látni a képet
+chkPicture.Hint=|Kép módosítása
+
+ActionPicSelect.Caption=&Kiválaszt...
+ActionPicSelect.Hint=Kiválaszt egy képet...|Kiválaszt egy képet az importhoz vagy az akt.filmhez kapcsoláshoz
+ActionPicDelete.Caption=&Törlés
+ActionPicDelete.Hint=Törlés|Törli az akt.képet
+ActionPicSaveAs.Caption=Mentés másként...
+ActionPicSaveAs.Hint=Menti a képet, mint...|A kép egy másolatát elmenti egy új file-ba
+ActionPicCopy.Caption=&Másolás
+ActionPicCopy.Hint=Másolás a clipboard-ra|A képet a clipboardra másolja
+ActionPicPaste.Caption=&Beilleszt
+ActionPicPaste.Hint=Beilleszt a clipboardról|Beilleszti a képet a clipboard-ról
+
+ActionURLOpen.Caption=URL megnyitása
+ActionURLOpen.Hint=|Megnyitja a mezõben megadott URL-t vagy file-t
+ActionURLExplore.Caption=Mappa megnyitása
+ActionURLExplore.Hint=|Megnyitja a mezõben megadott URL-t vagy file-t tartalmazó mappát
+ActionURLCopy.Caption=URL másolása
+ActionURLCopy.Hint=|A mezõben megadott URL vagy file másolása
+ActionURLBrowse.Caption=Tallózás...
+ActionURLBrowse.Hint=|Tallózás a file nevek között, amit ba mezõbe fog beírni
+
+ActionNextExtra.Caption=Következõ extra
+ActionNextExtra.Hint=Következõ extra|Következõ extra mutatása
+ActionPreviousExtra.Caption=Elõzõ extra
+ActionPreviousExtra.Hint=Elõzõ extra|Elõzõ extra mutatása
+
+Messages.Strings.String[0]=A kép egy másolatát elmenti egy új file-ba
+Messages.Strings.String[1]=Kiválaszt egy képet
+Messages.Strings.String[2]=Ez a kép nem használható: %s
+Messages.Strings.String[3]=A katalógusban tárolva, mint %s
+Messages.Strings.String[4]=Külsõ file: %s
+Messages.Strings.String[5]=%.0n byte
+Messages.Strings.String[6]="%s" file nem létezik.
+Messages.Strings.String[7]=Információ kérés file-okból...
+Messages.Strings.String[8]=Kiválaszt egy filet az URL mezõ hivatkozáshoz
+Messages.Strings.String[9]=Extra adat módosult, el akarod menteni a változásokat ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+Caption=Extrák átsorszámozása
+SortBy.grp.Caption=Mielõtt átsorszámozza az extrákat, rendezze eszerint
+chkAllMovies.Caption=Rendezze és átsorszámozza az extrákat az összes filmben
+btn2.Caption=OK
+btn1.Caption=Mégsem
+
+Messages.Strings.String[0]=Extrák átsorszámozása ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=Médiacimke:
+LMediaType.Caption=Médiatípus:
+LSource.Caption=Forrás:
+LDate.Caption=Hozzáadva:
+LBorrower.Caption=Kölcsönvevõ:
+LDateWatched.Caption=Mikor láttam:
+LUserRating.Caption=Saját pont:
+LRating.Caption=Pontszám:
+LOriginalTitle.Caption=Eredeti cím:
+LTranslatedTitle.Caption=Cím fordítása:
+LDirector.Caption=Rendezõ:
+LProducer.Caption=Producer:
+LWriter.Caption=Író:
+LComposer.Caption=Zeneszerzõ:
+LCountry.Caption=Ország:
+LCategory.Caption=Kategória:
+LCertification.Caption=Besorolás:
+LYear.Caption=Év:
+LLength.Caption=Játékidõ:
+LLengthMin.Caption=perc
+LActors.Caption=Szereplõk:
+LURL.Caption=Weblap:
+LDescription.Caption=Leírás:
+LComments.Caption=Megjegyzés:
+LFilePath.Caption=File útvonal:
+LVideoFormat.Caption=Video forma:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=Audió forma:
+LAudioKbps.Caption=kbps
+LResolution.Caption=Felbontás:
+LFramerate.Caption=Képkocka:
+LFramerateFPS.Caption=fps
+LSize.Caption=Fájlméret:
+LDisks.Caption=Lemez:
+LLanguages.Caption=Nyelv:
+LSubtitles.Caption=Felirat:
+
+EMedia.Hint=|Kiadó, gyári szám vagy vonalkód
+EMediaType.Hint=|Média/támogatott típus
+ESource.Hint=|Forrás (A film minõsége DVD, TV, AVI, BD, stb)
+EDate.Hint=|A film listához való hozzáadásának dátuma
+EBorrower.Hint=|Kölcsönvevõ neve
+EDateWatched.Hint=|Dátum, amikor utoljára látta a filmet
+EUserRating.Hint=|Saját értékelés, 0 tól 10-ig
+ERating.Hint=|Értékelés, 0 és 10 között
+EOriginalTitle.Hint=|Eredeti cím
+ETranslatedTitle.Hint=|A cím fordítása
+EDirector.Hint=|A rendezõ neve
+EProducer.Hint=|A producer neve
+EWriter.Hint=|Író
+EComposer.Hint=|Zeneszerzõ
+ECountry.Hint=|Ország
+ECategory.Hint=|Kategória
+ECertification.Hint=|A film besorolása
+EYear.Hint=|Év
+ELength.Hint=|Játékidõ (percben)
+EActors.Hint=|A szereplõk névsora
+EURL.Hint=|Weblap
+EDescription.Hint=|Leírás
+EComments.Hint=|Megjegyzés
+EFilePath.Hint=|File útvonal
+EVideoFormat.Hint=|Video formátum/kodek
+EVideoBitrate.Hint=|Video bitsebessége
+EAudioFormat.Hint=|Audió formátum/kodek
+EAudioBitrate.Hint=|Audio bitsebesség
+EResolution.Hint=|Video felbontás
+EFramerate.Hint=|Video képkocka-sebesség
+ESize.Hint=|Fájlméret
+EDisks.Hint=|A lemezek vagy a kazetták száma
+ELanguages.Hint=|Nyelvek
+ESubtitles.Hint=|Feliratok
+
+[TMovieFrameCustom]
+ActionAddCustomField.Caption=Hozzáad egy saját mezõt
+ActionAddCustomField.Hint=|Hozzáad egy saját mezõt
+ActionModifyCustomField.Caption=Módosít egy saját mezõt
+ActionModifyCustomField.Hint=|Módosít egy saját mezõt
+ActionDeleteCustomField.Caption=Töröl egy saját mezõt
+ActionDeleteCustomField.Hint=|Töröl egy saját mezõt
+ActionMoveResizeCustomFields.Caption=Mozgat egy saját mezõt
+ActionMoveResizeCustomFields.Hint=|Mozgat és átméretez egy saját mezõt
+ActionDefaultPositioning.Caption=Alap pozició
+ActionDefaultPositioning.Hint=|Visszaáll a saját mezõ alappozicióba
+ActionAutoStretchWidth.Caption=Auto mezõszélesség
+ActionAutoStretchWidth.Hint=Auto mezõszélesség átméretezéssel
+ActionAutoStretchHeight.Caption=Auto mezõmagasság
+ActionAutoStretchHeight.Hint=Auto mezõmagasság átméretezéssel
+
+[TMovieFrameExtras]
+ActionExtrasImportFiles.Caption=&Import...
+ActionExtrasImportFiles.Hint=Import...|Új extrák importálása fileokból
+ActionExtrasAdd.Caption=&Hozzáad...
+ActionExtrasAdd.Hint=Hozzáad...|Hozzáad egy új extrát
+ActionExtrasEdit.Caption=&Szerkeszt...
+ActionExtrasEdit.Hint=Szerkesztés...|A kiválasztott extra szerkesztése
+ActionExtrasDelete.Caption=&Törlés
+ActionExtrasDelete.Hint=Törlés|A kiválasztott extra törlése
+ActionExtraShowPic.Caption=&Kép mutatása
+ActionExtraShowPic.Hint=Kép mutatása|A kiválasztott kép megjelenítése
+ActionExtraURL.Caption=&URL
+ActionExtraURL.Hint=URL|Extra URL
+ActionExtrasCopy.Caption=&Másolás
+ActionExtrasCopy.Hint=Másolás|Kiválasztott extra másolása
+ActionExtrasPaste.Caption=&Beillesztés
+ActionExtrasPaste.Hint=Beillesztése|Extra beillesztése
+ActionExtrasCheck.Caption=Jelöl
+ActionExtrasCheck.Hint=Extrák jelölése|Kiválasztott extrák jelölése
+ActionExtrasUncheck.Caption=Jelöletlen
+ActionExtrasUncheck.Hint=Extrák jelölésének megszüntetése|Kiválasztott extrák jelölésének megszüntetése
+ActionExtrasSelGroup.Caption=Egész csoport
+ActionExtrasSelGroup.Hint=Csoport kiválasztása|Az összes extra kiválasztása ebben a csoportban
+ActionExtrasSelCheck.Caption=Jelölve
+ActionExtrasSelCheck.Hint=Jelöltek kiválasztása|Csak azokat az extrákat választja ki, amelyek jelöltek
+ActionExtrasSelUncheck.Caption=Jelöletlen
+ActionExtrasSelUncheck.Hint=Jelöletlen kiválasztása|Csak azokat az extrákat választja ki, amelyek jelöletlenek
+ActionExtrasSort.Caption=&Rendezés eszerint
+ActionExtrasSort.Hint=Extrák rendezése|Egy adott mezõ szerint rendezi az extrákat
+ActionExtrasSortAscend.Caption=Növekvõ
+ActionExtrasSortAscend.Hint=|Növekvõ sorrendbe rendezi
+ActionExtrasSortDescend.Caption=Csökkenõ
+ActionExtrasSortDescend.Hint=|Csökkenõ sorrendbe rendezi
+ActionExtrasSortAdvanced.Caption=Bõvített...
+ActionExtrasSortAdvanced.Hint=|Bõvített rendezés
+ActionExtrasGroup.Caption=&Csoportosítsa..
+ActionExtrasGroup.Hint=Extrák csoportosítása|Extrák csoportosítása egy adott mezõ szerint
+ActionExtrasGroupNone.Caption=< &semmi >
+ActionExtrasGroupNone.Hint=|Nem csoportosítja az extrákat
+ActionExtrasRenumber.Caption=&Átszámozás...
+ActionExtrasRenumber.Hint=Átszámozás...|Extrák átszámozása...
+ActionURLOpen.Caption=URL megnyitása
+ActionURLOpen.Hint=|Megnyit egy a mezõ által meghatározott URL-t vagy file-t
+ActionURLExplore.Caption=URL megjelenítés
+ActionURLExplore.Hint=|Megnyitja a mezõben megadott URL-t vagy file-t tartalmazó mappát
+ActionURLCopy.Caption=URL másolása
+ActionURLCopy.Hint=|másol egy, a mezõben megadott URL-t vagy filet
+ActionURLBrowse.Caption=Tallózás...
+ActionURLBrowse.Hint=|Tallóz egy filenevet, amit a mezõbe fog tenni
+MnuSelect.Caption=Kiválasztás
+MnuSelected.Caption=Kiválasztott extrák
+ThumbsDisplayTitle.Caption=Név
+ThumbsDisplayTitle.Hint=|Extra megnevezés kijelzése
+ThumbsDisplayInfo.Caption=Info
+ThumbsDisplayInfo.Hint=|Extra info megjelenítése
+ToolbarExtras.Caption=Extrák eszköztár
+
+Messages.Strings.String[0]=Biztos, hogy törölni akarod a kiválasztott extrákat ?
+Messages.Strings.String[1]=Ne kérdezze meg mégegyszer
+Messages.Strings.String[2]=|Rendezze %s szerint
+Messages.Strings.String[3]=|Csoportosítsa %s szerint
+Messages.Strings.String[4]=< semmi >
+Messages.Strings.String[5]="%s" file nem létezik.
+Messages.Strings.String[6]=Információ gyûjtése fileokból...
+Messages.Strings.String[7]=Kiválaszt egy URL mezõ által hivatkozott file-t
+Messages.Strings.String[8]=Ezt a képet nem tudja használni: %s
+Messages.Strings.String[9]=Kiválasztja a file-okat az információ kéréshez...
+Messages.Strings.String[10]=Szám / Tag:
+Messages.Strings.String[11]=Megnevezés:
+Messages.Strings.String[12]=Kategória:
+Messages.Strings.String[13]=URL:
+Messages.Strings.String[14]=Leírás:
+Messages.Strings.String[15]=Megjegyzés:
+Messages.Strings.String[16]=Készítette:
+
+; Rövidnév értékeke from Messages.Strings.String[10] to Messages.Strings.String[16] ugyanolyan sorrendben (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+LNumber.Caption=Szám:
+LTag.Caption=Tag:
+LTitle.Caption=Megnevezés:
+LCategory.Caption=Kategória:
+LURL.Caption=URL:
+LDescription.Caption=Leírás:
+LComments.Caption=Megjegyzés:
+LCreatedBy.Caption=Készítette:
+ENumber.Hint=|Megváltoztatja a számot és automatikusan újraszámozza az extrákat ezután a szám után
+ETag.Hint=|Tag (Extrák elérésére használható közbvetlenül nyomtatáskor, html templatekben, ...)
+ETitle.Hint=|Megnevezés
+ECategory.Hint=|Kategória
+EURL.Hint=|URL
+EDescription.Hint=|Leírás
+EComments.Hint=|Megjegyzés
+ECreatedBy.Hint=|Készítette (Scripteknél használják)
+chkTag.Hint=|Tag mezõ módosítása
+chkTitle.Hint=|Megnevezés  mezõ módosítása
+chkCategory.Hint=|Kategória  mezõ módosítása
+chkURL.Hint=|URL mezõ módosítása
+chkDescription.Hint=|Leírás  mezõ módosítása
+chkComments.Hint=|Megyjegyzés  mezõ módosítása
+chkCreatedBy.Hint=|Készítette mezõ módosítása
+
+[TFieldsFrame]
+LAvailable.Caption=Létezõ mezõk:
+LSelected.Caption=Kiválasztott mezõk:
+BtnAdd.Hint=Hozzáadás|A kijelölt mezõ hozzáadása
+BtnRem.Hint=Eltávolítás|A kijelölt mezõ eltávolítása
+BtnAddAll.Hint=Mind hozzáadása|Az összes mezõ hozzáadása
+BtnRemAll.Hint=Mind eltávolítása|Az összes mezõ eltávolítása
+BtnUp.Hint=Léptetés fel|A kijelölt elem léptetése felfelé
+BtnDown.Hint=Léptetés le|A kijelölt elem léptetése lefelé
+
+[TSortByFrame]
+grp.Caption=Rendezés:
+BtnAdvSort.Caption=Speciális...
+EOrderBy.Items.String[4]=Speciális rendezési beállítások...
+BtnSortDescend.Hint=|Rendezés csökkenõ sorrendben
+
+[TExtrasSortByFrame]
+grp.Caption=Rendezze...
+BtnAdvSort.Caption=Növekvõ...
+EOrderBy.Items.String[3]=Növekvõ rendezés opciói...
+BtnSortDescend.Hint=|Rendezés csökkenõ sorrendben
+
+[TIncludemovFrame]
+grp.Caption=Amikre vonatkozik
+rbtAll.Caption=Összes
+rbtSelected.Caption=Kiválasztott
+rbtChecked.Caption=Jelölt
+rbtVisible.Caption=Látható
+
+[TIncludepicFrame]
+grp.Caption=Melyik képekre vonatkozik
+rbtAll.Caption=Összes
+rbtMovie.Caption=Film
+rbtExtras.Caption=Extrák
+
+[TPictureSelectOptionsFrame]
+grp.Caption=Kép importálási metódus
+rbtStorePic.Caption=&Tárolja a képet a katalógusban
+rbtCopyPicInCatDir.Caption=Másolja a képet a &katalógus mappájába, és csatolja a katalógushoz
+rbtCopyPicInPicDir.Caption=Másolja a képet a katalógus &Pictures mappájába, és csatolja a katalógushoz
+
+rbtLinkPic.Caption=Csak &csatolja a képet
+chkLinkRelative.Caption=Használjon &relativ utat, ha lehet
+
+[TPictureOperationFrame]
+grp.Caption=Kép mûveletek
+rbtStore.Caption=Tárolja a képet a katalógusban
+rbtStoreIfCopied.Caption=Tárolja a képet a katalógusban, de csak ha a kép a katalógusba vagy a Pictures mappába lett másolva
+rbtCopyInCatDir.Caption=Másolja a képet a katalógus mappájába, és csatolja a katalógushoz
+rbtCopyInCatDirIfStored.Caption=Másolja a képet a katalógus mappájába, de csak ha a kép a katalógusban lett tárolva
+rbtCopyInCatDirIfCopied.Caption=Másolja a képet a katalógus mappájába, de csak ha a kép a Pictures mappába lett másolva
+rbtCopyInPicDir.Caption=Másolja a képet a katalógus &Pictures mappájába, és csatolja a katalógushoz
+rbtCopyInPicDirIfStored.Caption=Másolja a képet a katalógus &Pictures mappájába, de csak ha a kép a katalógusban lett tárolva
+rbtCopyInPicDirIfCopied.Caption=Másolja a képet a katalógus &Pictures mappájába, de csak ha a kép a katalógus mappájába lett másolva
+rbtRenameIfCopied.Caption=Nevezze át a képet, ha a kép a katalógusba vagy a Pictures mappába lett másolva
+rbtAbsToRelLink.Caption=Változtassa az absolute link-et to relative link-re ha lehet, ha a kép csak csatolva van
+rbtRelToAbsLink.Caption=Változtassa a relative link-et absolute link-re, ha a kép csak csatolva van
+rbtDelete.Caption=Törölje a képet (és a képfile-t, ha a kép a katalógusba vagy a pictures mappába lett másolva)
+rbtConvertIfStoredOrCopied.Caption=Konvertálja a képet JPG-re és átméretezi, ha szükséges, amikor a képet másolja vagy tárolja
+rbtConvert.Caption=Konvertálja a képet JPG-re és átméretezi, ha szükséges, még akkor is, ha kép csak csatolva van! (figyelmeztetés)
+LMaxPicSizeW.Caption=max szélesség=
+LMaxPicSizeH.Caption=max magasság=
+LMaxPicSizeUnit.Caption=pixelben
+EMaxPicSizeW.Hint=|Hagyd üresen, ha nem akarsz max szélességet megadni
+EMaxPicSizeH.Hint=|Hagyd üresen, ha nem akarsz max magasságot megadni
+
+[TPictureOperationExportFrame]
+grp.Caption=Kép exportálási módok
+rbtNoChangeAMC.Caption=Ahogy az aktuális katalógusban van
+rbtNoChangeXML.Caption=Ahogy az aktuális katalógusban van (a katalógusban tárolt képek el fognak veszni)
+rbtStore.Caption=Tárolja a képet a katalógusban
+rbtStoreIfCopied.Caption=Tárolja a képet a katalógusban, de csak ha a kép a katalógusba vagy a Pictures mappába lett másolva
+rbtCopyInCatDir.Caption=Másolja a képet a katalógus mappájába, és csatolja a katalógushoz
+rbtCopyInCatDirIfStored.Caption=Másolja a képet a katalógus mappájába, de csak ha a kép a katalógusban lett tárolva
+rbtCopyInPicDir.Caption=Másolja a képet a katalógus &Pictures mappájába, és csatolja a katalógushoz
+rbtCopyInPicDirIfStored.Caption=Másolja a képet a katalógus &Pictures mappájába, de csak ha a kép a katalógusban lett tárolva
+rbtDelete.Caption=Törli a képet
+
+[TFileNamingFrame]
+grp.Caption=Filenév képzés
+LPrefix.Caption=Prefix
+EPrefix.Items.Strings.String[0]=Semmi
+EPrefix.Items.Strings.String[1]=Katalógus neve
+EPrefix.Items.Strings.String[2]=Exportált file neve
+LMovieInfo.Caption=Film információk
+EMovieInfo.Items.Strings.String[0]=Semmi
+EMovieInfo.Items.Strings.String[1]=Eredeti filenév
+LExtraInfo.Caption=Extra információk
+EExtraInfo.Items.Strings.String[0]=Semmi
+CBMovieNumberAddZeroes.Caption=Egészítse ki vezetõnullával a film számát, kis számok esetén
+CBExtraNumberAddZeroes.Caption=Egészítse ki vezetõnullával az extra számát, kis számok esetén
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=Új
+ActionHTMLNew.Hint=Új sablon|Új sablon létrehozása
+ActionHTMLOpen.Caption=Betöltés
+ActionHTMLOpen.Hint=Betöltés...|Létezõ sablon betöltése
+ActionHTMLNoRecent.Caption=Nincs legutóbbi fájl
+ActionHTMLSave.Caption=Mentés
+ActionHTMLSave.Hint=Mentés|A jelenlegi sablon mentése
+ActionHTMLSaveAs.Caption=Mentés másként...
+ActionHTMLSaveAs.Hint=Mentés másként...|A jelenlegi sablon mentése új néven
+ActionInsertTag.Caption=Speciális kód &beszúrása
+ActionInsertTag.Hint=|Speciális érték beszúrása, ami a katalógusban vagy filmben lévõ információra lesz cserélve
+ActionEditUndo.Caption=&Visszavonás
+ActionEditCut.Caption=&Kivágás
+ActionEditCopy.Caption=&Másolás
+ActionEditPaste.Caption=&Beillesztés
+ActionEditDelete.Caption=&Delete
+ActionEditSelectAll.Caption=Min&d kijelölése
+ActionExportBoth.Caption=Mindkettõ exportálása
+ActionExportBoth.Hint=|A "teljes és az "egyéni" sablon exportálása
+ActionExportSelected.Caption=Kijelöltek exportálása
+ActionExportSelected.Hint=|Csak a kijelölt sablonok exportálása
+ActionDisplayFull.Caption=Teljes
+ActionDisplayFull.Hint=Teljes jegyzéksablon megjelenítése|A teljes filmjegyzékhez használt HTML oldal megjelenítése
+ActionDisplayIndividual.Caption=Egyéni
+ActionDisplayIndividual.Hint=Egyéni jegyzéksablon megjelenítése|Az egyéni filmjegyzékhez használt HTML oldal megjelenítése
+
+MnuGen.Caption=Á&ltalános
+MnuGenDte.Caption=Mai dátum
+MnuGenTme.Caption=Pontos idõ
+MnuCat.Caption=&Katalógus
+MnuCatNme.Caption=Fájlnév
+MnuCatPth.Caption=Fájlnév teljes útvonallal
+MnuCatNbr.Caption=Filmek száma
+MnuCatDsk.Caption=Lemezek száma
+MnuOwnNam.Caption=Tulajdonos neve
+MnuOwnEml.Caption=Tulajdonos e-mail címe
+MnuOwnWeb.Caption=Tulajdonos weblapja
+MnuCatDsc.Caption=Leírás
+MnuMovBeg.Caption=Lista kezdete
+MnuMovEnd.Caption=Lista vége
+MnuMovRec.Caption=Rekord száma
+MnuMovInd.Caption=Az egyéni filmoldal fájlneve
+
+MnuMov.Caption=&AMC mezõk
+MnuMovCF.Caption=&Saját mezõk
+MnuMovExtras.Caption=&Extra mezõk
+MnuMovPic.Caption=&Kép
+MnuMovPfn.Caption=Kép fájlneve
+MnuMovPicNP.Caption=Kép (Nem popup)
+MnuMovPfnNP.Caption=Kép filenév (Nem popup)
+MnuMovUR04.Caption=Saját pontszám (0 tól 4-ig tizedes nélkül)
+MnuMovUR10.Caption=Saját pontszám (0 tól 10-ig tizedes nélkül)
+MnuMovUA04.Caption=Saját Appreciation (0 tól 4 csillag)
+MnuMovUA10.Caption=Saját Appreciation (0 tól 10 csillag)
+MnuMovR04.Caption=Pontszám (0 to 4 tizedes nélkül)
+MnuMovR10.Caption=Pontszám (0 to 10 tizedes nélkül)
+MnuMovApp.Caption=Appreciation (0 to 4 csillag)
+MnuMovA10.Caption=Appreciation (0 to 10 csillag)
+MnuMovFT1.Caption=Formázott cím: Eredeti (Külföldi)
+MnuMovFT2.Caption=Formázott cím: Külföldi (Eredeti)
+MnuMovHtm.Caption=Színjelzõ (HTML)
+MnuMovEBeg.Caption=Lista kezdete
+MnuMovEEnd.Caption=Lista vége
+MnuMovERec.Caption=Record szám
+MnuMovEPic.Caption=Kép
+MnuMovEPfn.Caption=Képfile neve
+MnuMovEPicNP.Caption=Kép (Nem popup)
+MnuMovEPfnNP.Caption=Kép filenév (Nem popup)
+
+MnuLab.Caption=&AMC mezõk cimkéi
+MnuLabCF.Caption=&Saját mezõk cimkéi
+MnuLabExtras.Caption=&Extra mezõk cimkéi
+MnuLabPic.Caption=Kép
+MnuLabUAF.Caption=Audio bitrate mértékegység
+MnuLabUVF.Caption=Video bitrate mértékegység
+MnuLabUFS.Caption=Fileméret mértékegység
+MnuLabUFP.Caption=Framerate mértékegység
+MnuLabEPic.Caption=Kép
+
+Messages.Strings.String[0]=A(z) "%s" fájlt nem lehet menteni: %s
+Messages.Strings.String[1]=A(z) "%s" fájlt nem lehet betölteni: %s
+Messages.Strings.String[2]=HTML sablon módosítva lett. El akarod menteni?
+Messages.Strings.String[3]=Mentés közben hiba történt. Mindenképp folytatja?
+Messages.Strings.String[4]=A jelenlegi fájl megváltozott. Menti a változtatásokat?

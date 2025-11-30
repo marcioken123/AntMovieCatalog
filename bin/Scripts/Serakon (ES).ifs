@@ -1,0 +1,273 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=mOrfiUs (mOrfiUs@hotmail.es)
+Title=Serakon (ES).ifs
+Description=Movie importation script for Serakon
+Site=http://www.serakon.com
+Language=ES
+Version=1.00
+Requires=3.5.0
+Comments=para auténticos cinéxfilos
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.|
+GetInfo=1
+
+[Options]
+DontAsk=1|0|1=Desatendido: sin confirmación cuando sólo hay un resultado|0=Manual: Confirmas la información manualmente
+
+***************************************************)
+
+program Serakon;
+
+var
+   MovieName: string;
+   MovieURL: string;
+   
+//------------------------------------------------------------------------------------
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+   i: Integer;
+begin
+   Result := -1;
+   if StartAt < 0 then
+      StartAt := 0;
+   for i := StartAt to List.Count-1 do
+      if Pos(Pattern, List.GetString(i)) <> 0 then
+      begin
+         Result := i;
+         Break;
+      end;
+end;
+
+//------------------------------------------------------------------------------------
+
+function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+   InitialPos: Integer;
+begin
+   InitialPos := Pos(StartTag, S);
+   if InitialPos = 0 then
+      result := ''
+   else
+   begin
+      Delete(S, 1, InitialPos + Length(StartTag) - 1);
+      InitialPos := Pos(EndTag, S);
+      if InitialPos = 0 then
+         result := S
+      else
+      begin
+         result := Copy(S, 1, InitialPos - 1);
+         Delete(S, 1, InitialPos + 1);
+      end;
+   end;
+end;
+
+//------------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+   Page: TStringList;
+   LineNr: Integer;
+   Line,Line2: string;
+   Count: Integer;
+   PageSearch: Integer;
+   MovieTitle, MovieAddress: string;
+
+begin
+   Count := 0;
+   PageSearch := 1;
+   Page  := TStringList.Create;
+   Page.Text := GetPage(Address);
+     PickTreeClear;
+
+   // Veamos si solo hay un solo resultado
+   LineNr := FindLine('1  artículos: ', Page, 0);
+   if LineNr <> -1 then
+   begin
+
+      LineNr := FindLine('<h3><a href="', Page, LineNr);
+      Line         := Page.GetString(LineNr);
+      Line2        := Line;
+      MovieAddress := TextBetween(Line, '<h3><a href="', '" >');
+      MovieTitle   := TextBetween(Line2, '.html" >', '</a></h3>');
+      HTMLDecode(MovieTitle);
+
+      if (MovieAddress <> '') AND (MovieTitle <> '') then
+      begin
+         PickTreeAdd(MovieTitle, MovieAddress);
+         if GetOption('DontAsk') = 0 then
+           if PickTreeExec(MovieAddress) then
+              AnalyzeMoviePage(MovieAddress);
+         if GetOption('DontAsk') = 1 then
+           AnalyzeMoviePage(MovieAddress);
+      end
+      Page.Free;
+      exit;
+   end;
+
+   // Veamos cuantos resultados se han encontrado
+   LineNr := FindLine('artículos: (Resultados de la búsqueda', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line  := Page.GetString(LineNr);
+      Count := StrToInt(TextBetween(Line, 'Se ha encontrado ', '  artículos'), 0);
+   end;
+
+
+   // Si no hemos encontrado ningún resultado, abandonamos
+   if Count = 0 then
+   begin
+      ShowMessage('No se ha encontrado ningún registro');
+      Page.Free;
+      exit;
+   end;
+
+   LineNr := 0;
+
+   while TRUE do
+   begin
+      LineNr := FindLine('<h3><a href="', Page, LineNr + 1);
+      if LineNr = -1 then
+      begin
+         LineNr := FindLine('href=#>Siguiente</a></div>', Page,0);
+         if LineNr = -1 then
+            break;
+
+         PageSearch := PageSearch + 1;
+         Page.Text  := GetPage('http://serakon.com/index.php?do=search&subaction=search&full_search=0&result_from=1&result_from=1&story=' + MovieName + '&search_start=' + IntToStr(PageSearch));
+//       'http://serakon.com/page/' + IntToStr(PageSearch) + '/'
+//         ShowMessage(Page.Text);
+         LineNr     := 0;
+         continue;
+      end;
+
+      Line         := Page.GetString(LineNr);
+      Line2        := Line;
+      MovieAddress := TextBetween(Line, '<h3><a href="', '" >');
+      MovieTitle   := TextBetween(Line2, '.html" >', '</a></h3>');
+
+      HTMLDecode(MovieTitle);
+
+      if (MovieAddress <> '') AND (MovieTitle <> '') then
+         PickTreeAdd(MovieTitle, MovieAddress);
+   end;
+
+   if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+
+   Page.Free;
+end;
+
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+   Page: TStringList;
+   LineNr: Integer;
+   Line: string;
+   Item: string;
+   Comments: string;
+   Actors: string;
+   Actor: string;
+   Links: string;
+
+begin
+   Comments := '';
+   Actors := '';
+   Actor := '';
+   Links := '';
+
+   // URL
+   SetField(fieldURL, Address);
+
+   Page := TStringList.Create;
+   Page.Text := GetPage(Address);
+
+   // Translated Title
+   LineNr := FindLine('</script><div id="tooltip"></div><div class="w1"><div class="w2"><div class="w3"><div id="wrapper"><div class="wrapper-c"><div class="wrapper-h"><div id="header"><h1 class="logo"><a href="/index.php"></a></h1>', Page, 0);
+   Line := Page.GetString(LineNr);
+   Item := TextBetween(Line, '<div class="describe-box"><h2>', '</h2><div class="describe-c"');
+   HTMLDecode(Item);
+   SetField(fieldTranslatedTitle, Trim(Item));
+   SetField(fieldOriginalTitle, Trim(Item));
+   // Picture
+   Item := TextBetween(Line, '<div class="image-holder"><img src="', '" alt="');
+   GetPicture(Item);
+
+   // Category
+   SetField(fieldCategory, 'Cine X');
+
+   LineNr := FindLine('</div><div class="rating"', Page, 0);
+   if LineNr <> -1 then
+   begin
+      Line := Page.GetString(LineNr);
+   // Actors
+     Actors := TextBetween(Line, 'Reparto:</strong>', '</a></li>');
+     while Pos('"http://serakon.com/tags/', Actors) > 0 do
+     begin
+       Actor := Actor + TextBetween(Actors, '">', '</a>') + #13#10;
+     end;
+     SetField(fieldActors, Actor);
+   // Year
+      Item := TextBetween(Line, '<strong>A&ntilde;o:</strong>', '</li>');
+      HTMLDecode(Item);
+      SetField(fieldYear, Trim(Item));
+      Item := TextBetween(Line, '<strong>Duraci&oacute;n:</strong>', ' min');
+      HTMLDecode(Item);
+      SetField(fieldLength, Trim(Item));
+   // Country
+      Item := TextBetween(Line, ' title="Idioma ', '"/');
+      HTMLDecode(Item);
+      SetField(fieldCountry, Trim(Item));
+   // Synopsis
+      Item := TextBetween(Line, '<li>' , '</li');
+      HTMLDecode(Item);
+      SetField(fieldDescription, Trim(Item));
+   // Enlaces
+     if FindLine('Mirror:', Page, 0) = -1 then
+     begin
+      Item := TextBetween(Line, '<div class="caja-enlaces">' , '</a></div><br/><a href="/manual_descargar.html">');
+       while Pos('target="_blank"', Item) > 0 do
+       begin
+       Links := Links + TextBetween(Item, '">', '</a><br /><a') + #13#10;
+       end;
+     end
+      //SetField(fieldComments, Links);
+     else
+     begin
+       Item := TextBetween(Line, '<div class="caja-enlaces">' , '</a></div><h2>');
+       while Pos('target="_blank"', Item) > 0 do
+       begin
+         Links := Links + TextBetween(Item, '">', '</a><br /><a') + #13#10;
+       end;
+     Item := TextBetween(Line, '<div class="caja-enlaces">' , '</a></div><br/><a href="/manual_descargar.html">');
+     while Pos('target="_blank"', Item) > 0 do
+       begin
+       Links := Links + TextBetween(Item, '">', '</a><br /><a') + #13#10;
+     end;
+   end;
+   SetField(fieldComments, Links);
+   end;
+end;
+
+//------------------------------------------------------------------------------------
+
+begin
+   if (CheckVersion(3,5,0) = FALSE) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldOriginalTitle);
+   if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+   if GetOption('DontAsk') = 0 then
+      Input('Serakon', 'Pelicula:', MovieName);
+      AnalyzePage('http://www.serakon.com/index.php?do=search&subaction=search&story=' + UrlEncode(MovieName));
+end.

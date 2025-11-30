@@ -1,0 +1,80 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Necrocter, daws0n
+Title=MoviePosterDB
+Description=Download posters from MoviePosterDB
+Site=www.movieposterdb.com
+Language=?
+Version=0.2
+Requires=3.5.1
+Comments=The script needs a valid IMDB URL.
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program MoviePosterDB;
+uses
+  StringUtils1;
+var
+  IMDB: string;  // Stores the imdb number
+  KEY: string; // Stores the key to use the API
+  MPDBURL: string; // Stores the url to parse
+
+procedure AnalyzePage(Address: string);
+
+var
+   PageText: string;
+   Value: string;
+   
+begin
+   
+  PageText := GetPage(Address);
+ 
+  if Pos('{"errors":["No parameters found..."]}', PageText) > 0 then
+    begin
+      ShowMessage('No movie found for this search');
+      Exit;
+    end
+
+  Value := TextBetween(PageText, '"image_location":"', '"}');
+  Value := StringReplace(Value, '\', '');
+  GetPicture(Value);
+end;
+
+//** The main rutine **/
+begin
+  if CheckVersion(3,5,0) then
+    begin
+      IMDB := '';
+      IMDB := GetField(fieldURL);
+      if Pos('imdb', IMDB) = 0  then
+      begin
+          if not Input('MoviePosterDB', 'Please the IMDB url of the movie:', IMDB) then
+            Exit;
+      end;
+      if Pos('imdb', IMDB) > 0  then
+        begin
+          IMDB := TextAfter(IMDB, 'title/tt');
+          if Pos('/', IMDB) > 0  then
+            IMDB := TextBefore(IMDB, '/', '');          
+          IMDB := IntToStr(StrToInt(IMDB,0));
+          KEY := GetPage('http://update.antp.be/amc/scripts/services/movieposterdb.php?id=' + IMDB);
+          MPDBURL := 'http://api.movieposterdb.com/json?imdb_code=' + IMDB + '&api_key=antmovcat&secret=' + KEY + '&width=300&callback=process';
+
+          AnalyzePage(MPDBURL);
+        end
+      else
+        begin
+          ShowMessage('You need to provide a valid IMDB URL either in the URL field or on request to use this script.');
+        end
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

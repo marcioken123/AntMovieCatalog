@@ -1,0 +1,476 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=OL
+Title=Cinefacts.de
+Description=cinfacts.de import incl. Big/small Picture
+Site=www.cinefacts.de
+Language=DE
+Version=v0.2.0 -  25.07.2008
+Requires=3.5.0
+Comments=based on dvd-inside script by Tiziano Müller||Script Option "BigPicture"  for loading Big / Small Picture |0 = load small picture|1= load big picture||Script Option "PictureOnly" for loading only the picture|without description|0=load picture & description|1=load only picture without description|
+License=
+GetInfo=1
+
+[Options]
+BigPicture=1|1|0=import small picture|1=import big picture
+PictureOnly=0|0|0=import all|1=import picture only
+
+***************************************************)
+
+program CineFactsDE;
+
+const
+  CRLF = #13#10;
+
+var
+  MovieName: string;
+  MovieURL: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function MyTrim(str_: string): string;
+var
+  chars: array of char;
+  StrLen, i, LastSpacePos: integer;
+begin
+  result := '';
+
+  str_ := StringReplace(str_, #9, '');
+  str_ := StringReplace(str_, #10, '');
+  str_ := StringReplace(str_, #13, '');
+
+  while Pos(' ', str_) = 1 do
+  begin
+    Delete(str_, Pos(' ', str_), 1);
+  end;
+
+  StrLen := Length(str_);
+  SetArrayLength(chars, StrLen);
+  for i := 0 to StrLen-1 do
+  begin
+    chars[i] := Copy(str_,i+1,1);
+  end;
+
+  str_ := '';
+  LastSpacePos := StrLen - 1;
+  if LastSpacePos > -1 then
+  begin
+    while chars[LastSpacePos] = ' ' do
+    begin
+      LastSpacePos := LastSpacePos - 1;
+    end;
+    for i:= 0 to LastSpacePos do
+    begin
+      str_ := str_ + chars[i];
+    end;
+  end;
+
+  str_ := StringReplace(str_, '  ', ' ');
+  while result <> str_ do
+  begin
+    result := str_;
+    str_ := StringReplace(str_, '  ', ' ');
+  end;
+  result := StringReplace(result, ' ,', ',');
+
+end;
+
+procedure CutAfter(var str_: string; Pattern: string);
+begin
+  str_ := Copy(str_, Pos(Pattern, str_) + Length(Pattern), Length(str_));
+end;
+
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+function GetStringBetween(str_, StartTag, EndTag: string): string;
+var
+  BeginPos, EndPos: integer;
+begin
+  result := '';
+  if EndTag = '' then
+  begin
+    EndPos := Length(str_);
+  end
+  else
+    EndPos := Pos(EndTag, str_);
+
+  BeginPos := Pos(StartTag, str_) + Length(StartTag);
+  if StartTag = '' then BeginPos := 1;
+  if BeginPos > 0 then result := Copy(str_, BeginPos, EndPos - BeginPos);
+
+end;
+
+function GetTrimmedStringBetween(str_, StartTag, EndTag: string): string;
+begin
+  result := MyTrim(GetStringBetween(str_, StartTag, EndTag));
+end;
+
+// Extracts single movie detail (like director, genre) from page
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  Page := StringReplace(Page, '&szlig;','ß');
+  // recognition tag - if present, extract detail from page, otherwise assume detail is not present
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    // optional cut tag helps finding right string in html page
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    // movie detail copied with html tags up to end string
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    // remove html tags and decode html string
+//    HTMLRemoveTags(Result);
+    HTMLDecode(Result);
+  end;
+end;
+
+function StripHTMLTags(str_: string): string;
+var
+  temp_char : char;
+  StrLen, i, CharPos : integer;
+  DoCopy : boolean;
+begin
+  DoCopy := true;
+  CharPos := 0;
+  result := '';
+  StrLen := Length(str_);
+  for i := 1 to StrLen do
+  begin
+    temp_char := Copy(str_,i,1);
+    if temp_char = '<' then
+    begin
+      DoCopy := false;
+      continue;
+    end
+    else if temp_char = '>' then
+    begin
+      DoCopy := true;
+      continue;
+    end
+    else
+    begin
+      if DoCopy then
+      begin
+        result := result + temp_char;
+      end;
+    end;
+  end;
+
+end;
+
+procedure AnalyzeIndexPage(Address: string);
+var
+  IndexPage: TStringList;
+  Page : String;
+begin
+  IndexPage := TStringList.Create;
+  Address := URLEncode(Address);
+  IndexPage.Text := GetPage(Address);
+
+  PickTreeClear;
+  PickTreeAdd('Search results', '');
+  AddMoviesTitles(IndexPage);
+
+  if PickTreeExec(Address) then
+  begin
+    Page := GetPage(Address);
+    AnalyzeMoviePage(Page, Address);
+  end;
+  IndexPage.Free;
+end;
+
+
+
+procedure AnalyzeMoviePage(Page, Address :String);
+var
+  TomString, Line, Temp, Value: string;
+  isKino : Boolean;
+  LineNr, IntValue: Integer;
+  BeginPos, EndPos: Integer;
+
+  StrPosition: Integer;
+  StrTemp,srcPic, IDString, Page2: string;
+
+  OriginalTitle, Country, Year, Genre, Studio, Region, EAN_Number, Distributor, AFK, Duration: string;
+  VideoFormat, ScreenFormat, ScreenSystem, Language, AudioFormat, Subtitle, MediaType, Disks: string;
+  Comments, Bonusmaterial, Packaging, TranslatedTitle, Director, Cast, Producer, Description: string;
+  Music, Screenplay: string;
+
+begin
+ if Pos('/kino/', Address) > 0 then isKino := true
+ else isKino := false;
+if GetOption('PictureOnly') = 0 then
+begin
+// Initializing the very important Comments
+  Comments := '';
+// URL
+  SetField(fieldURL, Address);
+// Translated title
+  TranslatedTitle := MyTrim(GetStringFromHTML(Page,'<li class="c5b"><h1>','h1>','<br>'));
+  SetField(fieldTranslatedTitle, TranslatedTitle);
+
+// Original-Title, Country and Year
+  if (isKino) then
+    OriginalTitle := MyTrim(GetStringFromHTML(Page, 'Originaltitel:</dt>','"first">','</dd>'))
+  else OriginalTitle := MyTrim(GetStringFromHTML(Page, 'Originaltitel:','"first">','(<a href="'));
+
+  StrTemp := MyTrim(GetStringFromHTML(Page, '/dvdlandliste','">','</dd>'));
+
+  StrTemp := StripHTMLTags(StrTemp);
+  if not (isKino) then StrTemp := GetTrimmedStringBetween(StrTemp,'(',')');
+  Country := Copy(StrTemp,1,Length(StrTemp)-4);
+  Year := Copy(StrTemp,Length(StrTemp)-4,Length(StrTemp));
+
+  SetField(fieldOriginalTitle, OriginalTitle);
+  SetField(fieldCountry, Country);
+  SetField(fieldYear, Year);
+
+// EAN-Number
+
+  EAN_Number := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">EAN-Nummer:','', '</dd>')));
+  EAN_Number := StringReplace(EAN_Number,'EAN-Nummer:','');
+  Comments := Comments + 'EAN-Nummer: ' + EAN_Number + CRLF;
+
+// Genre
+  Genre := '';
+  Genre := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Genre:', '', '</dd>')));
+  Genre := StringReplace(Genre,'Genre: ','');
+  setField(fieldCategory, Genre);
+
+// Studio
+  Studio := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Studio:','', '</dd>')));
+  Studio := StringReplace(Studio,'Studio: ','');
+
+  Comments := Comments + 'Studio: ' + Studio + CRLF;
+// Distributor
+  Distributor := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Vertrieb:','', '</dd>')));
+  Distributor := StringReplace(Distributor,'Vertrieb: ','');
+  Comments := Comments + 'Vertrieb: ' + Distributor + CRLF;
+
+// Altersfreigabe
+  AFK := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">FSK:','', '</dd>')));
+  AFK := StringReplace(AFK,'FSK: ','');
+  Comments := Comments + 'Altersfreigabe: ' + AFK + CRLF;
+
+// CountryCode
+  Region := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">L&auml;ndercode:','', '</dd>')));
+  Region := StringReplace(Region,'Ländercode: ','');
+  VideoFormat := 'DVD Zone '+Region;
+  setField(fieldVideoFormat,VideoFormat);
+
+// Duration
+  Duration := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Länge:','', '</dd>')));
+  Duration := StringReplace(Duration,'Länge: ','');
+  Duration := StringReplace(Duration,' Minuten','');
+  setField(fieldLength,Duration);
+
+// Description
+  if (isKino) then
+  begin
+    Description := GetStringFromHTML(Page, '<li class="c1">','', '</li>')
+  end
+  else Description := GetStringFromHTML(Page, '<li class="text c1">','', '</li>');
+  Description := StringReplace(Description, '<br />','*');
+  Description := MyTrim(StripHTMLTags(Description));
+  Description := StringReplace(Description, '*',CRLF);
+  setField(fieldDescription,Description);
+
+// Actors
+  if (isKino) then
+  begin
+    Cast := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Darsteller:','', '</dd>')));
+    Cast := StringReplace(Cast,'Darsteller: ','');
+  end
+  else
+  begin
+    Cast := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Schauspieler:','', '</dd>')));
+    Cast := StringReplace(Cast,'Schauspieler: ','');
+  end;
+  setField(fieldActors,Cast);
+
+// Director
+  Director := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Regie:','', '</dd>')));
+  Director := StringReplace(Director,'Regie: ','');
+  setField(fieldDirector,Director);
+
+// Production
+  Producer := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Produzent:','', '</dd>')));
+  Producer := StringReplace(Producer,'Produzent: ','');
+  setField(fieldProducer,Producer);
+
+// Music
+  Music := '';
+  Music := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Musik:','', '</dd>')));
+  Music := StringReplace(Music,'Musik:','');
+  Music := StringReplace(Music,' Minuten','');
+  Comments := Comments + 'Musik:' + Music + CRLF;
+
+// Screenplay
+  Screenplay := '';
+  Screenplay := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Drehbuch:','', '</dd>')));
+  Screenplay := StringReplace(Screenplay,'Drehbuch: ','');
+  Comments := Comments + 'Drehbuch: ' + Screenplay + CRLF;
+
+// Screen format & system
+  ScreenFormat := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Format:','', '</dd>')));
+  ScreenFormat := StringReplace(ScreenFormat,'Format: ','');
+  ScreenSystem := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">System:','', '</dd>')));
+  ScreenSystem := StringReplace(ScreenSystem,'System: ','');
+  setField(fieldResolution,ScreenSystem + ' - ' + ScreenFormat);
+
+// Audioformat/Language
+  AudioFormat := '';
+  Language := '';
+  StrTemp := GetStringFromHTML(Page, '<dt class="c1">Tonformat:', '', '<dt class="c1">Untertitel:');
+
+  StrTemp := StringReplace(StrTemp, '</dd>','*');
+  StrTemp := MyTrim(StripHTMLTags(StrTemp));
+  StrTemp := StringReplace(StrTemp,'Tonformat: ','');
+ 
+  while Pos('*',StrTemp) > 0 do
+  begin
+    AudioFormat := AudioFormat + ', ' + MyTrim(Copy(StrTemp,1,Pos(' in ',StrTemp)));
+    Language := Language + ', ' + MyTrim(Copy(StrTemp,Pos(' in ',StrTemp)+4,Pos('*',StrTemp)-(Pos(' in ',StrTemp)+4)));
+    CutAfter(StrTemp,'*');
+  end;
+  AudioFormat := Copy(AudioFormat,3,Length(AudioFormat));
+  Language := Copy(Language,3,Length(Language));
+
+  setField(fieldAudioFormat, AudioFormat);
+  setField(fieldLanguages, Language);
+
+// Subtitles
+  Subtitle := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Untertitel:', '', '</dd>')));
+  Subtitle := StringReplace(Subtitle,'Untertitel: ','');
+  if Subtitle = 'Keine Untertitel' then Subtitle := '';
+  setField(fieldSubtitles, Subtitle);
+
+// Mediatype
+  MediaType := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Medientyp:','', '</dd>')));
+  MediaType := StringReplace(MediaType,'Medientyp: ','');
+  setField(fieldMediaType, MediaType);
+
+// Disks
+  Disks := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Medienanzahl:','', '</dd>')));
+  Disks := StringReplace(Disks,'Medienanzahl: ','');
+  setField(fieldDisks, Disks);
+
+// Package
+  Packaging := MyTrim(StripHTMLTags(GetStringFromHTML(Page, '<dt class="c1">Verpackung:', '', '</dd>')));
+  Packaging := StringReplace(Packaging,'Verpackung:','');
+  Comments := Comments + 'Verpackung: ' + Packaging + CRLF;
+
+// Bonusmaterial
+  Bonusmaterial := MyTrim(GetStringFromHTML(Page, 'BONUS-MATERIAL</h2></li>', '', '</ul>'));
+  Bonusmaterial := StringReplace(Bonusmaterial,'</span>','*');
+  Bonusmaterial := StringReplace(Bonusmaterial,'<li>','-');
+  Bonusmaterial := MyTrim(StripHTMLTags(Bonusmaterial));
+  Bonusmaterial := StringReplace(Bonusmaterial,'BONUS-MATERIAL','');
+  Bonusmaterial := StringReplace(Bonusmaterial,'*',CRLF);
+  Comments := Comments + CRLF + 'Bonusmaterial' + CRLF + '===========' + CRLF + Bonusmaterial + CRLF;
+  setField(fieldComments,Comments);
+end;
+  if CanSetPicture then
+  begin
+    if GetOption('BigPicture') = 1 then
+      begin
+        IDString := GetStringFromHTML(Page, '<a href="/dvd/db/coveranzeigen.php?', 'coveranzeigen.php?', '" ');
+        Page2 := GetPage('http://www.cinefacts.de/dvd/db/coveranzeigen.php?' + IDString);
+        IDString := GetStringFromHTML(Page2, '<img src="/kino/cover/', '/kino/cover/', '" ');
+        srcPic := 'http://www.cinefacts.de/kino/cover/' + IDString;
+      end;
+    if (GetOption('BigPicture') = 0) or (IDString = '') then
+      begin
+        IDString := GetStringFromHTML(Page, '<img src="/image/scripts/cover.php?', 'cover.php?', '" ');
+        srcPic := 'http://www.cinefacts.de/image/scripts/cover.php?' + IDString;
+      end;
+    GetPicture(srcPic);
+  end;
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(ResultsPage: TStringList);
+var
+  Page,str_: string;
+  sNr,pNr,aPage : Integer;
+  MovieTitle, MovieAddress: String;
+begin
+  Page := ResultsPage.Text;
+  snr := 0;
+  str_ := MyTrim(StripHTMLTags(GetStringFromHTML(Page, 'Anzahl Ergebnisse:', '', '</li>')));
+  str_ := StringReplace(str_,'Anzahl Ergebnisse: ','');
+  pNr := StrToInt(StringReplace(str_,')',''),1);
+  aPage := 1;
+  while sNr < pNr do
+  begin
+    while Pos('filmdetails.php?id=', Page) > 0 do
+    begin
+      CutBefore(Page, 'filmdetails.php?id=');
+      MovieAddress := 'http://www.cinefacts.de/kino/db/' + GetStringFromHTML(Page, 'filmdetails.php?id=', '', '"');
+      MovieTitle := MyTrim(GetStringFromHTML(Page, 'filmdetails.php?id=', '">', '</tr>'));
+      MovieTitle := StringReplace(MovieTitle, '</td>', ' | ');
+      MovieTitle := MyTrim(StripHTMLTags(MovieTitle));
+      CutAfter(Page, '</tr>');
+      PickTreeAdd('(Kino) ' + MovieTitle, MovieAddress);
+    end;
+    while Pos('/details.php?id=', Page) > 0 do
+    begin
+      CutBefore(Page, '/details.php?id=');
+      MovieAddress := 'http://www.cinefacts.de/dvd/db' + GetStringFromHTML(Page, '/details.php?id=', '', '"');
+      MovieTitle := MyTrim(GetStringFromHTML(Page, '/details.php?id=', '">', '</tr>'));
+      MovieTitle := StringReplace(MovieTitle, '</td>', ' | ');
+      MovieTitle := MyTrim(StripHTMLTags(MovieTitle));
+      CutAfter(Page, '</tr>');
+      PickTreeAdd('(DVD) ' + MovieTitle, MovieAddress);
+    end;
+    while Pos('<td class="c1b oben" colspan="2"><a href="', Page) > 0 do
+    begin
+      CutBefore(Page, '<td class="c1b oben" colspan="2"><a href="');
+      MovieAddress := 'http://www.cinefacts.de' + GetStringFromHTML(Page, '<td class="c1b oben" colspan="2"><a href="', '<a href="', '"');
+      MovieTitle := MyTrim(GetStringFromHTML(Page, 'class="headline">', '">', '<td class='));
+      MovieTitle := StringReplace(MovieTitle, '</b></a>', ' | ');
+      MovieTitle := MyTrim(StripHTMLTags(MovieTitle));
+      CutAfter(Page, '">Details</a>');
+      PickTreeAdd('(DVD) ' + MovieTitle, MovieAddress);
+    end;
+    sNr := sNr + 50;
+    aPage := aPage + 1;
+    if sNr < pNr then
+    Page := GetPage(URLEncode('http://www.cinefacts.de/suche/suche.php?akseite='+IntToStr(aPage)+'&startwert='+IntToStr(sNr)+'&name='+MovieName));
+  end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('cinefacts.de Import', 'Filmtitel eingeben:', MovieName) then
+    begin
+      AnalyzeIndexPage('http://www.cinefacts.de/suche/suche.php?type=d&name='+MovieName+'&go.x=0&go.y=0');
+    end;
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

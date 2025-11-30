@@ -1,0 +1,158 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Guardião - <link>www.guardiao.com</link>
+Title=Cinema - PTGate
+Description=Movie importation script for :: Cinema - PTGate ::
+Site=www.cinema.ptgate.pt
+Language=PT
+Version=2.1 (16 Maio 2008)
+Requires=3.5.0
+Comments=Script feito por Guardião para o site "www.cinema.ptgate.pt"|Caso detectem erros coloquem-nos no meu site: <link>www.guardiao.com/forum/viewtopic.php?t=80</link>|
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program PTGate;
+uses
+  StringUtils1;
+var MovieName:string;
+function HTMLRemove(Value: String): String;
+begin
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  Value := Trim(Value);
+  result := Value;
+end;
+
+procedure AnalyzeFilmPage(Address: String);
+var
+  Page : TStringList;
+  LineNr, i: Integer;
+  Value, procurar:string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  SetField(fieldURL, Address);
+
+  LineNr := FindLine('<div class="ctrdiv">', Page, 0);
+  if LineNr>-1 then
+  begin
+    Value :=HTMLRemove(Page.GetString(LineNr+7));
+    Value:=StringReplace(Value,'		','');
+    SetField(fieldTranslatedTitle, Value);
+    
+    Value :=Page.GetString(LineNr+10);
+    Value:=TextBetween(Value,'"','"');
+    value:='http://cinema.ptgate.pt'+value;
+    GetPicture(Value);
+    
+    Value :=HTMLRemove(Page.GetString(LineNr+11));
+    if Copy(Value,1,1)=':' then
+      Value:=Copy(Value,2,length(Value));
+    SetField(fieldOriginalTitle, trim(Value));
+    
+    Value:=TextBetween(Page.Text,'alt="votação PTGate" /></td><td><small>&nbsp;','<');
+    if length(Value)=0 then
+      Value:=TextBetween(Page.Text,'alt="votação global" /></td><td><small>&nbsp;',' ');
+    
+    Value:=FloatToStr(StrToFloat(Value)*2);
+    SetField(fieldRating, Value);
+
+    Value:=TextBetween(Page.Text,'<b>ano</b>: ','<');
+    if Value='' then
+      Value:=TextBetween(Page.Text,'ano de estreia</b>:','<');
+    SetField(fieldYear, Value);
+    
+
+    Value:=TextBetween(Page.Text,'<b>país</b>: ','<');
+    SetField(fieldCountry, Value);
+  
+    Value:=TextBetween(Page.Text,'<b>género</b>: ','<');
+    SetField(fieldCategory, Value);
+  
+    LineNr:=FindLine('<b>realização</b><br />',Page,0);
+    Value :=HTMLRemove(Page.GetString(LineNr+1));
+    SetField(fieldDirector, Value);
+  
+    procurar:='<b>intérpretes</b><br />';
+    LineNr:=FindLine(procurar,Page,0);
+    Value :=Page.GetString(LineNr);
+    i:=pos(procurar,Value);
+    Value:=Copy(Value,i+length(procurar),length(Value));
+    If length(Value)=0 then
+      Value :=Page.GetString(LineNr+1);
+    Value :=HTMLRemove(Value);
+
+
+    SetField(fieldActors, Value);
+  
+    LineNr:=FindLine('<b>sinopse</b><br />',Page,0);
+    Value :=HTMLRemove(Page.GetString(LineNr+1));
+    
+    if (Value<>'Não existe uma sinopse para este filme. Adicionar uma sinopse.') and (Value<>'Não existe uma sinopse para esta série. Adicionar uma sinopse.') then
+      SetField(fieldDescription, Value);
+   end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  i:integer;
+  linha, valor, nome, url:string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+if (pos('"/series/',Page.Text)>0) or (pos('"/filmes/',Page.Text)>0) then
+begin
+  i:=Pos('<h3>filmes</h3>',Page.Text);
+  if i>0 then
+    Page.Text:=Copy(Page.Text,i+15,length(Page.Text));
+
+  i:=Pos('todos os resultados',Page.Text);
+  if i>0 then
+    Page.Text:=Copy(Page.Text,1,i-1);
+
+  Page.Text:=StringReplace(Page.Text,'<h3>séries</h3>','<h3>');
+
+  Page.Text:=StringReplace(Page.text,'<h3>',#10#13);
+  for i:=0 to Page.count-1 do
+  begin
+    //Procurar linha
+    linha:=Page.GetString(i);
+
+    if (pos('<a href="/filmes/',linha)>0) or (pos('<a href="/series/',linha)>0) then
+    begin
+    valor:=TextBetween(linha,'pesquisa: <i>','<br />');
+    if length(valor)>0 then
+      linha:=StringReplace(linha,'pesquisa: <i>'+valor,'');
+      linha:=StringReplace(linha,'filmes *','');
+      linha:=StringReplace(linha,'séries *','');
+      url:='http://www.cinema.ptgate.pt'+TextBetween(linha,'a href="','">');
+      linha:=StringReplace(linha,'<small>',' - ');
+      nome:=StringReplace(linha,'<br />',' ');
+      nome:=trim(HTMLRemove(nome));
+      PickTreeAdd(nome, url);
+    end;
+  end;
+    if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  end
+  else
+  showmessage('O filme não foi encontrado')
+  Page.Free;
+end;
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar do cinema.ptgate.pt', 'Escreva o nome do filme:', MovieName) then
+  AnalyzePage('http://www.cinema.ptgate.pt/pesquisa/?q='+UrlEncode(MovieName));
+end.

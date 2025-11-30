@@ -1,0 +1,111 @@
+<html><head>
+<META NAME="DESCRIPTION" CONTENT="Basic Template based on default HTML-Template, but more colorfull.">
+<META NAME="DESCRIPTION" CONTENT="v1.0 - 26.11.2012 by J">
+<style TYPE="text/css">
+  body {margin:0em; padding:10px}
+  div,th,td {font-size:13pt; font-family:Arial}
+  div.header {font-size:20pt; font-weight:bold; text-align:center; color:white; padding:10px}
+  div.h2 {font-size:12pt; font-style: italic; text-align:center; color:white; margin-bottom:14px; margin-top:-10px}
+  table.daten {width:100%; height:581px; overflow:hidden}
+  tr {vertical-align:top; padding:0px}
+  td.bild {padding:4px}
+  td.wh {color:#C0C0C0; line-height:1.5; padding-left:5px}
+  td.gr {width:150px; padding-left:5px; color:#07A7BF; font-weight:bold; line-height:1.5}
+  span {background:$$ITEM_COLORHTML; border:solid; border-width:1px; border-color:gray}
+  </style></head><body background="BlueBasic.gif">
+<div class="header">$$ITEM_FORMATTEDTITLE</div>
+<div class="h2">$$ITEM_TRANSLATEDTITLE</div>
+<table class="daten" cellspacing="0" cellpadding="5">
+  <colgroup>
+    <col width="408">
+    <col width="50%">
+    <col width="50%">
+  </colgroup>
+  <tr>
+    <td class="bild"><img src="$$ITEM_PICTUREFILENAME" width="400"></td>
+    <td>
+      <table>
+        <tr>
+		      <td class="gr">$$LABEL_MEDIA</td>
+		      <td class="wh">$$ITEM_MEDIA</td>
+		    </tr>
+        <tr>
+          <td class="gr">$$LABEL_RATING</td>
+          <td class="wh"><span>&nbsp;&nbsp;&nbsp;</span><b>&nbsp;&nbsp;$$ITEM_RATING</b></td>
+        </tr>
+        <tr>
+          <td class="gr">$$LABEL_COUNTRY</td>
+          <td class="wh">$$ITEM_COUNTRY</td>
+        </tr>
+        <tr>
+          <td class="gr">$$LABEL_YEAR</td>
+          <td class="wh">$$ITEM_YEAR</td>
+        </tr>
+        <tr>
+          <td class="gr">$$LABEL_LENGTH</td>
+          <td class="wh">$$ITEM_LENGTH min</td>
+        </tr>        
+        <tr>
+          <td class="gr">$$LABEL_CATEGORY</td>
+          <td class="wh">$$ITEM_CATEGORY</td>
+        </tr>
+        <tr>
+          <td class="gr">$$LABEL_DIRECTOR</td>
+          <td class="wh">$$ITEM_DIRECTOR</td>
+        </tr>  
+		    <tr>
+          <td class="gr">$$LABEL_DATEADD</td>
+          <td class="wh">$$ITEM_DATEADD</td>
+        </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_LANGUAGES</td>
+			    <td class="wh"><b><font color="#BF8007">$$ITEM_LANGUAGES</font></b></td>
+		    </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_SUBTITLES</td>
+			    <td class="wh"><b><font color="#BF8007">$$ITEM_SUBTITLES</font></b></td>
+		    </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_VIDEOFORMAT</td>
+			    <td class="wh">$$ITEM_VIDEOFORMAT</td>
+		    </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_AUDIOFORMAT</td>
+			    <td class="wh">$$ITEM_AUDIOFORMAT</td>
+		    </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_RESOLUTION</td>
+			    <td class="wh">$$ITEM_RESOLUTION ($$ITEM_FRAMERATE $$LABEL_FPS)</td>
+		    </tr>
+		    <tr>
+			    <td class="gr">$$LABEL_SIZE</td>
+			    <td class="wh">$$ITEM_SIZE $$LABEL_UNIT</td>
+		    </tr>
+      </table>
+    </td>
+	  <td>
+		  <table>
+		    <tr>
+			    <td class="gr" width="100%">$$LABEL_ACTORS</td>
+		    </tr>
+		    <tr>
+			    <td class="wh">$$ITEM_ACTORS</td>
+		    </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table border="0" cellspacing="5" cellpadding="0" width="100%">
+  <th></th>
+  <tr>
+    <td class="gr">$$LABEL_DESCRIPTION:</td>
+    <td class="wh">$$ITEM_DESCRIPTION</td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td class="gr">$$LABEL_COMMENTS:</td>
+    <td class="wh"><b>$$ITEM_COMMENTS</b></td>
+  </tr>
+</table>
+</body></html>
+

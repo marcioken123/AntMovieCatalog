@@ -1,0 +1,430 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Zoltan Karpati    (<link>pinyo@gibzone.hu</link>)
+Title=Xpress.hu
+Description=Xpress.hu (HUN) import
+Site=http://www.xpress.hu
+Language=HU
+Version=1.3.2
+Requires=3.5.0
+Comments=Fixed 12/2007 by bad4u
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program xpress;
+
+var
+  MovieName: string;
+
+function GetPicFormat(PicFormat: string): String;
+begin
+    if PicFormat = '1.gif' then result := '(4:3/FF)';
+    if PicFormat = '2.gif' then result := '(4:3/1.54:1)';
+    if PicFormat = '3.gif' then result := '(4:3/1.66:1)';
+    if PicFormat = '4.gif' then result := '(4:3/1.78:1)';
+    if PicFormat = '5.gif' then result := '(4:3/1.85:1)';
+    if PicFormat = '6.gif' then result := '(4:3/2.35:1)';
+    if PicFormat = '7.gif' then result := '(16:9/1.66:1)';
+    if PicFormat = '8.gif' then result := '(16:9/1.78:1)';
+    if PicFormat = '9.gif' then result := '(16:9/1.85:1)';
+    if PicFormat = '10.gif' then result := '(16:9/2.35:1)';
+    if PicFormat = '11.gif' then result := '(16:9/2.40:1)';
+    if PicFormat = '12.gif' then result := '(4:3/2.40:1)';
+    if PicFormat = '13.gif' then result := '(4:3/PS)';
+    if PicFormat = '14.gif' then result := '(16:9/2.76:1)';
+    if PicFormat = '15.gif' then result := '(16:9/2.5:1)';
+end;
+
+function Rating(Rated: string): String;
+begin
+    if ((Rated > '0') and (Rated < '5')) then result := '0';
+    if ((Rated >= '5') and (Rated < '15')) then result := '1';
+    if ((Rated >= '15') and (Rated < '25')) then result := '2';
+    if ((Rated >= '25') and (Rated < '35')) then result := '3';
+    if ((Rated >= '35') and (Rated < '45')) then result := '4';
+    if ((Rated >= '45') and (Rated < '55')) then result := '5';
+    if ((Rated >= '55') and (Rated < '65')) then result := '6';
+    if ((Rated >= '65') and (Rated < '75')) then result := '7';
+    if ((Rated >= '75') and (Rated < '85')) then result := '8';
+    if ((Rated >= '85') and (Rated < '95')) then result := '9';
+    if (Rated >= '95') then result := '10';
+end;
+
+function RemoveHTML(Szoveg: string): String;
+begin
+  Szoveg := StringReplace(Szoveg, '%20', ' ');
+  Szoveg := StringReplace(Szoveg, '<i>', '');
+  Szoveg := StringReplace(Szoveg, '</i>', '');
+  Szoveg := StringReplace(Szoveg, '<b>', '');
+  Szoveg := StringReplace(Szoveg, '</b>', '');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '<li>', chr(13)+chr(10));
+  Szoveg := StringReplace(Szoveg, '</p>', chr(13)+chr(10));
+  HTMLRemovetags(Szoveg);
+  HTMLDecode(Szoveg);
+  result := Trim(Szoveg);
+end;
+
+function AddHTML(Szoveg: string): String;
+begin
+  Szoveg := StringReplace(Szoveg, ' ','%20');
+  result := Szoveg;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('karaktersor', Page.Text) = 0 then
+  begin
+    AnalyzeMoviePage(Page)
+  end else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    LineNr := FindLine('<a href="../dvd/film.asp?FILMAZ=', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      PickTreeAdd('DVD Movies', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr: Integer;
+  Adder: Integer;
+  Rate: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  SetField(fieldSource,'XPress.hu');
+  SetField(fieldMediaType, 'DVD');
+
+  // fieldURL
+  LineNr := FindLine('../shop/rendel.asp?FILMID=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('FILMID=', Line)+7;
+    EndPos := pos('&amp', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldURL, 'http://www.xpress.hu/dvd/film.asp?FILMAZ=' + Value );
+  end;
+
+  // fieldProducer  - studió
+  LineNr := FindLine('stúdió </font>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+5);
+    BeginPos := pos('"menulink">', Line)+11;
+    EndPos := pos('</a>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldProducer,RemoveHTML(Value));
+  end;
+
+  // fieldRating
+  LineNr := FindLine('m2cimsor.gif', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+15);
+    BeginPos := pos('sans-serif">', Line)+12;
+    EndPos := pos('%', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Value := Rating(Value);
+    SetField(fieldRating,Value);
+  end;
+
+  // fieldLength
+  LineNr := FindLine('film hossza</font>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+5);
+    BeginPos := pos('"#000000">', Line)+9;
+    Delete(line,1,BeginPos);
+    EndPos := pos(' ', Line);
+    Value := copy(Line, 1, EndPos-1);
+    SetField(fieldLength,RemoveHTML(Value));
+  end;
+
+  LineNr := FindLine('>Feliratok<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+6);
+    BeginPos := pos('sans-serif">', Line)+12;
+    EndPos := pos('</font>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldSubtitles,RemoveHTML(Value));
+  end;
+
+  LineNr := FindLine('>Hangsávok<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Adder := 5;
+    repeat
+      Value2 := '';
+      Line := Page.GetString(LineNr + Adder);
+      BeginPos := pos('size="1">', Line);
+      if BeginPos > 1 then
+      begin
+        BeginPos := Beginpos + 9;
+        EndPos := pos('<br>',Line);
+        Value := copy(Line, BeginPos, EndPos - BeginPos);
+        Line := Page.GetString(LineNr + Adder + 1);
+        if pos('hang/1.gif',Line) > 0 then Value2 := '(DD5.1)';
+        if pos('hang/2.gif',Line) > 0 then Value2 := '(Sztereo)';
+        if pos('hang/3.gif',Line) > 0 then Value2 := '(Surround)';
+        if pos('hang/4.gif',Line) > 0 then Value2 := '(Mono)';
+        if pos('hang/5.gif',Line) > 0 then Value2 := '(Mono)';
+        if pos('hang/6.gif',Line) > 0 then Value2 := '(DTS)';
+        if pos('hang/7.gif',Line) > 0 then Value2 := '(DD5.1)';
+        if pos('hang/12.gif',Line) > 0 then Value2 := '(DD5.0)';
+        if pos('hang/13.gif',Line) > 0 then Value2 := '(3.0)';
+        if pos('hang/14.gif',Line) > 0 then Value2 := '(4.0)';
+        if pos('hang/15.gif',Line) > 0 then Value2 := '(DD5.1EX)';
+        if pos('hang/16.gif',Line) > 0 then Value2 := '(DD4.1)';
+        if pos('hang/17.gif',Line) > 0 then Value2 := '(DTS ES)';
+        if FullValue > '' then Fullvalue := Fullvalue + ', ';
+        FullValue := FullValue + Value + ' ' + Value2;
+      end
+      Adder := Adder + 1;
+    until pos('eeeeee', Line) > 0;
+    SetField(fieldLanguages,RemoveHTML(FullValue));
+  end;
+
+  // fieldComments Title
+  LineNr := FindLine('kepek/kepform/', Page, 0);
+  FullValue := '';
+  if LineNr > -1 then
+  begin
+    repeat
+      Line := Page.GetString(LineNr);
+
+      BeginPos := pos('kepek/kepform/', Line);
+      if BeginPos > 1 then
+      begin
+        BeginPos := BeginPos + 14;
+        EndPos := pos('">', Line);
+        Value := copy(Line, BeginPos, EndPos - BeginPos);
+        Value := GetPicFormat(Value);
+        if FullValue > '' then Fullvalue := Fullvalue + ', ';
+        FullValue := FullValue + Value;
+
+        Delete(Line,1,EndPos);
+        BeginPos := pos('kepek/kepform/', Line);
+        if BeginPos > 1 then
+        begin
+          BeginPos := BeginPos + 14;
+          EndPos := pos('">', Line);
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          Value := GetPicFormat(Value);
+          if FullValue > '' then Fullvalue := Fullvalue + ', ';
+          FullValue := FullValue + Value;
+        end
+      end
+      LineNr := FindLine('kepek/kepform/', Page, LineNr);
+    until LineNr > -1;
+    SetField(fieldComments,FullValue);
+  end;
+
+  // Picture
+  LineNr := FindLine('cover/nagy/', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('cover/nagy/', Line);
+    Delete(Line, 1, BeginPos-1);
+    EndPos := pos(',', Line);
+    Value := copy(Line, 1, EndPos - 2);
+    GetPicture('http://www.xpress.hu/dvd/' + Value);
+  end;
+
+
+  // fieldTranslated Title
+  LineNr := FindLine('#cc3300', Page, 0);
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('#cc3300', Line)+12;
+    EndPos := pos('</b>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldTranslatedTitle,RemoveHTML(Value));
+  end;
+
+  // Original Title & Year Country
+  if LineNr > -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  BeginPos := pos('#000000', Line)+8;
+  Delete(Line, 1, BeginPos);
+  Value := Line;
+  SetField(fieldOriginalTitle, RemoveHTML(Value));
+  end;
+
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+2);
+    BeginPos := pos('(', Line) + 1;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos-1);
+    SetField(fieldCountry, RemoveHTML(Value));
+  end;
+  
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+3);
+    BeginPos := pos('-', Line) + 1;
+    EndPos := Pos(')', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldYear, Value);
+  end;
+
+  // Director
+  LineNr := FindLine('Rendezte:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    FullValue := '';
+    repeat
+      BeginPos := pos('menulink">', Line) + 9;
+      Delete(Line,1,BeginPos);
+      EndPos := pos('</', Line)-1;
+      Value := copy(Line, 1, EndPos);
+      HTMLDecode(Value);
+      if FullValue > '' then Fullvalue := Fullvalue + ', ';
+      FullValue := FullValue + Value;
+      Delete(Line, 1, EndPos);
+    until pos('menulink">', Line) = 0;
+
+    SetField(fieldDirector, RemoveHTML(FullValue));
+  end;
+
+  // Actors
+  LineNr := FindLine('>Szereplõk:<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    FullValue := '';
+    repeat
+      BeginPos := pos('NEV=', Line) + 4;
+      EndPos := pos('VID', Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos-1);
+      HTMLDecode(Value);
+      if FullValue > '' then Fullvalue := Fullvalue + ', ';
+      FullValue := FullValue + Value;
+      Delete(Line, 1, EndPos);
+    until pos('NEV=', Line) = 0;
+    
+    SetField(fieldActors, RemoveHTML(FullValue));
+  end;
+
+  //Category
+  LineNr := FindLine('>Mûfaj:<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    BeginPos := pos('#990000">', Line) + 9;
+    EndPos := pos('</', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldCategory, RemoveHTML(Value));
+  end;
+
+  //Description
+  LineNr := FindLine('>Tartalom:<', Page, 0);
+  if LineNr > -1 then
+  begin
+    Adder := 6;
+    Line := Page.GetString(LineNr + 5);
+    BeginPos := pos('color="#000000">', Line);
+    Delete(Line, 1, BeginPos+15);
+    FullValue := RemoveHTML(Line);
+    repeat
+      Value := Page.GetString(LineNr + Adder);
+      FullValue := FullValue + Value;
+      Adder := Adder + 1 ;
+    until (pos('</td>', Value) > 0);
+
+    SetField(fieldDescription, RemoveHTML(FullValue));
+  end;
+
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress,OTitle: string;
+  StartPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('0000" size="2">', Line);
+    if StartPos > 0 then
+    begin
+      StartPos := pos('FILMAZ=', Line)+7;
+      MovieAddress := copy(Line, StartPos, pos('VID', Line) - StartPos - 5);
+
+      StartPos := pos('0000" size="2">', Line)+15;
+      MovieTitle := copy(Line, StartPos, pos('</font></b></a>', Line) - StartPos);
+
+      LineNr := FindLine('<font size="1">', Page, LineNr+1);
+      Line := Page.GetString(LineNr);
+      StartPos := pos('<font color="#666666">', Line)+23;
+      OTitle := '   [ ' + copy(Line, StartPos, Length(Line) - StartPos);
+      Line := Page.GetString(LineNr+1);
+      StartPos := pos('- ', Line)+2;
+      OTitle := OTitle + ' | ' + copy(Line, StartPos, pos('</font>', Line) - StartPos - 2) + ' ]';
+
+      PickTreeAdd(MovieTitle+OTitle, 'http://www.xpress.hu/dvd/film.asp?FILMAZ=' + MovieAddress);
+    end;
+  until pos('</html>', Line) > 0;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('XPress.hu import', 'Kérem adja meg a film címét:', MovieName) then
+    begin
+      AnalyzePage('http://www.xpress.hu/dvd/keres.asp?keres='+AddHTML(MovieName)+'&VID=12219327439007175&GOMB=1&MAXDB=100');
+    end;
+  end else
+  ShowMessage('Ehhez a scripthez legalább 3.5.0-as verziójú Ant Movie Catalog szükséges!');
+end.

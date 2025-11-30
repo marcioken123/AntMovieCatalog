@@ -1,0 +1,198 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Marek Pospisil, Kalten
+Title=Filmpub
+Description=Filmpub (CZ) import
+Site=http://filmpub.atlas.cz
+Language=CZ
+Version=1.0
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program FilmPub;
+
+const
+  BASEURL = 'http://filmpub.atlas.cz';
+
+  // true ... bude vyplneno, false .. nebude vyplneno
+  cOriginalTitle   = true;
+  cTranslatedTitle = true;
+  cDirector        = false;
+  cCountry         = true;
+  cYear            = true;
+  cLength          = false;
+  cActors          = false;
+  cURL             = true;
+  cDescription     = true;
+  cComments        = true;
+
+var
+  MovieName: string;
+  MovieURL: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function iPos (Substr: String; S: String): Integer;
+begin
+  Substr := AnsiLowerCase(Substr);
+  S := AnsiLowerCase(S);
+  Result := Pos(Substr, S);
+end;
+
+function FormatText(T: String): String;
+var BeginPos: Integer;
+begin
+  BeginPos := iPos('  ', T);
+  while (BeginPos > 0 ) do
+  begin
+    Delete(T, BeginPos, 1);
+    BeginPos := iPos('  ', T);
+  end;
+
+  T := StringReplace(T, #13#10, '');
+  T := StringReplace(T, '</p>', #13#10#13#10);
+  T := StringReplace(T, '</P>', #13#10#13#10);
+  T := StringReplace(T, '<br>', #13#10);
+  T := StringReplace(T, '<BR>', #13#10);
+  Result := T;
+end;
+
+(* ****************************************************************************
+ *
+ * FilmPub section
+ *
+ * ****************************************************************************)
+procedure AnalyzePageFilmPub(Address: string);
+var
+  Line, iLine, aLine, MovieTitle, MovieAddress: string;
+  BeginPos, EndPos: Integer;
+begin
+  Line := GetPage(Address);
+
+  PickTreeClear;
+  PickTreeAdd('Nalezené filmy:', '');
+
+  BeginPos := iPos('<a href="film.aspx', Line);
+
+  while (BeginPos > 0 ) do
+  begin
+    Line := Copy(Line, BeginPos, Length(Line));
+
+    EndPos := iPos('</a>', Line);
+    iLine := Copy(Line, 0, EndPos-1);
+    Line := Copy(Line, EndPos, Length(Line));
+
+    BeginPos := iPos('"', iLine);
+    aLine := Copy(iLine, BeginPos+1, Length(iLine));
+    EndPos :=  iPos('"', aLine);
+    aLine := Copy(iLine, BeginPos+1, EndPos-1);
+    MovieAddress := BASEURL + '/' + aLine;
+    BeginPos := iPos('>', iLine);
+    MovieTitle := Trim(Copy(iLine, BeginPos+1, Length(iLine)));
+    PickTreeAdd(MovieTitle, MovieAddress);
+
+    BeginPos := iPos('<a href="film.aspx', Line);
+  end;
+    if PickTreeExec(Address) then
+      AnalyzeMoviePageFilmPub(Address);
+end;
+
+
+procedure AnalyzeMoviePageFilmPub(Address: string);
+var
+  Line, iLine, aLine, Value, MovieAddress: string;
+  BeginPos, EndPos, tPos: Integer;
+begin
+  Line := GetPage(Address);
+  
+  BeginPos := iPos('Detail filmu', Line);
+  Line := Copy(Line, BeginPos, Length(Line));
+  
+  BeginPos := iPos('<h1>', Line);
+  EndPos := iPos('</h1>', Line);
+  iLine := Copy(Line, BeginPos, EndPos-BeginPos);
+  EndPos := iPos('<span>', iLine);
+  Value := Copy(iLine, 0, EndPos-1);
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  if cTranslatedTitle then
+    SetField(fieldTranslatedTitle, Value);
+
+  Value := Copy(iLine, EndPos, Length(iLine));
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  if cOriginalTitle then
+    SetField(fieldOriginalTitle, Value);
+
+  BeginPos := iPos('clanek.aspx?articleId=', Line);
+  Line := Copy(Line, BeginPos, Length(Line));
+  EndPos := iPos('"', Line);
+  MovieAddress := Copy(Line, 0, EndPos-1);
+
+
+  Line := GetPage(BASEURL + '/' + MovieAddress);
+  BeginPos := iPos('<p class="prolog"', Line);
+  Line := Copy(Line, BeginPos, Length(Line));
+  EndPos := iPos('</p>', Line);
+  Value := Copy(Line, 0, EndPos-1);
+  Value := FormatText(Value);
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  if cDescription then
+    SetField(fieldDescription, Value);
+
+  Line := Copy(Line, EndPos+Length('</p>'), Length(Line));
+  EndPos := iPos('</div>', Line);
+  Value := Copy(Line, 0, EndPos-1);
+
+  Value := FormatText(Value);
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  if cComments then
+    SetField(fieldComments, Value);
+  
+ if cURL then
+    SetField(fieldURL, BASEURL + '/' + MovieAddress);
+
+  //DisplayResults;
+end;
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('FilmPub Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePageFilmPub(BASEURL+'/hledej.aspx?findString='+UrlEncode(MovieName));
+    end;
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

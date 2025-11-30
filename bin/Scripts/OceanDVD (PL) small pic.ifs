@@ -1,0 +1,499 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=c) 2003 Grzegorz Jankowski
+Title=OceanDVD (PL)
+Description=Movie importation script for OceanDVD import info & small picture
+Site=http://www.oceandvd.pl
+Language=PL
+Version=1.0
+Requires=3.5.0
+Comments=Movie information & small picture importation|c) 2003 Grzegorz Jankowski (child@wp.pl)|based on script 'Filmweb (PL) small pic.ifs' by Piotr Kardasz & Adma's|14.02.2005 Improvements made by Adma's
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program FilmWeb;
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure DelSpace(var Value: String);
+var
+  FullValue: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := FullValue + StrGet(Value, 1);
+    for Counter := 2 to Length(Value) do
+    begin
+      if StrGet(Value, Counter) <> ' ' then
+        FullValue := FullValue + StrGet(Value, Counter)
+      else
+        if StrGet(FullValue, Length(FullValue)) <> ' ' then
+          FullValue := FullValue + ' ';
+    end;
+    Value := FullValue;
+  end
+end;
+
+procedure DecodeHTML(var Value: String);
+var
+  FullValue, CharCode: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+          CharCode := copy(Value, Counter, 1);
+          case CharCode of
+            '±': CharCode := '¹';
+            '¶': CharCode := 'œ';
+            '¡': CharCode := '¥';
+            '¼': CharCode := 'Ÿ';
+            '¦': CharCode := 'Œ';
+            '¬': CharCode := '';
+          end;
+          FullValue := FullValue + CharCode;
+          Counter := Counter + 1;
+        end
+      else
+        begin
+          CharCode := copy(Value, Counter, 7);
+          case CharCode of
+            '&#x105;': FullValue := FullValue + '¹';
+            '&#x107;': FullValue := FullValue + 'æ';
+            '&#x119;': FullValue := FullValue + 'ê';
+            '&#x142;': FullValue := FullValue + '³';
+            '&#x144;': FullValue := FullValue + 'ñ';
+            '&#x0f3;': FullValue := FullValue + 'ó';
+            '&#x15b;': FullValue := FullValue + 'œ';
+            '&#x17a;': FullValue := FullValue + 'Ÿ';
+            '&#x17c;': FullValue := FullValue + '¿';
+            '&#x104;': FullValue := FullValue + '¥';
+            '&#x106;': FullValue := FullValue + 'Æ';
+            '&#x118;': FullValue := FullValue + 'Ê';
+            '&#x141;': FullValue := FullValue + '£';
+            '&#x143;': FullValue := FullValue + 'Ñ';
+            '&#x0d3;': FullValue := FullValue + 'Ó';
+            '&#x15a;': FullValue := FullValue + 'Œ';
+            '&#x179;': FullValue := FullValue + '';
+            '&#x17b;': FullValue := FullValue + '¯';
+            '&#x160;': FullValue := FullValue + ' ';
+            '&#x161;': FullValue := FullValue + '¡';
+            '&#x162;': FullValue := FullValue + '¡';
+            '&#x163;': FullValue := FullValue + '£';
+            '&#x164;': FullValue := FullValue + '¤';
+            '&#x165;': FullValue := FullValue + '¥';
+            '&#x166;': FullValue := FullValue + 'Œ';
+            '&#x167;': FullValue := FullValue + '§';
+            '&#x168;': FullValue := FullValue + '¨';
+            '&#x169;': FullValue := FullValue + '©';
+            '&#x170;': FullValue := FullValue + 'ª';
+            '&#x171;': FullValue := FullValue + '«';
+            '&#x172;': FullValue := FullValue + '¬';
+            '&#x173;': FullValue := FullValue + '­';
+            '&#x174;': FullValue := FullValue + '®';
+            '&#x175;': FullValue := FullValue + '¯';
+            '&#x176;': FullValue := FullValue + '°';
+            '&#x177;': FullValue := FullValue + '±';
+            '&#x178;': FullValue := FullValue + '²';
+            '&#x180;': FullValue := FullValue + '´';
+            '&#x181;': FullValue := FullValue + 'µ';
+            '&#x182;': FullValue := FullValue + '¶';
+            '&#x183;': FullValue := FullValue + '·';
+            '&#x184;': FullValue := FullValue + '¸';
+            '&#x185;': FullValue := FullValue + '¹';
+            '&#x186;': FullValue := FullValue + 'º';
+            '&#x187;': FullValue := FullValue + '»';
+            '&#x188;': FullValue := FullValue + '¼';
+            '&#x189;': FullValue := FullValue + '½';
+            '&#x190;': FullValue := FullValue + '¾';
+            '&#x191;': FullValue := FullValue + '¿';
+            '&#x192;': FullValue := FullValue + 'À';
+            '&#x193;': FullValue := FullValue + 'Á';
+            '&#x194;': FullValue := FullValue + 'Â';
+            '&#x195;': FullValue := FullValue + 'Ã';
+            '&#x196;': FullValue := FullValue + 'Ä';
+            '&#x197;': FullValue := FullValue + 'Å';
+            '&#x198;': FullValue := FullValue + 'Æ';
+            '&#x199;': FullValue := FullValue + 'Ç';
+            '&#x200;': FullValue := FullValue + 'È';
+            '&#x201;': FullValue := FullValue + 'É';
+            '&#x202;': FullValue := FullValue + 'Ê';
+            '&#x203;': FullValue := FullValue + 'Ë';
+            '&#x204;': FullValue := FullValue + 'Ì';
+            '&#x205;': FullValue := FullValue + 'Í';
+            '&#x206;': FullValue := FullValue + 'Î';
+            '&#x207;': FullValue := FullValue + 'Ï';
+            '&#x208;': FullValue := FullValue + 'Ð';
+            '&#x209;': FullValue := FullValue + 'Ñ';
+            '&#x210;': FullValue := FullValue + 'Ò';
+            '&#x211;': FullValue := FullValue + 'Ó';
+            '&#x212;': FullValue := FullValue + 'Ô';
+            '&#x213;': FullValue := FullValue + 'Õ';
+            '&#x214;': FullValue := FullValue + 'Ö';
+            '&#x215;': FullValue := FullValue + '×';
+            '&#x216;': FullValue := FullValue + 'Ø';
+            '&#x217;': FullValue := FullValue + 'Ù';
+            '&#x218;': FullValue := FullValue + 'Ú';
+            '&#x219;': FullValue := FullValue + 'Û';
+            '&#x220;': FullValue := FullValue + 'Ü';
+            '&#x221;': FullValue := FullValue + 'Ý';
+            '&#x222;': FullValue := FullValue + 'Þ';
+            '&#x223;': FullValue := FullValue + 'ß';
+            '&#x224;': FullValue := FullValue + 'à';
+            '&#x225;': FullValue := FullValue + 'á';
+            '&#x226;': FullValue := FullValue + 'â';
+            '&#x227;': FullValue := FullValue + 'ã';
+            '&#x228;': FullValue := FullValue + 'ä';
+            '&#x229;': FullValue := FullValue + 'å';
+            '&#x230;': FullValue := FullValue + 'æ';
+            '&#x231;': FullValue := FullValue + 'ç';
+            '&#x232;': FullValue := FullValue + 'è';
+            '&#x233;': FullValue := FullValue + 'é';
+            '&#x234;': FullValue := FullValue + 'ê';
+            '&#x235;': FullValue := FullValue + 'ë';
+            '&#x236;': FullValue := FullValue + 'ì';
+            '&#x237;': FullValue := FullValue + 'í';
+            '&#x238;': FullValue := FullValue + 'î';
+            '&#x239;': FullValue := FullValue + 'ï';
+            '&#x240;': FullValue := FullValue + 'ð';
+            '&#x241;': FullValue := FullValue + 'ñ';
+            '&#x242;': FullValue := FullValue + 'ò';
+            '&#x243;': FullValue := FullValue + 'ó';
+            '&#x244;': FullValue := FullValue + 'ô';
+            '&#x245;': FullValue := FullValue + 'õ';
+            '&#x246;': FullValue := FullValue + 'ö';
+            '&#x247;': FullValue := FullValue + '÷';
+            '&#x248;': FullValue := FullValue + 'ø';
+            '&#x249;': FullValue := FullValue + 'ù';
+            '&#x250;': FullValue := FullValue + 'ú';
+            '&#x251;': FullValue := FullValue + 'û';
+            '&#x252;': FullValue := FullValue + 'ü';
+            '&#x253;': FullValue := FullValue + 'ý';
+            '&#x254;': FullValue := FullValue + 'þ';
+            '&#x255;': FullValue := FullValue + 'ÿ';
+            '&#x%DF;': FullValue := FullValue + 'ß';
+            '&#x34;': FullValue := FullValue + '"';
+            '&#8221;': FullValue := FullValue + '"';
+            '&#8222;': FullValue := FullValue + '"';
+            '&#8211;': FullValue := FullValue + '-';
+          else
+            FullValue := FullValue + CharCode;  
+          end;
+          Counter := Counter + 7;
+        end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+  end
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos: Integer;
+begin
+  LineNr := FindLine('<li>', Page, LineNr);
+  if LineNr > -1 then
+  begin
+    PickTreeAdd('Znaleziono filmy:', '');
+    Line := Page.GetString(LineNr);
+    repeat
+      repeat
+        StartPos := pos('<li>', Line) + 4;
+        Line := copy(Line, StartPos, Length(Line) - StartPos + 1);
+        StartPos := pos('href="', Line) + 6;
+        Line := copy(Line, StartPos, Length(Line) - StartPos + 1);
+        MovieAddress := copy(Line, 1, pos('">', Line) - 1);
+        MovieAddress := 'http://www.oceandvd.pl/' + MovieAddress;
+        //MovieAddress := 'c:/film.htm';
+        StartPos := pos('">', Line) + 2;
+        Line := copy(Line, StartPos, Length(Line) - StartPos + 1);
+        MovieTitle := copy(Line, 1, pos('</a>', Line) - 1);
+        DecodeHTML(MovieTitle);
+        HTMLRemoveTags(MovieTitle);
+        PickTreeAdd(MovieTitle, MovieAddress);
+      until pos('<li>', Line) = 0;
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+    until pos('<li>', Line) = 0;
+  end
+  else
+    break;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  //Page.LoadFromFile(Address);
+  if pos('Wynik wyszukiwania', Page.Text) = 0 then
+    AnalyzeMoviePage(Page)
+  else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    AddMoviesTitles(Page, LineNr);
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, FullValue: string;
+  LineNr, Counter: Integer;
+  StartPos, EndPos: Integer;
+begin
+
+  // Tytu³ polski
+  LineNr := FindLine('class="tytuly"><b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('class="tytuly"><b>', Line) + 18;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    EndPos := pos('(', Line);
+    if EndPos > 0
+    then EndPos := EndPos - 2
+    else EndPos := pos('<', Line) - 1;
+    Line := copy(Line, 1, EndPos);
+    DecodeHTML(Line);
+    SetField(fieldTranslatedTitle, Line);
+  end
+
+  // Tytu³ oryginalny
+  LineNr := FindLine('class="tytuly"><b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('class="tytuly"><b>', Line) + 18;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('(', Line);
+    if StartPos > 0 then
+    begin
+       StartPos := StartPos + 1;
+       EndPos := pos(')', Line);
+    end
+    else
+    begin
+      StartPos := 1;
+      EndPos := pos('<', Line);
+    end
+    Line := copy(Line, StartPos, EndPos-StartPos);
+    DecodeHTML(Line);
+    SetField(fieldOriginalTitle, Line);
+    end
+
+  // Œrednia ocena  
+  LineNr := FindLine('rednia ocena:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('rednia ocena:', Line) + 10;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    StartPos := pos('">', Line) + 2;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);  
+    Value := IntToStr(Round(StrToInt(StrGet(Line, 1), 0) + (StrToInt(StrGet(Line, 3), 0) / 10) + (StrToInt(StrGet(Line, 4), 0) / 100)));
+    SetField(fieldRating, Value);
+  end
+ 
+  // Kategoria
+  LineNr := FindLine('kat_', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('kat_', Line) + 4;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);
+    Line := copy(Line, 1, pos('.jpg', Line) - 1);
+    case Line of
+       '9': Value := 'Animowany';
+       '2': Value := 'Dramat';
+       '6': Value := 'Erotyczny';
+       '10': Value := 'Film Polski';
+       '1': Value := 'Horror';
+       '3': Value := 'Komedia';
+       '11': Value := 'Przygodowy';
+       '8': Value := 'Science Fiction';
+       '4': Value := 'Sensacyjny';
+       '5': Value := 'Thriller';
+    else
+      Value := '';
+    end;
+    SetField(fieldCategory, Value);
+  end
+    
+  // Kraj
+  LineNr := FindLine('produkcja:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    HTMLRemoveTags(Line);
+    DecodeHTML(Line);
+    DelSpace(Line);
+    Line := copy(Line, 2, Length(Line) - 1);
+    SetField(fieldCountry, Line);
+  end    
+  
+  // Rok produkcji
+  LineNr := FindLine('produkcja:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+2);
+    HTMLRemoveTags(Line);
+    DecodeHTML(Line);
+    SetField(fieldYear, Line);
+  end
+
+  // Re¿yseria
+  LineNr := FindLine('yseria:</b></td>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    HTMLRemoveTags(Line);
+    DecodeHTML(Line);
+    DelSpace(Line);
+    Line := copy(Line, 2, Length(Line) - 1);
+    SetField(fieldDirector, Line);
+  end
+
+  // Producent (dystrybutor)
+  LineNr := FindLine('Dystrybucja:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    StartPos := pos('Dystrybucja:', Line) + 13;
+    Line := copy(Line, StartPos, Length(Line) - StartPos + 1);
+    DecodeHTML(Line);
+    SetField(fieldProducer, Line);
+  end  
+
+  // Czas trwania
+  LineNr := FindLine('czas trwania:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    StartPos := pos('>', Line) + 1;
+    Line := copy(Line, StartPos, Length(Line) - StartPos);  
+    Value := copy(Line, 1, pos(' min', Line) - 1);
+    SetField(fieldLength, Value);
+  end
+  
+  // Opis filmu
+  LineNr := FindLine('<!-- OPIS FILMU -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    DecodeHTML(Line);
+    HTMLRemoveTags(Line);
+    DelSpace(Line);
+    SetField(fieldDescription, Line);
+  end     
+  
+  // Obsada
+  LineNr := FindLine('wystêpuj', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Value := '';
+    repeat
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      HTMLRemoveTags(Line);
+      Value := Value + Line;
+    until pos('<td>', Line) = 0;
+    DelSpace(Value);
+    Value := copy(Value, 2, Length(Line) - 1);
+    DecodeHTML(Value); 
+    SetField(fieldActors, Value);
+  end
+  
+  // Komentarz (Dane techniczne)
+  Line := '';
+  LineNr := FindLine('Dodatki', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := Line+''#13#10'';
+  end
+  LineNr := FindLine('<!-- OPIS TECHNICZNY FILMU -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Line + Page.GetString(LineNr+2)+''#13#10''+Page.GetString(LineNr+3);
+  end
+    DecodeHTML(Line);
+    HTMLRemoveTags(Line);
+    DelSpace(Line);
+    SetField(fieldComments, Line);
+
+  //URL
+  begin
+    setField(fieldURL,'http://www.oceandvd.pl/search.php?searchtype=1&cmd=find&phrase='+UrlEncode(MovieName));
+  end
+  
+ //Foto
+  LineNr:= FindLine('alt="ok³adka"', Page, 0);
+  if LineNr > -1
+ then begin
+    Line:= Page.GetString(LineNr);
+    StartPos:= Pos('img src=', Line) + 8;
+    Line:= Copy(Line, StartPos, Length(Line));
+    Value:= Copy(Line, 2, Pos('alt="ok³adka"', Line) - 4);
+    Value:= 'http://www.oceandvd.pl/' + Value;
+    HTMLRemoveTags(Value);
+    DecodeHTML(Value);
+    DelSpace(Value);
+    GetPicture(Value); // False = nie przechowuj zdjêcia na zewnêtrz ; przechowuj w pliku katalogu
+  end
+
+  //DisplayResults;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('OceanDVD Import', 'Podaj tytu³ filmu:', MovieName) then
+    begin
+      AnalyzePage('http://www.oceandvd.pl/search.php?searchtype=1&cmd=find&phrase='+UrlEncode(MovieName));
+      //AnalyzePage('c:/lista.htm');
+    end;
+  end else
+    ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.0 lub nowszej');
+end.
+
+

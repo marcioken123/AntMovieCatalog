@@ -1,0 +1,147 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Nik0
+Title=Filmposter-archiv.de
+Description=Bild von Filmposter-archiv.de
+Site=Filmposter-archiv.de
+Language=DE
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program filmposterarchiv;
+var
+  MovieName: string;
+
+const
+  fp_Server = 'http://www.filmposter-archiv.de/';
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+// wenn mehrere Ergebnisse
+procedure AnalyzePage(Address: string; UsePostGet: Integer);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  //ShowMessage(Address);
+  Page := TStringList.Create;
+ 
+  if UsePostGet = 1 then
+  begin
+    Page.Text := PostPage(fp_Server + 'html/suche.php3', Address);
+  end else
+  begin
+    Page.Text := GetPage(Address);
+  end;
+ 
+  if pos('im Filmposter-Archiv ergab', Page.Text) = 0 then
+  begin
+    AnalyzeMoviePage(Page)
+  end else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    LineNr := FindLine('<OL>', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      PickTreeAdd('Suche nach "' + MovieName + '" ergab mehrere Treffer:', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address, 0);
+  end;
+  Page.Free;
+end;
+
+//wenn Filmseite
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  // Picture
+  LineNr := FindLine('<IMG SRC="../filmplakat/', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('SRC="', Line) + 4;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('"', Line);
+    Value := copy(Line, 1, EndPos - 1);
+    GetPicture2(Value, 'http://www.filmposter-archiv.de/html/filmplakat.php?id=1234'); // False = do not store picture externally ; store it in the catalog file
+  end;
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress, PictureKiloByte, AdditionalInfo: string;
+  StartPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+//    ShowMessage(Line);
+    StartPos := pos('<LI>', Line);
+    if StartPos > 0 then
+    begin
+      StartPos := StartPos + 4;
+      MovieTitle := copy(Line, StartPos, pos(' <A', Line) - StartPos);
+      HTMLDecode(Movietitle);
+      HTMLRemoveTags(Movietitle);
+
+      StartPos := pos(' kByte', Line) - 3;
+      PictureKiloByte := copy(Line, StartPos, pos(' kByte', Line) - StartPos);
+      MovieTitle := MovieTitle + ' | ' + Trim(PictureKiloByte) + ' kByte';
+
+      StartPos := pos('[', Line) + 1;
+      AdditionalInfo := copy(Line, StartPos, pos(']', Line) - StartPos);
+      if AdditionalInfo <> '' then
+        MovieTitle := MovieTitle + ' | [' + AdditionalInfo + ']';
+      StartPos := pos('filmplakat.php?id=', Line) + 18;
+      MovieAddress := copy(Line, StartPos, pos('" TARGET="', Line) - StartPos);
+      PickTreeAdd(MovieTitle, fp_Server + 'html/filmplakat.php?id=' + MovieAddress);
+    end;
+  until pos('</OL>', Line) > 0;
+end;
+
+begin
+  if CheckVersion(3,5,1) then
+  begin
+    //MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Filmposter-Archiv.de', 'Geben Sie den Namen den Films ein:', MovieName) then
+    begin
+      AnalyzePage('sent=1&language=german&productsearch=productsearch&filmtitel='+UrlEncode(MovieName), 1);
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.1)');
+end.

@@ -1,0 +1,49 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=ExportPictures
+Description=Export movie pictures
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=?
+Version=1.2 (11/12/2011)
+Requires=4.1.0
+Comments=
+License=
+GetInfo=0
+
+[Options]
+Number=1|1|1=Yes|0=No
+Title=0|0|0=Translated title [Original title]|1=Translated title|2=Original title
+Year=1|1|1=Yes|0=No
+Languages=1|1|1=Yes|0=No
+Subtitles=1|1|1=Yes|0=No
+Categories=1|0|1=Yes|0=No
+Source=1|0|1=Yes|0=No
+VideoFormat=1|0|1=Yes|0=No
+AudioFormat=1|0|1=Yes|0=No
+Framerate=1|0|1=Yes|0=No
+
+***************************************************)
+
+program ExportPictures;
+uses
+  SoulSnakeUtils;
+
+var
+  path, newname, s1, s2 : string;
+  nb, i : Integer;
+
+begin
+  //path := 'C:\Test\';
+  if (path = '') then
+    Input('Folder path to store pictures', 'Folder path:', path);
+  
+  path := IncludeTrailingPathDelimiter(path);
+  newname := GenerateFilenameWithGetOptions();
+  if (newname <> '') then
+    ExportPicture(path + newname + PictureExt);
+end.

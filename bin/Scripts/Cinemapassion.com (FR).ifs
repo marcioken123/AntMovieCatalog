@@ -1,0 +1,953 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Dedej
+Title=Cinemapassion.com
+Description=infos de Cinemapassion - mode normal/batch: voir l'onglet Commentaires
+Site=http://www.cinemapassion.com/
+Language=FR
+Version=1.9 du 19/03/2014
+Requires=3.5.0
+Comments=mode batch: 2 modes possibles: d'après l'url mémorisée (Cinemapassion) ou d'après le nom du film + réalisateur (résultats non garantis!)|N'oubliez pas de sauvegarder votre base actuelle avant de lancer le mode batch|Conseils: sélectionnez un nombre raisonnable de films et triez la liste des films par numéros|à la fin de chaque mise à jour, un fichier log est créé (informations et erreurs - attention ce fichier est recréé à chaque lancement du mode batch)||La recherche par saga prend en compte la spécificité de classement des titres du site pour certaines saga "Star Wars, James Bond, Star Trek" Champs d'origine pour la Saga "Label du support"
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mise à jour du Script=1|1|0=Pas de mise à jour|1=Mise à jour du script
+Mode=0|0|0=mode normal|1=mode batch (url)|2=mode batch (nom)
+Affiche=4|1|0=aucune affiche|1=affiche grand format|2=cover DVD|3=cover DVD et dans les extras Sticker (AMC 4.2)|4=affiche grand format et dans les extras cover DVD et Sticker (AMC 4.2)
+FormatTitre=0|0|0=laisser les titres des films tels quels|1=tout en minuscules|2=tout en majuscules|3=1ère lettre en majuscule le reste en minuscules|4=toutes les 1ères lettres en majuscules
+Option recherche Saga=1|0|0=Pas de gestion de la saga pour la recherche|1=Utilisation de la saga pour recherche du film (avec champs modifiables si option)
+Champs modifiables=1|0|0=Ne pas utiliser de champs modifiables|1=Utiliser des champs modifiables
+Garder commentaires=1|0|0=Ne pas garder les anciens commentaires.|1=Garder les anciens commentaires.
+
+[Parameters]
+
+***************************************************)
+
+// nécessite les modules suivants
+// BatchCommon7552.pas (qui inclut StringUtils1.pas et StringUtils7552.pas), ScorEpioNCommonScript
+
+program cinemapassion;
+uses
+	BatchCommon7552, ScorEpioNCommonScript, SoulSnakeUtils;
+
+const
+	debug = False;                       // mode debug on/off 
+	debugrep = 'c:\temp\';               // répertoire de stockage des fichiers
+//
+	Url = 'http://www.cinemapassion.com/';
+	id_Cinemapassion = 'Cinemapassion';              // ident
+  VersionScript = '1.9 du 19/03/2014';
+  ScriptName = 'Cinemapassion.com (FR).ifs';
+  SiteUrl = 'http://joel.desseaux.free.fr/Cinemapassion.com/';
+
+var
+// note FormatUTF8 est déclaré dans StringUtils7552 (integer)
+	movieok: Boolean;
+ 	MovieName, firstcall, entete, onglets, infos, PremiereLettre, Saga, MemTitre: String;
+	pgacteurs, idacteurs, pgavis, idavis, pgphotos, idphotos, Nom, BA: String;
+  ImportImage, Maj, PMaj, Nb, Nr : Integer;
+	found, Test: Boolean;
+
+//------------------------------------------------------------------------------
+// recherche du film (cinéfil)
+// MovieName = nom du film cherché (tel que saisi, cad non formaté)
+//------------------------------------------------------------------------------
+procedure AnalysePage;
+var
+  Address, Page, Line, Value, realisateur, PageFilm, urlfilm, Article, MovieNameOri: string;
+	pagenum, filmnum, i, Temp: integer;
+  memo: TStringList;
+
+begin
+  pagenum := 0;                                             // compteur de pages
+	batchList := TStringList.Create;                          // init liste de mémo
+// init adresse 1ere recherche
+	Address := Url;
+  if BatchMode = 1 then
+   MovieName := GetField(fieldTranslatedTitle);
+  PremiereLettre:= AnsiUpperCase(left(MovieName,1));
+  if (StrToFloat(PremiereLettre) > 0) or (PremiereLettre = '0') and PageCover then  // Gestion de spécificité de classement
+   PremiereLettre:= '1-9';
+  if (PremiereLettre = 'L') and PageCover then                       // Gestion de spécificité de classement
+   PremiereLettre:= AnsiUpperCase(left(MovieName,2));
+  if (PremiereLettre = 'L''') and PageCover then                     // Gestion de spécificité de classement
+   PremiereLettre:= 'L';
+  if  GetOption('Option recherche Saga') = 1 then
+  if (GetOption('Champs modifiables') = 1) and (CheckVersion(4,0,0)) then    // test s'il y a des champs modifiables
+   begin
+   MemTitre := MovieName;
+   Nom := 'Saga';
+   if Nr = 0 then                               // Non répétition du choix lors d'une multisélection
+    Saga := CustomField(Nom);
+   if Saga = 'Champs d''origine' then            // choix en dehors des champs modifiables
+    begin
+     if GetField(fieldMedia) = 'La guerre des étoiles' then      // Gestion de spécificité de classement
+      begin
+      MovieName := 'Star Wars';
+      PremiereLettre:= AnsiUpperCase(left(MovieName,1));
+      end;
+     if GetField(fieldMedia) = 'Star Trek' then
+      begin
+      MovieName := 'Star Trek';
+      PremiereLettre:= AnsiUpperCase(left(MovieName,1));
+      end;
+     if PageCover then
+      begin
+      if GetField(fieldMedia) = 'James Bond' then        // Gestion de spécificité de classement
+       begin
+       PremiereLettre:= '1-9';
+       MovieName := '007 - ' + MovieName;
+       end;
+       if GetField(fieldMedia) = 'La Guerre des étoiles' then      // Gestion de spécificité de classement
+        MovieName := 'Star wars ' + MovieName;
+       if GetField(fieldMedia) = 'Star Trek' then
+        MovieName := 'Star Trek ' + MovieName;
+      end;
+     if PageSticker then
+      begin
+      if GetField(fieldMedia) = 'James Bond' then                // Gestion de spécificité de classement
+       MovieName := 'James Bond 007';
+      if GetField(fieldMedia) = 'La Guerre des étoiles' then
+       MovieName := 'Star wars';
+      if GetField(fieldMedia) = 'Star Trek' then
+       MovieName := 'Star Trek';
+      end;
+     end else
+      begin
+      if GetCustomField(Saga) = 'La guerre des étoiles' then      // Gestion de spécificité de classement
+       begin
+       MovieName := 'Star Wars';
+       PremiereLettre:= AnsiUpperCase(left(MovieName,1));
+       end;
+      if GetCustomField(Saga) = 'Star Trek' then
+       begin
+       MovieName := 'Star Trek';
+       PremiereLettre:= AnsiUpperCase(left(MovieName,1));
+       end;
+      if PageCover then
+       begin
+       if GetCustomField(Saga) = 'James Bond' then        // Gestion de spécificité de classement
+        begin
+        PremiereLettre:= '1-9';
+        MovieName := '007 - ' + MovieName;
+        end;
+       if GetCustomField(Saga) = 'La Guerre des étoiles' then      // Gestion de spécificité de classement
+        MovieName := 'Star wars ' + MovieName;
+       if GetCustomField(Saga) = 'Star Trek' then
+        MovieName := 'Star Trek ' + MovieName;
+      end;
+      if PageSticker then
+       begin
+       if GetCustomField(Saga) = 'James Bond' then                // Gestion de spécificité de classement
+        MovieName := 'James Bond 007';
+       if GetCustomField(Saga) = 'La Guerre des étoiles' then
+        MovieName := 'Star wars';
+       if GetCustomField(Saga) = 'Star Trek' then
+        MovieName := 'Star Trek';
+       end;
+      end;
+     end;
+  Nr := 1;
+
+  repeat
+  found := False;
+	PickTreeClear;                                                    // init list
+	if PageCover and (GetField(fieldMediaType)= 'Blu-ray') then
+   Page := GetPage(Url+'jaquette-blu-ray-' + Trim(PremiereLettre) + '.php')
+  else
+	 if PageCover then
+    Page := GetPage(Url+'jaquette-de-dvd-' + Trim(PremiereLettre) + '.php')
+   else
+    if PageSticker then
+     Page := GetPage(Url+'sticker-de-dvd-' + Trim(PremiereLettre) + '.php')
+    else
+     Page := GetPage(Url+'les-films-' + Trim(PremiereLettre) + '.html');
+ 	if debug then
+		DumpPage(debugrep+id_Cinemapassion+' choix'+IntToStr(pagenum)+'.txt', Page);   // debug
+
+	FormatUtf8 := 0;
+	if (Pos('résultat(s)</b>', Page) = 0) and (not PageCover and not PageSticker) then
+   begin
+		LogMessage(id_Cinemapassion+': erreur lecture page de recherche '+IntToStr(pagenum)); // non trouvé = erreur
+		batchList.Free;
+		exit;
+	 end;
+	if PageCover then
+   begin
+   Value := TextBetween(infos, '<img src=''', ''' atl=');       // affiche grand format si pas de cover
+   if (Value <> '') and (ImportImage > 0) and (ImportImage < 4)then
+    begin
+    GetPicture(Value);
+    exit;
+    end;
+   Page := TextBetween(Page, '<a class=''lienpage''', '<div class=''barrehorizontale''></div>');     // infos utiles pour cover DVD
+	 end;
+  if PageSticker then
+   Page := TextBetween(Page, '<a class=''lienpage''', '<div class=''barrehorizontale''></div>');     // infos utiles pour sticker DVD
+  if (not PageCover and not PageSticker)then
+   Page := TextBetween(Page, 'résultat(s)</b>', '</center>');     // infos utiles
+  if Page <> '' then
+  begin
+// mémo des films de cette page
+	Page := StringReplace(Page, '<br>', crlf);                        // separe lignes
+	urlfilm := 'href=''';
+	memo := TStringList.Create;
+	memo.Text := Page;
+  if PageCover then
+   PickTreeAdd('Jaquette(s) Cinemapassion : ' + MemTitre + ' - ' + GetField(fieldMediaType), '')
+  else
+   if PageSticker then
+    PickTreeAdd('Sticker(s) Cinemapassion : ' + MemTitre + ' - ' + GetField(fieldMediaType), '')
+   else
+   	PickTreeAdd('Films (Cinemapassion) : ' + MemTitre + ' - ' + GetField(fieldMediaType), '');
+	 for filmnum := 0 to memo.Count-1 do
+	  begin
+	  Line := memo.GetString(filmnum);
+	  if PageCover or PageSticker then
+	   begin
+     PageFilm := TextBetween(Line, 'href="', '">');
+     Value := TextBetween(Line, '">', '</a>');           // titre cover ou sticker
+     end else
+     PageFilm := GetUrl(Line, urlfilm, Url);
+// extraire le nom
+    Value := TextBetween(Line, '">', '</a>');           // titre
+    if PageFilm = '' then continue;     // pas d'url = autre chose ou ligne vide
+    Line := Value;
+    if (BatchMode = 0) or (PageCover or PageSticker) then
+     begin
+     if Pos(AnsiLowerCase(FormatMovieName3(supprimeLesAccents(MovieName))), AnsiLowerCase(FormatMovieName3(supprimeLesAccents(Value)))) <> 0 then
+      Begin
+      PickTreeAdd(Line, PageFilm);
+      found := True;
+      end;
+     end else
+// valorisation batchList : url + film + réalisateur
+      if Pos(AnsiLowerCase(FormatMovieName3(supprimeLesAccents(MovieName))), AnsiLowerCase(FormatMovieName3(supprimeLesAccents(Value)))) <> 0 then
+       Begin
+       batchList.Add(PageFilm+sepchar1+Value+sepchar1+realisateur+sepchar1);
+       found := True;
+      end;
+	 end;         {for filmnum}
+	memo.Free;
+  MovieNameOri := Getfield(fieldOriginalTitle);
+  if (not found and not PageCover and not PageSticker) then
+	 if Input('Cinemapassion.com Import', id_Cinemapassion+': aucune correspondance trouvée pour "'+MovieName+'"' + ', voulez-vous rechercher sur le titre original, si vous voulez rechercher pour le Cover annuler la recherche et ne pas stoper le script', MovieNameOri)= True then
+    begin
+    MovieName := MovieNameOri;
+    PageCover := False;
+    PageSticker := False;
+    AnalysePage;
+    end;
+	if (not found) and (ImportImage < 2) and (Test) then
+	 begin
+	 LogMessage(id_Cinemapassion+': aucun film trouvé pour "'+MovieName+'"');
+   batchList.Free;
+   Test := False;
+	 exit;
+	 end;
+//  end;
+	if BatchMode > 0 then
+	begin
+// *** mode batch : recherche du meilleur poids pour les films trouvés
+// 2 possibilités:
+// 1) on reste avec cette liste
+// 2) on continue à valoriser batchList
+// pour l'instant, on travaille sur cette page uniquement
+  if (not found) and (PageCover or PageSticker) then
+  	begin
+      exit;
+    end;
+		LookBest;
+		if bestWeight > 0 then                          // on a trouvé quelque chose
+			AnalysePageFilm(bestAddr);                    // page film
+		break;                                          // on sort
+	end else
+	begin
+// *** mode normal
+  if ((not found) and (ImportImage > 2)) and not PageCover and not PageSticker and Test then
+  	begin
+  	 if ShowConfirmation(id_Cinemapassion+': aucun film trouvé pour "'+MovieName+'"' + ' choisir "OK" pour chercher les covers')= True then
+  	  Begin
+      Lien := Url + Address ;
+      GetCoverDVD ;
+      exit;
+     end else
+    	movieok := True;
+      Test := False;                                         // Abandon recherche
+      exit;
+    end else
+  	if ((not found) and (ImportImage > 2)) and PageCover then
+      begin
+      Lien := '' ;
+	    batchList.Free;
+      exit;
+  	end else
+	   if ((not found) and PageCover and (ImportImage > 1) and (ImportImage < 3)) then
+    	begin
+      Lien := '' ;
+	  	batchList.Free;
+	  	exit;
+	    end else
+   	   if ((not found) and PageSticker and (ImportImage > 2)) then
+	      begin
+        Lien := '' ;
+	      batchList.Free;
+		    exit;
+        end;
+   if found then
+		if PickTreeExec(Address) then
+		begin
+    	if (not PageCover and not PageSticker) then
+			AnalysePageFilm(Address);                                   // page film
+      Lien := Url + Address ;
+      break;                                                      // on sort
+	  end else
+			LogMessage(id_Cinemapassion+': aucun film sélectionné');
+    	if ((ImportImage = 2) and (not PageCover)) then
+      GetCoverDVD ;
+      movieok := True;
+      exit;
+  end;
+	until (Address = '');
+  end;
+  if (not PageCover and not PageSticker and Test) then
+  batchList.Free;
+end;
+
+//------------------------------------------------------------------------------
+// analyse de la page du film
+//------------------------------------------------------------------------------
+procedure AnalysePageFilm(Address: string);
+var
+	Table, Value, Value2, str, Page, Castingplus, PhotosFilm: string;
+	i, j, FormTitre: Integer;
+	notep: Real;
+	memo: TStringList;
+
+begin
+  found := False;
+  FormTitre := GetOption('FormatTitre');
+  Page := Getpage(Address);
+// Récupération liens fiches détails
+  Castingplus := TextBefore(Page, '" class="lienmenu_film"><div class="fondmenu">Casting', '<a href=');
+  PhotosFilm := FormatText3(TextBefore(Page, '''><div class=''fondmenu''>Photos', '<a href='));
+  if pos('lienmenu_film_menu_vide', PhotosFilm) > 0 then PhotosFilm := '';
+  Jaquette :=TextBefore(Page, ''' class=''lienmenu_film''><div class=''fondmenu''>Jaquette', '<a href=''../');
+  Sticker :=TextBefore(Page, ''' class=''lienmenu_film''><div class=''fondmenu''>Sticker', '<a href=''../');
+  Begin
+	if debug then
+		DumpPage(debugrep+id_Cinemapassion , Page);             // debug
+// infos spécifiques de la page courante
+  infos := TextBefore(Page, 'Actrices et acteurs', '<h1>');
+	// test si l'onglet actif est bien celui qu'on cherche
+	if (Pos(AnsiLowerCase(FormatMovieName3(supprimeLesAccents(MovieName))), supprimeLesAccents(FormatMovieName3(AnsiLowerCase(TextBetween(Page, ' <TITLE>', '</TITLE>'))))) = 0) and (Pos(supprimeLesAccents(FormatMovieName3(AnsiLowerCase(GetField(fieldTranslatedTitle)))), supprimeLesAccents(FormatMovieName3(AnsiLowerCase(TextBetween(Page, ' <TITLE>', '</TITLE>'))))) = 0) then
+	begin
+    LogMessage(id_Cinemapassion+': erreur lecture page '+ MovieName);         // pas la bonne
+		exit;
+	end;
+  end;
+	movieok := True;                                         // ça y est, c'est bon
+	SetField(fieldURL, Address);
+// titre original ou traduit
+	Value := TextBetween(infos, 'title=''', '''><img');
+	Value := TranslateText(FormatLine(Value), FormTitre);
+	Value2 := TextBetween(infos, 'Titre Original :</b> ', ' <br>');
+	Value2 := TranslateText(FormatLine(Value2), FormTitre);
+	if (Value2 = '') or (Value = Value2) then              // 1er titre = original
+	begin
+		SetField(fieldOriginalTitle, Value);
+		SetField(fieldTranslatedTitle, Value);
+	end else
+	begin                                                  // traduit + original
+		SetField(fieldOriginalTitle, Value2);
+		SetField(fieldTranslatedTitle, Value);
+	end;
+// note
+  notep := -1;
+  Value := TextBetween(infos, 'note moyenne : <font size=''3'' color=''black''>', ' / 5</font>');
+  if Value <> '' then notep := StrToFloat(Value) * 2;        // note sur 10
+  SetField(fieldRating, FloatToStr(notep));
+ // réalisateur(s)
+	Value := FormatText3(TextBetween(infos, 'Réalisé par ', '<br>'));
+	SetField(fieldDirector, FormatLine(Value));
+ // Date de sortie
+	Value := FormatText3(TextBetween(infos, 'Date de sortie ', '<br>'));
+	HTMLRemoveTags(Value);
+	Value := StringReplace(Value, '-', '/');
+  if (Value <> '') then
+    Value := 'Date de sortie : ' + Value;
+  if GetOption('Garder commentaires') = 1 then
+   SetField(fieldComments, Value + #13#10#13#10 + GetField(fieldComments))
+  else
+   SetField(fieldComments, Value);
+// (titre original) pays - année - durée -
+	Value := FormatText3(TextBetween(infos, '<br>Nationalité : <font color=''black''>', '</font>'));       // pays
+  Value := StringReplace(Value,'Etats-Unis','USA');
+ 	SetField(fieldCountry, FormatLine(Value));
+	Value := FormatText3(TextBetween(infos, '<br>Année de production : <font color=''black''>', '</font>'));      // année
+ 	SetField(fieldYear, FormatLine(Value));
+	Value := FormatText3(TextBetween(infos, 'Durée : <font color=''black''>', ' min</font>'));  // durée  minutes
+  SetField(fieldLength, Value);
+// description
+  Table := TextBetween(infos, '<span class="resume">', '</span>');
+	SetField(fieldDescription, FormatLine(FormatText3(Table)));
+// B.A.
+  Table := TextBetween(infos, '<a href=''../bande-annonce', ''' class=');
+  if Table <> '' then
+  Table := 'http://www.cinemapassion.com/bande-annonce' + Table;
+  if (GetOption('Champs modifiables') = 1) and (CheckVersion(4,0,0)) then    // test s'il y a des champs modifiables
+  begin
+   Nom := 'Bande annonce';
+   if Nb = 0 then                               // Non répétition du choix lors d'une multisélection
+    BA := CustomField(Nom);
+   if BA <> 'Champs d''origine' then            // choix en dehors des champs modifiables
+    SetCustomField(BA, Table)
+   else
+   begin
+    if (GetField(fieldComments) <> '') then
+     Table := GetField(fieldComments) + #13#10 + 'B.A. : ' + Table
+    else
+     Table := 'B.A. : ' + Table;
+     SetField(fieldComments, Table);
+   end;
+  end else
+  if (GetField(fieldComments) <> '') then
+   Table := GetField(fieldComments) + #13#10 + 'B.A. : ' + Table
+  else
+   Table := 'B.A. : ' + Table;
+  if (GetOption('Champs modifiables') = 0) or ((GetOption('Champs modifiables') = 1) and not (CheckVersion(4,0,0)))  then     // choix sans champs modifiables
+   SetField(fieldComments, Table);
+// acteurs
+  if (Pos(' lienmenu_film_menu_vide', Castingplus) = 0) and (Castingplus <> '') then
+   Begin
+	  Castingplus := StringReplace(Castingplus, '"..', '');
+	  Castingplus := StringReplace(Castingplus, '''..', '');
+	  Castingplus := StringReplace(Castingplus, '"', '');
+	  Castingplus := StringReplace(Castingplus, '''', '');
+    Page := Getpage(Url +'film/'+ Castingplus);
+    Value := TextBetween(Page, '<table align=''left'' width=''100%''>', '<br></tr></table>');
+    Value := StringReplace(Value, '</td>', ', </td>');
+    Value := StringReplace(Value, '</a><br>', ', </a><br>');
+    Value := StringReplace(Value, '</span><br>', ', </span><br>');
+    HTMLRemoveTags(Value);
+	  Value := StringReplace(Value, 'Suite du casting :,', '');
+	  Value := trim(Value);
+    if copy(Value,length(Value),1) = ',' then
+     delete(Value,length(Value),length(Value)-1)
+  end else
+   begin
+    Value := FormatText3(TextBetween(infos, 'Avec', '<br>'));
+	  Value := StringReplace(Value, 'Plus</a>', '</a>'); // supprime la position vers la page casting
+    HTMLRemoveTags(Value);
+	  Value := StringReplace(Value, ' ... >', ''); // supprime les points de suspension
+   end;
+  SetField(fieldActors, Trim(Value));
+// distributeur
+	Value := TextBetween(Page, 'Production', '<br></tr></table>');
+  if Value <> '' then
+   Value := Textafter(Value, '<span class=''castingreduitbas''>');
+  Value := StringReplace(Value, '</span><br>', ', </span><br>');
+  HTMLRemoveTags(Value);
+  Value := FormatLine(FormatText3(Value));
+  Value := StringReplace(Value, ' : Producteur Exécutif', '');
+  Value := StringReplace(Value, ' : Producteur', '');
+  delete(Value, Length(Value),1)
+  SetField(fieldProducer, Value);
+// Budget
+	Value := FormatText3(TextBetween(Page, 'Budget', '<br></tr></table>'));
+  if Value <> '' then
+	Value := FormatText3(TextAfter(Page, '<span class=''castingreduitbas''>'));
+  HTMLRemoveTags(Value)
+  if (Value <> '') then
+  if (GetField(fieldComments)<> '') then
+  SetField(fieldComments, 'Budget: ' + Value + #13#10+ GetField(fieldComments))
+  else
+  SetField(fieldComments, Value);
+// Infos
+	Value := TextBetween(Page, 'Scénario', '<br></tr></table>');
+  if Value <> '' then
+	Value := TextAfter(Value, '<span class=''castingreduitbas''>');
+  Value := FormatText3(StringReplace(Value, '</span><br>', ', </span><br>'));
+  HTMLRemoveTags(Value)
+  delete(Value, Length(Value)-3, 3)
+  if CheckVersion(4,2,0) then
+   SetField(fieldWriter,FormatText3(Value))
+  else
+   if (Value <> '') then
+   if (GetField(fieldComments)= '') then
+    SetField(fieldComments, 'Scénariste(s) : ' + FormatText3(Value))
+   else
+    SetField(fieldComments, 'Scénariste(s) : ' + FormatText3(Value) + #13#10+ GetField(fieldComments));
+
+	Value := TextBetween(Page, 'Technique', '<br></tr></table>');
+  if Value <> '' then
+	 Value := TextAfter(Value, '<tr valign=''top''><td align=''left''>');
+  Value := StringReplace(Value, '</span><br>', #13#10 + '</span><br>');
+  HTMLRemoveTags(Value)
+  if (Pos('Compositeur', Value) > 0) and (CheckVersion(4,2,0)) then
+   begin
+	  Table := TextBefore(Value,' : Compositeur', '');
+    if Pos(#13#10, Table) > 0 then
+	   Table := TextBefore(copy(Table,Length(Table)-5 ,Length(Table)),#13#10) + copy(Table,Length(Table)-5 ,Length(Table));
+    SetField(fieldComposer, Table);
+	  Value := TextBefore(Value,TextBefore(Value,' : Compositeur', #13#10),'') + TextAfter(Value, ' : Compositeur'+ #13#10);
+   end;
+  if (Value <> '') and (GetField(fieldComments)= '') then
+   SetField(fieldComments, Value)
+  else
+   SetField(fieldComments, Value + #13#10+ GetField(fieldComments));
+// test s'il y a une affiche
+  Value := TextBetween(infos, '<img src=''', ''' alt=');
+  if (Value <> '') and ((ImportImage = 1) or (ImportImage = 4)) then
+   GetPicture(Value);
+  if (ImportImage > 1) then
+    GetCoverDVD;
+  end;
+
+
+//------------------------------------------------------------------------------
+// récupération des sous-pages
+// Page cover
+//------------------------------------------------------------------------------
+procedure GetCoverDVD;
+var
+  Page, Value: String;
+
+begin
+  PageCover := True;
+  if (Jaquette = '') or (pos('lienmenu_film_menu_vide', Jaquette) > 0) then
+    AnalysePage
+   else
+    if Lien = '' then
+     Lien := Url + Jaquette;
+  Page := Getpage(Lien);
+  if pos('<center><div class', Page) > 0 then
+   Page := TextBetween(Page, '<center><div class', '</table>');
+  if pos('<br><br><br>', Page) > 0 then
+   Page := TextBetween(Page, '<br><br><br>', '</table>');
+// test s'il y a une affiche
+	PickTreeClear;                                                    // init list
+  PickTreeAdd('Jaquettes (Cinemapassion) : ' + MemTitre + ' - ' + GetField(fieldMediaType), '');
+  repeat
+   Value := TextBetween(Page, '<img src=''', '''');       // affiche
+   Titre := TextBetween(Page, 'title=''', '''>');
+   PickTreeAdd(Titre, Value);
+   delete(Page, 1 , Pos('</a><br><br>', Page) + 12);
+  until Pos('</a><br><br>', Page) = 0;
+  if not found and (Lien <> '') then
+   if PickTreeExec(Value) then
+    begin
+     Page := Getpage(Lien);
+     Titre := TextBefore(TextBefore(Page, Value, 'title='''), '''>','');
+     lien := TextBefore(TextAfter(Page, Titre + '''>'), ''' alt=', '<img src=''' );
+    end;
+   if (Value <> '') and ((ImportImage = 2) or (ImportImage = 3)) then
+    GetPicture(Value);
+   if ((Value <> '') or (Lien <> '')) and (ImportImage > 3) and CheckVersion(4,2,0) then
+    if ((Lien <> '') and (Jaquette <> '')) then
+     Extra_Photos_Film(URL + Jaquette)
+    else
+     Extra_Photos_Film(Url + TextBefore((TextBefore(Page, Value, '<a href=''')), ''' title=',''));
+  found := False;
+  if (ImportImage > 2) and (CheckVersion(4,2,0)) then
+     GetStickerDVD;
+end;
+
+//------------------------------------------------------------------------------
+// récupération des sous-pages
+// Page Sticker
+//------------------------------------------------------------------------------
+procedure GetStickerDVD;
+var
+  Page, Value: String;
+
+begin
+  PageSticker := True;
+  PageCover := False;
+  if (Sticker = '') or (pos('lienmenu_film_menu_vide', Sticker) > 0) then
+    AnalysePage
+   else
+    if pos('sticker',Lien) = 0 then
+     Lien := Url + copy(Sticker, 1, Length(Sticker));
+  if Lien <> '' then
+   begin
+   Page := Getpage(Lien);
+   Page := TextBetween(Page, '<br><br>', '</table>');
+// test s'il y a une affiche
+   PickTreeClear;                                                    // init list
+   PickTreeAdd('Sticker (Cinemapassion) : ' + MemTitre + ' - ' + GetField(fieldMediaType), '');
+   repeat
+   Value := TextBetween(Page, '<a href=''', ''' title=');       // Sticker
+   Titre := TextBetween(Page, 'alt=''', ''' title=');
+   PickTreeAdd(Titre, Value);
+   Value := '';
+   delete(Page, 1 , Pos('</a></center>', Page) + 13);
+   until Pos('</a></center>', Page) = 0;
+  if not found and (Lien <> '') then
+   if PickTreeExec(Value) then
+    Titre := GetField(fieldTranslatedTitle);
+  if ((Value <> '') or found) and (ImportImage > 2) and CheckVersion(4,2,0) then
+   begin
+    if not found then
+     Lien := '';
+    if Lien <> '' then
+    Extra_Photos_Film(Lien)
+    else
+    begin
+    Value := Url + Value;
+    Extra_Photos_Film(Value);
+    end;
+   end;
+  end;
+  found := False;
+  Test := False;
+  PageSticker := False;
+	movieok := True;                                         // ça y est, c'est bon
+end;
+
+
+
+//------------------------------------------------------------------------------
+// IMPORTE LES PHOTOS DU FILM COMME EXTRAS
+//------------------------------------------------------------------------------
+
+procedure Extra_Photos_Film(Value : String);
+Var
+  AdressePhoto, AdresseExtra, Comparaison, infos, TitreExtra, TitreJaquette : String;
+  BeginPos, idx, NbrExtra, i : Integer;
+
+  begin
+   NbrExtra := GetExtraCount;
+   if (Pos('<div class="mosaicflow__item_content">', Value) > 0) and (not PageCover) then  // s'assure que l'adresse de l'image existe
+    begin
+     BeginPos := Pos('<div class="mosaicflow__item_content">', Value);
+     repeat
+      delete(Value, 1, BeginPos);
+      AdressePhoto := TextBetween(Value, '<a href="', '" class="wall">');
+      AdressePhoto := URLEncode(CinefilUrl + AdressePhoto);
+	    infos := GetPage(AdressePhoto);
+      AdressePhoto := Textbetween(infos, '<img src="', '" title=');
+      if AdressePhoto <> '' then  // s'assure que l'adresse de l'image n'est pas vide
+       begin
+        For i := 0 to NbrExtra-1 do  //  Début boucle pour comparer les adresses des images déja dans la base avec celles du site
+        if GetExtraField(i, eCategory) = 'Photos du film' then  // ne compare que les extras ayant pour catégorie : 'Photos du film'
+         begin
+          AdresseExtra := GetExtraField(i , extraFieldURL);
+          if (AdresseExtra = AdressePhoto) then
+           begin
+            Comparaison := 'OK';
+            Break;
+           end else
+           begin
+            Comparaison := 'KO';
+           end;                  // fin boucle comparaison
+         end else
+          Comparaison := 'KO';
+          if ((Comparaison = 'KO') or (NbrExtra = 0)) then  // Ajoute l'extra si la comparaison n'est pas bonne ou que le nombre d'extra est égale à 0
+           begin
+            idx := AddExtra; // Crée un extra et stock sa position dans la valeur idx
+            SetExtraField(idx, extraFieldCategory, 'Photos du film'); // Stocke la valeur 'Photos du film' dans le champ catégorie de l'extra
+            SetExtraField(idx, extraFieldURL, AdressePhoto); // Stocke dans le champ URL de l'extra, l'adresse de la photo sur le site pour la comparer ultérieurement et ne téléchargé que les photos que l'on n'a pas déjà
+            SetExtraField(idx, extraFieldDescription, FullTrim(findInfo('title="', '"', Value,'0'))); // Stocke la description de la photo donnée par le site dans le champ description de l'extra
+            SetExtraField(idx, extraFieldTitle, TextBefore(Value, '&ext=', '?numphoto=')); // Stocke le nom de la photo sur les serveurs du site dans le champ titre de l'extra
+            GetExtraPicture(idx, AdressePhoto); // Récupère l'image
+            if GetExtraPictureWidth(idx) < 1 then // Evite de récupérer un extra sans image en supprimant l'extra si l'image fait moins de 1 pixel de large
+             DeleteExtraOfScript(idx);
+           end;
+          end;
+     BeginPos := Pos('<div class="mosaicflow__item_content">', Value);
+     until (BeginPos = 0);
+     end else
+
+     if PageSticker then
+      begin
+      infos := GetPage(Value);
+      infos := TextBetween(infos,'castingreduitbas','barrehorizontale');
+      repeat
+      AdressePhoto := TextBetween(infos, '<img src=''', ''' alt=');
+      For i := 0 to NbrExtra-1 do  //  Début boucle pour comparer les adresses des images déja dans la base avec celles du site
+       if GetExtraField(i, eCategory) = 'Sticker du film' then  // ne compare que les extras ayant pour catégorie : 'Sticker du film'
+        begin
+         AdresseExtra := GetExtraField(i , extraFieldURL);
+         if (AdresseExtra = AdressePhoto) then
+          begin
+           Comparaison := 'OK';
+           Break;
+         end else
+          begin
+           Comparaison := 'KO';
+          end;                  // fin boucle comparaison
+       end else
+        Comparaison := 'KO';
+        if Pos('disc', AnsiLowerCase(TextBetween(infos, '<img src=''', ''' alt='))) > 0 then
+         delete(Titre, Pos('disc',AnsiLowerCase(Titre))+ 4, Length(Titre));
+        if (Pos('blu-ray', AnsiLowerCase(TextBetween(infos, 'title=''', '''>'))) > 0) and (Pos('disc', AnsiLowerCase(TextBetween(infos, 'title=''', '''>'))) > 0 )then
+         delete(Titre, Pos('disc',AnsiLowerCase(Titre))+ 4, Length(Titre));
+        Titre := StringReplace(Titre, ':', '');
+        Titre := StringReplace(Titre, '  ', ' ');
+        if ((Comparaison = 'KO') or (Comparaison = '')) and ((Pos(AnsiLowerCase(supprimeLesAccents(FormatMovieName3(Titre))), AnsiLowerCase(supprimeLesAccents(FormatMovieName3(TextBetween(infos, 'title=''', ''' '))))) > 0) or (Pos(AnsiLowerCase(supprimeLesAccents(FormatMovieName3(MovieName))), AnsiLowerCase(supprimeLesAccents(FormatMovieName3(TextBetween(infos, 'title=''', ''' '))))) > 0)) then  // Ajoute l'extra si la comparaison n'est pas bonne ou que le nombre d'extra est égale à 0
+         begin
+          idx := AddExtra; // Crée un extra et stock sa position dans la valeur idx
+          SetExtraField(idx, extraFieldCategory, 'Sticker du film'); // Stocke la valeur 'Photos du film' dans le champ catégorie de l'extra
+          SetExtraField(idx, extraFieldURL, AdressePhoto); // Stocke dans le champ URL de l'extra, l'adresse de la photo sur le site pour la comparer ultérieurement et ne téléchargé que les photos que l'on n'a pas déjà
+          SetExtraField(idx, extraFieldDescription, FullTrim(findInfo('alt=''', ''' title=', infos,'0'))); // Stocke la description de la photo donnée par le site dans le champ description de l'extra
+          SetExtraField(idx, extraFieldTitle, TextBetween(infos, 'title=''', ''' ')); // Stocke le nom de la photo sur les serveurs du site dans le champ titre de l'extra
+          GetExtraPicture(idx, AdressePhoto); // Récupère l'image
+          BeginPos := Pos('</a></center>', infos) + 13;
+          delete(infos, 1, BeginPos);
+         end;
+          BeginPos := Pos('</a></center>', infos) + 13;
+          delete(infos, 1, BeginPos);
+        until (Pos('</a></center>', infos) = 0);
+       end else
+        begin
+         if (Lien <> '') and (Jaquette = '') then
+          infos := GetPage(Lien)
+         else
+          infos := GetPage(Url + Jaquette);
+         BeginPos := Pos('<table width="660px">', infos) + 21;
+         delete(infos, 1, BeginPos);
+         BeginPos := Pos('<br><br>', infos) + 8;
+         delete(infos, 1, BeginPos);
+         if pos('Le site à besoin de vous !!!', infos) > 0 then
+          begin
+          BeginPos := Pos('Le site à besoin de vous !!!', infos) + 28;
+          delete(infos, 1, BeginPos);
+          end;
+         if pos('</a><br><br>', infos) > 0 then
+          infos  := TextBetween(TextAfter(infos, Titre + '''>'), '<', '</a><br><br>')
+         else
+          infos  := TextBetween(TextAfter(infos, '<br><br><br>'), '<', '<br><br>');
+         repeat
+          if pos(''' border=', infos) > 0 then
+           AdressePhoto := TextBetween(infos, 'img src=''', ''' alt=')
+          else
+           AdressePhoto := TextBetween(infos, 'img src=''', ''' width=');
+         For i := 0 to NbrExtra-1 do  //  Début boucle pour comparer les adresses des images déja dans la base avec celles du site
+          if GetExtraField(i, eCategory) = 'Jaquette du film' then  // ne compare que les extras ayant pour catégorie : 'Photos du film'
+           begin
+            AdresseExtra := GetExtraField(i , extraFieldURL);
+            TitreExtra := GetExtraField(i , extraFieldTitle);
+            if (AdresseExtra = AdressePhoto) then
+             begin
+              Comparaison := 'OK';
+              Break;
+           end else
+            begin
+             Comparaison := 'KO';
+            end;                  // fin boucle comparaison
+          end else
+           Comparaison := 'KO';
+           if pos(''' border=', infos) > 0 then
+            TitreJaquette := TextBetween(infos, ''' title=''', ''' height=')
+           else
+            TitreJaquette := TextBetween(infos, ''' title=''', '''>');
+           if ((Comparaison = 'KO') or (Comparaison = '')) and ((Pos(supprimeLesAccents(FormatMovieName3(AnsiLowerCase(MovieName))), supprimeLesAccents(FormatMovieName3(AnsiLowerCase(TitreJaquette))))> 0) or (Pos(supprimeLesAccents(FormatMovieName3(AnsiLowerCase(Titre))), supprimeLesAccents(FormatMovieName3(AnsiLowerCase(TitreJaquette))))> 0)) then  // Ajoute l'extra si la comparaison n'est pas bonne ou que le nombre d'extra est égale à 0
+            begin
+            idx := AddExtra; // Crée un extra et stock sa position dans la valeur idx
+            SetExtraField(idx, extraFieldCategory, 'Jaquette du film'); // Stocke la valeur 'Photos du film' dans le champ catégorie de l'extra
+            If Jaquette <> '' then
+             SetExtraField(idx, extraFieldURL, Url + Jaquette) // Stocke dans le champ URL de l'extra, l'adresse de la photo sur le site pour la comparer ultérieurement et ne téléchargé que les photos que l'on n'a pas déjà
+            else
+             SetExtraField(idx, extraFieldURL, Lien);
+            SetExtraField(idx, extraFieldDescription, FullTrim(findInfo('alt=''', ''' title=', infos,'0'))); // Stocke la description de la photo donnée par le site dans le champ description de l'extra
+            if pos(''' height=', infos) > 0 then
+             SetExtraField(idx, extraFieldTitle, TextBetween(infos, 'title=''', ''' height=')) // Stocke le nom de la photo sur les serveurs du site dans le champ titre de l'extra
+            else
+             SetExtraField(idx, extraFieldTitle, TextBetween(infos, 'title=''', '''>'));
+            GetExtraPicture(idx, AdressePhoto); // Récupère l'image
+            end;
+           BeginPos := Pos('</a> <br></center>', infos) + 18;
+           delete(infos, 1, BeginPos);
+        until (Pos('</a> <br></center>', infos) = 0);
+      end;
+  end;
+//------------------------------------------------------------------------------
+// formatage texte spécial
+//------------------------------------------------------------------------------
+function FormatText3(str: string) :string;
+
+begin
+// break = crlf
+  str := StringReplace(str, '<BR>', crlf);
+  str := StringReplace(str, #13#10, '');
+  str := StringReplace(str, '<br> <b>', #13#10);
+  str := StringReplace(str, '<br><b>', #13#10);
+  str := StringReplace(str, '<br>', crlf);
+  str := StringReplace(str, '</b> ', ' ');
+  str := StringReplace(str, '''', ' ');
+  str := StringReplace(str, #9, '');
+// formattage 'classique'
+	result := str;
+end;
+
+//------------------------------------------------------------------------------
+// formatage du nom du film
+//------------------------------------------------------------------------------
+function FormatMovieName3(str: string) :string;
+begin
+// une petite édition avant de formater
+	str := StringReplace(str, ' & ', ' et ');
+// remplacer les apostrophes, tirets et points par des blancs
+	str := StringReplace(str, '''', ' ');
+	str := StringReplace(str, '.', '');
+	str := StringReplace(str, ',', ' ');
+ 	str := StringReplace(str, '-', ' ');
+ 	str := StringReplace(str, '_', ' ');
+ 	str := StringReplace(str, ':', '');
+	str := StringReplace(str, '  ', ' ');
+	result := str;
+end;
+
+//------------------------------------------------------------------------------
+// traitement mode batch
+//------------------------------------------------------------------------------
+procedure CinepassBatch;
+begin
+	SetField(fieldChecked, '');                         // init film en traitement
+	initBatchLook;                                      // test et init
+	if batchLookOK then
+	begin;
+  	case BatchMode of
+	  1: AnalysePageFilm(GetField(fieldUrl));           // recherche par url
+  	2:
+      begin;
+      	MovieName := GetMovieName;
+        AnalysePage;                                  // recherche par nom
+      end;
+  	end;      {case}
+	if movieok then
+		SetField(fieldChecked, 'x');                                      // film ok
+	end;
+// on attend un peu pour ne pas stresser le site et pouvoir arrêter le script
+  Sleep(500);
+end;
+
+//------------------------------------------------------------------------------
+// traitement mode normal
+//------------------------------------------------------------------------------
+procedure CinepassNorm;
+begin
+  Test := True;                                            // Test si on continu la recherche
+	MovieName := GetMovieName;
+	MovieName := conversionNR(MovieName, 'RvN');
+	MovieName := AnsiUpFirstLetter(MovieName);
+	repeat
+	if not Input('Cinemapassion.com Import', 'Entrez le titre du film', MovieName) or (MovieName = '') then exit;
+	AnalysePage;
+	until movieok;
+end;
+
+//------------------------------------------------------------------------------
+// Vérifie s'il existe une nouvelle version du script
+// et propose de la télécharger
+//------------------------------------------------------------------------------
+procedure CheckScriptVersion();
+var
+  Page, Script: TStringList;
+  Line, ScriptsDirectory, FileName, ScriptText, Fich: string;
+  LineNr, BeginPos, EndPos: Integer;
+  CurrentVersion, NewVersion: real;
+
+begin
+  Page := TStringList.Create;
+  FileName := UrlEncode(ScriptName);
+	FileName := StringReplace(FileName, '%2E', '.');
+	FileName := StringReplace(FileName, '+', '%20');
+  Page.Text := GetPage(SiteUrl + FileName);
+  ScriptsDirectory := GetStatic('path');
+  LineNr := FindLine('Version=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Version=', Line) + 8;
+    EndPos := pos(' du', Line);
+    CurrentVersion := StrToFloat(copy(VersionScript, 1, pos('du', VersionScript) - 2));
+    NewVersion := StrToFloat(copy(Line, BeginPos, EndPos - BeginPos));
+    if (NewVersion > CurrentVersion) then
+    begin
+      if ShowConfirmation('Une nouvelle version du script est disponible : ' + copy(Line, BeginPos, EndPos - BeginPos)+ #13#10#13#10 + '- Cliquez sur ''''Oui'''' pour effectuer la mise à jour.' + #13#10#13#10 + '- Cliquez sur ''''Non'''' dans le cas contraire.') = True then
+        begin
+          Sleep(500);
+          ScriptText := GetPage(SiteUrl + FileName);
+          Script := TStringList.Create;
+          Script.Add(ScriptText);
+          FileName := ScriptName;
+          FileName := StringReplace(FileName, '%20', ' ');
+          if (CheckVersion(4,1,2)) then
+           Script.SaveToFile(dirScripts + FileName);
+          else
+           Script.SaveToFile(ScriptsDirectory + FileName);
+          Maj := 1;
+          ShowInformation('Vous avez mis à jour le script, quitter la fenêtre de scripts et relancez la.');
+          Script.Free;
+        end;
+    end else
+  end;
+end;
+
+//------------------------------------------------------------------------------
+//  c'est ici que ça commence 
+//------------------------------------------------------------------------------                                               
+var
+	PageCover, PageSticker: Boolean;
+  Lien, Jaquette, Sticker, Titre: string;
+begin
+  PMaj := PMaj+ 1;
+  Maj := 0;
+  if (GetOption('Mise à jour du Script') = 1) and (PMaj = 1) then
+   begin
+   CheckScriptVersion();
+   if Maj = 1 then exit;
+   end;
+  PageCover := False;
+  PageSticker := False;
+  Lien := '';
+  Jaquette :='';
+  Sticker :='';
+  Titre :='';
+	if batchAbort <> '' then exit;                      // mode batch non confirmé
+	if firstcall <> 'done' then
+	begin     
+// 1er appel: init paramètres
+		firstcall := 'done';
+		if not CheckVersion(3,5,0) then
+		begin
+			ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+			batchAbort := 'y';
+			exit;
+		end;		
+		batchCaller := id_Cinemapassion;                           // identifiants Cinefil
+		batchUrl := Url;
+  	batchField2 := fieldDirector;
+// récupère les variables user (utilisées plus d'une fois)
+		BatchMode := GetOption('Mode');
+		ImportImage := GetOption('Affiche');
+		if not CanSetPicture then
+			ImportImage := 0;         // champ image non modifiable: inutile de lire
+		if (not CanSetExtraPicture) and (not CanSetPicture) then
+			ImportImage := 0;         // champ image non modifiable: inutile de lire
+		if (CanSetExtraPicture) and (not CanSetPicture) and CheckVersion(4,2,0) then
+			ImportImage := 4;         // champ image extra utilisable
+
+//
+		if BatchMode > 0 then                      // mode batch: confirmer le choix
+		begin
+			initBatchLog('FR');                                            // init log
+			if batchAbort <> '' then exit;
+		end;
+	end;
+// c'est parti
+	movieok := False;
+	if BatchMode = 0 then
+		CinepassNorm
+	else
+		CinepassBatch;
+  Nb := 1;
+end.

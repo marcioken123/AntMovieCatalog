@@ -1,0 +1,203 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2005 William Robin
+Title=Manga Distribution
+Description=Movie importation script for manga distribution.com (FR) import with picture
+Site=http://www.manga-distribution.com
+Language=FR
+Version=modifié pour AMC v3.5
+Requires=3.5.0
+Comments=Manga Distribution.com,
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program mangadistribution;
+var
+  MovieName: string;
+
+
+
+function DelFirstBlank(line: string): string;
+begin
+  while (   (pos(' ', line) = 1)
+         or (pos(#09, line) = 1)
+         or (pos(#13, line) = 1)
+         or (pos(#10, line) = 1) ) do
+    Delete(line, 1, 1);
+  result := line;
+end;
+
+function DelImg(line: string): string;
+var
+BeginPos, EndPos: Integer;
+Line1: string;
+begin
+  while (pos('<img src', line) > 0)  do
+    begin
+      BeginPos := pos('<img src', line);
+      result   := copy(line, 0, BeginPos);
+      result   := DelFirstBlank(result);
+      Delete(line, 1, BeginPos-1);
+      EndPos := pos('</a>', line);
+      Delete(line, 1, EndPos-1);
+      line := DelFirstBlank(line);
+      line := result + line;
+    end;
+  result := line;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  MovieTitle: string;
+  Line: string;
+  BeginPos, EndPos: Integer;
+begin
+  Line := GetPage(Address);
+  if Pos('index.php?script=produit&ref=', Line) > 0 then
+  begin
+     PickTreeClear;
+     BeginPos := pos('<div class="titre">', Line);
+     while (BeginPos > 0) do
+       begin
+         AddMoviesTitles(Line);
+         MovieTitle := copy(Line, pos('>', Line) + 1, pos('<a href=', Line) - 1);
+         HTMLRemoveTags(MovieTitle);
+         PickTreeAdd(MovieTitle, '');
+         BeginPos := pos('<div class="titre">', Line);
+       end;
+
+      if PickTreeExec(Address) then
+       begin
+        Line := GetPage(Address);
+        SetField(fieldURL, Address);
+        AnalyzeMoviePage(Line);
+       end
+  end;
+end;
+
+
+
+procedure AddMoviesTitles(var Line: string);
+var
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos: Integer;
+  Index : Integer;
+begin
+  StartPos := pos('index.php?script=produit&ref=', Line);
+  repeat
+    if StartPos > 0 then
+    begin
+      Delete(Line, 1, StartPos - 1);
+      MovieAddress := copy(Line, 1, pos('"', Line) - 1);
+      Delete(Line,1,Pos('<img src="../images',Line)-1);
+      Index:=pos('<div class="titre">',Line)+19;
+      MovieTitle := copy(Line, Index, pos('<a href=', Line)-Index);
+      HTMLRemoveTags(MovieTitle);
+      HTMLDecode(MovieTitle);
+      MovieTitle :=StringReplace(MovieTitle, #09, '');
+      MovieTitle :=StringReplace(MovieTitle, #13#10 , '');
+      Delete(Line, 1, pos('<a href=', Line));
+      If Trim(MovieTitle) <>'' then
+      begin
+        PickTreeAdd(MovieTitle, 'http://www.manga-distribution.com/md/' + MovieAddress);
+      end;
+    end;
+    StartPos := pos('index.php?script=produit&ref=', Line);
+    EndPos   := pos('<!-- -------------------------------------- FIN CORPS', Line);
+  until (StartPos < 1) or ((StartPos > EndPos) and  (EndPos > 0));
+ end;
+
+
+procedure AnalyzeMoviePage(PageContents: string);
+var
+  Line, Value: string;
+  LineNr, BeginPos, EndPos: Integer;
+  Page: TStringList;
+begin
+  BeginPos:=Pos('<!-- Fiche Produit -->',PageContents);
+  Line:=PageContents;
+  Delete(Line,1,BeginPos);
+
+  // Picture
+  BeginPos := Pos('Référence :</b>', Line)+15;
+  Delete(Line,1,BeginPos-1);
+  EndPos := Pos('<br>', Line);
+  Value := Trim(Copy(Line, 1, EndPos-1));
+  GetPicture('http://www.manga-distribution.com/images/jaquette/grande/'+Value+'.jpg');
+ 
+  // Titles traduit
+  Line:=PageContents;
+  BeginPos:=Pos('class="titre_prod"',Line)+41;
+  Delete(Line,1,BeginPos-1);
+  EndPos := Pos('</td>', Line);
+  Value := copy(Line, 0, EndPos);
+  HTMLRemoveTags(Value);
+  Value :=StringReplace(Value, #09, '');
+  Value :=StringReplace(Value, #13#10 , '');
+  SetField(fieldTranslatedTitle, Value);
+
+  // Category
+  Value:='Mangas';
+  SetField(fieldCategory, Value);
+
+   // Length
+  BeginPos := Pos('Durée :', PageContents)+11;
+  Line:=PageContents;
+  Delete(Line,1,BeginPos-1);
+  EndPos := Pos(' min', Line);
+  Value := copy(Line, 0, EndPos -1);
+  Value :=StringReplace(Value, ' ' , '');
+  HTMLRemoveTags(Value);
+  SetField(fieldLength, Value);
+
+  //Comments
+  BeginPos := Pos('class="info_prod">',PageContents)+18;
+  Line:=PageContents;
+  Delete(Line,1,BeginPos-1);
+  EndPos:=Pos('</div>',Line);
+  Value:=Copy(Line,0,EndPos-1);
+  SetField(fieldComments,Value);
+
+  //Scénario
+  BeginPos :=Pos('<!-- Fiche Produit -->',PageContents);
+  Line:=PageContents;
+  delete(Line,1,BeginPos-1);
+  BeginPos := Pos('class="text"', Line);
+  if (BeginPos > 0) then
+  begin
+    delete(Line,1,BeginPos-1);
+    BeginPos:=Pos('<br>',Line)+4;
+    delete(Line,1,BeginPos-1);
+    EndPos := Pos('</div>', Line);
+    Value := copy(Line, 0, EndPos-1);
+    SetField(fieldDescription, Value);
+  end;
+  //DisplayResults;
+end;
+
+
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Manga-distribution.com Import', 'Entrez le titre du film :', MovieName) then
+    begin
+     AnalyzePage('http://www.manga-distribution.com/md/index.php?&option_recherche=3&script=recherche&x=11&y=10+&recherche='+UrlEncode(MovieName));
+    end;
+  end else
+    ShowMessage('Ce script requiert la version 3.5 ou supérieure de Ant Movie Catalog.');
+end.

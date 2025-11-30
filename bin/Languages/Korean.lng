@@ -1,0 +1,1892 @@
+[FileInformation]
+Icon=Qk32AAAAAAAAAHYAAAAoAAAAEAAAABAAAAABAAQAAAAAAIAAAAAzCwAAMwsAABAAAAAQAAAAAAAAABEREQBmAAAAzGZmAAAAzAAzM/8AiIiIALu7uwDd3d0A////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJmZmZmZmZmZAAAAAAAAAAAHd3d3d3d3gAeIGIiIgYiQB4FhiIgWGJAHFhiDOIFhkAeBiDIjiBiQB4iDIiI4iJAHiIVEIliIkAeBiFRFiBiQBxYYhViBYZAHgWGIiBYYkAeIGIiIgYiQCJmZmZmZmZAAAAAAAAAAAJmZmZmZmZmZ
+Name=Korean
+LocalName=한국(Korea)
+Encoding=EUC-KR
+Version=3.5.1
+VersionFormat=4.2.2
+Comments=많은 이들이 사용하는 좋은 프로그램이 되길 바라며...
+Authors=장주을(Jang, Ju Eul)|jurylub@empal.com
+
+; if you update this translation, please send it to amc-translation@antp.be so I can include it in the next release
+
+;***************
+;* Main window *
+;***************
+[MainWindow]
+ActionFileNew.Caption=새 작업
+ActionFileNew.Hint=새 작업|새파일로 작업하기
+ActionFileOpen.Caption=열기...
+ActionFileOpen.Hint=열기...|파일 열기
+ActionFileOpenNoRecent.Caption=최근 파일 없음
+ActionFileSave.Caption=저장
+ActionFileSave.Hint=저장|현재 파일 저장
+ActionFileSaveAs.Caption=새 이름으로...
+ActionFileSaveAs.Hint=새 이름으로...|다른이름으로 현재 파일 저장
+ActionFilePrint.Caption=인쇄...
+ActionFilePrint.Hint=목록 인쇄|현재의 목록을 템플릿을 이용해서 인쇄
+ActionFileImport.Caption=가져오기...
+ActionFileImport.Hint=가져오기...|다른 파일 포맷에서 자료 가져오기
+ActionFileExport.Caption=내보내기...
+ActionFileExport.Hint=내보내기...|다른 파일 포맷으로 목록 내보내기
+ActionFileProperties.Caption=파일 속성...
+ActionFileProperties.Hint=속성...|파일 속성과 목록 정보
+
+ActionExit.Caption=종료
+ActionExit.Hint=종료|프로그램 종료
+ActionOptions.Caption=환경설정...
+ActionOptions.Hint=환경설정...|프로그램 옵션 변경
+ActionLanguage.Caption=언어선택...
+ActionLanguage.Hint=언어선택...|사용자 환경 언어 변경
+ActionLoan.Caption=대여...
+ActionLoan.Hint=대여...|대여 현황을 확인할수있는 리스트
+ActionToolsScripting.Caption=스크립팅...
+ActionToolsScripting.Hint=스크립팅...|선택한 영화 스크립트 적용
+ActionToolsGrid.Caption=격자 형태 표시
+ActionToolsGrid.Hint=격자 형태 표시|영화 목록을 격자 형태로 표시하기
+  ActionStretchList.Caption=Stretch &list
+  ActionStretchList.Hint=Stretch list|Stretch the list to the right
+  ActionDisplayHTML.Caption=&Display HTML
+  ActionDisplayHTML.Hint=Display HTML|Display movie information according to HTML template
+  ActionSelectHTML.Caption=&Select HTML
+  ActionSelectHTML.Hint=Select HTML|Select HTML template
+  ActionDisplayThumbnails.Caption=Display as &thumbnails
+  ActionDisplayThumbnails.Hint=Display as thumbnails|Display the movie list as thumbnails
+  ActionSortAscend.Caption=Ascending
+  ActionSortAscend.Hint=|Sort in ascending order
+  ActionSortDescend.Caption=Descending
+  ActionSortDescend.Hint=|Sort in descending order
+  ActionSortAdvanced.Caption=Advanced...
+  ActionSortAdvanced.Hint=|Advanced sort
+ActionGroupNone.Caption=< 없음 >
+ActionGroupNone.Hint=|그룹 해제
+  ActionManageFields.Caption=Manage &fields...
+  ActionManageFields.Hint=Manage fields...|Manage custom fields of current catalog
+  ActionManagePictures.Caption=Manage p&ictures...
+  ActionManagePictures.Hint=Manage pictures...|Manage pictures of current catalog
+  ActionHTMLEditor.Caption=&HTML editor...
+  ActionHTMLEditor.Hint=HTML editor...|Edit HTML templates
+
+ActionHelpIndex.Caption=도움말
+ActionHelpIndex.Hint=도움말|도움말 실행
+ActionHelpAbout.Caption=정보...
+ActionHelpAbout.Hint=정보...|이 프로그램에 관한 설명
+ActionHelpVersion.Caption=버전...
+ActionHelpVersion.Hint=버전...|파일의 버전 정보를 보여준다
+
+ActionMovieAdd.Caption=추가...
+ActionMovieAdd.Hint=추가...|목록에 새 영화를 추가
+ActionMovieUndo.Caption=실행 취소
+ActionMovieUndo.Hint=실행 취소|현재 영화의 변경을 취소
+ActionMovieDelete.Caption=삭제
+ActionMovieDelete.Hint=삭제|선택된 영화를 삭제
+ActionMovieCopy.Caption=복사
+ActionMovieCopy.Hint=복사|클립보드에 영화정보를 복사
+ActionMoviePaste.Caption=붙여넣기
+ActionMoviePaste.Hint=붙여넣기|클립보드에 있는 정보를 붙여넣기
+ActionMovieRenumber.Caption=번호 재설정...
+ActionMovieRenumber.Hint=번호 재설정|목록 번호를 다시 설정, 없는 번호는 이어서 다시 설정
+ActionMovieFind.Caption=찾기...
+ActionMovieFind.Hint=찾기...|특정 영화를 찾을 때 사용
+ActionFindFindNext.Caption=다음 찾기
+ActionFindFindNext.Hint=다음 찾기|조건에 맞는 다음 영화 찾기
+ActionFindWholeField.Caption=전체 항목
+ActionFindWholeField.Hint=|전체 항목이 검색 조건에 맞는 영화만
+  ActionFindReverse.Caption=&Reverse results
+  ActionFindReverse.Hint=|Reverse search results
+ActionFindDisplay.Caption=결과 표시
+ActionFindDisplay.Hint=|조건에 맞는 모든 영화 표시
+LField.Caption=항목에서 찾기:
+LValue.Caption=값으로 찾기:
+  BtnInsertFieldTag.Caption=Fields
+  BtnInsertFieldTag.Hint=|Insert a field in search expression
+  BtnInsertOperator.Caption=Operators
+  BtnInsertOperator.Hint=|Insert an operator in search expression
+ActionMovieNumber.Caption=번호 변경...
+ActionMovieNumber.Hint=번호 변경|영화 목록 번호를 바꾸기
+ActionMovieStats.Caption=통계 보기...
+ActionMovieStats.Hint=통계 보기...|영화의 각 목록에 대한 통계 보기
+ActionMovieImportFiles.Caption=파일에서...
+ActionMovieImportFiles.Hint=파일에서 정보 가져오기|파일에 관한 정보를 가져오기
+ActionMovieImportScript.Caption=스크립트에서...
+ActionMovieImportScript.Hint=스크립트에서 정보 가져오기|스크립트 파일에서 정보 가져오기
+ActionMovieSearch.Caption=인터넷에서 찾기
+ActionMovieSearch.Hint=인터넷에서 찾기|인터넷에서 정보 찾기
+  ActionMovieRandom.Caption=&Random
+  ActionMovieRandom.Hint=Random|Random selection
+ActionMoviePictureShow.Caption=포스터 보여주기
+ActionMoviePictureShow.Hint=포스터 보여주기|영화 포스터 보여주기
+  ActionMovieExtrasShow.Caption=Display &extras
+  ActionMovieExtrasShow.Hint=Show or hide movie extras|Show or hide the movie extras window
+ActionPicSelect.Caption=선택...
+ActionPicSelect.Hint=포스터 선택...|현재 영화를 위해 링크할 또는 가져올 포스터 선택하기
+ActionPicDelete.Caption=삭제
+ActionPicDelete.Hint=삭제|선택된 포스터 삭제
+ActionPicUndock.Caption=분리/결합
+ActionPicUndock.Hint=분리/결합|포스터 창의 분리/결합
+ActionPicSaveAs.Caption=다른 이름으로 저장...
+ActionPicSaveAs.Hint=포스터를 다른 이름으로 저장|포스터를 다른 이름으로 저장
+ActionPicCopy.Caption=복사
+ActionPicCopy.Hint=클립보드에 복사|클립보드에 그림을 복사
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  ActionMovieUrl.Caption=URL
+  ActionMovieUrl.Hint=URL|Movie URL
+  ActionMovieFilePath.Caption=File Path
+  ActionMovieFilePath.Hint=File Path|Movie File Path
+
+ActionMenuFile.Caption=파일
+ActionMenuMovie.Caption=영화
+  ActionMenuDisplay.Caption=&Display
+ActionMenuTools.Caption=도구
+ActionMenuHelp.Caption=도움말
+ActionMenuPicture.Caption=포스터
+ActionMenuPicture.Hint=포스터|영화 포스터 관련 명령
+ActionMenuGet.Caption=정보 얻기
+ActionMenuGet.Hint=정보얻기|영화 정보 얻기
+  ActionMenuGridFields.Caption=Grid &fields
+  ActionMenuGridFields.Hint=Grid fields|Select grid fields to show or hide
+  ActionMenuSort.Caption=&Sort by
+  ActionMenuSort.Hint=Sort movies|Sort by a specified field the movies of the list
+ActionMenuGroup.Caption=그룹 설정
+ActionMenuGroup.Hint=영화 그룹|목록의 특정 항목으로 그룹 만들기
+ActionRefresh.Caption=새로 고침
+ActionRefresh.Hint=목록 새로 고침|영화 목록 새로 고침
+  ActionMenuGroupsFormat.Caption=Groups f&ormatting
+  ActionMenuGroupsFormat.Hint=Format the group names|Format the group names depending on the chosen option
+  ActionGroupsFormatNone.Caption=< &none >
+  ActionGroupsFormatNone.Hint=|Do not format group names
+  MnuGpf1L.Caption=Extract first letter
+  MnuGpf2L.Caption=Extract two first letters
+  MnuGpf3L.Caption=Extract three first letters
+  MnuGpf4L.Caption=Extract four first letters
+  MnuGpf5L.Caption=Extract five first letters
+  MnuGpfDateY.Caption=Extract the year of dates
+  MnuGpfDateYM.Caption=Extract the year and month of dates
+  MnuGpfRound0001.Caption=Round numbers to thousandths
+  MnuGpfRound001.Caption=Round numbers to hundredth
+  MnuGpfRound01.Caption=Round numbers to tenth
+  MnuGpfRound1.Caption=Round numbers to unit
+  MnuGpfRound10.Caption=Round numbers to ten
+  MnuGpfRound100.Caption=Round numbers to hundred
+  MnuGpfRound1000.Caption=Round numbers to thousand
+  MnuGpfRoundType.Caption=&Kind of rounding
+  MnuGpfRoundDown.Caption=Round &down
+  MnuGpfRoundNearest.Caption=Round to &nearest
+  MnuGpfRoundUp.Caption=Round to &up
+
+  MnuSelect.Caption=Select
+  ActionMovieSelGroup.Caption=Whole group
+ActionMovieSelGroup.Hint=그룹 선택|이 그룹의 영화 전체를 선택
+  ActionMovieSelCheck.Caption=Checked
+ActionMovieSelCheck.Hint=선택 표시|선택한 영화를 표시
+  ActionMovieSelUncheck.Caption=Unchecked
+ActionMovieSelUncheck.Hint=선택 해제|선택했던 영화를 해제
+
+  MnuSelected.Caption=Selected movies
+  ActionMovieCheck.Caption=Check
+ActionMovieCheck.Hint=선택 표시|선택한 영화를 표시
+  ActionMovieUncheck.Caption=Uncheck
+ActionMovieUncheck.Hint=선택 해제|선택했던 영화를 해제
+
+ActionDisplayPictureToolbar.Caption=그림 툴바
+ActionDisplayPictureToolbar.Hint=그림 툴바|그림 툴바 보이기/가리기
+  ActionDisplayExtrasToolbar.Caption=&Extras Toolbar
+  ActionDisplayExtrasToolbar.Hint=Display extras toolbar|Display or hide extras toolbar
+ActionDisplayMainToolbar.Caption=메인 툴바
+ActionDisplayMainToolbar.Hint=메인 툴바|메인 툴바 보이기/가리기
+ActionDisplayStatusBar.Caption=상태 바
+ActionDisplayStatusBar.Hint=상태 바 보이기|상태 바 보이기/숨기기
+
+ActionURLOpen.Caption=URL로 열기
+ActionURLOpen.Hint=|특정 파일이나 URL로 열기
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+ActionURLBrowse.Caption=찾기...
+ActionURLBrowse.Hint=|필드에 넣을 파일이름을 위해서 찾기
+
+  MnuHtmlCopy.Caption=Copy
+  MnuHtmlCopy.Hint=|Copy text selected
+  MnuHtmlEdit.Caption=Edit...
+  MnuHtmlEdit.Hint=|Edit HTML template
+  MnuTlsBrowseHTML.Caption=Browse...
+
+ToolbarMenu.Caption=메뉴 바
+ToolbarMain.Caption=메뉴 툴바
+ToolbarPicture.Caption=포스터 툴바
+ToolbarPictureWindow.Caption=포스터
+  ToolbarExtrasWindow.Caption=Extras
+ToolbarFind.Caption=찾기
+
+Listview1.HeaderSections.Item[0].Text=번호
+Listview1.HeaderSections.Item[1].Text=제목
+
+MoviePicture.Hint=|원래 사이즈의 포스터를 볼려면 클릭하세요
+
+  ThumbsSizer.Hint=|Change size of pictures
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display movie title
+
+Messages.Strings.String[0]=%s번 제목 %s 인 영화를 삭제하시겠습니까?
+Messages.Strings.String[1]=선택된 영화를 이전 상태로 되돌리시겠습니까?
+  Messages.Strings.String[2]=%d movies
+  Messages.Strings.String[3]=(%0:d selected, %1:d checked, %2:d visible)
+Messages.Strings.String[4]=현재 파일이 변경되었습니다. 변경 내용을 저장하시겠습니까?
+Messages.Strings.String[5]=다시 묻지 않기
+Messages.Strings.String[6]=수정됨
+Messages.Strings.String[7]=포스터
+Messages.Strings.String[8]=새파일로 포스터 사본으로 저장
+Messages.Strings.String[9]=정보 가져오는 중: %s
+Messages.Strings.String[10]=파일 저장 중: %s
+Messages.Strings.String[11]=불러 오는 중: %s
+Messages.Strings.String[12]=그림 선택
+Messages.Strings.String[13]=그림이 지워집니다. 계속하시겠습니까?
+Messages.Strings.String[14]=이 그림은 사용할 수 없습니다: %s
+; the following line is used as unit for file sizes in main window (B/KB/MB/GB)
+Messages.Strings.String[15]=B
+Messages.Strings.String[16]=정보를 가져올 파일을 선택하십시오
+Messages.Strings.String[17]=%0:s에서 정보를 찾는중|이 영화에 대한 정보를 %0:s에서 찾는중
+Messages.Strings.String[18]=최신 파일 없음
+Messages.Strings.String[19]=이 목록은 파일에 포스트가 포함됩니다.XML로 목록을 저장할려면 개별파일로 존재해야합니다.|XML문서에서 파일로 저장하길 원한다면 확인 버튼을 클릭하세요. 원하지 않으시면 무시를 누르세요.|포스터 파일의 이름은 환경설정창에서 포스터 내보내기에서 포스터 이름의 값을 기초로 합니다.
+Messages.Strings.String[20]=|%s로 그룹환경 설정
+Messages.Strings.String[21]=< 없음 >
+Messages.Strings.String[22]=포스터 링크를 삭제하면서 디스크에 있는 파일도 같이 삭제하시겠습니까? (%s)
+Messages.Strings.String[23]=이영화는 현재 포스터가 링크되있습니다. 다른 포스터로 변경될때, 이전 포스터파일을 지우시겠습니까?(%s)
+Messages.Strings.String[24]=이 포스터는 목록이 저장될때까지 목록 폴더에 복사할수 없습니다; 목록을 저장한후에 다시 해보세요.
+Messages.Strings.String[25]=%s로 목록에 저장됨
+Messages.Strings.String[26]=외부 파일: %s
+Messages.Strings.String[27]=%.0n 바이트
+Messages.Strings.String[28]=인쇄 미리보기 로딩중
+Messages.Strings.String[29]=프린터 검색중...
+Messages.Strings.String[30]=URL 필드에 참조할 파일 선택
+Messages.Strings.String[31]=< 다른것들 >
+Messages.Strings.String[32]=모두
+  Messages.Strings.String[33]=|Sort by %s
+  Messages.Strings.String[34]=Movie Fields
+  Messages.Strings.String[35]=Custom Fields
+  Messages.Strings.String[36]=File "%s" doesn't exist
+  Messages.Strings.String[37]=This catalog has custom fields and/or extras. If you save the catalog to AMC 3.5 the custom fields and/or extras will be lost. Are you sure you want to save the catalog in AMC 3.5 anyway?
+  Messages.Strings.String[38]=Get information from files...
+  Messages.Strings.String[39]=Select same color tag|Select only the movies that have the same color tag
+  Messages.Strings.String[40]=Mark selected with a color tag|Mark selected movies with a color tag
+  Messages.Strings.String[41]=All Fields
+  Messages.Strings.String[42]=You have choosen to replace an existing catalog. Do you want to delete the old copied pictures of this catalog?
+  Messages.Strings.String[43]=Copy/paste on movie "%s"
+  Messages.Strings.String[44]=Delete old copied pictures...
+  Messages.Strings.String[45]=Copy pictures into a subfolder pictures
+  Messages.Strings.String[46]=Extras
+  Messages.Strings.String[47]=This catalog has extras. If you save the catalog to AMC 4.1 the extras will be lost. Are you sure you want to save the catalog in AMC 4.1 anyway?
+  Messages.Strings.String[48]=Advanced...
+
+Fields.Strings.String[0]=번호
+Fields.Strings.String[1]=선택됨
+  Fields.Strings.String[2]=Color Tag
+Fields.Strings.String[3]=매체 레이블
+Fields.Strings.String[4]=매체 종류
+Fields.Strings.String[5]=관람 등급
+Fields.Strings.String[6]=추가된 날짜
+Fields.Strings.String[7]=대여자
+  Fields.Strings.String[8]=Date Watched
+  Fields.Strings.String[9]=My Rating
+Fields.Strings.String[10]=평점
+Fields.Strings.String[11]=원 제목
+Fields.Strings.String[12]=번역 제목
+Fields.Strings.String[13]=포맷된 제목
+Fields.Strings.String[14]=감독
+Fields.Strings.String[15]=제작자
+  Fields.Strings.String[16]=Writer
+  Fields.Strings.String[17]=Composer
+Fields.Strings.String[18]=출연 배우
+Fields.Strings.String[19]=제작 국가
+Fields.Strings.String[20]=제작 연도
+Fields.Strings.String[21]=영화 길이
+Fields.Strings.String[22]=영화 장르
+  Fields.Strings.String[23]=Certification
+Fields.Strings.String[24]=관련 링크
+Fields.Strings.String[25]=영화 내용
+Fields.Strings.String[26]=영화 해설
+  Fields.Strings.String[27]=File Path
+Fields.Strings.String[28]=비디오 포맷
+Fields.Strings.String[29]=비디오 전송률
+Fields.Strings.String[30]=오디오 포맷
+Fields.Strings.String[31]=오디오 주파수
+Fields.Strings.String[32]=해상도
+Fields.Strings.String[33]=프레임 속도
+Fields.Strings.String[34]=언어
+Fields.Strings.String[35]=자막
+Fields.Strings.String[36]=파일 크기
+Fields.Strings.String[37]=CD 개수
+  Fields.Strings.String[38]=Picture status
+  Fields.Strings.String[39]=Number of extras
+
+  ExtraFields.Strings.String[0]=Number
+  ExtraFields.Strings.String[1]=Checked
+  ExtraFields.Strings.String[2]=Tag
+  ExtraFields.Strings.String[3]=Title
+  ExtraFields.Strings.String[4]=Category
+  ExtraFields.Strings.String[5]=URL
+  ExtraFields.Strings.String[6]=Description
+  ExtraFields.Strings.String[7]=Comments
+  ExtraFields.Strings.String[8]=Created by
+  ExtraFields.Strings.String[9]=Picture status
+
+  PictureStatus.Strings.String[1]=1 - Picture stored in catalog
+  PictureStatus.Strings.String[2]=2 - Picture copied in catalog folder
+  PictureStatus.Strings.String[3]=3 - Picture copied in pictures folder
+  PictureStatus.Strings.String[4]=4 - External picture with relative link
+  PictureStatus.Strings.String[5]=5 - External picture with absolute link
+  PictureStatus.Strings.String[6]=6 - No picture
+
+  Media.Strings.String[0]=Volume Label
+  Media.Strings.String[1]=File Path
+  Media.Strings.String[2]=Path + File Name
+  Media.Strings.String[3]=Path + File Name + Extension
+  Media.Strings.String[4]=File Name
+  Media.Strings.String[5]=File Name (Filtered)
+  Media.Strings.String[6]=File Name + Extension
+  Media.Strings.String[7]=Folder Name
+  Media.Strings.String[8]=Folder Name (Filtered)
+  Media.Strings.String[9]=File Extension
+  Media.Strings.String[10]=File Extension (Without dot)
+  Media.Strings.String[11]=Size (String - "650+530")
+  Media.Strings.String[12]=Size (Sum - "1180")
+  Media.Strings.String[13]=Disks
+  Media.Strings.String[14]=Picture
+  Media.Strings.String[15]=Length
+  Media.Strings.String[16]=Resolution ("Width x Height")
+  Media.Strings.String[17]=Resolution (Width)
+  Media.Strings.String[18]=Resolution (Height)
+  Media.Strings.String[19]=Framerate
+  Media.Strings.String[20]=Video Codec
+  Media.Strings.String[21]=Video Bitrate
+  Media.Strings.String[22]=Audio Codec
+  Media.Strings.String[23]=Audio Channels
+  Media.Strings.String[24]=Audio Codec + Audio Channels
+  Media.Strings.String[25]=Audio Bitrate
+  Media.Strings.String[26]=Languages
+  Media.Strings.String[27]=Subtitles
+
+  Operators.Strings.String[0]=Or
+  Operators.Strings.String[1]=And
+  Operators.Strings.String[2]=Not
+  Operators.Strings.String[4]=Equal
+  Operators.Strings.String[5]=Not equal
+  Operators.Strings.String[6]=Contains
+  Operators.Strings.String[7]=Match RegExp
+  Operators.Strings.String[8]=Greater than
+  Operators.Strings.String[9]=Greater or equal than
+  Operators.Strings.String[10]=Lower than
+  Operators.Strings.String[11]=Lower or equal than
+  Operators.Strings.String[13]=Add
+  Operators.Strings.String[14]=Minus
+  Operators.Strings.String[15]=Multiply
+  Operators.Strings.String[16]=Divide
+  Operators.Strings.String[17]=Modulo
+  Operators.Strings.String[19]=Cast in Boolean
+  Operators.Strings.String[20]=Cast in Date
+  Operators.Strings.String[21]=Cast in Integer
+  Operators.Strings.String[22]=Cast in Float
+  Operators.Strings.String[23]=Cast in String
+  Operators.Strings.String[24]=Evaluate expression
+  Operators.Strings.String[26]=If
+  Operators.Strings.String[27]=Else
+  Operators.Strings.String[29]=String quotes
+
+;****************
+;* Message Form *
+;****************
+[MessageWin]
+Captions.Strings.String[0]=경고
+Captions.Strings.String[1]=에러
+Captions.Strings.String[2]=정보
+Captions.Strings.String[3]=확인
+Captions.Strings.String[4]=예
+Captions.Strings.String[5]=아니오
+Captions.Strings.String[6]=확인
+Captions.Strings.String[7]=취소
+Captions.Strings.String[8]=포기
+Captions.Strings.String[9]=재시도
+Captions.Strings.String[10]=무시
+Captions.Strings.String[11]=모두
+Captions.Strings.String[12]=모두 아니오
+Captions.Strings.String[13]=모두 예
+Captions.Strings.String[14]=도움말
+
+;**************
+;* Input Form *
+;**************
+[InputWin]
+btn2.Caption=확인
+btn1.Caption=취소
+
+;*********
+;* About *
+;*********
+[AboutWin]
+Caption=프로그램 정보
+btn3.Caption=닫기
+btn2.Caption=파일 버전...
+btn1.Caption=도운 이...
+Messages.Strings.String[0]=%s: 버전 %s (생성일 : %s)
+Messages.Strings.String[1]=(클립보드에 이 정보를 복사하길 원하신다면 Ctrl+C 키를 누르세요)
+
+;******************
+;* Enter a number *
+;******************
+[NumberWin]
+Caption=영화 번호 선택
+btn2.Caption=확인
+btn1.Caption=취소
+LEnterNumber.Caption=영화의 번호를 입력하세요::
+btnFindNum.Hint=가능한 번호 찾기|
+grpNotUnique.Caption=이 번호의 영화가 이미 존재합니다...
+grpNotUnique.Items.String[0]=덮어쓰기 허용
+grpNotUnique.Items.String[1]=존재하는 영화에 다른 번호를 주기
+grpNotUnique.Items.String[2]=비어있는 번호가 나올때까지 번호 이동
+CBDoNotAsk.Caption=다시 묻지 않기; 자동으로 번호 환경 설정
+
+;**************
+;* Properties *
+;**************
+[PropertiesWin]
+btn2.Caption=확인
+btn1.Caption=취소
+Caption=영화 목록 파일 속성
+LHOwnerInfo.Caption=수유자 정보
+LFileName.Caption=이름:
+LFileSize.Caption=크기:
+LFileVersion.Caption=포맷:
+LHXMLHeader.Caption=XML 헤더
+LEncoding.Caption=인코딩:
+LOwnerName.Caption=이름:
+LOwnerMail.Caption=이메일:
+LOwnerSite.Caption=웹사이트:
+LDescription.Caption=설명:
+EOwnerMail.ButtonHint=메일 보내기
+EOwnerSite.ButtonHint=URL로 이동
+
+;*********
+;* Loans *
+;*********
+[LoanWin]
+Caption=대여자 목록
+btn2.Caption=닫기
+btn1.Caption=도움말
+
+ActionBorrowerAdd.Caption=추가...
+ActionBorrowerAdd.Hint=대여자 추가|리스트에 대여자를 추가
+ActionBorrowerDel.Caption=삭제
+ActionBorrowerDel.Hint=대여자 삭제|리스트에서 대여자를 삭제
+ActionCheckOut.Caption=신규
+ActionCheckOut.Hint=신규|선택된 영화를 대여 현황 목록에 추가
+ActionCheckIn.Caption=반납
+ActionCheckIn.Hint=반납|선택된 영화를 대여 현황 목록에서 제거
+ActionMovieGetBorrower.Caption=대여 현황목록 가져오
+ActionMovieGetBorrower.Hint=대여 현황목록 가져오기|대여 현황목록에서 대여자나 영화 찾기
+ActionMovieFindNext.Caption=다음 찾기
+ActionMovieFindNext.Hint=다음 찾기|주어진 조건의 다음 영화 찾기
+ActionOptions.Caption=옵션
+ActionOptions.Hint=옵션|신규와 반납에 관한 옵션 설정
+ActionOptionsIncNum.Caption=같은 번호의 영화 포함
+ActionOptionsIncNum.Hint=같은 번호의 영화 포함|선택된 영화와 같은 번호의 영화에 신규와 반납을 포함
+ActionOptionsIncLab.Caption=같은 레이블의 영화 포함
+ActionOptionsIncLab.Hint=같은 레이블의 영화를 포함|선택된 것에서 같은 매체 레이블을 체크인이나 체크아웃으로 포함한다
+
+LvMovies.HeaderSections.Item[0].Text=번호
+LvMovies.HeaderSections.Item[1].Text=레이블
+LvMovies.HeaderSections.Item[2].Text=제목
+LvMovies.HeaderSections.Item[3].Text=대여자
+LvNames.HeaderSections.Item[0].Text=대여자
+LvNames.HeaderSections.Item[1].Text=수량
+LvLent.HeaderSections.Item[0].Text=번호
+LvLent.HeaderSections.Item[1].Text=레이블
+LvLent.HeaderSections.Item[2].Text=제목
+
+Messages.Strings.String[0]=대여자 목록에서 "%s"을(를) 삭제, 이 사람에게 빌려준 모든 영화를 반납으로 변환
+Messages.Strings.String[1]=목록 부르는중...
+Messages.Strings.String[2]=이 영화는 이미 다른 사람에게 대여 중
+Messages.Strings.String[3]=이름을 넣어주세요
+Messages.Strings.String[4]=이 영화는 이미 다른 이에게 대여중 :
+;Messages.Strings.String[5]=
+Messages.Strings.String[6]=이름을 넣어주세요
+Messages.Strings.String[7]=새 대여자
+;Messages.Strings.String[8]=
+;Messages.Strings.String[9]=
+
+;**********
+;* Export *
+;**********
+[ExportWin]
+Caption=다른 파일 형식으로 내보내기
+lvFormat.Columns.Item[0].Caption=지원하는 파일 형식
+Btn3.Caption=내보내기...
+Btn2.Caption=닫기
+Btn1.Caption=도움말
+grpImages.Caption=이미지
+CBCopyPictures.Caption=내보낸 파일과 저장하기
+CBCopyPictures.Hint=내보낸 파일과 같은 폴더에 그림 저장하기
+  CBCopyPicturesInPicDir.Caption=Into a subfolder
+  CBCopyPicturesInPicDir.Hint=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=존재하지 않는다면 유지
+CBCopyPicturesNew.Hint=존재하지 않는다면 그림파일만 저장하기(덮어쓰지는 않는다)
+  CBCopyPicturesIncExtras.Caption=Include extras
+  CBCopyPicturesIncExtras.Hint=Include extra pictures
+LSelectFormat.Caption=파일 형식을 선택하세요...
+
+LCSVDelimiter.Caption=필드 구분자:
+ECSVDelimiter.Hint=|필드 구분시 사용할 문자
+  LCSVDelimExtras.Caption=Extra delimiter:
+  ECSVDelimExtras.Hint=|Character delimiting extras values for a field
+LCSVBloc.Caption=텍스트 블럭 구분자:
+ECSVBloc.Hint=|문자열 구분 문자 (사용하지 않으면 빈상태 유지)
+LCSVLinebreaks.Caption=줄 구분 문자:
+ECSVLinebreaks.Hint=|영화해설과 설명의 줄 구분자에 사용할 문자
+CBCSVColumnTitles.Caption=칼럼 제목 추가
+LSQLTableName.Caption=테이블 이름:
+  LSQLTableNameExtras.Caption=Table name of extras:
+CBSQLUpdate.Caption="Insert" 구문 대신 "Update"
+LSQLCommands.Caption=포함될 SQL 명령:
+LSQLLinebreaks.Caption=줄 구분 문자:
+LOrigonsLink.Caption=이 포맷은 Origons.com 웹사이트에서 온라인으로 제공하는 영화 리스트에 넣을수 있습니다
+FieldsCSV.LSelected.Caption=내보내기 할 필드:
+FieldsSQL.LSelected.Caption=내보내기 할 필드:
+  LAMCNote.Caption=You can also export to AMC (without export options) from the main window using the File -> Save As command, then select AMC as file format. This file can later be opened and used by Ant Movie Catalog like a normal catalog.
+LXMLNote.Caption=다른 이름으로 저장시 XML 형식으로 내보낼수 있다. 이 파일들은 영화 목록과 같이 사용하거나 열수 있다.
+  PictureOperationExportAMC.Grp.Caption=Pictures exportation method for movies
+  PictureOperationExportXML.Grp.Caption=Pictures exportation method for movies
+  ExtraPictureOperationExportAMC.Grp.Caption=Pictures exportation method for extras
+  ExtraPictureOperationExportXML.Grp.Caption=Pictures exportation method for extras
+
+Messages.Strings.String[0]=목록 정렬중...
+Messages.Strings.String[1]=%s로 내보내는 중...
+Messages.Strings.String[2]=파일 복사중...
+Messages.Strings.String[3]=HTML로 내보내기
+Messages.Strings.String[4]=CSV로 내보내기
+Messages.Strings.String[5]=SQL로 내보내기
+Messages.Strings.String[6]=이미지로 내보내기
+Messages.Strings.String[7]=Origons.com을 위한 파일로 내보내기
+  Messages.Strings.String[8]=Export to AMC
+  Messages.Strings.String[9]=Export to XML
+  Messages.Strings.String[10]=You can not export a catalog to the same location of current catalog!
+
+;**********
+;* Import *
+;**********
+[ImportWin2]
+Caption=다른 형식의 파일에서 가져오기
+Btn3.Caption=가져오기
+Btn2.Caption=취소
+Btn1.Caption=도움말
+lvFormat.Columns.Item[0].Caption=지원하는 파일 형식
+  lvFormat.Items.Item[5].Caption=Media files
+  Messages.Strings.String[0]=Searching for media files...
+  Messages.Strings.String[1]=Media files found:
+  Messages.Strings.String[2]=Importing media info...
+  Messages.Strings.String[3]=Importing from %s...
+  Messages.Strings.String[4]=Some files or folders cannot be scanned because they contains not supported characters:
+
+[TImportFrame]
+lblLink.Caption=%s 에서 영화 정보 가져오기 허용
+grpSettings.Caption=설정
+chkAllowDup.Caption=중복되는 번호 허용
+  chkAllowClear.Caption=Allow to clear fields when new value is empty
+chkAutoAssign.Caption=자동으로 필드 할당
+lblPictures.Caption=그림 가져오기 방법:
+  cmbPictures.Items.String[0]=1 - Store into catalog
+  cmbPictures.Items.String[1]=2 - Copy to catalog folder and make relative link
+  cmbPictures.Items.String[2]=3 - Copy to catalog folder only if it was not stored
+  cmbPictures.Items.String[3]=4 - Copy to pictures folder and make relative link
+  cmbPictures.Items.String[4]=5 - Copy to pictures folder only if it was not stored
+  cmbPictures.Items.String[5]=6 - Make absolute links to current pictures
+  cmbPictures.Items.String[6]=7 - Make relative links to current pictures
+  LMovie.Caption=Movie
+  LExtras.Caption=Extras
+grpSourceFile.Caption=원본 파일
+btnBrowse.Hint=탐색...|가져올 파일 탐색
+btnReload.Caption=파일 다시 불러오기
+grpPreview.Caption=미리보기
+lblPreview.Caption=필드를 할당하기 위헤 컬럼 헤더 클릭
+btnFieldsLoad.Hint=필드 불러오기|이전에 저장되었던 필드를 불러온다
+btnFieldsSave.Hint=필드 저장하기|현재 필드 링크를 저장한다
+  btnFieldsAutoLoad.Hint=Reload fields automatically|Reload automatically field-column links that was previously saved
+  btnColumnsAutoResize.Hint=Resize columns automatically|Resize columns automatically
+ActionListCheck.Caption=선택된 아이템 체크
+ActionListCheck.Hint=선택된 아이템 체크|선택된 아이템 체크
+ActionListUncheck.Caption=선택된 아이템 체크 해제
+ActionListUncheck.Hint=선택된 아이템 체크 해제|선택된 아이템 체크 해제
+ActionListAll.Caption=모두 체크
+ActionListAll.Hint=모두 체크|모든 아이템 체크
+ActionListNone.Caption=모두 체크 해제
+ActionListNone.Hint=모두 체크 해제|모든 아이템 체크 해제
+  ActionListCheckExists.Caption=Check existing movies
+  ActionListCheckExists.Hint=Check existing movies|Check existing movies in current catalog
+  ActionListUncheckExists.Caption=Uncheck existing movies
+  ActionListUncheckExists.Hint=Uncheck existing movies|Uncheck existing movies in current catalog
+  ActionSortAscend.Caption=Sort ascending
+  ActionSortAscend.Hint=Sort ascending|Sort column values into ascending order
+  ActionSortDescend.Caption=Sort descending
+  ActionSortDescend.Hint=Sort descending|Sort column values into descending order
+  ActionDefineKeyField.Caption=Define as key field
+  ActionDefineKeyField.Hint=|Use this key field to compare movies
+ActionHeaderNoImport.Caption=이 필드에 가져오기 해서는 안된다
+  MnuMov.Caption=Movie Fields
+  MnuMovCF.Caption=Custom Fields
+  MnuMovExtras.Caption=Extra fields
+Messages.Strings.String[0]=가져올 영화가 없습니다
+Messages.Strings.String[1]=아무 컬럼에 필드를 할당하지 마라. 컬럼 헤더를 클릭하라.
+Messages.Strings.String[2]=이 그림 가져오기 방법을 위해, 목록은 이름을 가지고 있어야한다.
+  Messages.Strings.String[3]=Select a folder:
+  Messages.Strings.String[4]=%s movie(s) found!
+  Messages.Strings.String[5]=%s movie(s) added!
+  Messages.Strings.String[6]=%s movie(s) updated!
+  Messages.Strings.String[7]=The values of key field are not unique in current catalog.|A movie in the list could match with several movies in current catalog.
+  Messages.Strings.String[8]=To do this action, you must first select a key field to compare movies (click on a column header of the list).
+  Messages.Strings.String[9]=Importing movies into current catalog...
+
+[TImportFrameCSV]
+chkFirstLineHeaders.Caption=첫줄은 헤더를 포함한다
+lblDelim.Caption=필드 구분자:
+edtDelim.Hint=|필드값을 구분하는 문자
+  lblDelimExtras.Caption=Extra delimiter:
+  edtDelimExtras.Hint=|Character delimiting extras values for a field
+lblQuote.Caption=텍스트 블럭 구분자:
+edtQuote.Hint=|문자열을 구분할 문자
+lblLinebreaks.Caption=줄 구분자:
+edtLinebreaks.Hint=|영화설명이나 해설의 줄 변경을 위한 문자
+
+[TImportFrameQuery]
+grpQuery.Caption=실행할 쿼리
+btnQueryExec.Hint=실행|물어보기
+
+[TImportFrameDir]
+  Messages.Strings.String[10]=Source folder
+  Messages.Strings.String[11]=Browse...|Browse for a folder to scan
+  Messages.Strings.String[12]=&Scan folder
+  lblExtractProcess.Caption=Extract process:
+  cmbExtractProcess.Items.String[0]=1 - Extract advanced media info during scanning
+  cmbExtractProcess.Items.String[1]=2 - Only extract advanced media info during final import
+  cmbExtractProcess.Items.String[2]=3 - Do not extract advanced media info
+  chkInternalAVI.Caption=Use internal engine for AVI importation (faster)
+  chkMultiDisks.Caption=Merge info of media in multi parts/disks
+  lblDiskTag.Caption=Disk Tag:
+  edtDiskTag.Hint=|E.g. choose tag 'cd' for names like 'moviename.cd1', 'moviename.cd2',...
+  lblBrowseDepth.Caption=Browse subfolders with depth of:
+  edtBrowseDepth.Hint=|0 = none, * = browse all
+  edtBrowseDepth.Left=244
+  btnFilterFileName.Caption=Filter the file name
+  lblExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+
+;*****************
+;* Import method *
+;*****************
+[ImportMethodWin]
+  Caption=Movies importation method
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LMsg1.Caption=You have selected a key field to compare checked movies of the list with movies in current catalog.
+  LMsg2.Caption=You will import all checked movies of the list in current catalog. To check if movies do not already exist, you can define a key field to compare them click on a column header of the list.
+  grpImportMethod.Caption=What do you want to do ?
+  grpImportMethod.Items.String[0]=Import all movies
+  grpImportMethod.Items.String[1]=Import only new movies
+  grpImportMethod.Items.String[2]=Update only existing movies
+  grpImportMethod.Items.String[3]=Import new movies and update existing movies
+  chkImportExtrasNew.Caption=Import all extras for new movies
+  chkImportExtras.Caption=Import all extras for existing movies
+  chkDeleteExtras.Caption=Delete all extras of existing movies before to add the new ones
+
+;***************
+;* Preferences *
+;***************
+[OptionsWin]
+Caption=환경 설정
+Btn3.Caption=확인
+Btn2.Caption=취소
+Btn1.Caption=도움말
+
+LvCat.Items.Item[0].Text=일반 화면
+LHToolbar.Caption=툴바와 메뉴
+LIconSet.Caption=아이콘 셋:
+LColorType.Caption=색 유형:
+cbxColorType.Items.String[0]=자동
+cbxColorType.Items.String[1]=비활성화시 회색
+cbxColorType.Items.String[2]=비활성화시 밝게
+cbxColorType.Items.String[3]=비활성화시 어둡게
+cbxColorType.Items.String[4]=항상 컬러풀하게
+CBOfficeXP.Caption=MS 오피스 XP 스타일
+CBMenuImages.Caption=메뉴 이미지
+LHMainWindow.Caption=일반 화면
+CBSoftBorders.Caption=영화 목록과 정보창, 목록창에 부드러운 테두리 사용
+  CBNatCmp.Caption=Use natural comparison (detect numbers automatically) to sort strings
+  CBScrollUnderPointer.Caption=Activate scrolling of item under pointer instead of selected item
+  CBAutoFocus.Caption=Activate autofocus on movie list, extra list and html viewer
+  CBAutoFocus.Hint=|Give focus to component when the mouse pointer moves over it
+  CBForceRefresh.Caption=Force refresh of movie list each time a field value change
+  CBForceRefresh.Hint=|By default, press Enter or Escape in the field to refresh movie list
+LHStartup.Caption=시작
+CBLogo.Caption=로고 표시
+
+LvCat.Items.Item[1].Text=툴바 설정
+LHCustomizeToolbar.Caption=메인 툴바에 있는 아이콘을 선택하십시오
+
+LvCat.Items.Item[2].Text=파일
+LHSaving.Caption=카탈로그
+CBBackup.Caption=항상 백업파일 생성
+CBAutoLoad.Caption=시작시 새 파일을 만들지 않고 자동으로 다음 파일을 연다:
+EAutoLoad.ButtonHint=탐색...|파일 선택
+CBAutoLoadLast.Caption=직전 사용 파일 열기
+  CBAutoLoadCF.Caption=Automatically import custom fields from following file for new catalogs:
+  EAutoLoadCF.ButtonHint=Browse...|Select file
+LRecentFiles.Caption=메뉴에 표시할 최근 파일 개수:
+LRepairAssociations.Caption=Ant Movie Catalog에 .amc 파일들을 합치키기 위해 아래 단추를 클릭하십시오:
+BtnRepairAssoc.Caption=파일 조합 수정
+LHHistory.Caption=대여 현황 기록
+CBHistory.Caption=대여 현황 기록을 CSV 포맷으로 다음 파일에 저장:
+EHistoryFile.ButtonHint=탐색...|파일을 선택하세요
+  LHHTMLTemplate.Caption=HTML Template
+  EHTMLTemplate.ButtonHint=Browse...|Select file
+
+LvCat.Items.Item[3].Text=영화 목록
+LHDisplay.Caption=표시
+  CBCheckboxes.Caption=Checkboxes (right click to change movie color tag)
+  CBCheckboxesInThumbs.Caption=Checkboxes in thumbnails display
+  CBCheckboxesColor.Caption=Checkboxes with background color associated to movie color tag
+  CBLinesColor.Caption=Lines with background color associated to movie color tag
+CBHotTrack.Caption=핫 트랙
+CBEnhScrollbars.Caption=향상된 스크롤바
+CBMovieNumColumn.Caption="영화 번호" 컬럼
+  LGridTextSize.Caption=Number of characteres per column in grid mode (0 = no limit):
+  LGridTextSize.Hint=|The columns FormatedTitle, OriginalTitle and TranslatedTitle are not affected
+  CBAutoStretchListGrid.Caption=Auto stretch list in grid mode view
+  CBAutoStretchListThumbs.Caption=Auto stretch list in thumbnails view
+LHOperations.Caption=작용
+CBDelete.Caption=삭제 확인
+CBUndo.Caption=취소 확인
+LHShortcut.Caption=단축키
+LShortcutPrev.Caption=이전 영화
+LShortcutNext.Caption=다음 영화
+
+LvCat.Items.Item[4].Text=제목 설정
+LHFormatting.Caption=환경 설정
+LTitleColumn.Caption=제목 항목:
+cbxTitle.Items.String[0]=원제목
+cbxTitle.Items.String[1]=번역된 제목
+cbxTitle.Items.String[2]=원제목 (번역된 제목)
+cbxTitle.Items.String[3]=번역된 제목 (원제목)
+cbxTitle.Items.String[4]=매체 레이블
+  cbxTitle.Items.String[5]=Custom title
+  LTitleTemplate.Caption=Template of title:
+  BtnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+CBPrefixes.Caption=다음 글자를 제목 뒤에 붙이기:
+LPrefixes1.Caption=스페이스나 따옴표로 시작되는 글자만 인식됩니다.
+LPrefixes2.Caption=각 줄에 스페이스나 따옴표 없이 목록에 추가하세요.
+
+LvCat.Items.Item[5].Text=그룹 묶기
+LHGrouping.Caption=그룹화하기
+CBGroupCount.Caption=그룹 개수 개수 표시
+CBGroupExpand.Caption=기본값으로 전체 확장
+  CBGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBGroupMulti.Hint=|For multi fields such as Category, Actors, Languages, Subtitles...
+  EGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBGroupMultiRmAllP.Caption=Remove values between parentheses for all multi fields
+  CBGroupMultiRmAllP.Hint=|Field Actors by default + Others multi fields
+  CBGroupMultiAddPatch.Caption=Add patch to ignore parenthesis of (I, (II, (II, (IV... (XXX values
+  CBSortGroupsByCount.Caption=Sort groups by groups count
+  LHCommonGroups.Caption=Common groups
+lblGroupLocation.Caption=위치:
+  RBGroupsAbove.Caption=Groups above common groups
+  RBGroupsBelow.Caption=Groups below common groups
+CBGroupUnique.Caption=그 그룹안에 유일하다면 일반 그룹 아이템에 넣어라
+
+  LvCat.Items.Item[6].Text=Extra list
+  LHExtraDisplay.Caption=Display
+  CBExtraCheckboxes.Caption=Checkboxes
+  CBExtraNumWithTitle.Caption=Show extra number with extra title
+  CBExtraInfoWhenNoPic.Caption=Show extra info instead of picture when there is no picture
+  CBExtraCellBorders.Caption=Show borders around cells
+  CBExtraDelete.Caption=Confirm Delete
+  LHExtraGrouping.Caption=Groups
+  CBExtraGroupCount.Caption=Display groups count
+  CBExtraGroupExpand.Caption=Full expand by default
+  CBExtraGroupMulti.Caption=Make groups with values in multi field separated by:
+  CBExtraGroupMulti.Hint=|For multi field Category
+  EExtraGroupMultiSep.Hint=|Separator to delimit values in multi fields
+  CBExtraGroupMultiRmAllP.Caption=Remove values between parentheses for multi fields
+  CBExtraSortGroupsByCount.Caption=Sort groups by groups count
+  LHExtraCommonGroups.Caption=Common groups
+  lblExtraGroupLocation.Caption=Location:
+  RBExtraGroupsAbove.Caption=Groups above common groups
+  RBExtraGroupsBelow.Caption=Groups below common groups
+
+  LvCat.Items.Item[7].Text=Movie / Extra information
+LHAddMovie.Caption=새 영화 추가시
+CBAskNumber.Caption=번호 물어보기
+CBFirstAvailable.Caption=맨 끝 번호+1 말고 가능한 첫번째 숫자 사용
+CBAddOpenScript.Caption=스크립트에서 정보 가져오기 창을 연다
+CBAddOpenFiles.Caption=파일에서 정보 가져오기 창을 연다
+LDefaultValues.Caption=새 영화의 초기값을 수정하기 위해서는 아래 버튼을 클릭하세요:
+BtnDefaultValues.Caption=초기 영화 값을 수정하기...
+  CBSetCurrentDate.Caption=Fill field "Date Added" with current date instead of specified date
+  CBChecked.Caption=Checked
+  LColorTag.Caption=Color Tag:
+  LDefaultPicture.Caption=Default picture:
+  EDefaultPicture.ButtonHint=Browse...|Select a picture
+  LHAddExtra.Caption=Adding a new extra
+  BtnExtraDefaultValues.Caption=Edit default extra values...
+  CBExtraChecked.Caption=Checked
+  LExtraDefaultPicture.Caption=Default extra picture:
+  EExtraDefaultPicture.ButtonHint=Browse...|Select a picture
+LHRating.Caption=평점 설정
+CBRatingTrunc.Caption=메인창이나 내보내기, 인쇄시 소수자리까지 표시하지 않는다(정수로표시)
+LHPictureWindow.Caption=포스터
+LPictureBackground.Caption=배경색:
+CBFitPicture.Caption=창에 포스터 고정
+CBShowPicInfo.Caption=포스터 사이즈, 형식 그리고 경로를 전체 보기 창에 보여준다
+  LHMovieFrame.Caption=Frame movie fields
+  LMovieFrameBackground.Caption=Background color:
+
+LvCat.Items.Item[8].Text=가져다 놓을 목록
+LHComboBoxItems.Caption=항목
+CBComboSameForAll.Caption=모든 리스트에 같은 옵션 사용 (리스트 내용에 영향을 주지는 않음)
+LListOptions.Caption=리스트 옵션:
+CBComboSort.Caption=자동 정렬 항목
+CBComboAutoComplete.Caption=입력중 자동 완성
+CBComboCatalogValues.Caption=미리정의된 리스트 대신에 현재의 목록의 값을 사용함
+CBComboAutoAdd.Caption=자동으로 목록에 없는 값 추가
+LListEdit.Caption=수정할 항목들:
+
+LvCat.Items.Item[9].Text=매체 파일 정보 가져오기
+LHVideoDragDrop.Caption=드래그 & 드롭 / 파일로부터 정보를 가져옴
+CBDNDMediaLabel.Caption=매체 레이블 가져오기
+CBDNDFileName.Caption=파일이름을 제목으로 가져오기
+  btnFilterFileName.Caption=Filter the file name
+  CBDNDFileNameFilePath.Caption=Import full path in File Path field
+CBDNDFileNameURL.Caption=파일이름을 URL필드에 가져오기
+CBDNDSize.Caption=크기 가져오기:
+RBDNDString.Caption=650+530 처럼 표시
+RBDNDSum.Caption=1180 처럼 합으로 표시
+LDNDSizeUnit.Caption=단위:
+cbxDNDSizeUnit.Items.String[0]=Bytes
+cbxDNDSizeUnit.Items.String[1]=Kilobytes (KB)
+cbxDNDSizeUnit.Items.String[2]=Megabytes (MB)
+cbxDNDSizeUnit.Items.String[3]=Gigabytes (GB)
+  CBDNDPicture.Caption=Import associated picture (same name of media file)
+CBDNDLength.Caption=영화 길이 가져오기
+  CBDNDAllowClear.Caption=Allow to clear fields when new value is empty
+CBDNDInternalAVI.Caption=AVI 파일의 정보 가져올때 DLL 파일보다 내부 엔진을 사용해서 좀더 빠르다
+  LExtVideo.Caption=Extensions:
+  btnDefaultExtVideo.Caption=Default
+LHGetInfoVideo.Caption= 비디오 포맷에서 가져올 정보
+CBDNDResolution.Caption=해상도 가져오기
+CBDNDFramerate.Caption=프레임 속도 가져오기
+CBDNDVideoCodec.Caption=비디오 코덱 가져오기
+CBDNDVideoBitrate.Caption=비디오 전송률 가져오기
+LHGetInfoAudio.Caption=오디오 포맷에서 가져올 정보
+CBDNDAudioCodec.Caption=오디오 코덱 가져오기
+  CBDNDAudioChannels.Caption=Import audio channels
+CBDNDAudioBitrate.Caption=오디오 전송률 가져오기
+CBDNDLanguages.Caption=언어 정보 가져오기
+CBDNDSubtitles.Caption=자막 정보 가져오기
+
+LvCat.Items.Item[10].Text=포스터 가져오기
+LHImportPic.Caption=외부 소스로 포스터 가져오기
+  RBPicImport.Caption=For movies
+  RBExtraPicImport.Caption=For extras
+PicImportGetInfo.grp.Caption=드래그 & 드롭 / 파일에서 정보 얻기
+CBPicImportGetInfoNoAsk.Caption=포스터 가져올때 물어보지 않는다; 항상 이 옵션 사용.
+PicImportScripting.grp.Caption=인터넷 스크립트시
+  CBPicConvert.Caption=Convert picture to JPG and resize it when picture is stored or copied
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+  LPicCopyNote.Caption=Note: when picture is stored in the same folder than the catalog or in pictures folder of the catalog, it is deleted when it is not used anymore in the catalog.
+  PicNamingFrame.grp.Caption=Picture naming
+LPicNamingNote.Caption=Notes: 포스터 이름이 다른 영화에 의해 이지 주어졌다면, 랜덤으로 이름이 생성될 것이다. 원래의 이름이 없을때, 영화 이름이 사용된다.
+
+LvCat.Items.Item[11].Text=인터넷에서 찾기
+LHSearch.Caption=인터넷에서 찾기
+LSearchEdit.Caption=선택한 줄 수정:
+btnSearchAdd.Hint=추가|선택한 항목을 새로 추가
+btnSearchDel.Hint=삭제|선택한 항목 삭제
+btnSearchUp.Hint=위로이동|선택한 항목을 위로 이동
+btnSearchDown.Hint=아래로이동|선택한 항목을 아래로 이동
+LSearchNotes.Caption=주의:
+LSearchNote1.Caption=- 이름은 고유해야 한다
+LSearchNote2.Caption=- 주소에 제목을 넣을 곳에 %s 를 넣으십시오
+LSearchNote3.Caption=- 목록에 구분자 추가시 "-"로 시작해 주십시오
+
+LvCat.Items.Item[12].Text=스크립팅
+LHScript.Caption=스크립트 설정
+CBAutorunScript.Caption=자동으로 스크립트 수행
+LScriptPicImport.Caption=포스터 가져오기를 위해서는, <LINK>포스터 가져오기</LINK> 페이지를 보세요
+LHConnection.Caption=인터넷 연결
+CBProxy.Caption=프록시 서버 사용:
+LProxyServer.Caption=서버:
+LProxyPort.Caption=포트:
+LProxyUsername.Caption=사용자명:
+LProxyPassword.Caption=비밀번호:
+CBKeepConnection.Caption=연결 상태 유지
+CBHTTP10.Caption=HTTP 1.0 버전에 제한됨(몇몇 프록시 서버에서 필요로 하는)
+
+LvCat.Items.Item[13].Text=내보내기
+LHHTML.Caption=HTML
+CBLoadTemplate.Caption=자동으로 최근 문서 열기
+LLineBreaks.Caption=줄변환은 다음 태그로 변경됩니다:
+ELineBreaks.Hint=|만약에 줄변환을 원하지 않으면 이 필드를 비워라.
+  LForcePicSize.Caption=Force movie picture size:
+  LForcePicSizeW.Caption=width=
+  LForcePicSizeH.Caption=height=
+EForcePicSizeW.Hint=|이미지의 넓이값을 고정하길 원하지 않으시면 공란을 남기세요
+EForcePicSizeH.Hint=|이미지의 높이값을 고정하길 원하지 않으시면 공란을 남기세요
+  LForceExtraPicSize.Caption=Force extra picture size by adding attributes:
+  LForceExtraPicSizeW.Caption=width=
+  LForceExtraPicSizeH.Caption=height=
+  EForceExtraPicSizeW.Hint=|Leave empty if you do not want to force width value
+  EForceExtraPicSizeH.Hint=|Leave empty if you do not want to force height value
+LHSQL.Caption=SQL
+LSQLDate.Caption=날짜 포맷 (구별문자 사이에 특정 문자형태로 넣는다):
+ESQLDate.Hint=|윈도우 기본값을 위해 비워둔다.
+LHExportFileNames.Caption=파일명
+CBLastFileName.Caption=최근 내보낸 파일명 기억
+CBOpenExportedFile.Caption=내보내기 완료시 완성된 문서 열기
+ExpFileNamingFrame.grp.Caption=개별 페이지와 포스터 파일 이름저장 방식
+LExpFileExt.Caption=사용할 확장자:
+EExpFileExt.Hint=|내보내어지는 파일이름을 동일한 확장자로 사용하길 원하면 공란으로 남기세요
+LHPictures.Caption=포스터
+CBCopyPictures.Caption=내보낸 파일의 폴더에 포스터 복사
+  CBCopyPicturesInPicDir.Caption=Copy pictures into a subfolder pictures
+CBCopyPicturesNew.Caption=동일 파일이 없을 때만 포스터 복사
+  CBCopyPicturesIncExtras.Caption=Include extra pictures
+
+LvCat.Items.Item[14].Text=폴더
+LHFoldersDialogs.Caption=다이얼로그 박스
+LFolderToUse.Caption=사용할 폴더
+cbxWindow.Items.String[0]=목록 불러오기/저장
+cbxWindow.Items.String[1]=영화 포스터 불러오기
+cbxWindow.Items.String[2]=내보내기
+cbxWindow.Items.String[3]=문서 불러오기/저장
+cbxWindow.Items.String[4]=가져오기
+cbxWindow.Items.String[5]=파일에서 정보 얻기
+cbxWindow.Items.String[6]=그림파일로 저장
+cbxWindow.Items.String[7]=스크립트 불러오기/저장
+  cbxWindow.Items.String[8]=Load/save custom fields
+  cbxWindow.Items.String[9]=Load/save filters
+RBFolderDefault.Caption=윈도우 기본 폴더 (윈도우 버전에 따라 차이가 있음)
+RBFolderRemember.Caption=마지막으로 사용한 폴더를 기억
+RBFolderSpecified.Caption=사용할 폴더:
+EFolderSpecified.ButtonHint=탐색하기...|폴더 선택하기
+CBSameForAll.Caption=모든 윈도우에 같은 옵션 적용
+
+;*******************************
+;* Default movie values window *
+;********************************
+[DefaultValuesWin]
+Caption=기본 영화 값으로 수정
+Btn3.Caption=기본값
+Btn3.Hint=|기본 값 재설정
+Btn2.Caption=확인
+Btn1.Caption=취소
+
+;*******************************
+;* Default extra values window *
+;*******************************
+[ExtraDefaultValuesWin]
+  Caption=Edit default extra values
+Btn3.Caption=기본값
+Btn3.Hint=|기본 값 재설정
+Btn2.Caption=확인
+Btn1.Caption=취소
+
+;*****************************
+;* Language selection window *
+;*****************************
+[LanguageWin]
+Caption=언어 선택
+Btn2.Caption=확인
+Btn1.Caption=취소
+LanguageFrame.lstLanguages.Columns.Item[0].Caption=이름
+LanguageFrame.lstLanguages.Columns.Item[1].Caption=지역 이름
+LanguageFrame.lblVersion.Caption=버전:
+LanguageFrame.lblMadeBy.Caption=제작:
+LanguageFrame.lblComments.Caption=설명:
+
+;************************
+;* Advanced sort window *
+;************************
+[SortWin]
+Caption=고급 정렬 옵션
+Fields.LSelected.Caption=정렬에 포함할 항목들:
+  BtnSortOrder.Hint=Invert sort order|Invert sort order of selected field
+
+;*********************
+;* Statistics window *
+;*********************
+[StatsWin]
+Caption=통계
+btn1.Caption=닫기
+ActionSaveAs.Caption=다른 이름으로 저장
+ActionSaveAs.Hint=다른 이름으로 저장|그림 파일로 저장
+ActionCopy.Caption=복사
+ActionCopy.Hint=복사|클립보드에 그림 복사
+ActionCopyWMF.Caption=메타 파일로 복사
+ActionCopyWMF.Hint=메타파일로 복사|클립보드에 메타파일로 복사(크기 조정 가능)
+ActionCopyBMP.Caption=비트맵으로 복사
+ActionCopyBMP.Hint=비트맵으로 복사|클립보드에 비트맵으로 복사
+ActionOptions.Caption=옵션
+ActionOptions.Hint=옵션|차트의 옵션 환경 설정 변경
+ActionOptionsLegend.Caption=범례
+ActionOptionsLegend.Hint=범례 표시|차트의 오른쪽에 범례 표시
+ActionOptionsLabels.Caption=라벨
+ActionOptionsLabels.Hint=라벨 표시|차트에 라벨 표시
+ActionOptionsEmpty.Caption=빈 달
+ActionOptionsEmpty.Hint=빈 달 표시|차트에 합계가 0인 달 표시
+ActionOptionsGroup.Caption=그룹 값
+ActionOptionsGroup.Hint=그룹 값|간격을 사용한 그룹값
+Messages.Strings.String[0]=%.1f 분
+Messages.Strings.String[1]=< 없음 >
+Messages.Strings.String[2]=차트 저장
+Messages.Strings.String[3]=%d 일 %d 시간  %d 분
+  Messages.Strings.String[4]=< others >
+; the following line is used as unit for file sizes in stats window (B/KB/MB/GB)
+  Messages.Strings.String[5]=B
+lstGeneral.Items.Item[0].Caption=총 영화 편수
+lstGeneral.Items.Item[1].Caption=평균 영화 길이
+lstGeneral.Items.Item[2].Caption=총 영화 길이
+lstGeneral.Items.Item[3].Caption=영화 파일의 총 크기
+lstGeneral.Items.Item[4].Caption=총 영화 장수
+lstCategories.Items.String[0]=기본 정보
+
+;*****************
+;* Script window *
+;*****************
+[GetScriptWin]
+Caption=스크립팅...
+btn2.Caption=닫기
+btn1.Caption=도움말
+ActionFileNew.Caption=새로
+ActionFileNew.Hint=새로|새 스크립트 만들기
+ActionFileOpen.Caption=열기...
+ActionFileOpen.Hint=열기...|스크립트 파일 열기
+ActionFileNoRecent.Caption=최근 파일 없음
+ActionFileSave.Caption=저장
+ActionFileSave.Hint=저장|현재 스크립트 저장
+ActionFileSaveAs.Caption=다른 이름으로 저장
+ActionFileSaveAs.Hint=다른 이름으로 저장|현재 스크립트를 다른 이름으로 저장
+ActionFileProperties.Caption=속성...
+ActionFileProperties.Hint=속성과 옵션...|스크립트 속성과 옵션 수정
+ActionDebugRun.Caption=실행
+ActionDebugRun.Hint=스크립트 실행|스크립트 실행
+ActionDebugStop.Caption=중지
+ActionDebugStop.Hint=중지|스크립트 실행 중지
+ActionDebugBreakpoint.Caption=구분점
+ActionDebugBreakpoint.Hint=구분점 이동|현재 줄에 구분점을 가능여부 체크
+ActionDebugBreakpointClear.Caption=구분점 초기화
+ActionDebugBreakpointClear.Hint=구분점 초기화|모든 구분점 제거
+ActionDebugStep.Caption=다음 단계
+ActionDebugStep.Hint=다음 단계|소스 코드의 다음 줄 실행
+ActionDebugRunToCursor.Caption=마우스로 실행
+ActionDebugRunToCursor.Hint=마우스 커서로 실행|현재의 위치까지 프로그램을 실행함
+ActionDebugEval.Caption=변수 값...
+ActionDebugEval.Hint=변수 값...|선택한 변수의 내용을 보여줌
+ActionDebugWatchAdd.Caption=추가
+ActionDebugWatchAdd.Hint=경계 변수 추가|경계 목록에 선택한 변수 추가
+ActionDebugWatchRemove.Caption=제거
+ActionDebugWatchRemove.Hint=경계 변수 제거|주목 목록에서 선택한 변수 제거
+ActionDebugWatchClear.Caption=리스트 초기화
+ActionDebugWatchClear.Hint=경계리스트 변수 초기화|경계 리스트에서 모든 변수 제거
+ActionListCheck.Caption=선택된 항목 체크
+ActionListCheck.Hint=선택된 항목 체크|선택된 항목 체크
+ActionListUncheck.Caption=선택된 항목 체크 취소
+ActionListUncheck.Hint=선택된 항목 체크 취소|선택된 항목 체크 취소
+ActionListAll.Caption=전체 체크
+ActionListAll.Hint=전체 체크|모든 항목 체크
+ActionListNone.Caption=전체 체크 취소
+ActionListNone.Hint=모두 체크 취소|전체 항목 체크 취소
+ActionDisplayScripts.Caption=스크립트
+ActionDisplayScripts.Hint=스크립트 선택|가능한 스크립트 보여주기
+ActionDisplayEditor.Caption=편집기
+ActionDisplayEditor.Hint=스크립트 편집기|스크립트 편집기 보여주기
+ActionViewFilter.Caption=언어 필터
+ActionViewFilter.Hint=언어 필터|특정언어를 포함한 스크립만 보여주도록 필터링함
+ActionViewList.Caption=리스트
+ActionViewList.Hint=리스트 보기|리스트로 스크립트 보여줌
+ActionViewDetailed.Caption=상세보기
+ActionViewDetailed.Hint=상세히 보기|두개의 컬럼으로 스크립트 보여줌 (스크립트 설명 포함)
+ActionOptionsEdit.Caption=변경...
+ActionOptionsEdit.Hint=값 변경...|선택된 옵션의 값 변경
+ActionOptionsDefault.Caption=기본 값
+ActionOptionsDefault.Hint=기본값|기본값으로 옵션값 변환
+lstScripts.Hint=|스크립트 선택후 실행버튼을 클릭하거나, 스크립트를 더블클릭하세요. 또는 펑션키F9를 누르시거나 엔터키를 누르세요.
+lstScripts.Columns.Item[0].Caption=제목
+lstScripts.Columns.Item[1].Caption=영화설명
+ActionEditUndo.Caption=실행취소
+ActionEditCut.Caption=잘라내기
+ActionEditCopy.Caption=복사
+ActionEditPaste.Caption=붙여넣기
+ActionEditDelete.Caption=삭제
+ActionEditSelectAll.Caption=전체 선택
+ActionEditFind.Caption=찾기...
+ActionEditfind.Hint=찾기|특정 문자열 찾기
+ActionEditFindNext.Caption=다음 찾기
+ActionEditFindNext.Hint=다음 찾기|문자열과 일치하는 다음 문자열 찾기
+DockpanelExec.Caption=실행 옵션
+CBShowResults.Caption=결과창 보여주기
+CBShowResults.Hint=스크립트를 통해 가져온 값중 선택된 정보를 보여줌
+CBCloseThis.Caption=마지막에 이 창 닫기
+CBCloseThis.Hint=성공적으로 스크립트 실행이 완료되었을때 창 닫기
+CBAllowClear.Caption=필드 초기화 허용
+CBAllowClear.Hint=스크립트가 실행되면 빈 필드는 새 값으로 수정되도록 허용
+DockpanelOptions.Caption=스크립트 옵션
+DockpanelOptions.Hint=|변경을 원하는 옵션을 더블클릭하세요. 주의: 실행중인 스크립트일때만 옵션이 저장됩니다.
+  DockpanelParameters.Caption=Script parameters
+  DockpanelParameters.Hint=|Double-click on a parameter to change it. Note: parameters are saved only when executing the script.
+DockpanelLimitations.Caption=스크립트 제한
+grpLimitFields.Caption=수정가능한 필드
+lstLimitFields.Hint=|Note: 스크립트가 실행되었을때 필드 선택만 저장된다.
+grpScriptInfo.Caption=정보
+tabScriptInfo.Tabs.String[0]=일반적인
+tabScriptInfo.Tabs.String[1]=해설
+tabScriptInfo.Tabs.String[2]=라이센스
+DockpanelWatch.Caption=경계 리스트
+
+Messages.Strings.String[0]=스크립트 에러 - "%s": %d 줄에서 %s 에러
+Messages.Strings.String[1]=현재의 스크립트가 수정되었습니다. 저장하시겠습니까?
+Messages.Strings.String[2]=알려지지 않음
+Messages.Strings.String[3]=동의함
+Messages.Strings.String[4]=현재의 스크립트 제한 설정에 맞는 영화가 없습니다 (%s: %s)
+Messages.Strings.String[5]=스크립트 실행과정을 취소하겠습니까?
+Messages.Strings.String[6]=수정됨
+Messages.Strings.String[7]="%s" 옵션의 값
+  Messages.Strings.String[8]=Value for parameter "%s"
+Messages.Strings.String[9]=찾기
+Messages.Strings.String[10]=찾을 문자열:
+Messages.Strings.String[11]="%s"와 일치하는 영화가 더 없습니다.
+  Messages.Strings.String[12]=*Add extras*
+  Messages.Strings.String[13]=*Delete extras*
+  Messages.Strings.String[14]=*Modify extras*
+
+;**************************
+;* Movie selection window *
+;**************************
+[PickTreeWin]
+Caption=영화 선택
+btnView.Caption=페이지 보기
+btnView.Hint=브라우저 실행|
+btn3.Caption=확인
+btn2.Caption=더 찾기
+btn1.Caption=취소
+
+;********************************
+;* Description selection window *
+;********************************
+[PickListWin]
+Caption=영화 설명 선택
+btn2.Caption=확인
+btn1.Caption=취소
+
+;****************************
+;* Script properties window *
+;****************************
+[ScriptPropertiesWin]
+  Caption=Script properties, options and parameters
+btn3.Caption=저장
+btn2.Caption=취소
+btn1.Caption=도움말
+lstProperties.TitleCaptions.String[0]=속성
+lstProperties.TitleCaptions.String[1]=값
+grpOptions.Caption=옵션
+btnOptionAdd.Hint=추가|새 옵션 추가
+btnOptionDel.Hint=삭제|선택한 옵션 삭제
+  btnOptionUp.Hint=Move up|Move up selected option
+  btnOptionDown.Hint=Move down|Move down selected option
+grpValues.Caption=선택한 옵션에 가능한 값
+lblValueDefault.Caption=기본값:
+  btnValueAdd.Hint=Add|Add a new value
+  btnValueDel.Hint=Delete|Delete selected value
+  btnValueUp.Hint=Move up|Move up selected value
+  btnValueDown.Hint=Move down|Move down selected value
+  grpParameters.Caption=Parameters
+  btnParameterAdd.Hint=Add|Add a new parameter
+  btnParameterDel.Hint=Delete|Delete selected parameter
+  btnParameterUp.Hint=Move up|Move up selected parameter
+  btnParameterDown.Hint=Move down|Move down selected parameter
+
+Messages.Strings.String[0]=스크립트 제작자:
+Messages.Strings.String[1]=스크립트 제목:
+Messages.Strings.String[2]=설명:
+Messages.Strings.String[3]=관련 사이트:
+Messages.Strings.String[4]=사이트 언어:
+Messages.Strings.String[5]=스크립트 버전:
+Messages.Strings.String[6]=최소 요구사항:
+Messages.Strings.String[7]=해설:
+Messages.Strings.String[8]=스크립트 저작권:
+Messages.Strings.String[9]=웹에서 정보얻기:
+  Messages.Strings.String[10]=Requires movies:
+Messages.Strings.String[11]=값
+Messages.Strings.String[12]=설명
+Messages.Strings.String[13]="%s" 이 옵션이 삭제될것입니다.
+Messages.Strings.String[14]=옵션 이름:
+  Messages.Strings.String[15]=Rename the option "%s"
+  Messages.Strings.String[16]=An option with the name "%s" already exist!
+  Messages.Strings.String[17]=Name
+  Messages.Strings.String[18]=Default value
+  Messages.Strings.String[19]=Description
+
+;*************************
+;* Script results window *
+;*************************
+[ScriptResultsWin]
+Caption=스크립트 실행 결과
+btn4.Caption=저장
+btn4.Hint=|현재 영화 정보로 저장
+btn3.Caption=모두 저장
+btn3.Hint=|선택된 영화 모두 저장
+btn2.Caption=건너뛰기
+btn2.Hint=|현재의 영화만 건너뛰기
+btn1.Caption=포기
+btn1.Hint=|스크립팅 프로세스 취소
+listValues.HeaderSections.Item[0].Text=항목
+listValues.HeaderSections.Item[1].Text=이전 값
+listValues.HeaderSections.Item[2].Text=새 값
+ActionListCheck.Caption=선택된 항목 체크
+ActionListCheck.Hint=선택된 항목 체크|선택된 항목 체크
+ActionListUncheck.Caption=선택된 항목 체크 취소
+ActionListUncheck.Hint=선택된 항목 체크 취소|선택된 항목 체크 취소
+ActionListAll.Caption=전체 체크
+ActionListAll.Hint=전체 체크|모든 항목 체크
+ActionListNone.Caption=전체 체크 취소
+ActionListNone.Hint=모두 체크 취소|전체 항목 체크 취소
+
+Messages.Strings.String[0]=스크립트(%s) 실행결과
+Messages.Strings.String[1]=크기: %.0n KB, 클릭하세요
+Messages.Strings.String[2]=다음 영화에도 이스크립트로 사용한 필드처럼 사용하시겠습니까?
+  Messages.Strings.String[3]=*Add extras*
+  Messages.Strings.String[4]=*Delete extras*
+  Messages.Strings.String[5]=*Modify extras*
+  Messages.Strings.String[6]=Added extras: %d, click here to view
+  Messages.Strings.String[7]=Deleted extras: %d, click here to view
+  Messages.Strings.String[8]=Modified extras: %d, click here to view
+  Messages.Strings.String[9]=Changed values: %d, click here to view
+  Messages.Strings.String[10]=File "%s" doesn't exist.
+
+[ScriptExtrasResultsWin]
+  Caption=Script execution results on extras
+  btn1.Caption=&Close
+  btn1.Hint=|Close the window
+  listExtras.HeaderSections.Item[0].Text=Extra
+  listValues.HeaderSections.Item[0].Text=Field
+  listValues.HeaderSections.Item[1].Text=Previous value
+  listValues.HeaderSections.Item[2].Text=New value
+  ActionListCheck.Caption=&Check selected
+  ActionListCheck.Hint=Check selected|Check selected items
+  ActionListUncheck.Caption=&Uncheck selected
+  ActionListUncheck.Hint=Uncheck selected|Uncheck selected items
+  ActionListAll.Caption=Check &all
+  ActionListAll.Hint=Check all|Check all items
+  ActionListNone.Caption=Check &none
+  ActionListNone.Hint=Uncheck all|Uncheck all items
+
+  Messages.Strings.String[0]=Results for script "%0:s" for movie %1:d
+  Messages.Strings.String[1]=Size: %.0n KB, click here to view
+  Messages.Strings.String[2]=Extra
+  Messages.Strings.String[3]=Added
+  Messages.Strings.String[4]=Deleted
+  Messages.Strings.String[5]=Modified
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+
+;*******************
+;* Renumber window *
+;*******************
+[RenumberWin]
+Caption=영화 번호 재설정
+SortBy.grp.Caption=번호 재설정에 사용할 필드:
+btn2.Caption=확인
+btn1.Caption=취소
+
+Messages.Strings.String[0]=영화 번호 재설정중...
+
+;*******************
+;* Printing Window *
+;*******************
+[PrintWin]
+btn3.Caption=인쇄...
+btn2.Caption=닫기
+btn1.Caption=도움말
+ActionFileLoad.Caption=템플릿 문서 불러오기...
+ActionFileLoad.Hint=템플릿 문서 불러오기|다른 템플릿문서 불러오기
+ActionFileDesigner.Caption=양식 디자인...
+ActionFileDesigner.Hint=양식 디자인|양식 디자인 열기
+ActionPrint.Caption=인쇄...
+ActionPrint.Hint=인쇄|현재의 양식 인쇄하기
+ActionPreviewRefresh.Caption=새로고침
+ActionPreviewRefresh.Hint=미리보기 새로고침|미리보기 새로고침
+ActionPreviewPageFirst.Caption=첫 페이지
+ActionPreviewPageFirst.Hint=첫 페이지|첫 페이지로 이동
+ActionPreviewPagePrevious.Caption=이전 페이지
+ActionPreviewPagePrevious.Hint=이전 페이지|이전 페이지로 이동
+ActionPreviewPageNext.Caption=다음 페이지
+ActionPreviewPageNext.Hint=다음 페이지|다음 페이지로 이동
+ActionPreviewPageLast.Caption=마지막 페이지
+ActionPreviewPageLast.Hint=Last page|마지막 페이지로 이동
+ActionPreviewPageFull.Caption=전체 페이지
+ActionPreviewPageFull.Hint=전체 페이지|전체 페이지 보기
+ActionPreviewPageTwo.Caption=두 페이지
+ActionPreviewPageTwo.Hint=두 페이지|한 화면에 두 페이지 보기
+ActionPreviewPageWidth.Caption=넓이 고정
+ActionPreviewPageWidth.Hint=페이지 넓이 고정|페이지 넓이에 맞게 크기 고정
+ActionPreviewZoomOut.Caption=축소
+ActionPreviewZoomOut.Hint=축소|크기를 줄인다.
+ActionPreviewZoomIn.Caption=확대
+ActionPreviewZoomIn.Hint=확대|크기를 늘인다.
+LvScripts.Columns.Item[0].Caption=가능한 템플릿 문서들
+Messages.Strings.String[0]=인쇄 - %s
+Messages.Strings.String[1]=<선택된 파일이 없음>
+Messages.Strings.String[2]=다음 문서를 미리보기 할수 없습니다: %s
+Messages.Strings.String[3]=양식 디자이너를 찾을수 없습니다.. %s는 실행파일과 같은 폴더에 있어야만 합니다.
+
+;***********************************
+;* Import a picture by drag & drop *
+;***********************************
+[PictureDragDropWin]
+Caption=포스터 가져오기
+Btn3.Caption=확인
+Btn2.Caption=취소
+Btn1.Caption=도움말
+CBDoNotAsk.Caption=다시 문지 않기, 나중에 가져오기할때 현재 선택 기억한다.
+
+;********************************
+;* Custom fields manager window *
+;********************************
+[CustomFieldsManagerWin]
+  Caption=Custom fields manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  btnDel.Hint=Delete field|Delete custom field
+  btnClearAll.Hint=Clear all fields|Clear all custom fields
+  btnImport.Hint=Import fields|Import custom fields
+  btnExport.Hint=Export fields|Export custom fields
+  LField.Caption=Field:
+  LTag.Caption=Tag:
+  LName.Caption=Name:
+  LExt.Caption=Extension:
+  LType.Caption=Type:
+  LDefaultValue.Caption=Default value:
+  LTemplate.Caption=Template:
+  btnInsertFieldTag.Hint=|Insert a special value that will be replaced by movie value
+  LMediaInfo.Caption=Import media info:
+  LMultiValues.Caption=Multiple values:
+  EMultiValues.Hint=|Make groups with multiple field values
+  LMultiValuesSep.Caption=Separator:
+  LMultiValuesRmp.Caption=Del. Parentheses:
+  EMultiValuesRmp.Hint=|Delete values between parentheses
+  LMultiValuesPatch.Caption=Patch:
+  EMultiValuesPatch.Hint=|Apply path to ignore some parentheses
+  LListValues.Caption=List values:
+  EListSort.Caption=Auto-sort items
+  EListAutoComplete.Caption=Auto-complete while typing
+  EListCatalogValues.Caption=Use values of current catalog instead of predefined list
+  EListAutoAdd.Caption=Automatically add values that are not in list
+  Messages.Strings.String[0]=Import custom fields
+  Messages.Strings.String[1]=Export custom fields
+  Messages.Strings.String[2]=Add field|Add custom field
+  Messages.Strings.String[3]=Change tag|Change custom field tag
+  Messages.Strings.String[4]=--- New Field ---
+  Messages.Strings.String[5]=String
+  Messages.Strings.String[6]=Integer
+  Messages.Strings.String[7]=Real (1 decimal)
+  Messages.Strings.String[8]=Real (2 decimals)
+  Messages.Strings.String[9]=Real (3 decimals)
+  Messages.Strings.String[10]=Boolean
+  Messages.Strings.String[11]=List
+  Messages.Strings.String[12]=Date
+  Messages.Strings.String[13]=Text
+  Messages.Strings.String[14]=URL
+  Messages.Strings.String[15]=Virtual
+
+;*********************************
+;* String filter manager window  *
+;*********************************
+[StringFilterWin]
+  Caption=Filter
+  LNote1.Caption=Notes: This filter replaces each expression string by associated replace string in list order.
+  LNote2.Caption=You can use regular expression if you start expression with string '::>'.
+  LNote3.Caption=To see an example with regular expressions, press button 'Default'.
+  LNote4.Caption=For more details on regular expressions syntax, see help on website regexpstudio.com
+  LExprString.Caption=Expression string
+  LReplaceString.Caption=Replace string
+  btn1.Caption=Cancel
+  btn2.Caption=OK
+  btn3.Caption=Default
+  btn3.Hint=Default|Restore default filter
+  btnClearAll.Hint=Clear all|Clear all expressions
+  btnImport.Hint=Import|Import filter
+  btnExport.Hint=Export|Export filter
+  btnAdd.Hint=Add|Add a new expression below selected expression
+  btnDel.Hint=Delete|Delete selected expression
+  btnUp.Hint=Move up|Move up selected expression
+  btnDown.Hint=Move down|Move down selected expression
+
+;***************************
+;* Pictures manager window *
+;***************************
+[PicturesManagerWin]
+  Caption=Pictures manager
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+
+  Messages.Strings.String[0]=Applying changes on movie pictures...
+  Messages.Strings.String[1]=Unable to apply changes on picture of movie "%0:s": %1:s
+  Messages.Strings.String[2]=After applying this changes, the current catalog must be saved to remain consistent! Do you want to save catalog automatically after applying this changes?
+  Messages.Strings.String[3]=Unable to apply changes on picture of extra "%0:s": %1:s
+  Messages.Strings.String[4]=Warning, deleting is irreversible! Are you really sure you want to delete pictures?
+  Messages.Strings.String[5]=Warning, resizing is irreversible! Are you really sure you want to resize pictures?
+  Messages.Strings.String[6]=Warning, resizing is irreversible! Are you really sure you want to resize pictures and linked pictures too?
+
+;***************
+;* HTML Editor *
+;***************
+[HTMLEditorWin]
+  Caption=HTML templates editor
+  Btn2.Caption=&Close
+  Btn1.Caption=&Help
+
+;**********************
+;* Extras edit window *
+;**********************
+[ExtrasEditWin]
+  Caption=Extras edit
+  btn2.Caption=OK
+  btn1.Caption=Cancel
+  LPicture.Caption=Picture:
+  PreviewPicture.Hint=|Click to display picture at fullsize
+  chkPicture.Hint=|Modify picture
+  
+  ActionPicSelect.Caption=&Select...
+  ActionPicSelect.Hint=Select a picture...|Select a picture to import or link for current movie
+  ActionPicDelete.Caption=&Delete
+  ActionPicDelete.Hint=Delete|Delete current picture
+  ActionPicSaveAs.Caption=Save &as...
+  ActionPicSaveAs.Hint=Save picture as...|Save a copy of the picture to a new file
+  ActionPicCopy.Caption=&Copy
+  ActionPicCopy.Hint=Copy to clipboard|Copy picture to clipboard
+  ActionPicPaste.Caption=&Paste
+  ActionPicPaste.Hint=Paste from clipboard|Paste picture from clipboard
+  
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Open Folder
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  
+  ActionNextExtra.Caption=Next extra
+  ActionNextExtra.Hint=Next extra|Show next extra
+  ActionPreviousExtra.Caption=Previous extra
+  ActionPreviousExtra.Hint=Previous extra|Show previous extra
+
+  Messages.Strings.String[0]=Save a copy of the picture to a new file
+  Messages.Strings.String[1]=Select a picture
+  Messages.Strings.String[2]=Unable to use this picture: %s
+  Messages.Strings.String[3]=Stored in catalog as %s
+  Messages.Strings.String[4]=External file: %s
+  Messages.Strings.String[5]=%.0n bytes
+  Messages.Strings.String[6]=File "%s" doesn't exist.
+  Messages.Strings.String[7]=Get information from files...
+  Messages.Strings.String[8]=Select a file to reference in the URL field
+  Messages.Strings.String[9]=Extra have been modified, do you want to save changes ?
+
+;**************************
+;* Extras renumber window *
+;**************************
+[ExtrasRenumberWin]
+  Caption=Renumber extras
+  SortBy.grp.Caption=Before renumbering extras, sort by
+  chkAllMovies.Caption=Sort and renumber extras on all movies
+  btn2.Caption=OK
+  btn1.Caption=Annuler
+
+  Messages.Strings.String[0]=Renumbering extras ...
+
+;**********
+;* Frames *
+;**********
+[TMovieFrame]
+LMedia.Caption=매체 레이블:
+LMediaType.Caption=매체 종류:
+LSource.Caption=관람 등급:
+LDate.Caption=추가한 날짜:
+LBorrower.Caption=대여자:
+  LDateWatched.Caption=Date Watched:
+  LUserRating.Caption=My Rating:
+LRating.Caption=평점:
+LOriginalTitle.Caption=원 제목:
+LTranslatedTitle.Caption=번역 제목:
+LDirector.Caption=감독:
+LProducer.Caption=제작자:
+  LWriter.Caption=Writer:
+  LComposer.Caption=Compositor:
+LCountry.Caption=제작 국가:
+LCategory.Caption=영화 장르:
+  LCertification.Caption=Certification:
+LYear.Caption=제작 연도:
+LLength.Caption=영화 길이:
+LLengthMin.Caption=분
+LActors.Caption=출연 배우:
+LURL.Caption=관련 링크:
+LDescription.Caption=영화 내용:
+LComments.Caption=영화 해설:
+  LFilePath.Caption=File Path:
+LVideoFormat.Caption=비디오 포맷:
+LVideoKbps.Caption=kbps
+LAudioFormat.Caption=오디오 포맷:
+LAudioKbps.Caption=kbps
+LResolution.Caption=해상도:
+LFramerate.Caption=프레임속도:
+LFramerateFPS.Caption=fps
+LSize.Caption=파일 크기:
+LDisks.Caption=CD장수:
+LLanguages.Caption=언    어:
+LSubtitles.Caption=자    막:
+
+EMedia.Hint=|매체 레이블, 번호/바코드
+EMediaType.Hint=|미디어/종류
+ESource.Hint=|관람 등급
+EDate.Hint=|목록에 추가한 날짜
+EBorrower.Hint=|대여한 사람
+  EDateWatched.Hint=|Date when the movie has been watched for the last time
+  EUserRating.Hint=|User rating, from 0 to 10
+ERating.Hint=|평점, 0부터 10까지
+EOriginalTitle.Hint=|원래의 제목
+ETranslatedTitle.Hint=|번역된 제목
+EDirector.Hint=|감독
+EProducer.Hint=|제작자
+  EWriter.Hint=|Writer
+  EComposer.Hint=|Composer
+ECountry.Hint=|제작 국가
+ECategory.Hint=|영화 장르
+  ECertification.Hint=|Certification of the movie
+EYear.Hint=|제작연도
+ELength.Hint=|영화 길이(분)
+EActors.Hint=|출연 배우 리스트
+EURL.Hint=|관련 사이트
+EDescription.Hint=|영화 설명
+EComments.Hint=|영화 해설
+  EFilePath.Hint=|File path
+EVideoFormat.Hint=|비디오 포맷/코덱
+EVideoBitrate.Hint=|비디오 전송률
+EAudioFormat.Hint=|오디오 포맷/코덱
+EAudioBitrate.Hint=|오디오 전송률
+EResolution.Hint=|비디오 해상도
+EFramerate.Hint=|비디오 프레임속도
+ESize.Hint=|파일 크기
+EDisks.Hint=|영화 개수
+ELanguages.Hint=|언어
+ESubtitles.Hint=|자막언어
+
+[TMovieFrameCustom]
+  ActionAddCustomField.Caption=Add a custom field
+  ActionAddCustomField.Hint=|Add a custom field
+  ActionModifyCustomField.Caption=Modify custom field
+  ActionModifyCustomField.Hint=|Modify custom field
+  ActionDeleteCustomField.Caption=Delete custom field
+  ActionDeleteCustomField.Hint=|Delete custom field
+  ActionMoveResizeCustomFields.Caption=Move custom fields
+  ActionMoveResizeCustomFields.Hint=|Move and resize custom fields
+  ActionDefaultPositioning.Caption=Default positioning
+  ActionDefaultPositioning.Hint=|Retore default positioning of custom fields
+  ActionAutoStretchWidth.Caption=Auto stretch width
+  ActionAutoStretchWidth.Hint=Auto stretch field width on resize
+  ActionAutoStretchHeight.Caption=Auto stretch height
+  ActionAutoStretchHeight.Hint=Auto stretch field height on resize
+
+[TMovieFrameExtras]
+  ActionExtrasImportFiles.Caption=&Import...
+  ActionExtrasImportFiles.Hint=Import...|Import new extras from files
+  ActionExtrasAdd.Caption=&Add...
+  ActionExtrasAdd.Hint=Add...|Add a new extra
+  ActionExtrasEdit.Caption=&Edit...
+  ActionExtrasEdit.Hint=Edit...|Edit selected extras
+  ActionExtrasDelete.Caption=&Delete
+  ActionExtrasDelete.Hint=Delete|Delete selected extras
+  ActionExtraShowPic.Caption=&Show picture
+  ActionExtraShowPic.Hint=Show picture|Show selected extra picture
+  ActionExtraURL.Caption=&URL
+  ActionExtraURL.Hint=URL|Extra URL
+  ActionExtrasCopy.Caption=&Copy
+  ActionExtrasCopy.Hint=Copy|Copy selected extras
+  ActionExtrasPaste.Caption=&Paste
+  ActionExtrasPaste.Hint=Paste|Paste extras
+  ActionExtrasCheck.Caption=Check
+  ActionExtrasCheck.Hint=Check extras|Check selected extras
+  ActionExtrasUncheck.Caption=Uncheck
+  ActionExtrasUncheck.Hint=Uncheck extras|Uncheck selected extras
+  ActionExtrasSelGroup.Caption=Whole group
+  ActionExtrasSelGroup.Hint=Select group|Select all extras of this group
+  ActionExtrasSelCheck.Caption=Checked
+  ActionExtrasSelCheck.Hint=Select checked|Select only extras that are checked
+  ActionExtrasSelUncheck.Caption=Unchecked
+  ActionExtrasSelUncheck.Hint=Select unchecked|Select only extras that are unchecked
+  ActionExtrasSort.Caption=&Sort by
+  ActionExtrasSort.Hint=Sort extras|Sort by a specified field the extras
+  ActionExtrasSortAscend.Caption=Ascending
+  ActionExtrasSortAscend.Hint=|Sort in ascending order
+  ActionExtrasSortDescend.Caption=Descending
+  ActionExtrasSortDescend.Hint=|Sort in descending order
+  ActionExtrasSortAdvanced.Caption=Advanced...
+  ActionExtrasSortAdvanced.Hint=|Advanced sort
+  ActionExtrasGroup.Caption=&Group by
+  ActionExtrasGroup.Hint=Group extras|Group by a specified field the extras
+  ActionExtrasGroupNone.Caption=< &none >
+  ActionExtrasGroupNone.Hint=|Do not group extras
+  ActionExtrasRenumber.Caption=&Renumber...
+  ActionExtrasRenumber.Hint=Renumber...|Renumber extras...
+  ActionURLOpen.Caption=Open URL
+  ActionURLOpen.Hint=|Open the URL or file specified in the field
+  ActionURLExplore.Caption=Explore URL
+  ActionURLExplore.Hint=|Open the folder containing the file specified in the field
+  ActionURLCopy.Caption=Copy URL
+  ActionURLCopy.Hint=|Copy the URL or file specified in the field
+  ActionURLBrowse.Caption=Browse...
+  ActionURLBrowse.Hint=|Browse for a file name to put in the field
+  MnuSelect.Caption=Select
+  MnuSelected.Caption=Selected extras
+  ThumbsDisplayTitle.Caption=Title
+  ThumbsDisplayTitle.Hint=|Display extra title
+  ThumbsDisplayInfo.Caption=Info
+  ThumbsDisplayInfo.Hint=|Display extra info
+  ToolbarExtras.Caption=Extras Toolbar
+
+  Messages.Strings.String[0]=Are you sure you want to delete selected extras ?
+  Messages.Strings.String[1]=Do not ask confirmation again
+  Messages.Strings.String[2]=|Sort by %s
+  Messages.Strings.String[3]=|Group by %s
+  Messages.Strings.String[4]=< none >
+  Messages.Strings.String[5]=File "%s" doesn't exist.
+  Messages.Strings.String[6]=Get information from files...
+  Messages.Strings.String[7]=Select a file to reference in the URL field
+  Messages.Strings.String[8]=Unable to use this picture: %s
+  Messages.Strings.String[9]=Select files to get information from
+  Messages.Strings.String[10]=Number / Tag:
+  Messages.Strings.String[11]=Title:
+  Messages.Strings.String[12]=Category:
+  Messages.Strings.String[13]=URL:
+  Messages.Strings.String[14]=Description:
+  Messages.Strings.String[15]=Comments:
+  Messages.Strings.String[16]=Created by:
+
+; Short name of values from Messages.Strings.String[10] to Messages.Strings.String[16] in same order (2 chars max)
+  Messages.Strings.String[17]=Nu:
+  Messages.Strings.String[18]=Ti:
+  Messages.Strings.String[19]=Ca:
+  Messages.Strings.String[20]=UR:
+  Messages.Strings.String[21]=De:
+  Messages.Strings.String[22]=Co:
+  Messages.Strings.String[23]=Cr:
+
+[TExtraFrame]
+  LNumber.Caption=Number:
+  LTag.Caption=Tag:
+  LTitle.Caption=Title:
+  LCategory.Caption=Category:
+  LURL.Caption=URL:
+  LDescription.Caption=Description:
+  LComments.Caption=Comments:
+  LCreatedBy.Caption=Created by:
+  ENumber.Hint=|Change the number and renumber automatically extras after this number
+  ETag.Hint=|Tag (used to access to extra directly for printing, html templates, ...)
+  ETitle.Hint=|Title
+  ECategory.Hint=|Category
+  EURL.Hint=|URL
+  EDescription.Hint=|Description
+  EComments.Hint=|Comments
+  ECreatedBy.Hint=|Created by (used by scripts)
+  chkTag.Hint=|Modify field tag
+  chkTitle.Hint=|Modify field title
+  chkCategory.Hint=|Modify field category
+  chkURL.Hint=|Modify field URL
+  chkDescription.Hint=|Modify field description
+  chkComments.Hint=|Modify field comments
+  chkCreatedBy.Hint=|Modify field created by
+
+[TFieldsFrame]
+LAvailable.Caption=가능한 필드:
+LSelected.Caption=선택한 필드:
+BtnAdd.Hint=추가|선택한 필드 추가
+BtnRem.Hint=제거|선택한 필드 제거
+BtnAddAll.Hint=전체 추가|모든 필드 추가
+BtnRemAll.Hint=전체 제거|모든 필드 제거
+BtnUp.Hint=위로 이동|선택한 항목 위로 이동
+BtnDown.Hint=아래로 이동|선택한 항목 아래로 이동
+
+[TSortByFrame]
+grp.Caption=정렬 옵션
+BtnAdvSort.Caption=고급...
+EOrderBy.Items.String[4]=고급 정렬 옵션...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TExtrasSortByFrame]
+  grp.Caption=Sort by
+  BtnAdvSort.Caption=Advanced...
+  EOrderBy.Items.String[3]=Advanced sort options...
+  BtnSortDescend.Hint=|Sort in descending order
+
+[TIncludemovFrame]
+grp.Caption=포함할 영화
+rbtAll.Caption=전체
+rbtSelected.Caption=선택됨
+rbtChecked.Caption=체크됨
+rbtVisible.Caption=보여줌
+
+[TIncludepicFrame]
+  grp.Caption=Pictures to include
+  rbtAll.Caption=All
+  rbtMovie.Caption=Movie
+  rbtExtras.Caption=Extras
+
+[TPictureSelectOptionsFrame]
+grp.Caption=포스터 가져오기 방법
+rbtStorePic.Caption=목록에 포스터 저장
+  rbtCopyPicInCatDir.Caption=Copy picture to &catalog folder, and link it to catalog
+  rbtCopyPicInPicDir.Caption=Copy picture to &pictures folder of catalog, and link it to catalog
+rbtLinkPic.Caption=포스터 링크만 함
+chkLinkRelative.Caption=가능하면 관련 경로를 만듬
+
+[TPictureOperationFrame]
+  grp.Caption=Pictures operation
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInCatDirIfCopied.Caption=Copy picture to catalog folder only if picture is copied in pictures folder
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtCopyInPicDirIfCopied.Caption=Copy picture to pictures folder only if picture is copied in catalog folder
+  rbtRenameIfCopied.Caption=Rename picture if it is copied in catalog or pictures folder
+  rbtAbsToRelLink.Caption=Transform absolute link to relative link if possible if picture is only linked
+  rbtRelToAbsLink.Caption=Transform relative link to absolute link if picture is only linked
+  rbtDelete.Caption=Delete picture (and picture file if it is copied in catalog or pictures folder)
+  rbtConvertIfStoredOrCopied.Caption=Convert picture to JPG and resize it if needed only if picture is stored or copied
+  rbtConvert.Caption=Convert picture to JPG and resize it if needed even if picture is only linked (warning)
+  LMaxPicSizeW.Caption=max width=
+  LMaxPicSizeH.Caption=max height=
+  LMaxPicSizeUnit.Caption=in pixels
+  EMaxPicSizeW.Hint=|Leave empty if you do not want to define a max width
+  EMaxPicSizeH.Hint=|Leave empty if you do not want to define a max height
+
+[TPictureOperationExportFrame]
+  grp.Caption=Pictures exportation method
+  rbtNoChangeAMC.Caption=Same as current catalog
+  rbtNoChangeXML.Caption=Same as current catalog (stored pictures will be lost)
+  rbtStore.Caption=Store picture into catalog
+  rbtStoreIfCopied.Caption=Store picture into catalog only if picture is copied in catalog or pictures folder
+  rbtCopyInCatDir.Caption=Copy picture to catalog folder, and link it to catalog
+  rbtCopyInCatDirIfStored.Caption=Copy picture to catalog folder only if picture is stored in catalog
+  rbtCopyInPicDir.Caption=Copy picture to pictures folder of catalog, and link it to catalog
+  rbtCopyInPicDirIfStored.Caption=Copy picture to pictures folder only if picture is stored in catalog
+  rbtDelete.Caption=Delete picture
+
+[TFileNamingFrame]
+  grp.Caption=File naming
+  LPrefix.Caption=Prefix
+  EPrefix.Items.Strings.String[0]=None
+  EPrefix.Items.Strings.String[1]=Catalog name
+  EPrefix.Items.Strings.String[2]=Exported filename
+  LMovieInfo.Caption=Movie information
+  EMovieInfo.Items.Strings.String[0]=None
+  EMovieInfo.Items.Strings.String[1]=Original filename
+  LExtraInfo.Caption=Extra information
+  EExtraInfo.Items.Strings.String[0]=None
+  CBMovieNumberAddZeroes.Caption=Add zeroes in front of the movie number for low numbers
+  CBExtraNumberAddZeroes.Caption=Add zeroes in front of the extra number for low numbers
+
+[THTMLTemplateEdit]
+ActionHTMLNew.Caption=새로
+ActionHTMLNew.Hint=새 템플릿|새 템플릿 만들기
+ActionHTMLOpen.Caption=불러오기
+ActionHTMLOpen.Hint=불러오기...|기존 템플릿 불러오기
+ActionHTMLNoRecent.Caption=최신 파일 없음
+ActionHTMLSave.Caption=저장
+ActionHTMLSave.Hint=저장|현재 템플릿 저장
+ActionHTMLSaveAs.Caption=다른 이름으로 저장...
+ActionHTMLSaveAs.Hint=다른 이름으로 저장...|현재의 템플릿을 다른 이름으로 저장히기
+ActionInsertTag.Caption=특정 태그 삽입
+ActionInsertTag.Hint=|템플릿에 특정 태그 삽입하기
+ActionEditUndo.Caption=실행취소
+ActionEditCut.Caption=자르기
+ActionEditCopy.Caption=복사
+ActionEditPaste.Caption=붙여넣기
+ActionEditDelete.Caption=삭제
+ActionEditSelectAll.Caption=전체 선택
+ActionExportBoth.Caption=모두 내보내기
+ActionExportBoth.Hint=|전체와 개별 템플릿 두 형식 모두로 내보내기
+ActionExportSelected.Caption=선택된 템플릿으로 내보내기
+ActionExportSelected.Hint=|선택된 템플릿으로만 내보내기
+ActionDisplayFull.Caption=전체
+ActionDisplayFull.Hint=전체 문서 보여주기|전체 영화를 HTML 문서로 보여주기
+ActionDisplayIndividual.Caption=개별
+ActionDisplayIndividual.Hint=개별 문서 보여주기|개별 영화의 HTML 문서 보여주기
+
+MnuGen.Caption=일반
+MnuGenDte.Caption=현재 날짜
+MnuGenTme.Caption=현재 시간
+MnuCat.Caption=목록
+MnuCatNme.Caption=파일 이름
+MnuCatPth.Caption=전체 경로의 파일 이름
+MnuCatNbr.Caption=영화의 개수
+MnuCatDsk.Caption=영화 매체의 개수
+MnuOwnNam.Caption=소유자 이름
+MnuOwnEml.Caption=소유자 이메일
+MnuOwnWeb.Caption=소유자 홈페이지 주소
+MnuCatDsc.Caption=설명
+MnuMovBeg.Caption=리스트 시작
+MnuMovEnd.Caption=리스트 끝
+MnuMovRec.Caption=레코드 번호
+MnuMovInd.Caption=개별적인 영화 문서의 파일 이름
+
+  MnuMov.Caption=&Movie fields
+  MnuMovCF.Caption=&Custom fields
+  MnuMovExtras.Caption=&Extra fields
+MnuMovPic.Caption=포스터
+MnuMovPfn.Caption=포스터 파일 이름
+  MnuMovPicNP.Caption=Picture (No popup)
+  MnuMovPfnNP.Caption=Picture filename (No popup)
+  MnuMovUR04.Caption=My Rating (0 to 4 without decimal)
+  MnuMovUR10.Caption=My Rating (0 to 10 without decimal)
+  MnuMovUA04.Caption=My Appreciation (0 to 4 stars)
+  MnuMovUA10.Caption=My Appreciation (0 to 10 stars)
+  MnuMovR04.Caption=Rating (0 to 4 without decimal)
+  MnuMovR10.Caption=Rating (0 to 10 without decimal)
+  MnuMovApp.Caption=Appreciation (0 to 4 stars)
+  MnuMovA10.Caption=Appreciation (0 to 10 stars)
+  MnuMovFT1.Caption=Formatted Title: Original (Translated)
+  MnuMovFT2.Caption=Formatted Title: Translated (Original)
+  MnuMovHtm.Caption=Color Tag (HTML)
+  MnuMovEBeg.Caption=Begin List
+  MnuMovEEnd.Caption=End List
+  MnuMovERec.Caption=Record number
+  MnuMovEPic.Caption=Picture
+  MnuMovEPfn.Caption=Picture filename
+  MnuMovEPicNP.Caption=Picture (No popup)
+  MnuMovEPfnNP.Caption=Picture filename (No popup)
+
+  MnuLab.Caption=&Labels movie fields
+  MnuLabCF.Caption=&Labels custom fields
+  MnuLabExtras.Caption=&Labels extra fields
+  MnuLabPic.Caption=Picture
+  MnuLabUAF.Caption=Unit audio bitrate
+  MnuLabUVF.Caption=Unit video bitrate
+  MnuLabUFS.Caption=Unit file size
+  MnuLabUFP.Caption=Unit framerate
+  MnuLabEPic.Caption=Picture
+
+Messages.Strings.String[0]="%s" 파일로 저장할수 없습니다: %s
+Messages.Strings.String[1]="%s" 파일을 불러올수 없습니다: %s
+  Messages.Strings.String[2]=HTML template has been modified. Do you want to save it?
+Messages.Strings.String[3]=전체 HTML 문서가 변경되었습니다. 저장하시겠습니까?
+Messages.Strings.String[4]=개별 HTML 문서가 변경되었습니다. 저장하시겠습니까?

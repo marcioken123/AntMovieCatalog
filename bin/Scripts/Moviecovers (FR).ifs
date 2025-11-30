@@ -1,0 +1,170 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Achille, Dedej, antp
+Title=Moviecovers
+Description=Importation des informations et de l'image de Moviecovers
+Site=http://www.moviecovers.com
+Language=FR
+Version=2.4 du 08/04/2018
+Requires=4.2.2
+Comments=Un peu arrangé par Antoine Potten pour AMC 3.5|Temporairement modifié pour utiliser http://mc.deedyou.com/ en attendant que le site officiel soit de retour.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+GrandeImage=1|1|0=Prend la petite image|1=Prend la grande image
+FormatTitre=0|0|0=laisser les titres des films tels quels|1=tout en minuscules|2=tout en majuscules|3=1ère lettre en majuscule le reste en minuscules|4=toutes les 1ères lettres en majuscules
+
+[Parameters]
+
+***************************************************)
+
+program MovieCovers;
+
+var
+  MovieName: string;
+  LineNr: Integer;
+
+const
+  BaseUrl = 'https://moviecovers.com';
+  
+uses
+  StringUtils1,   BatchCommon7552;
+
+procedure AnalyzePage(Address: string);
+var
+  Line, Value: string;
+  LastLine, BeginPos, EndPos, TreeCount: Integer;
+  Page: TStringList;
+begin
+  Line := UTF8Decode(GetPage(Address));
+  if Pos('il n''y a pas de film correspondant &agrave; ce(s) crit&egrave;re(s) dans <B>MOVIECOVERS</B>', Line) > 0 then
+  begin
+    ShowMessage('Aucun film trouvé');
+    Exit;
+  end;
+  PickTreeClear;
+  BeginPos := Pos('<FONT size="+1" color="#000000"><B>', Line);
+  Delete(Line, 1, BeginPos - 1);
+  EndPos := Pos('</FONT>', Line);
+  Value := Copy(Line, 1, EndPos - 1);
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  BeginPos := Pos(' <table border=0 cellspacing=0 cellpadding=6 align="center" width="100%">', Line) + 1;
+  Delete(Line, 1, BeginPos);
+  EndPos := Pos(' <table border=0 cellspacing=0 cellpadding=6 align="center" width="100%">', Line) + 1;
+  Delete(Line, EndPos, Length(Line));
+  Page := TStringList.Create;
+  Page.Text := Line;
+  Value := Trim(Value) + ' : ' + Trim(Page.GetString(2));
+  PickTreeAdd(Value, '');
+  TreeCount := 0;
+  for LineNr := 3 to Page.Count-1 do
+  begin
+    Line := Page.GetString(LineNr);
+    if Pos('<LI><a', Line) > 0 then
+    begin
+      BeginPos := Pos('/film/titre', Line);
+      EndPos := Pos('">', Line);
+      Value := BaseUrl + Copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLRemoveTags(Line);
+      PickTreeAdd(Trim(Line), Value);
+      TreeCount := TreeCount + 1;
+    end;
+  end;
+  if TreeCount = 1 then
+    resume(Value)
+  else
+  if PickTreeExec(Address) then
+    resume(Address);
+  Page.Free;
+end;
+
+function TwoLinesAfter(Pattern: string; Page: TStringList): string;
+begin
+  LineNr := FindLine(Pattern, Page, LineNr);
+  Result := Page.GetString(LineNr+2);
+  HTMLRemoveTags(Result);
+  HTMLDecode(Result);
+  Result := Trim(Result);
+end;
+
+procedure resume (Adress: string);
+var
+  nouvelleadr, idcm, dure, CasseTitre, data: string;
+  lestx: TStringList;
+  BeginPos, EndPos, IntValue, FormatTitre: Integer;
+begin
+	FormatTitre := GetOption('FormatTitre');
+  SetField(fieldURL, Adress);
+  nouvelleadr:=stringreplace(Adress, BaseUrl + '/film/titre_','');
+  idcm:=stringreplace(nouvelleadr,'.html','');
+  idcm := urldecode(idcm);
+  Adress:= BaseUrl + '/getfilm.html' ;
+  nouvelleadr:='idmc=' + idcm;
+  data := postpage(Adress,nouvelleadr);
+  data := StringReplace(data, 'Â’', 'â€™');
+  data := UTF8Decode(data);
+  //data := RegExprSetReplace('([a-zA-Z])\?([a-zA-Z])', data, '$1’$2' , True);
+  lestx := TStringList.Create;
+  lestx.text:= data;
+  Adress:=lestx.getstring(5);
+  CasseTitre := TranslateText(lestx.getstring(0),FormatTitre);
+  SetField(fieldTranslatedTitle, CasseTitre);
+  CasseTitre := TranslateText(lestx.getstring(1),4);
+  SetField(fieldDirector,CasseTitre);
+  SetField(fieldYear, lestx.getstring(2));
+  SetField(fieldCountry, lestx.getstring(3));
+  SetField(fieldCategory, lestx.getstring(4));
+  dure:= lestx.getstring(5);
+  BeginPos := Pos('H', dure);
+  IntValue := (StrToInt(Copy(dure, 1, BeginPos - 1), 0) * 60) + (StrToInt(Copy(dure, BeginPos + 1, Length(dure)), 0));
+  SetField(fieldLength, IntToStr(IntValue));
+  CasseTitre := StringReplace(lestx.getstring(6), ';', ', ');
+  CasseTitre := TranslateText(CasseTitre,4);
+  SetField(fieldActors, CasseTitre);
+  SetField(fieldDescription, lestx.getstring(7));
+  CasseTitre := TranslateText(lestx.getstring(8),4);
+  SetField(fieldProducer, CasseTitre);
+  CasseTitre := TranslateText(lestx.getstring(9),FormatTitre);
+  SetField(fieldOriginalTitle, CasseTitre);
+  if GetField(fieldOriginalTitle) = '' then
+      SetField(fieldOriginalTitle, GetField(fieldTranslatedTitle));
+  if GetOption('GrandeImage') = 1 then
+    GetLargePicture(idcm)
+  else
+    GetSmallPicture(idcm);
+end;
+
+procedure GetLargePicture(Address: string);
+begin
+  Address := URLEncode(UTF8Encode(Address));
+  GetPicture(BaseUrl + '/getjpg.html/' + Address);
+end;
+
+procedure GetSmallPicture(Address: string);
+begin
+  Address := URLEncode(Address);
+  GetPicture(BaseUrl + '/DATA/thumbs/films-' + LowerCase(Copy(Address, 1, 1)) + '/' + Address + '.jpg');
+end;
+
+begin
+  if CheckVersion(4,2,2) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('MovieCovers', 'Entrez le titre du film :', MovieName) then
+    begin
+      AnalyzePage(BaseUrl + '/multicrit.html?titre=' + UrlEncode(MovieName) + '&slow=1&listes=1');
+    end;
+  end else if ShowWarning('Ce script requiert une version plus récente de Ant Movie Catalog, au moins la version 4.2.2, pour le moment disponible en beta - voulez-vous ouvrir le lien pour la télécharger ?)') = true then
+  begin
+    Launch('https://forum.antp.be/phpbb3/viewtopic.php?f=6&t=6862', '');
+  end;
+end.

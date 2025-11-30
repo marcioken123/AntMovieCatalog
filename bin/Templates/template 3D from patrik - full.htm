@@ -1,0 +1,87 @@
+<!-- Start of Variables -->
+<script>
+/* User Variables (CHANGABLE)*/
+ var xmllayout = "layout1.xml";   //layout2 and 3 also available
+</script>
+<!-- End of Variables -->
+
+<!-- Themes -->
+<!-- light, dark, black -->
+<link title = "Light" rel="stylesheet" type="text/css" href="themes/light.css">
+<link title = "Dark" rel="alternate stylesheet" type="text/css" href="themes/dark.css">
+<link title = "Black" rel="alternate stylesheet" type="text/css" href="themes/black.css">
+
+<!-- Start of HTML -->
+
+
+<html><head>
+<base target="_blank">
+<style TYPE="text/css">
+
+
+body            {font-size: 10px; font-family: Verdana, Arial, helvetica;
+                 scrollbar-face-color: #2C5A8A;
+                 scrollbar-shadow-color: #2C5A8A;
+                 scrollbar-highlight-color: #5482B2;
+                 scrollbar-3dlight-color: #5482B2;
+                 scrollbar-darkshadow-color: #184676;
+                 scrollbar-track-color: #1D4B7B;
+                 scrollbar-arrow-color: #FFCC00; }
+table      {border: 4 groove; border-color: #5482B2;}
+td      {border: 1 outset; border-color: #5482B2;}
+a           {text-decoration: none;}
+a:visited   {text-decoration: none;}
+a:hover     {text-decoration: underline , overline;}
+.windowbg      {background-color: #184675; font-size: 10px; font-family: Verdana, Arial, helvetica;}
+.windowbg2    {background-color: #0E3C6C; font-size: 10px; font-family: Verdana, Arial, helvetica;}
+.windowbg3     {background-color: #CCCC00; font-size: 10px; font-family: Verdana, Arial, helvetica;}
+.titlebg      {background-color: #225080; font-size: 10px; font-family: Verdana, Arial, helvetica;}
+.text1         {font-size: 10px; font-family: Verdana, Arial, helvetica; color: #FFCC00}
+.catbg         {background-color: #366494; color: #FFCC00; font-size: 10px; font-family: Verdana, Arial, helvetica;}
+.bordercolor   {background-color: #083666;}
+.quote         {font-size: 10px; font-family: Verdana, Arial, helvetica; color: #AAAA00; background-color: #083666;}
+.code          {font-size: 10px; font-family: Verdana, Arial, helvetica; color: #CCCC00; background-color: #083666;}
+
+
+</head></style>
+
+<body bgcolor="#225080" text="#FFCC00" link="#FFFFFF" vlink="#FFFFFF" alink="#FFFFFF">
+<div align="center">
+  <table width="70%" border="0" cellspacing="1" cellpadding="1">
+    <tr bgcolor="#214263">
+      <td>
+        <div align="center"><font size="2"><m boardname> Movie List <m title></font></div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div align="center"><font size="2"><m uname><m im></font><br>
+          <m menu> </div>
+      </td>
+    </tr>
+  </table><br>
+</div>
+</body></html>
+
+</style></head><body>
+<Center><B><U><font size=+3>$$OWNER_NAME's Movie catalog</B></U></FONT></CENTER><br>
+<p>Catalog created on $$DATE with <a href="http://www.buypin.com/moviecatalog.php" target="_blank">Ant Movie Catalog</a>.</p>
+<table class="blk" border="1" cellspacing="0" cellpadding="5"><tr>
+<td class="blk" nowrap>Number</td>
+<td class="blk" nowrap>Quality</td>
+<td class="blk" nowrap>Movie Info</td>
+<td class="blk" nowrap>Original Title</td>
+<td class="blk" nowrap>Translated Title</td>
+<td class="blk" nowrap>Format</td>
+<td class="blk" nowrap>Languages</td>
+<td class="blk" nowrap>Subtitles</td>
+</tr>$$ITEM_BEGIN<tr>
+<td rowspan="1" class="lgt"><strong>$$ITEM_NUMBER<br></strong></td>
+<td rowspan="1" class="lgt"><strong><br>$$ITEM_APPRECIATION</strong></td>
+<td><a href="$$ITEM_FILEINDIV" target="_blank">Info</a></td>
+<td class="lgt"><strong>$$ITEM_ORIGINALTITLE&nbsp;</strong></td>
+<td class="lgt">$$ITEM_TRANSLATEDTITLE&nbsp;</td>
+<td class="lgt">$$ITEM_VIDEOFORMAT&nbsp;</td>
+<td class="lgt">$$ITEM_LANGUAGES&nbsp;</td>
+<td class="lgt">$$ITEM_SUBTITLES&nbsp;</td>
+</tr>$$ITEM_END</table><p><strong>Total: $$TOTALMOVIES movies</strong></p></body></html>

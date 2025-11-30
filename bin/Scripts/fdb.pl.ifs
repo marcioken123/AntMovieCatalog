@@ -1,0 +1,415 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2007-2011 Adam SowiÒski
+Title=fdb.pl (PL)
+Description=Movie importation script for fdb.pl info & picture
+Site=http://fdb.pl
+Language=PL
+Version=1.15
+Requires=3.5.0.1
+Comments=10.11.2012 - Poprawiono pobieranie ok≥adki, obsady i opisu filmu.|04.07.2012 - Poprawiono pobieranie opisu.|08.12.2011 - Poprawiono pobieranie gatunku.|18.06.2011 - Poprawiono pobieranie ok≥adki, tytu≥u polskiego, oceny, reøysera, gatunku, kraju, czasu trwania, opisu filmu, komentarzy.|03.08.2009 - Poprawiono pobieranie listy wynikÛw wyszukiwania (dla jednej strony).|05.07.2009 - Poprawiono pobieranie listy wynikÛw wyszukiwania.|08.01.2009 - Poprawiono pobieranie ok≥adki i opisu.|12.12.2008 - Poprawiono pobieranie listy wynikÛw wyszukiwania, tytu≥u oryginalnego, tytu≥u polskiego, kraju, gatunku, roku produkcji, opisu filmu, komentarzy.|08.10.2008 - Dodano wczytywanie tytu≥u oryginalnego w polu zapytania.|12.09.2008 - Poprawiono pobieranie tytu≥u oryginalnego, czasu trwania oraz wyúwietlanie znakÛw.|12.09.2008 - Poprawiono pobieranie tytu≥u oryginalnego, reøysera, kraju, gatunku, czasu trwania, oceny.|22.08.2008 - Poprawiono pobieranie opisu filmu.|06.06.2008 - Poprawiono pobieranie tytu≥u oryginalnego, reøysera.|07.05.2008 - Poprawiono pobieranie opisu, komentarzy.|03.03.2008 - Poprawiono pobieranie oceny, reøysera, producenta, kraju, gatunku, roku produkcji, czasu trwania, obsady, komentarzy.|04.10.2007 - Wersja stabilna.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+AktorzyUk≥ad=3|3|0=Tylko nazwiska aktorÛw, rozdzielone przecinkami|1=Tylko nazwiska aktorÛw, kaøde w nowej lini|2=Nazwiska aktorÛw i odgrywanych postaci '-', rozdzielone przecinkami|3=Nazwiska aktorÛw i odgrywanych postaci '-', kaøde w nowej lini|4=Nazwiska aktorÛw i odgrywanych postaci 'jako', kaøde w nowej lini
+Ok≥adka=1|1|0=Nie pobieraj ok≥adki|1=Standardowa ok≥adka|2=Ma≥a ok≥adka
+
+***************************************************)
+
+program fdb;
+
+const
+	urlSite = 'http://fdb.pl';
+	urlSrch = urlSite + '/szukaj/movies?query=';
+
+var
+  movie, page, temp, val, link, title, actors, producer, description, com: string;
+  nr, strona: integer;
+
+//funkcja kopiujaca od S do T (a nie od pos(S), ile)
+function copys(S,A,B: string):string;
+begin
+  S := copyz (S, A);
+  S := copya (S, B);
+  result := S;
+end;
+
+//funkcja kopiujπca od poczatku do T
+function copya (S,T: string):string;
+begin
+  S := copy (S, 1, pos(T,S)-1);
+  result := S;
+end;
+
+//funkcja kopiujπca od T do koÒca
+function copyz (S,T: string):string;
+begin
+  S := copy (S, pos(T,S)+length(T), length(S));
+  result := S;
+end;
+
+//funkcja dodajπca element do ciπgu z wybranym separatorem
+function addSep (S,T,sep: string):string;
+begin
+  if length(S) = 0 then begin result := T;
+  end else result := S + sep + T;
+end;
+
+
+//funkcja przekodowujπca stronÍ kodowπ UTF8 na ANSI
+function UTFtoANSI (S: string):string;
+begin
+  S := StringReplace (S, 'ƒÖ', 'π');
+  S := StringReplace (S, 'ƒá', 'Ê');
+  S := StringReplace (S, 'ƒô', 'Í');
+  S := StringReplace (S, '≈Ç', '≥');
+  S := StringReplace (S, '≈Ñ', 'Ò');
+  S := StringReplace (S, '√≥', 'Û');
+  S := StringReplace (S, '≈õ', 'ú');
+  S := StringReplace (S, '≈∫', 'ü');
+  S := StringReplace (S, '≈º', 'ø');
+
+  S := StringReplace (S, 'ƒÑ', '•');
+  S := StringReplace (S, 'ƒÜ', '∆');
+  S := StringReplace (S, 'ƒò', ' ');
+  S := StringReplace (S, '≈Å', '£');
+  S := StringReplace (S, '≈É', '—');
+  S := StringReplace (S, '√ì', '”');
+  S := StringReplace (S, '≈ö', 'å');
+  S := StringReplace (S, '≈π', 'è');
+  S := StringReplace (S, '≈ª', 'Ø');
+
+  S := StringReplace (S, '√∫', '˙');
+  S := StringReplace (S, '√±', 'n');
+  S := StringReplace (S, '≈Ω', 'é');
+  S := StringReplace (S, 'ƒç', 'Ë');
+  S := StringReplace (S, '≈†', 'ä');
+  S := StringReplace (S, '≈°', 'ö');
+  S := StringReplace (S, '¬°', '!');
+  S := StringReplace (S, '√Å', '¡');
+  S := StringReplace (S, '√°', '·');
+  S := StringReplace (S, '√≠', 'Ì');
+  S := StringReplace (S, '√©', 'È');
+  S := StringReplace (S, '√¶', 'a');
+  S := StringReplace (S, '√â', 'È');
+  S := StringReplace (S, '√∏', 'o');
+  S := StringReplace (S, '√ª', 'u');
+  S := StringReplace (S, '√®', 'e');
+  S := StringReplace (S, '√∂', 'ˆ');
+  S := StringReplace (S, '√§', '‰');
+  S := StringReplace (S, '√º', '¸');
+  S := StringReplace (S, '√ß', 'Á');
+  S := StringReplace (S, '√†', 'a');
+
+  S := StringReplace (S, '<br /><br />', #13#10);
+  S := StringReplace (S, '&quot;', '"');
+  S := StringReplace (S, '&#039;', 'í');
+  S := StringReplace (S, '‚Äû', '"');
+  S := StringReplace (S, '‚Äù', '"');
+  S := StringReplace (S, '‚Äô', 'í');
+  S := StringReplace (S, '‚Ä≤', 'í');
+  S := StringReplace (S, '‚Äì', '-');
+
+  while pos ('<', S) > 0 do begin
+    S := copya (S, '<') + copyz (S, '>');
+  end;
+
+//  HTMLRemoveTags(S);
+  result := S;
+end;
+
+
+//funkcja przekodowujπca stronÍ kodowπ ANSI na format URL
+function AnsiToURL (S: string):string;
+begin
+  S := StringReplace (S, 'π', '%C4%85');
+  S := StringReplace (S, 'Ê', '%C4%87');
+  S := StringReplace (S, 'Í', '%C4%99');
+  S := StringReplace (S, '≥', '%C5%82');
+  S := StringReplace (S, 'Ò', '%C5%84');
+  S := StringReplace (S, 'Û', '%C3%B3');
+  S := StringReplace (S, 'ú', '%C5%9B');
+  S := StringReplace (S, 'ü', '%C5%BA');
+  S := StringReplace (S, 'ø', '%C5%BC');
+
+  S := StringReplace (S, '•', '%C4%84');
+  S := StringReplace (S, '∆', '%C4%86');
+  S := StringReplace (S, ' ', '%C4%98');
+  S := StringReplace (S, '£', '%C5%81');
+  S := StringReplace (S, '—', '%C5%83');
+  S := StringReplace (S, '”', '%C3%93');
+  S := StringReplace (S, 'å', '%C5%9A');
+  S := StringReplace (S, 'è', '%C5%B9');
+  S := StringReplace (S, 'Ø', '%C5%BB');
+  S := StringReplace (S, '+', '%2B'); //wprowadzone przez uøytkownika
+  S := StringReplace (S, ' ', '+');   //spacje
+  result := S;
+end;
+
+//procedura ddajπca tytu≥y filmÛw do listy wyboru
+procedure addtitles (S:string);
+begin
+  while pos ('<div class="content">', S) > 0 do begin
+    S := copyz (S, '<div class="content">');
+    link := copys (S, '<a href="', '">');
+    title := copys (S, '">', '</a>');
+    title := UTFtoANSI (title);
+    PickTreeAdd (inttostr(nr)+'. '+title, link);
+    nr := nr+1;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+//funkcja pobierajπca link docelowy do filmu
+procedure AnalyzePage (Address: string);
+begin
+page := GetPage (Address);
+temp := page;
+
+PickTreeClear;
+PickTreeAdd('Znaleziono filmy:','');
+
+//Tworzenie strony wynikÛw wyszukiwania
+strona := 1;
+nr := 1;
+if pos ('<li class="next"><a href', temp) > 0 then begin  //jedna strona
+  while (pos ('<li class="next">Nast', temp) = 0) and (strona < 10) do begin
+    addtitles (temp);
+    strona := strona + 1;
+    link := urlSrch + movie + '&page=' + inttostr(strona);
+    temp := Getpage (link);
+  end;
+end;
+addtitles (temp);
+
+if picktreeexec(link) then begin                                                //wywo≥anie okna wynikÛw
+  getInfo (link);
+end;
+
+end;
+
+//------------------------------------------------------------------------------
+//procedura pobierajπca informacje ze strony
+Procedure GetInfo (movielink: string);
+var
+  Address, director, gentre, country: string;
+begin
+
+page := Getpage (movielink);
+movielink := UTFtoANSI (movielink);
+setfield (fieldurl, movielink);
+
+
+//ok≥adka
+if (getOption('Ok≥adka') > 0) and (pos('gfx-poster-new" src="', page) > 0 ) then begin
+  temp := copys (page, 'class="gfx-poster-new" src="', '/140x200.jpg');
+  if getOption('Ok≥adka') = 1 then begin temp := temp + '.jpg';                   //ma≥a ok≥adka
+  end else temp := temp + '/140x200.jpg';
+  getpicture (temp);
+end;
+
+
+//tytu≥ polski i rok
+title := copys (page, '<h1 id="movie-title">', '</h1>');
+
+temp := copys (title, '(', '</a>)');
+temp := copyz (temp, '">');                                     //rok
+setfield (fieldYear, temp);
+
+title := copys (title, '">', '</a');
+title := UTFToAnsi (title);
+setfield (fieldtranslatedTitle, title);
+
+//tytu≥ oryginalny
+temp := copys (page, '<h2 class="after-title">', '        </h2>');
+temp := copys (temp, #13#10+'            ',#13#10);
+temp := UTFToAnsi (temp);
+if temp = '' then temp := title;
+setfield (fieldOriginalTitle, temp);
+
+//ocena
+if pos ('</big>/10', page) > 0 then begin
+  temp := copys (page, '<big>', '</big>/10');
+  temp := StringReplace (temp, '.', ',');
+  setfield (fieldRating, temp);
+end;
+
+//reøyser
+if pos ('yseria', page) > 0 then begin
+  temp := copyz (page, 'yseria:</dt>');
+  temp := copya (temp, '</dd>');
+  while pos('">',temp)>0 do begin
+    temp := copyz (temp, '">');
+    director := director + ', ' + copya (temp,'</a>');
+  end;
+  director := UTFToAnsi (director);
+  director := copyz (director, ', ');
+  setfield (fieldDirector, director);
+end;
+
+//gatunek
+if pos ('katalog/gatunek', page) > 0 then begin
+  temp := copys (page, 'katalog/gatunek','katalog/kraj');
+  while pos('">',temp)>0 do begin
+    gentre := addSep (gentre, copys (temp, '">', '</a>'), ', ');
+    if pos('|', temp)>0 then begin temp := copyz (temp, '|');
+    end else break;
+  end;
+  gentre := UTFToAnsi (gentre);
+  setfield (fieldCategory, gentre);
+end;
+
+//kraj
+temp := copys (page, '<dt>Kraj produkcji:</dt>', '<dt>Czas trwania:</dt>');
+while pos('<a href',temp)>0 do begin
+  temp := copyz (temp, '<a href');
+  country := addSep (country, copys (temp, '">', '</a>'), ', ');
+end;
+temp := UTFToAnsi (country);
+setfield (fieldCountry, country);
+
+//czas trwania
+if pos ('Czas trwania:', page) > 0 then begin
+  temp := copys (page, '<dt>Czas trwania:</dt>',' minut');
+  temp := copyz (temp, '        ');
+  setfield (fieldLength, temp);
+end;
+
+//opis
+(*
+if pos ('Opis filmu', page) > 0 then begin
+  if (pos ('opisy">(zobacz wszystkie', page) > 0) and (getOption('Opis') = 1) then begin //wiele opisÛw
+    temp := urlSite + copys (page, '        <em><a href="', '">(zobacz wszystkie ');
+    temp := Getpage (temp);
+    PickListClear;
+    description := copys (temp, '      <p>'+#13#10+'  ', #13#10+'  </p>');      //1. opis
+    description := StringReplace (description, #13#10#13#10, ' ');
+    description := UTFToAnsi (description);
+    PickListAdd (description);
+    while pos ('<div class="line"></div><p>', temp) > 0 do begin
+      temp := copyz (temp, '<div class="line"></div><p>');
+      description := copys (temp, '  ', #13#10#13#10);
+      description := UTFToAnsi (description);
+      PickListAdd (description);
+    end;
+    if not PickListExec ('Wybierz opis dla "'+title+'"',temp) then temp := '';
+    com := 'Dodatkowe opisy filmu dostÍpne na stronie: '+link+'/opisy'+#13#10;
+  end else begin                                                                //jeden opis
+    temp := copys (page, 'Opis filmu', 'Obsada');
+    temp := copys (temp, '<p>'+#13#10+'    ', #13#10#13#10#13#10);
+    temp := UTFToAnsi (temp);
+    temp := StringReplace (temp, #13#10#13#10, ' ');
+  end;
+  setfield (fieldDescription, temp);
+end;
+*)
+temp := copys (page, '<li id="description">', #13#10+'  </p>');
+temp := copyz (temp, '</span>'+#13#10#13#10+'    ');
+temp := StringReplace (temp, '          ', '');
+temp := UTFToAnsi (temp);
+setfield (fieldDescription, temp);
+
+
+//inne
+if pos ('recenzje">Recenzje</a>', page) > 0 then begin
+  com := com + 'Recenzje filmu dostÍpne na stronie: '+link+'/recenzje'+#13#10;
+end;
+if pos ('plakaty">Plakaty</a>', page) > 0 then begin
+  com := com + 'Plakaty z filmu dostÍpne na stronie: '+link+'/plakaty'+#13#10;
+end;
+if pos ('zwiastuny">Zwiastuny</a>', page) > 0 then begin
+  com := com + 'Zwiastuny filmu dostÍpne na stronie: '+link+'/zwiastuny';
+end;
+
+//ciekawostki
+if pos ('">Ciekawostki', page) > 0 then begin
+  temp := link + '/ciekawostki';
+  temp := Getpage (temp);
+  temp := copys (temp, '<h2 class="category-header">Ciekawostki</h2>', '</ul>');
+  temp := copys (temp, '    <li>'+#13#10, #13#10+'</li>'+#13#10);
+  temp := StringReplace (temp, '  <strong>Etap pre i post produkcji:</strong> ', '- ');
+  temp := StringReplace (temp, '  <strong>Lokalizacja zdjƒôƒá:</strong> ', '- ');
+  temp := StringReplace (temp, '  <strong>Obsada i ekipa:</strong> ', '- ');
+  temp := StringReplace (temp, '  <strong>Okoliczno≈õci:</strong> ', '- ');
+  temp := StringReplace (temp, '  <strong>Pozosta≈Çe:</strong> ', '- ');
+  temp := StringReplace (temp, '</li><li>'+#13#10, '');
+  temp := UTFtoAnsi (temp);
+  com := com + #13#10#13#10 + 'Ciekawostki:' + #13#10 + temp;
+end;
+(*
+//recenzja
+if pos('Recenzja', page) > 0 then begin
+  temp := copys (page, '<h2 class="category-header">Recenzja', '" class="more">wi');
+  temp := copyz (temp, '<div class="content">');
+  temp := copyz (temp, '<a href="');
+  temp := Getpage (temp);
+  temp := copys (temp, '<div class="content">'+#13#10+'  '+#13#10+'  ', '</p>'+#13#10+'</div>');
+  temp := UTFToAnsi (temp);
+  com := com + #13#10#13#10 + 'Recenzja:' + #13#10 + temp;
+end;
+*)
+setfield (fieldComments, com);
+
+
+page := link + '/obsada';
+page := GetPage (page);
+
+//obsada
+if pos ('Aktorzy', page) > 0 then begin
+  temp := copyz (page, 'Aktorzy');
+  temp := copya (temp, '</table>');
+  actors := '';
+  while pos ('><a href="', temp) > 0 do begin
+    temp := copyz (temp, '><a href="');
+    actors := actors + #13#10 + copys (temp, '">', '</a>');
+    if (getoption ('AktorzyUk≥ad')>1) then begin
+      actors := actors+' jako ' + copys (temp, 'role">'+#13#10+'      ',#13#10+'      <span');
+    end;
+  end;
+  actors := UTFtoANSI (actors);
+  actors := copyz (actors, #13#10);
+  actors := StringReplace (actors, ' '+#13#10, #13#10);
+  if ((getoption ('AktorzyUk≥ad')=0) or (getoption ('AktorzyUk≥ad')=1))then
+    actors := StringReplace (actors, #13#10, ', ');
+  if ((getoption ('AktorzyUk≥ad')=2) or (getoption ('AktorzyUk≥ad')=3)) then
+    actors := StringReplace (actors, 'jako', '-');
+  setfield (fieldActors, actors);
+end;
+
+//producent
+if pos ('Producenci', page) > 0 then begin
+  producer := '';
+  temp := copyz (page, 'Producenci');
+  temp := copya (temp, '</table>');
+
+  while pos ('<a href="', temp) > 0 do begin
+    temp := copyz (temp, '<a href="');
+    producer := producer + ', ' + copys (temp, '">', '</a>');
+  end;
+  producer := UTFtoANSI (producer);
+  producer := copyz (producer, ', ');
+  setfield (fieldProducer, producer);
+end;
+
+end;
+
+
+//g≥owna funkcja
+begin
+  if CheckVersion(3,5,0) then begin
+    link := GetField(fieldUrl);
+    if (link = '') or (pos('fdb',link)=0) then begin                            //jesli link pusty lub inny niz fdb
+      movie := GetField(fieldTranslatedTitle);
+      if movie = '' then movie := GetField(fieldOriginalTitle);
+      if Input('fdb.pl Import', 'Podaj tytu≥ filmu', movie) then begin
+        movie := AnsiToURL(movie);
+        AnalyzePage(urlSrch+movie);
+      end;
+    end else GetInfo (link);
+  end else ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.0.1 lub nowszej');
+end.

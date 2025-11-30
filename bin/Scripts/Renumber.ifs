@@ -1,0 +1,58 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Gerhard Schaber (gerhard(.)schaber(at)gmx.at, http://schaber.gmxhome.de)
+Title=Renumber
+Description=This script renumbers movies to get rid of gaps. This may need grouping and sorting by number to maintain the order.
+Site=
+Language=English
+Version=1.0
+Requires=3.5.0
+Comments=This may need grouping and sorting by number to maintain the order.
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=0
+
+[Options]
+
+***************************************************)
+
+(*********************************************************
+ *                                                       *
+ * (c) 2007 Gerhard Schaber gerhard(.)schaber(at)gmx.at  *
+ *                                                       *
+ *********************************************************)
+program Renumber;
+uses
+  StringUtils1;
+
+const
+  MAXINT                 = 2147483647;
+
+var
+  gPageNo, asked: Integer;
+  gInitialNo: String;
+
+// main
+begin
+  if ((CheckVersion(3,5,0)) and (CanSetField(fieldNumber))) then
+  begin
+    if (asked = 0) then
+    begin
+      if (Input('Renumber', 'Enter number to start from:', gInitialNo)) then
+      begin
+        gPageNo := StrToInt(gInitialNo, 0);
+        if (gPageNo < 0) then
+        begin
+          gPageNo := 0;
+        end;
+      end;
+    end;
+    asked := asked + 1;
+    SetField(fieldNumber, IntToStr(gPageNo));
+    gPageNo := gPageNo + 1;
+  end;
+end.
+

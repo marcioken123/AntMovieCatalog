@@ -1,0 +1,395 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Todoenvideo (AR)
+Description=
+Site=www.todoenvideo.com.ar
+Language=ES
+Version=1.03
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ 
+
+program Todoenvideo;
+var
+MovieName: string;
+MovieURL: string;
+//------------------------------------------------------------------
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+i: Integer;
+begin
+Result := -1;
+if StartAt < 0 then
+StartAt := 0;
+for i := StartAt to List.Count-1 do
+if Pos(Pattern, List.GetString(i)) <> 0 then
+begin
+Result := i;
+Break;
+end;
+end;
+//------------------------------------------------------------------------------------
+function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+InitialPos: Integer;
+begin
+InitialPos := Pos(StartTag, S);
+if InitialPos = 0 then
+result := ''
+else
+begin
+Delete(S, 1, InitialPos + Length(StartTag) - 1);
+InitialPos := Pos(EndTag, S);
+if InitialPos = 0 then
+result := S
+else
+begin
+result := copy(S, 1, InitialPos - 1);
+Delete(S, 1, InitialPos + 1);
+end;
+end;
+end;
+
+//------------------------------------------------------------------------------------
+function DeleteTags(var S: string): string;
+var
+n,len, tag: Integer;
+c: char;
+t: String;
+begin
+
+tag := 0;
+t := '';
+len := length(s);
+
+for n :=1 to len do
+begin
+c := Copy(s,n,1);
+
+
+if c = #9 then
+c := ' ';
+
+if(tag=1) then
+begin
+if(c='>') then tag := 0;
+continue;
+end
+else
+begin
+if(c='<') then
+begin
+tag := 1;
+continue;
+end;
+t := t + c;
+end;
+end
+s := t;
+result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+strPage, MovieAddr, MovieTitle,MovieTitle1, MovieDate, MovieID, Movie: string;
+BeginPos, EndPos: Integer;
+BeginPoss, EndPoss: Integer;
+begin
+strPage := GetPage(Address);
+BeginPos := Pos('InstanceBeginEditable name="main"', strPage);
+if(BeginPos > -1)then
+begin
+PickTreeClear;
+Delete(strPage, 1, BeginPos);
+BeginPos := Pos('<br><a href="pelicula.php?id=', strPage);
+EndPos := 1;
+while ((BeginPos > 0) and (EndPos > 0)) do
+
+begin
+Delete(strPage, 1, BeginPos);
+EndPos := Pos('" class', strPage);
+MovieId := Copy(strPage,+29, EndPos-29);
+MovieAddr := 'http://www.todoenvideo.com.ar/pelicula.php?id=' + MovieId;
+BeginPoss := Pos('"pelisTitulo"><strong>',strPage);
+EndPoss := Pos('</strong></span>', strPage);
+MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+HTMLDecode(MovieTitle);
+MovieTitle := TextBetween(MovieTitle ,'<strong>', '</strong>');
+MovieTitle := AnsiLowerCase(MovieTitle);
+MovieTitle := AnsiUpFirstLetter(MovieTitle);
+///
+BeginPos := Pos('class="pelisTexto"><strong>',strPage);
+EndPos := Pos('</strong></a>', strPage);
+MovieTitle1 := Copy(strPage,BeginPos, EndPos);
+MovieTitle1 := TextBetween(MovieTitle1 ,'<strong>', '</strong>');
+MovieTitle1 := AnsiLowerCase(MovieTitle1);
+MovieTitle1 := AnsiUpFirstLetter(MovieTitle1);
+SetField(fieldCategory, Trim (MovieTitle1));
+//
+PickTreeAdd(MovieTitle+' ('+MovieTitle1+')', MovieAddr);
+BeginPos := Pos('<br><a href="pelicula.php?id=', strPage);
+if(Pos('</body>', strPage) < BeginPos) then
+BeginPos := -1;
+end;
+
+end;
+PickTreeSort;
+PickTreeExec(Address)
+AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+Page: TStringList;
+LineNr: Integer;
+Line: string;
+Item: string;
+Comments: string;
+Actors: string;
+Directors: string;
+Description: string;
+Busca: integer;
+Commments: string;
+
+
+begin
+Description := '';
+
+// URL
+SetField(fieldURL, Address);
+
+Page := TStringList.Create;
+Page.Text := GetPage(Address);
+
+// Titulo traducido
+LineNr := FindLine('width="3" height="8">', Page, 0);
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '</span>', '</span></td>');
+HTMLDecode(Item);
+Item := AnsiLowerCase(Item);
+Item := AnsiUpFirstLetter(Item);
+SetField(fieldTranslatedTitle, Trim (Item));
+// Titulo original
+LineNr := FindLine('Titulo Original:</b>', Page, 0);
+if LineNr <> -1 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '"textoNormal">', '</span>');
+HTMLDecode(Item);
+SetField(fieldOriginalTitle, Trim (Item));
+end;
+
+// director
+LineNr := FindLine('<b>Director:</b>', Page, 0);
+if LineNr > 0 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, 'director&que=', '">');
+HTMLDecode(Item);
+SetField(fieldDirector, Trim (Item));
+end;
+
+// discos
+LineNr := FindLine('<b>Discos</b>:', Page, 0);
+if LineNr > 0 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '<b>Discos</b>:', '<br>');
+HTMLDecode(Item);
+SetField(fieldDisks, Trim (Item));
+end;
+
+// Resolucion
+LineNr := FindLine('<b>Pantalla</b>:', Page, 0);
+if LineNr > 0 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '<b>Pantalla</b>:', '<br><b>');
+HTMLDecode(Item);
+SetField(fieldResolution, Trim (Item));
+end;
+
+// Lenguaje
+LineNr := FindLine('<b>Idiomas</b>: ', Page, 0);
+if LineNr > 0 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '<b>Idiomas</b>: ', '<br><b>');
+HTMLDecode(Item);
+SetField(fieldLanguages, Trim (Item));
+end;
+
+// Subtitulos
+LineNr := FindLine('<b>Subtitulos</b>: ', Page, 0);
+if LineNr > 0 then
+begin
+Line := Page.GetString(LineNr);
+Item := TextBetween (Line, '<b>Subtitulos</b>: ', '<br><b>');
+HTMLDecode(Item);
+SetField(fieldSubtitles, Trim (Item));
+end;
+
+// Productor
+LineNr := FindLine('</a><br><b>Sello:</b> <span class=', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('</a><br><b>Sello:</b> <span class=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</span>');
+Item := Trim(Item );
+DeleteTags(Item);
+HTMLDecode(Item);
+SetField(fieldProducer, Trim (Item));
+end;
+
+// Reparto
+LineNr := FindLine('search&tipo=interprete&que=', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('search&tipo=interprete&que=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, '">', '</a><br><br><b>');
+Item := Trim(Item );
+DeleteTags(Item);
+HTMLDecode(Item);
+SetField(fieldActors, Trim (Item));
+end;
+
+// duracion
+LineNr := FindLine('Duración:</b> <span class="textoNormal">', Page, 0);
+if LineNr > 0 then
+begin
+Item := copy(Page.Text, pos('Duración:</b> <span class="textoNormal">',Page.Text),
+
+length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</span>');
+Item := StringReplace(Item , '´', '');
+SetField(fieldLength, Trim (Item));
+end;
+
+// año
+LineNr := FindLine('Año de filmación:</b> <span class=', Page, 0);
+if LineNr > 0 then
+begin
+Item := copy(Page.Text, pos('Año de filmación:</b> <span class=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</span>');
+HTMLDecode(Item);
+SetField(fieldYear, Trim (Item));
+end;
+
+// pais
+LineNr := FindLine('<b>País de origen:</b> <a class=', Page, 0);
+if LineNr > 0 then
+begin
+Item := copy(Page.Text, pos('<b>País de origen:</b> <a class=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'pais&que=', '">');
+Item := StringReplace(Item , '/', ', ');
+HTMLDecode(Item);
+SetField(fieldCountry, Trim (Item));
+end;
+
+// sinopsis
+LineNr := FindLine('<b>Sinopsis:</b> <span class=', Page, 0);
+if LineNr > 0 then
+begin
+Item := copy(Page.Text, pos('<b>Sinopsis:</b> <span class=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</td>');
+Item := Trim(Item );
+HTMLDecode(Item);
+SetField(fieldDescription, Trim (Item));
+end;
+
+// Calificacion:
+LineNr := FindLine('<b>Calificación:</b> <span class=', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('<b>Calificación:</b> <span class=',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</span>');
+DeleteTags (Item);
+Item := Trim(Item);
+HTMLDecode(Item);
+Comments := Comments + 'Calificación: ' + Item +#13#10;
+end;
+
+// Editora:
+LineNr := FindLine('<b>Editora:</b>', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('<b>Editora:</b>',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'editora&que=', '"');
+DeleteTags (Item);
+Item := Trim(Item);
+HTMLDecode(Item);
+Comments := Comments + 'Editora: ' + Item +#13#10;
+end;
+
+// Estreno en video
+LineNr := FindLine('<b>Estreno en video:</b>', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('<b>Estreno en video:</b>',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal">', '</span>');
+DeleteTags (Item);
+Item := Trim(Item);
+HTMLDecode(Item);
+Comments := Comments + 'Estreno en video: ' + Item +#13#10;
+end;
+
+// Caracteristicas del dvd
+LineNr := FindLine('<b>Caracteristicas del dvd:</b>', Page, 0);
+if LineNr <> -1 then
+begin
+Item := copy(Page.Text, pos('<b>Caracteristicas del dvd:</b>',Page.Text), length(Page.Text));
+Item := TextBetween (Item, 'textoNormal"><b>', '</table>');
+Item := StringReplace(Item , '<br><b>',#13#10);
+DeleteTags (Item);
+Item := Trim(Item);
+HTMLDecode(Item);
+Comments := Comments + 'Caracteristicas del dvd: '+#13#10 + Item ;
+end;
+
+SetField(fieldComments, Comments);
+
+// Caratula
+LineNr := FindLine('<img src="/imagespelis/', Page, 0);
+if LineNr > 0 then
+begin
+Item := copy(Page.Text, pos('<img src="/imagespelis/',Page.Text), length(Page.Text));
+Item := TextBetween (Item, '<img src="/imagespelis/', '" width=');
+Item := Trim(Item );
+HTMLDecode(Item);
+GetPicture ('http://www.todoenvideo.com.ar/imagespelis/'+Item);
+end;
+
+end;
+//-------------------------------------------------------------------------
+begin
+if (CheckVersion(3,5,0)=FALSe) then
+begin
+ShowMessage('Se requiere Ant Movie Catalog versión 3.5 o superior');
+exit;
+end;
+
+MovieName := GetField(fieldTranslatedTitle);
+if MovieName = '' then
+MovieName := GetField(fieldOriginalTitle);
+Input('Todoenvideo', 'Buscar:', MovieName);
+
+if(GetOption('Sin resultado') = 0) then Input('Todoenvideo', 'Buscar:', MovieName);
+
+AnalyzePage('http://www.todoenvideo.com.ar/peliculas.php?tipo=titulo&f=vhs%2Fdvd&que=' +
+
+UrlEncode(MovieName));
+end.

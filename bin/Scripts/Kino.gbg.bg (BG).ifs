@@ -1,0 +1,304 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Alexander Dimitrov <link>aldi@unrealsoft.bg</link>, <link>aldi@bulgaria.com</link>
+Title=kino.gbg.bg
+Description=kino.gbg.bg (BG) import
+Site=http://kino.gbg.bg
+Language=BG
+Version=1.1
+Requires=3.5.0
+Comments=This script is based on 'IMDB (US) import'| Antoine Potten| Danny Falkov| Kai Blankenhorn
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program KinoGbg;
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure HTMLStript (var Value :string);
+var
+  S :string;
+  Stoped :boolean;
+  i :integer;
+begin
+  Value := StringReplace(Value, '<BR>', #13#10);
+  Value := StringReplace(Value, '<br>', #13#10);
+  Value := StringReplace(Value, '<P>', #13#10);
+  Value := StringReplace(Value, '<p>', #13#10);
+  Value := StringReplace(Value, '<p>', #13#10);
+  Value := StringReplace(Value, #13#10+' ', #13#10);
+  HTMLRemoveTags(Value);
+  while (length(Value) > 0) and (copy(Value, 1, 1) <= ' ') do
+    delete(Value, 1, 1);
+  while (length(Value) > 0) and (copy(Value, length(Value), 1) <= ' ') do
+    delete(Value, length(Value), 1);
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('<b>ТЪРСЕНЕ</b>', Page.Text) = 0 then
+  begin
+    AnalyzeMoviePage(Page,Address);
+  end else
+  begin
+    PickTreeClear;
+    LineNr := 0;
+    LineNr := FindLine('<td class="black11" width="451">', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      PickTreeAdd('Movies in kino.gbg.bg', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+function GetPeople (Page: TStringList; x :string) :string;
+var
+  Line, Value: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+begin
+  LineNr := FindLine(x, Page, 0);
+  Value := '';
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos(x, Line);
+    Delete(Line, 1, BeginPos + length(x));
+    BeginPos := Pos(':', Line);
+    EndPos := Pos('<br>', Line);
+    if EndPos = 0 then
+      EndPos := length(Line);
+    Value := copy(Line, BeginPos + 2, EndPos - BeginPos - 2);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+  end;
+  GetPeople:=Value;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList; Address: string);
+var
+  Line, Value, Value2: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+begin
+  // Tranleted Title & Original Title
+  LineNr := FindLine('<td class="black10"', Page, 0);
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('<b>', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 3;
+    EndPos := pos('<span class="black11"', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos - 1);
+    HTMLDecode(Value);
+    if GetField(fieldTranslatedTitle) = '' then
+      SetField(fieldTranslatedTitle, AnsiMixedCase(Value, ''));
+    BeginPos := pos('(', Line) + 1;
+    if BeginPos > 0 then
+    begin
+      EndPos := Pos('<span class="black11"', Line);
+      if EndPos < BeginPos then
+        EndPos := Pos(')', Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      if GetField(fieldTranslatedTitle) = '' then
+        SetField(fieldOriginalTitle, AnsiMixedCase(Value, ''));
+    end;
+  end;
+  
+  //Category
+  LineNr := FindLine('Жанр:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b> ', Line) + 5;
+    EndPos := pos('<br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCategory, Value);
+  end;
+
+  // Year
+  LineNr := FindLine('Година:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b> ', Line) + 5;
+    EndPos := pos('<br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  //Country
+  LineNr := FindLine('Производство:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b>', Line) + 5;
+    EndPos := pos('<br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCountry, Value);
+  end;
+
+  // Length
+  LineNr := FindLine('Времетраене:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b>', Line) + 5;
+    EndPos := pos(' минути', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLength, Value);
+  end;
+
+  // URL
+  LineNr := FindLine('Официален сайт', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('href="http://', Line) + 6;
+    EndPos := pos('">Официален сайт', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldURL, Value);
+  end
+  else
+    SetField(fieldURL,Address);
+
+  // Actors
+  SetField(fieldActors, GetPeople(Page,'Актьори'));
+
+  // Director
+  SetField(fieldDirector, GetPeople(Page,'Режисьор'));
+
+  // Producer
+  SetField(fieldProducer, GetPeople(Page,'Продуцент'));
+
+  // Description
+  LineNr := FindLine('Сюжет:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('Сюжет:', Line) + 11;
+    EndPos := pos('<br><br><br>', Line);
+    while (EndPos = 0) and (pos('</td>', Line)=0) do begin
+      LineNr := LineNr + 1;
+      Line := Line + ' ' + Page.GetString(LineNr);
+      EndPos := pos('<br><br><br>', Line);
+    end;
+    EndPos := pos('<br><br><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLStript(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+  // Comments
+  LineNr := FindLine('<!-- recenzii -->', Page, 0);
+  if LineNr > -1 then
+  begin
+    PickListClear;
+    LineNr := FindLine('<td class="black11">', Page, LineNr);
+    while LineNr > -1 do begin
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      EndPos := pos('</td>', Line);
+      while (EndPos = 0) and (pos('<br><br><br>',Line)=0) do begin
+        LineNr := LineNr + 1;
+        Line := Line + ' ' + Page.GetString(LineNr);
+        EndPos := pos('</td>', Line);
+      end;
+      BeginPos := 1;
+      EndPos := pos('<br><br><br>', Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      HTMLStript(Value);
+      if StringReplace(StringReplace(Value,#13#10,''), ' ', '') <> '' then
+        PickListAdd(Value);
+      LineNr := FindLine('<td class="black11">', Page, LineNr);
+    end;
+    if PickListExec('Select a comment for "' + MovieName + '"', Value) then
+      SetField(fieldComments, Value);
+  end;
+
+  //DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('href="index.php?p=archive&filmid', Line);
+    if StartPos > 0 then
+    begin
+      Startpos := Startpos + 6;
+      MovieAddress := copy(Line, StartPos, pos('">', Line) - StartPos);
+      StartPos := pos('">', Line) + 2;
+      MovieTitle := copy(Line, StartPos, pos('</a>', Line) - StartPos);
+      if pos('admin/movies/',Movietitle)=0 then begin
+        HTMLDecode(MovieTitle);
+        PickTreeAdd(MovieTitle, 'http://kino.gbg.bg/' + MovieAddress);
+      end;
+    end;
+  until pos('<table cellpadding="0" cellspacing="6" border="0">', Line) > 0;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Kino.gbg.bg Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://kino.gbg.bg/index.php?p=srch&keyw='+UrlEncode(MovieName)+'&where=movies');
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

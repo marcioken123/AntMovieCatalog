@@ -1,0 +1,318 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Sonya
+Title=www.datacd.ru
+Description=Позволяет скачивать автоматом описания фильмов с datacd.ru
+Site=newsonya.narod.ru
+Language=RU
+Version=1.0
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program datacd;
+const
+  BaseAddress = 'http://www.datacd.ru/';
+  content = 'application/x-www-form-urlencoded';
+var
+  MovieName: string;
+  URL : string;
+  SearchParams : string;
+
+function ParseURL(Text:String):String;
+var
+  BeginPos : Integer;
+  EndPos : Integer;
+  Value : String;
+begin
+
+  repeat
+    BeginPos := Pos('<b>',Text);
+    If BeginPos > 0 Then
+    Begin
+      EndPos := Pos('</b>',Text);
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      Value := StringReplace(Value,'<BR>',', ');
+      Value := StringReplace(Value,'<br>',', ');
+      HTMLRemoveTags(Value);
+      Delete(Text,1,EndPos);
+      If Length(result)>0 Then
+        result := result + ', ' + Value
+      else
+        result := Value;
+    end;
+  until BeginPos < 1;
+
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string; Params: string);
+var
+  ID, FilmName, Line: String;
+  Page: TStringList;
+  FilmPage: TStringList;
+  BeginLinePos, BeginPos, EndPos: Integer;
+  forceHTTP11: boolean;
+  forceEncodeParams: boolean;
+
+begin
+  Page := TStringList.Create;
+
+//  FilmName := UrlEncode(Params);
+
+  forceHTTP11 := true;
+  forceEncodeParams := true;
+  SearchParams := 'search=' + MovieName + '&go.x=7&go.y=6';
+  Page.Text := PostPage2(URL, SearchParams, content, BaseAddress, forceHTTP11, forceEncodeParams);
+  BeginLinePos := FindLine('Результат поиска', Page,0);
+
+  PickTreeClear; //Очистка дерева фильмов
+  PickTreeAdd('Поиск по слову: ' + MovieName, '');
+
+  if  BeginLinePos> 0 then
+    begin
+      repeat
+      //Вывод фильмов в дерево
+      Line:= Page.GetString(BeginLinePos+2); //Получить строку с адресами
+
+//  Page.SaveToFile('f:\page.html'); //!Отладка
+      BeginPos := Pos('a href=''about.php?id=',Line);
+      If BeginPos>0 Then
+      Begin
+        Delete(Line,1,BeginPos); //Удаление начала
+
+        BeginPos := 8;
+        EndPos := Pos('''>',Line);
+        ID := copy(Line, BeginPos, EndPos - BeginPos); //Получить адрес (номер) страницы
+
+
+        BeginPos := EndPos + 2;
+        Delete(Line,1,BeginPos); //Удаление до названия
+        BeginPos := 1;
+        EndPos := Pos('</a>',Line)-1;
+        FilmName := Copy(Line, BeginPos, EndPos); //Получить название для выбора
+        FilmName := StringReplace(FilmName,'&nbsp;',' ');
+        PickTreeAdd(FilmName, BaseAddress + ID);
+        
+        BeginLinePos := BeginLinePos + 4;
+      end;
+      until BeginPos < 1;
+    end;
+  If  PickTreeExec(Address) Then
+      AnalyzeMoviePage(Address); //Проанализировать страницу с фильмом
+//      AnalyzeMoviePage('http://localhost/testpage.html'); //Проанализировать тестовую страницу с фильмом
+
+
+end;
+
+procedure AnalyzeMoviePage(Address: String);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('f:\page.txt'); //!Отладка
+
+  // URL
+  SetField(fieldURL,Address);  // Запоминаем URL страницы фильма
+
+  // Рейтинг фильма
+
+  LineNr := FindLine('<legend>Рейтинг фильма</legend>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr+1);
+    BeginPos := Pos('/10',Line)-4;
+    EndPos := BeginPos+3;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldRating,Value);
+  end;
+
+  // Переведёное название
+  LineNr := FindLine('<b>Название:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Название:</b>',Line)+16;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldTranslatedTitle,Value);
+  end;
+  
+  // Оригинальное название
+  LineNr := FindLine('<b>Оригинальное название:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Оригинальное название:</b>',Line)+29;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Год выхода
+  LineNr := FindLine('<b>Год выхода:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Год выхода:</b>',Line)+18;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldYear, Value);
+  end;
+
+ // Режиссёр:
+  LineNr := FindLine('<b>Режиссер:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Режиссер:</b>',Line)+16;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldDirector, Value);
+  end;
+
+  // Продюсер:
+  LineNr := FindLine('<b>Продюсер:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Продюсер:</b>',Line)+16;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldProducer, Value);
+  end;
+
+  // Жанр
+  LineNr := FindLine('<b>Жанр:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Жанр:</b>',Line)+12;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldCategory, Value);
+  end;
+
+  // Продолжительность
+  LineNr := FindLine('<b>Продолжительность:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Продолжительность:</b>',Line)+25;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-5;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldLength, Value);
+  end;
+
+
+  // Страна:
+  LineNr := FindLine('<b>Страна:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('<b>Страна:</b>',Line)+14;
+    Delete(Line,1,BeginPos); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := Pos('</div>',Line)-1;
+    Value := Copy(Line, BeginPos, EndPos);
+    SetField(fieldCountry, Value);
+  end;
+
+  // В главных ролях
+  LineNr := FindLine('<b>В главных ролях:</b>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<b>В главных ролях:</b>', Line)+23;
+    EndPos := Pos('<b>Затраты:</b>',Line);
+    Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldActors, Value);
+  end;
+
+  // Краткое содержание
+  LineNr := FindLine('<b>Краткое содержание:</b>', Page, 0); //Начало строки описания
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<b>Краткое содержание:</b>', Line)+26;
+    EndPos := Pos('<b>В главных ролях:</b>',Line);
+    Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldDescription,Value);
+  end;
+
+  // Картинка
+  LineNr := FindLine('img src=''bigimage.php?', Page, 0); //Начало строки с рисунком
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos('img src=''bigimage.php?',Line);
+    Delete(Line,1,BeginPos+8); //Стереть начало строки
+    BeginPos := 1;
+    EndPos := pos(' alt=', Line)-1;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Address := BaseAddress+Value;
+    If Value <> 'foto/logo.gif' Then
+    begin
+//      GetPicture(Address);
+    end;
+  end;
+//DisplayResults;
+end;
+
+begin
+    URL := BaseAddress + 'search.php';
+//    URL := 'http://localhost/search.html';
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import from DVDSpecial', 'Enter the title of the movie:', MovieName) then
+      AnalyzePage(URL, MovieName);
+end.

@@ -1,0 +1,84 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=NoFiX
+Title=CDUniverse
+Description=CDUniverse (Quick Picture Grab)
+Site=http://www.cduniverse.com
+Language=EN
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program CUPictureGrab;
+var
+  MovieName: string;
+
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID: string;
+  BeginPos, EndPos: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('<b>Click price', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      PickTreeAdd('Search Results for: ' + MovieName, '');
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('<a href="/productinfo.asp?', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+          Delete(strPage, 1, BeginPos + 29);
+          EndPos := Pos('cart=', strPage) - 1;
+          MovieId := Copy(strPage, 1, EndPos - 1);
+          MovieAddr := 'http://www.cduniverse.com/productinfo.asp?pid=' + MovieId + '&cart=0&style=movie';
+          BeginPos := Pos('<b>', strPage) + 3;
+          EndPos := Pos('</b>', strPage);
+          MovieTitle := Copy(strPage, BeginPos, EndPos - BeginPos);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('<a href="/productinfo.asp?', strPage);
+          if(Pos('</table>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+      if(PickTreeExec(Address)) then
+        begin
+          strPage := GetPage(Address);
+          if(Pos('default_coverart.gif', strPage) = 0) then
+            begin
+              BeginPos := Pos('<img src="http://cover', strPage) + 9;
+              Delete(strPage, 1, BeginPos);
+              EndPos := Pos('" border=', strPage) - 1;
+              //ShowMessage(Copy(strPage, 1, EndPos));
+              Address := Copy(strPage, 1, EndPos);
+              GetPicture(Address);
+            end
+          else
+            ShowMessage('Sorry, no cover-art was found for ' + MovieName);
+        end;
+    end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('CDUniverse Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.cduniverse.com/sresult.asp?cart=123456789&style=movie&HT_Search_Info=' + UrlEncode(MovieName));
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

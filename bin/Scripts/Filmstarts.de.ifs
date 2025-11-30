@@ -1,0 +1,731 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=J, yeti
+Title=Filmstarts.de
+Description=Script for Filmstarts.de with options
+Site=www.filmstarts.de
+Language=DE
+Version=2.3.9 - 29-07-2023
+Requires=4.2.2
+Comments=V 1.0.0|Only description & big poster import||V 1.1.0|Import of all data with options||V1.1.1|Added selection for IMDB at rating option|Added IMDB-Rating fom Filmstarts.de if available|Small Code changes - no change of functionality||V1.2|Adaption to several site changes|No new functionality||V2.0.1|Totally new rewritten script after filmstarts.de redesign|Some different options.||V2.1|Adaption to site redesign|No new functionality||V2.1.1|Small fixes||V2.2|fixed picture import|fixed description, comments|added actor images (needs AMC 4.2)|added producer, writer, composer (needs AMC 4.2)||V2.2.1|fixed title import, user critics and PWC double names|changed AMC min. version back to v3.5.1|merged producer, writer, composer into one option||V2.2.2|fixed user critics, title pick, rating|Certification (FSK) added||V2.2.3|code cleanup|Now imports Actor images even when option Actors is set to 0|Added Batchmode||V2.2.4|fixed review||V2.2.5|fixed country, category||V2.2.6|fixed PWC||V2.2.7|fixed composer|Script now deletes actors name from role "(as ...)"||V2.2.8|Added import of press average-Rating, if no FILMSTARTS-Rating available (configurable)||V2.2.9|fix after Site change|added extra big and biggest Poster|don't import actor images, if only a placeholder image is available||V2.2.10|fixed: review was sometimes not loaded||V2.2.11|fix: countries not found anymore||V2.2.12|fix: picture/cover sometimes not loaded|fix: certification (FSK) not filtered correctly||V2.2.13|fix: cover loaded from the Picture-Page (if possible), because the real cover isn't on the Mainpage anymore.||V2.2.14|fix: if the cast/crew-Page contains no crew after the cast, the cast was not found.||V2.2.15|fix: comments||V2.2.17|fixed actors, comments; added a new option||V2.2.18|fixed description||V2.2.19|fixed search URL; fixed check for search results||V2.2.20|fixed actors||V2.2.21|fix: additional actors sometimes added twice|fix: special chars in the role-field not decoded|new: role from additional actors will be added too||V2.2.22|fix: rating|fix: user review|fix (partially): workaround for a Delphi-Bug that breaks UTF8Decode() if the string contains a 4-Byte UTF-8 Code.||V2.2.23|chg: code cleaned up|chg: workaround for UTF8Decode() optimized||V2.2.24|fix: sometimes no length imported|fix: sometimes a actor's name contained a whitespace at the beginning/end|fix: sometimes staff was not imported||V2.2.25|fix (finally): sometimes a actor's name contained a whitespace at the beginning/end|fix: main actors not loaded anymore||V2.2.26|fix: due to changes of the main page, the cover page was not found|fix: director, actors and summary were not loaded anymore||V2.2.27|fix: additional actors not loaded anymore||V2.2.28|fix: Category & length not loaded anymore||V2.2.29|bug: with a title no films found anymore, because the Search-Page has changed, and there are no useable links or IDs in it without running Javascript.|new (workaround): if no title was provided, but a "https://www.filmstarts.de/kritiken/xxxx.html"-Link in the URL-Field, the script loads this page instead|to use the Search.|To use it, open "https://www.filmstarts.de" in your browser and search for your film. If there is only 1 film found, you are on the right page. If more than 1,|you have to click on the the right Link first. Than copy the URL from that page to the URL-Field in AMC. Do not set a title first! Clear the fields before|you start the script. Not optimal, but works.||V2.2.30|Fix: producer, writer, composer: only one person was imported.||V2.3.1|Chg: Using Google.de as search engine (AMC 4.2.2 required). Inspired by Allocine (FR) v2.4.7.||V2.3.2|Fix: Original title sometimes not imported|Fix: Countries not imported anymore|New: Search engine duckduckgo.com added (optional)|Chg: Picktree modified (search text is now in the title, not behind the results)|Chg: Picktree code optimized||V2.3.3|Fix: Filmstarts now uses https||V2.3.4|Fix: Google search (for the time beeing)|Fix: Writer not imported correctly|Chg: Improved google search|Chg: Requires AMC 4.2.2||V2.3.5|Fix: Original title not imported|Fix: filmstarts.de comments import|Chg: Improved duckduckgo search||V2.3.6|Fix: Writer import broken||V2.3.7|New: Added option to reduce the number of imported producers (only if 'Producer, Writer, Composer' = 1)||V2.3.8|Fix: German title not imported||V2.3.9|Multiple Fixes||
+License=IMPORTANT NOTICE:||THIS SCRIPT IS FOR PERSONAL USE ONLY ! |DO NOT REDISTRIBUTE ANY DATA WITHOUT THE PERMISSION OF THE COPYRIGHT OWNER ! RESPECT COPYRIGHTS !||The script itself is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.|
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Batchmode=0|0|0=Check every single movie title|1=Run Boy Run (no window, first movie taken)
+Title=1|3|0=No import|1=German --> original|2=German --> translated|3=German --> original & Original --> translated|4=German --> translated & Original --> original
+Review=4|4|0=No review or comments import|1=Review --> description|2=Review --> comments|3=Review --> description & user critics --> comments|4=Summary --> description & Reviev --> comments
+Actors=2|2|0=No import|1=Only actor names, separated by commas|2=Actors names with character names between parenthesis separated by commas
+Actor images=0|0|0=Do not import images|1=Import 8 new images to extras (with infos)
+Actor extras=0|1|0=No fancy stuff pls|1=max 8 actors with bold names and character names between parenthesis (be careful!)
+Rating=1|1|0=No import|1=FILMSTARTS rating|2=press average|3=FILMSTARTS rating. If not rated then press average
+Picture=2|2|0=No import|1=Small poster|2=Big poster|3=Extra big poster|4=Biggest poster
+Category=1|1|0=No import|1=Oh yes, import me pls!
+Producer, Writer, Composer=1|0|0=Who cares|1=If you absolutely need to know
+Producer (number)=100|100|0=None|100=Probably all|1=Only the first|2=Only first 2|4=Only first 4|6=Only first 6|8=Only first 8|10=Only first 10
+Search engine=1|0|0=google.de|1=duckduckgo.com
+
+[Parameters]
+
+***************************************************)
+
+// FILMSTARTS.de - Script Version 2.0 (20110111/J)
+//
+// v2.3.8 - 16/06/2021 - (information - see comments)
+//
+// For title search via Google.de:
+// AnalyzePageGoogle(), AddMoviesTitlesGoogle(), CleanText() and
+// CleanTextWithBr() copied from script Allocine (FR) v2.47 and
+// customized by yeti
+//
+// ToDo:
+// (TON & BILD-Formatbilder wie in XBMC übernehmen)
+// (DVD-Infos from Amazon)
+
+program FILMSTARTS;
+
+uses
+  StringUtils1;
+var
+  MovieName: string;
+
+procedure AnalyzeMoviePage(RealAddress: string);
+var
+  PageText, PageText2, Address, TextBody, Value, Value1, Value2, Value3: string;
+  Counter: Integer;
+  
+begin
+  Value := '';
+  Value1 := '';
+  TextBody := '';
+  Counter := 0;
+
+  // Load movie-page
+  PageText := GetPage(RealAddress);
+  PageText := MyUTF8Decode(PageText);
+
+  // ***** Title
+  // German title
+  TextBody := TextBetween(PageText, 'class="titlebar-title titlebar-title-lg"', '/div><div class="titlebar');
+  Value := FullTrim(TextBetween(TextBody, '>', '<'));
+  HTMLDecode(Value);
+
+  // Original title <> German title?
+  if Pos('Originaltitel', PageText) > 0 then
+  begin
+    TextBody := TextBetween(PageText, 'Originaltitel: </span>', '</div>');
+    Value1 := FullTrim(TextBody);
+    HTMLDecode(Value1);
+  end
+  else
+    Value1 := Value;
+
+  case GetOption('Title') of
+    1: SetField(fieldOriginalTitle, Value);
+
+    2: SetField(fieldTranslatedTitle, Value);
+
+    3:
+      begin
+        SetField(fieldOriginalTitle, Value);
+        SetField(fieldTranslatedTitle, Value1);
+      end;
+
+    4:
+      begin
+        SetField(fieldTranslatedTitle, Value);
+        SetField(fieldOriginalTitle, Value1);
+      end;
+  end;
+
+  // ***** Picture
+  if Pos('item js-item-mq-medium" title="Bilder">', PageText) > 0 then
+  begin
+    // Use the Coverpage, if possible (v2.2.13)
+    PageText2 := GetPage('https:' + TextBetween(RealAddress, 'https:', '.html') + '/bilder.html');
+    Value := TextBetween(PageText2, '.acsta.net/c_300_300/', #34);
+  end
+  else
+    Value := TextBetween(PageText, '.acsta.net/c_300_300/', #34);
+
+  if Value <> '' then
+  begin
+    case GetOption('Picture') of
+      1: GetPicture('https://de.web.img3.acsta.net/r_160_214/' + Value);
+      
+      2: GetPicture('https://de.web.img3.acsta.net/r_600_800/' + Value);
+      
+      3: GetPicture('https://de.web.img3.acsta.net/r_720_960/' + Value);
+      
+      4: GetPicture('https://de.web.img3.acsta.net/r_2000_2660/' + Value);
+    end;
+  end;
+
+  // ***** Rating
+  case GetOption('Rating') of
+    1:
+      begin
+        TextBody := TextBetween(PageText, 'rating-title">Filmstarts</span>', '/span></div>');
+        SetField(fieldRating, GetRating(TextBody));
+      end;
+
+    2:
+      begin
+        Textbody := TextBetween(PageText, 'rating-title"> Pressekritiken </span>', '/span></div>');
+        SetField(fieldRating, GetRating(TextBody));
+      end;
+
+    3:
+      begin
+        TextBody := TextBetween(PageText, 'rating-title">Filmstarts</span>', '/span></div>');
+        Value := GetRating(TextBody);
+
+        if Value = '0' then
+        begin
+          Textbody := TextBetween(PageText, 'rating-title"> Pressekritiken </span>', '/span></div>');
+          Value := GetRating(TextBody);
+        end;
+
+        SetField(fieldRating, Value);
+      end;
+  end;
+
+  // ***** Countries
+  TextBody := TextBetween(PageText, '<span class="what light">Produktionsl', '</div>');
+  Value := TextBetween(TextBody, '"> ', '</span>');
+  TextBody := TextAfter(TextBody, '"> ');
+  while Pos('"> ', TextBody) <> 0 do
+  begin
+    Value := Value + ', ' + TextBetween(TextBody, '"> ', '</span>');
+    TextBody := TextAfter(TextBody, '">');
+  end;
+
+  Value := StringReplace(Value, 'Usa', 'USA');
+  SetField(fieldCountry, Value);
+
+  // ***** Categories
+  if GetOption('Category') = 1 then
+  begin
+    TextBody := TextBetween(PageText, '  "genre":', ' ,');
+    if TextBody <> '' then
+    begin
+      Value := TextBetween(TextBody, '"', '"');
+      TextBody := TextAfter(TextBody, ',');
+      while Pos('"', TextBody) <> 0 do
+      begin
+        Value := Value + ', ' + TextBetween(TextBody, '"', '"');
+        TextBody := TextAfter(TextBody, ',');
+      end;
+      SetField(fieldCategory, Value);
+    end;
+  end;
+
+  // ***** Length
+  Value := '0';
+  TextBody := TextBetween(PageText, #13#10 + '    "duration":', ',');
+  if TextBody <> '' then
+  begin
+    Value := TextBetween(TextBody, 'PT', 'H');
+    Value1 := TextBetween(TextBody, 'H', 'M');
+    Value := FloatToStr(StrToFloat(Value) * 60 + StrToFloat(Value1));
+    SetField(fieldLength, Value);
+  end;
+
+  // ***** Year
+  Textbody := TextBetween(PageText, 'Produktionsjahr</span>', '/span');
+  Value := TextBetween(Textbody, '">', '<');
+  SetField(fieldYear, Value);
+
+  // ***** URL *****
+  SetField(fieldURL, RealAddress);
+
+  // ***** Certification *****
+  if CheckVersion(4, 2, 0) and (Pos('FSK ab', PageText) <> 0) then
+  begin
+    Textbody := TextBetween(PageText, 'FSK ab ', '</');
+    HTMLRemoveTags(Textbody);
+    Textbody := StringReplace(Textbody, ' freigegeben', '');
+    SetField(fCertification, 'FSK ' + Textbody);
+  end;
+  
+  // ***** Description / Summary & Comments
+  Value1 := FullTrim(TextBetween(PageText, '<div class="content-txt ">', '</div>'));
+  Value1 := StringReplace(Value1, '<br>', #13#10);
+  HTMLRemoveTags(Value1);
+  HTMLDecode(Value1); // new since v2.2
+
+  if Pos('kritik.html', PageText) <> 0 then
+  begin
+    Address := StringReplace(RealAddress, '.html', '/kritik.html');
+    // Load description-page
+    PageText := GetPage(Address);
+    
+	if Pos('<div class="video-card-player ">', PageText) <> 0 then TextBody := TextBetween(PageText, '<div class="editorial-content cf">', '<div class="video-card-player ">')
+	else TextBody := TextBetween(PageText, '<div class="editorial-content cf">', '</section>');
+
+    // Four cases now: witout video / one video(+center tag) / one video / more videos
+    TextBody := TextDeleteFromTo(TextBody, '<div class="article-figure-holder">', '<p class="bo-p"> ', -1);
+    TextBody := TextDeleteFromTo(TextBody, 'bo-h2">', '</h2>', -1);
+//    TextBody := TextDeleteFromTo(TextBody, 'bo-link">', '</a>', -1);
+//    Value := StringReplace(TextBody, #13#10, '');
+//    Value := StringReplace(Value, '<br>', #13#10);    // new since v2.2
+//    Value := StringReplace(Value, '<br />', #13#10);  // new since v2.2
+    Value := StringReplace(TextBody, '</p>', #13#10#13#10);
+	HTMLRemoveTags(Value);
+    Value := MyUTF8Decode(Value);
+    HTMLDecode(Value);
+	Value := Detox(Value);
+//    Value2 := RegExprSetReplace('^\s+$', Value, '', False); // Removes multiple lines with whitespaces
+//    if Value2 <> '' then
+//      Value := Value2;
+    Value := FullTrim(Value);
+    case GetOption('Review') of
+      1: SetField(fieldDescription, Value);
+
+      2: SetField(fieldComments, Value);
+
+      3:
+        begin
+          SetField(fieldDescription, Value);
+          if Pos('/userkritiken/', PageText) <> 0 then
+          begin
+            Address := StringReplace(RealAddress, '.html', '/userkritiken/');
+            // Load user-comments-page
+            PageText := GetPage(Address);
+            TextBody := TextBetween(PageText, '<div class="meta-title">', '<nav class="pagination cf">');
+            while Pos('<p class="review-content">', TextBody) <> 0 do
+            begin
+              Value := TextBetween(TextBody, '<p class="review-content">', '</p>');
+              HTMLRemoveTags(Value);
+              Value := MyUTF8Decode(FullTrim(Value));
+              // Add comment to selection list
+              PickListAdd(Value);
+              TextBody := TextAfter(TextBody, '<div class="card reviews-user-infos cf">');
+            end;
+            // Choose comment from list
+            if PickListCount > 0 then
+            begin
+              if PickListExec('Wählen sie einen Kommentar für "' + GetField(fieldOriginalTitle) + '"', Value1) then
+              begin
+                while Pos(#13#10 + #13#10 + #13#10, Value1) > 0 do
+                  Value1 := StringReplace(Value1, #13#10 + #13#10 + #13#10, #13#10);
+                SetField(fieldComments, Value1);
+              end;
+            end;
+          end;
+        end;
+
+      4:
+        begin
+          SetField(fieldComments, Value);
+          SetField(fieldDescription, Value1);
+        end;
+    end;
+  end
+  else if GetOption('Review') > 0 then
+    SetField(fieldDescription, Value1);
+
+	// ***** Director(s)
+  Address := StringReplace(RealAddress, '.html', '/castcrew.html');
+
+  // Load actors-page
+  PageText := GetPage(Address);
+  PageText := MyUTF8Decode(PageText);
+  TextBody := TextBetween(PageText, '</h2>', '<h2 c');
+  Value := TextBetween(TextBody, 'meta-title-link"', 'a>');
+  Value := TextBetween(Value, '>', '<');
+  TextBody := TextAfter(TextBody, 'meta-title-link"');
+  while Pos('meta-title-link"', Textbody) > 0 do
+  begin
+    Value2 := TextBetween(TextBody, 'meta-title-link"', 'a>');
+    Value := Value + ', ' + TextBetween(Value2, '>', '<');
+    TextBody := TextAfter(TextBody, 'meta-title-link"');
+  end;
+  Value := StringReplace(Value, #13#10, '');
+  SetField(fieldDirector, Value);
+
+  // ***** Actors & voices
+  Value := '';
+  if Pos('Schauspieler</h2>', PageText) > 0 then
+  begin
+    TextBody := TextBetween(PageText, 'Schauspieler</h2>', '/section');
+
+    // list 8 main actors
+    while Pos('card person-card', TextBody) > 0 do
+    begin
+      Value2 := '';
+      TextBody := TextAfter(TextBody, 'card person-card');
+      Value1 := TextBetween(TextBody, 'meta-title-link', '</div>');
+      Value1 := FullTrim(TextBetween(Value1, '">', '<'));
+      if Pos('Rolle:', TextBody) > 0 then
+        Value2 := FullTrim(TextBetween(TextBody, 'Rolle: ', #13#10));
+
+      if (GetOption('Actor images') = 1) and CheckVersion(4, 2, 0) then
+      begin
+        Value3 := TextBetween(TextBody, 'data-src="', '"');
+
+        // If the link contains 'empty.png', then there is no image available and this actor should not be imported.
+        if Pos('empty.png', Value3) = 0 then
+        begin
+          Counter := AddExtra;
+          SetExtraField(Counter, eCategory, 'Actors');
+          SetExtraField(Counter, eTitle, Value1);
+          SetExtraField(Counter, eDescription, Value2);
+          GetExtraPicture(Counter, Value3);
+        end;
+      end;
+      if GetOption('Actor extras') = 1 then
+        Value1 := '<i>' + Value1 + '</i>'; // set some tag for css, but not always a good idea
+      if (GetOption('Actors') = 2) and (Value2 <> '') then
+        Value := Value + Value1 + ' (' + Value2 + '), '
+      else
+        Value := Value + Value1 + ', ';
+    end;
+
+    // list remaining actors
+    if GetOption('Actor extras') = 0 then
+    begin
+      TextBody := TextAfter(TextBody, 'md-table-row ">');
+      Value2 := '';
+      while Pos('class="item light">', TextBody) > 0 do
+      begin
+        Value1 := TextBetween(TextBody, 'item link', '</');
+        Value1 := FullTrim(TextAfter(Value1, '">'));
+        if GetOption('Actors') = 2 then
+        begin
+          // get role
+          Value2 := FullTrim(TextBetween(TextBody, 'item light">', '</span'));
+          if (Value2 = 'Schauspieler') or (Value2 = 'Schauspielerin') then
+            Value2 := ''; // No real role
+        end;
+        if Value2 <> '' then
+          Value := Value + Value1 + ' (' + Value2 + '), '
+        else
+          Value := Value + Value1 + ', ';
+        TextBody := TextAfter(TextBody, 'md-table-row ">');
+      end;
+    end;
+
+    // Delete last comma and space
+    Delete(Value, Length(Value) - 1, 2);
+    HTMLDecode(Value); // decode special chars
+    if GetOption('Actors') > 0 then
+      SetField(fieldActors, Value);
+  end;
+      
+  // ***** Producer, Writer, Composer 
+  if (GetOption('Producer, Writer, Composer') = 1) and CheckVersion(4, 2, 0) then
+  begin
+    if (GetOption('Producer (number)') > 0) then
+    begin
+      // ***** Producer
+      TextBody := TextBetween(PageText, '>Produktion</h2>', 'Technischer Stab</h2>');
+//      if TextBody = '' then
+        // Possibly at the end of the list?
+//        TextBody := TextBetween(PageText, '>Produktion</h2>', '<div id="dfp-atf" class="js-atf"></div>');
+      if TextBody <> '' then
+        SetField(fProducer, GetStaff(TextBody, GetOption('Producer (number)')));
+    end;
+
+    // ***** Writer
+    TextBody := TextBetween(PageText, '>Drehbuch</h2></div>', '<div class="titlebar "');
+    if TextBody <> '' then
+      SetField(fWriter, GetStaff(TextBody, 100));
+
+    // ***** Composer
+    TextBody := TextBetween(PageText, 'Soundtrack</h2>', 'Produktion</h2>');
+//    if TextBody = '' then
+      // Possibly at the end of the list?
+//      TextBody := TextBetween(PageText, '>Soundtrack</h2></div>', '<div id="dfp-atf" class="js-atf"></div>');
+    if TextBody <> '' then
+      SetField(fComposer, GetStaff(TextBody, 100));
+  end;
+
+end; // End of procedure AnalyzePage
+
+// NumPersons: <=0: Import none, 1-x: Import max. first 1-x persons
+function GetStaff(TextBody: string; NumPersons: Integer): string;
+var
+  Value1: string;
+  
+begin
+  while (Pos('title="', Textbody) > 0) and (NumPersons > 0) do
+  begin
+    Value1 := TextBetween(TextBody, 'title="', '">');
+//    HTMLRemoveTags(Value1);
+    HTMLDecode(Value1);
+    if Pos(Value1, Result) = 0 then
+    begin
+      Result := Result + Value1 + ', '; //name doubled?
+      NumPersons := NumPersons - 1;
+    end;
+    TextBody := TextAfter(TextBody, 'title="');
+  end;
+
+//  Result := StringReplace(Result, #13#10, '');
+  Delete(Result, Length(Result) - 1, 2);
+end;
+
+function GetRating(TextBody: string): string;
+begin
+  if Pos('"stareval-note"', TextBody) > 0 then
+  begin
+    Result := TextBetween(TextBody, 'note">', '<');
+    HTMLRemoveTags(Result);
+    Result := FullTrim(Result);
+    Result := StringReplace(Result, ',', '.');
+    Result := FloatToStr(StrToFloat(Result) * 2);
+    Result := StringReplace(Result, '.', ',');
+  end
+  else
+    Result := '0';
+end;
+
+// Degender
+function Detox(Text: string): string;
+begin
+  Result := StringReplace(Text, 'er*innen', 'er');
+  Result := StringReplace(Result, '*innen', 'en');
+end;
+
+// The Delphi UTF8Decode() function has the Bug that 4-Byte UTF-8 chars
+// break the decoding and the resulting string is empty.
+// If this happens, this function replaces the 4-Byte UTF-8 chars
+// (Binary 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx) with ? and
+// calls UTF8Decode() again.
+function MyUTF8Decode(Text: string): string;
+var
+  Value: string;
+
+begin
+  Value := '';
+
+  // Something to do?
+  if Text <> '' then
+  begin
+    Value := UTF8Decode(Text);
+
+    if Value = '' then
+      if CheckVersion(4, 1, 2) then
+        // Replace all 4-Byte UTF-8 chars with ? and decode again
+        Value := UTF8Decode(RegExprSetReplace('[\xF0-\xF7][\x80-\xBF][\x80-\xBF][\x80-\xBF]', Text, '?', False));
+
+    if Value = '' then
+      // RegExprSetReplace() not available or UTF8Decode() still returns an empty string. Do not decode.
+      Value := Text;
+  end;
+  
+  Result := Value;
+end;
+
+// UrlEncode() encodes not all special chars
+// Function only for Url arguments!
+// Do not use this function to encode the complete Url!
+function UrlArgEncode(Text: string): string;
+begin
+  Text := UrlEncode(Text);
+  Text := StringReplace(Text, '!', '%21');
+  Text := StringReplace(Text, '$', '%24');
+  Text := StringReplace(Text, '&', '%26');
+  Text := StringReplace(Text, #39, '%27');  // '
+  Text := StringReplace(Text, '(', '%28');
+  Text := StringReplace(Text, ')', '%29');
+  Text := StringReplace(Text, '+', '%2B');
+  Text := StringReplace(Text, ',', '%2C');
+  Text := StringReplace(Text, '-', '%2D');
+  Text := StringReplace(Text, '.', '%2E');
+  Text := StringReplace(Text, '/', '%2F');
+  Text := StringReplace(Text, ':', '%3A');
+  Text := StringReplace(Text, ';', '%3B');
+  Text := StringReplace(Text, '=', '%3D');
+  Text := StringReplace(Text, '%20', '+');  // coded space
+
+  Result := Text;
+end;
+
+//------------------------------------------------------------------------------
+// yeti 01/05/2021
+// TextDeleteFromTo() removes Num occurrences of FromText to ToText, include FromText and ToText.
+// Num = -1 -> Removes all occurrences
+// Num >= 1 -> Removes Num occurrences
+// Num = 0 or Num < -1 -> Removes nothing
+// e.g. ShowMessage(DeleteText('123456789012345678901234567890', '34', '7', 2));
+// shows '12890128901234567890'
+//------------------------------------------------------------------------------
+function TextDeleteFromTo(FullText: string; FromText: string; ToTxt: string; Num: Integer): string;
+var
+  PosStart, PosEnd: Integer;
+
+begin
+  if (Num = 0) or (Num < -1) then
+  begin
+    Result := FullText;
+    exit;
+  end;
+
+  while (Num > 0) or (Num = -1) do
+  begin
+    PosStart := AnsiPosEx(FromText, FullText, True, False);
+    if PosStart <= 0 then
+      break;
+    PosEnd := AnsiPosEx2(ToTxt, FullText, True, False, PosStart + 1 + Length(FromText));
+    if PosEnd <= 0 then
+      break;
+    Delete(FullText, PosStart, PosEnd - PosStart + Length(ToTxt));
+
+    if Num <> -1 then Num := Num - 1;
+  end;
+
+  Result := FullText;
+end;
+
+
+//------------------------------------------------------------------------------
+// Title search via google.de / duckduckgo.com
+//
+// Switched to other search engines, because the search page of
+// filmstarts.de was changed, and there are no useable links or IDs in it
+// without running Javascript.
+//
+// SearchEngine: 0 = Google.de, <>0 = DuckDuckGo.com
+//------------------------------------------------------------------------------
+procedure AnalyzePage(SearchEngine: Integer);
+var
+  Page, Address: string;
+
+begin
+  if SearchEngine = 0 then
+  begin
+    Address := 'http://www.google.de/search?q='+UrlArgEncode(MovieName)+'+Inhaltsangabe+%26+Details+site%3AFilmstarts.de/kritiken/'
+  end else
+  begin
+    Address := 'https://html.duckduckgo.com/html/?q='+UrlArgEncode(MovieName)+'%22-+Film%22+site%3AFilmstarts.de/kritiken/';
+  end;
+
+  Page := GetPage(Address);
+
+  PickTreeClear;
+  if SearchEngine = 0 then
+    AddMoviesTitlesGoogle(Page)
+  else
+    AddMoviesTitlesDuckDuckGo(Page);
+
+  if PickTreeCount() > 0 then
+  begin
+    if GetField(fieldYear) <> '' then
+      PickTreeTitle('Filmauswahl - ' + MovieName + ' (' + GetField(fieldYear) + ')')
+    else
+      PickTreeTitle('Filmauswahl - ' + MovieName);
+
+    if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+
+    PickTreeDefaultTitle();
+  end else
+  begin
+    ShowMessage('Leider kein Film gefunden!');
+  end;
+end;
+
+procedure AddMoviesTitlesGoogle(Results: string);
+var
+  Title, Address: string;
+
+begin
+  while Pos('filmstarts.de/kritiken/', Results) > 0 do
+  begin
+	Title := TextBetween(Results, 'https://www.filmstarts.de/kritiken/', '</h3>');
+	Address := 'https://www.filmstarts.de/kritiken/' + TextBefore(Title, '&amp', '');
+	Title := '<' + Title;
+	HTMLRemoveTags(Title);
+	HTMLDecode(Title);
+	if Pos(' - Film ', Title) > 0 then
+	  begin
+		Title := StringReplace(Title, ' - Filmstarts', '');
+		Title := StringReplace(Title, ' - FILMSTARTS', '');
+		Title := StringReplace(Title, '.de', '');
+		Title := StringReplace(Title, ' - Film ', ' ');
+		Title := UTF8Decode(Title);
+		PickTreeAdd(Title, Address);
+	  end;
+	Results := TextAfter(Results, '</h3>');
+//	  Address := 'https://www.filmstarts.de/kritiken/' + Id;
+//    Delete(Block, 1, Pos('filmstarts.de/kritiken', Block) + 10);
+//    Delete(Block, 1, Pos('<div', Block));
+//	  Block := TextAfter(Block, '<h3 c');
+//    Title := TextAfter(Block, '">');
+//	  Title := TextAfter(Block, '">');
+//    Title := '';
+//    if (Pos('- Film ', Block) > 0) then
+//      Title := Trim(TextBetween(Block, '">', '- Film '))
+//    else if (Pos('- FILMST', Block) > 0) then
+//      Title := Trim(TextBetween(Block, '">', '- FILMST'))
+//    else if (Pos(' ...', Block) > 0) then
+//      Title := Trim(TextBetween(Block, '">', '...')) + '...';
+//    Year := Trim(TextBetween(Block, '- Film', '- FILMST'));
+//    if Year = '' then
+//      Year := Trim(TextBetween(Block, '- Film', '...'));
+//    Delete(Results, 1, Pos('filmstarts.de/kritiken/', Results) + 10);
+
+    // Only movielinks, no news, trailer...
+//    if (Length(Title) > 0) and (Pos('>', Title) <= 0) and (Pos('/', Id) <= 0) then 
+//      PickTreeAdd(CleanText(Title) + ' (' + CleanText(Year) + ')', Address);
+  end;
+end;
+
+procedure AddMoviesTitlesDuckDuckGo(Results: string);
+var
+  Block, Id, Title, Address, Year: string;
+
+begin
+  while Pos('class="result__a"', Results) > 0 do
+  begin
+    Block := TextBetween(Results, 'class="result__a"', '</a>');
+    Id := TextBetween(Block, '%2Fkritiken%2F', '.html');
+    Address := 'https://www.filmstarts.de/kritiken/' + Id + '.html';
+    Delete(Block, 1, Pos('%2Fkritiken%2F', Block) + 14);
+    Delete(Block, 1, Pos('<div', Block));
+
+    Title := '';
+    if (Pos('- Film', Block) > 0) then
+      Title := Trim(TextBetween(Block, '">', '- Film'))
+    else if (Pos('- FILMST', Block) > 0) then
+      Title := Trim(TextBetween(Block, '">', '- FILMST'))
+    else if (Pos('...', Block) > 0) then
+      Title := Trim(TextBetween(Block, '">', '...')) + '...';
+
+    Year := Trim(TextBetween(Block, '- Film', '- FILMST'));
+    if Year = '' then
+      Year := Trim(TextAfter(Block, '- Film'));
+    if Year = '...' then
+      Year := '';
+
+    Delete(Results, 1, Pos('class="result__a"', Results) + 16);
+
+    // Only movielinks, no news, trailer...
+    if (Length(Title) > 0) and (Id <> '') and (Pos('%', Id) <= 0) then
+      PickTreeAdd(CleanText(Title) + ' (' + CleanText(Year) + ')', Address);
+  end;
+end;
+
+function CleanText(Text: string): string;
+begin
+  Result := CleanTextWithBr(Text, False);
+end;
+
+function CleanTextWithBr(Text: string; KeepBr: Boolean): string;
+begin
+  if KeepBr then
+  begin
+    Text := StringReplace(Text, #13#10, '');
+    Text := StringReplace(Text, '<br>', #13#10);
+  end;
+  HtmlRemoveTags(Text);
+  Text := UTF8Decode(Text);
+  HtmlDecode(Text);
+  if not KeepBr then
+  begin
+    Text := StringReplace(Text, #13#10, ' ');
+  end;
+  Text := Trim(Text);
+  while Pos('  ', Text) > 0 do
+  begin
+    Text := StringReplace(Text, '  ', ' ');
+  end;
+  Result := Text;
+end;
+
+// ***** Start of program
+begin
+  if AcceptLicense(1) = False then
+    Exit;
+
+  if CheckVersion(4, 2, 2) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+
+    // Workaround for changed Filmstarts.de Search-Page - Start (see comments)
+    if ((MovieName = '') and (Pos('://www.filmstarts.de/kritiken/', GetField(fieldURL)) > 0)) then
+    begin
+      // Use the provided direct URL
+      AnalyzeMoviePage(GetField(fieldURL));
+    end
+    else // End workaround
+    begin
+      if (MovieName = '') or (GetOption('Batchmode') = 0) then
+        Input('Filmstarts.de Import', 'Enter the title of the movie:', MovieName);
+
+      // Use the desired search engine to get a working title-URL
+      AnalyzePage(GetOption('Search engine'));
+    end;
+  end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.2)');
+end.

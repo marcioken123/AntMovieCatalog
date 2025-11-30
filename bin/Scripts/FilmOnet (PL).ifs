@@ -1,0 +1,457 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Based on Filmweb.pl version (c) 2002 Piotr Kardasz
+Title=Onet (PL)
+Description=Movie importation script for Onet
+Site=film.onet.pl
+Language=PL
+Version=2.0.0 Beta
+Requires=3.5.0
+Comments=14.02.2005 Improvements made by Adma's|22.10.2006 Script reactivation. Two option added, first: Actors Layout second: Small or big poster. Changes: Klemens (klemensble@gmail.com)
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Obrazek=1|1|0=Ma³y obrazek|1=Du¿y plakat
+AktorzyUklad=3|3|0=Tylko nazwiska aktorów, rozdzielone przecinkami|1=Tylko nazwiska aktorów, ka¿de w nowej lini|2=Nazwiska aktorów i odgrywanych postaci '-', rozdzielone przecinkami|3=Nazwiska aktorów i odgrywanych postaci '-', ka¿de w nowej lini|4=Nazwiska aktorów i odgrywanych postaci 'jako', ka¿de w nowej lini
+
+***************************************************)
+
+program Onet;
+var
+  MovieName: string;
+
+procedure DelSpace(var Value: String);
+var
+  FullValue: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := FullValue + StrGet(Value, 1);
+    for Counter := 2 to Length(Value) do
+    begin
+      if StrGet(Value, Counter) <> ' ' then
+        FullValue := FullValue + StrGet(Value, Counter)
+      else
+        if StrGet(FullValue, Length(FullValue)) <> ' ' then
+          FullValue := FullValue + ' ';
+    end;
+    Value := FullValue;
+  end
+end;
+
+procedure DecodeHTML(var Value: String);
+var
+  FullValue, CharCode: String;
+  Counter: Integer;
+begin
+  if Value <> '' then
+  begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+          CharCode := copy(Value, Counter, 1);
+          case CharCode of
+            '±': CharCode := '¹';
+            '¶': CharCode := 'œ';
+            '¼': CharCode := 'Ÿ';
+            '¦': CharCode := 'Œ';
+            '¡': CharCode := '¥';
+            '¬': CharCode := '';
+          end;
+          FullValue := FullValue + CharCode;
+          Counter := Counter + 1;
+        end
+      else
+        begin
+          CharCode := copy(Value, Counter, 7);
+          case CharCode of
+            '&#x105;': FullValue := FullValue + '¹';
+            '&#x107;': FullValue := FullValue + 'æ';
+            '&#x119;': FullValue := FullValue + 'ê';
+            '&#x142;': FullValue := FullValue + '³';
+            '&#x144;': FullValue := FullValue + 'ñ';
+            '&#x0f3;': FullValue := FullValue + 'ó';
+            '&#x15b;': FullValue := FullValue + 'œ';
+            '&#x17a;': FullValue := FullValue + 'Ÿ';
+            '&#x17c;': FullValue := FullValue + '¿';
+            '&#x104;': FullValue := FullValue + '¥';
+            '&#x106;': FullValue := FullValue + 'Æ';
+            '&#x118;': FullValue := FullValue + 'Ê';
+            '&#x141;': FullValue := FullValue + '£';
+            '&#x143;': FullValue := FullValue + 'Ñ';
+            '&#x0d3;': FullValue := FullValue + 'Ó';
+            '&#x15a;': FullValue := FullValue + 'Œ';
+            '&#x179;': FullValue := FullValue + '';
+            '&#x17b;': FullValue := FullValue + '¯';
+            '&#8211;': FullValue := FullValue + '-';
+            '&#8212;': FullValue := FullValue + '-';
+            '&#8216;': FullValue := FullValue + '"';
+            '&#8217;': FullValue := FullValue + '’';
+            '&#8220;': FullValue := FullValue + '"';
+            '&#8221;': FullValue := FullValue + '"';
+            '&#8222;': FullValue := FullValue + '"';
+            '&#8230;': FullValue := FullValue + '...';
+          else
+            FullValue := FullValue + CharCode;  
+          end;
+          Counter := Counter + 7;
+        end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+  end
+end;
+
+procedure StripHTML(var sString: string);
+var i:integer;
+    sTemp: string;
+    bOutHTML: boolean;
+    cChar: char;
+begin
+  sTemp := sString;
+  sString := '';
+  bOutHTML := TRUE;
+    
+  for i :=1 to Length(sTemp) do
+  begin
+    cChar := Copy(sTemp,i,1);
+    if (cChar = '<') then bOutHTML := FALSE;
+    if (bOutHTML) then
+    sString := sString + cCHar;
+    if (cChar = '>') then bOutHTML := TRUE;
+  end;
+end;
+
+function CountStrings(sString: String; sWhat: String): Integer;
+var
+  iCnt: Integer;
+  iPos: Integer;
+begin
+  iCnt := 0;
+  iPos := Pos(sWhat, sString);
+  while iPos > 0 do
+  begin
+    iCnt := iCnt + 1;
+    sString := Copy(sString, iPos + 1, Length(sString));
+    iPos := Pos(sWhat, sString);
+  end;
+  Result := iCnt;
+end;
+
+function AddMoviesTitles(Page: TStringList; iCnt: Integer): Integer;
+var
+  MovieTitle: string;
+  Link: String;
+  i, iPos, aPos: Integer;
+  cChar: Char;
+  iNumLen: Integer;
+  sNum: String;
+  sPage: String;
+  oPage: TStringList;
+  Line: String;
+
+begin
+    sPage := Page.Text;
+
+    if (iCnt = 1)
+    then begin
+      aPos := Pos('<TABLE border=0 width="100%"', sPage) + 28;
+      Line := Copy(sPage, aPos, Length(sPage) - aPos);
+      aPos := Pos('<A href="', Line) + 9;
+      Line := Copy(Line, aPos, Length(Line) - aPos);
+      Line := Copy(Line, 1, Pos('"', Line) - 1);
+      DecodeHTML(Line);
+      Link := Line;
+      oPage := TStringList.Create;
+      oPage.Text := GetPage('http://film.onet.pl/' + Link);
+      AnalyzeMoviePage(oPage, 'http://film.onet.pl/' + Link);
+      oPage.Free;
+    end
+    else begin
+      PickTreeAdd('Znaleziono filmy:', '');
+      for i := 1 to iCnt do
+      begin
+        iPos := Pos(',film.html?X=100" class=u>', sPage) - 1;
+        Line := Copy(sPage, iPos, Length(sPage) - iPos);
+        aPos := Pos('<B>', Line) + 3;
+        Line := Copy(Line, aPos, Length(Line) - aPos);
+        Line := Copy(Line, 1, Pos('</A>', Line) - 1);
+        DecodeHTML(Line);
+        HTMLRemoveTags(Line);
+        MovieTitle := Line;
+
+        aPos := Pos('<TABLE border=0 width="100%"', sPage) + 28;
+        Line := Copy(sPage, aPos, Length(sPage) - aPos);
+        aPos := Pos('<A href="', Line) + 9;
+        Line := Copy(Line, aPos, Length(Line) - aPos);
+        Line := Copy(Line, 1, Pos('"', Line) - 1);
+        DecodeHTML(Line);
+        Link := Line;
+
+        PickTreeAdd(MovieTitle, 'http://film.onet.pl/' + Link);
+
+        sPage := Copy(sPage, iPos + 50, Length(sPage));
+      end;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  FilmCount, iCnt: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('Wynik wyszukiwania', Page.Text) = 0 then
+    AnalyzeMoviePage(Page, Address)
+  else
+  begin
+    iCnt := CountStrings(Page.Text, ',film.html?X=100" class=u>');
+    if(iCnt > 0) then
+    begin
+    if(iCnt = 1) then AddMoviesTitles(Page, iCnt)
+    else
+    begin
+    PickTreeClear;
+    AddMoviesTitles(Page, iCnt);
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+    end;
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList; sURL: String);
+var
+  sPage, sValue, sTemp, sPosterURL, sPicUrl: string;
+  iPos, iStartPos, iEndPos, iLength: Integer;
+  cChar: char;
+  PagePelnaObsada: TStringList;
+  AddressPelnaObsada, cPage: String;
+  Cast, Character, Director, Producer: String;
+begin
+  sPage := Page.Text;
+
+  // Page URL
+  SetField(fieldURL, sURL);
+
+  // Polish title
+  iStartPos := pos('class=tyw', sPage) + 10;
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos('TD', sPage) - 3;
+  sValue := Copy(sPage, 1, iEndPos);
+  DecodeHTML(sValue);
+  SetField(fieldTranslatedTitle, sValue);
+  sPage := Copy(sPage, iEndPos, Length(sPage));
+
+  // Oryginal title
+  iStartPos := pos('<B>', sPage) + 3;
+  iEndPos := pos('</B>', sPage);
+  if iStartPos < pos(' (', sPage) then
+  begin
+  iLength := iEndPos - iStartPos;
+  sValue := Copy(sPage, iStartPos, iLength);
+  DecodeHTML(sValue);
+  SetField(fieldOriginalTitle, sValue);
+  end
+  else SetField(fieldOriginalTitle, GetField(fieldTranslatedTitle));
+  
+  // Country
+  iStartPos := pos(' (', sPage) + 2;
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos(')', sPage) - 7;
+  sValue := Copy(sPage, 1, iEndPos);
+  DecodeHTML(sValue);
+  sValue := StringReplace(sValue, ',', ', ');
+  SetField(fieldCountry, sValue);
+  sPage := Copy(sPage, iEndPos, Length(sPage));
+
+  // Year of production
+  iStartPos := pos(')', sPage) -5;
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos(')', sPage) - 1;
+  sValue := Copy(sPage, 1, iEndPos);
+  SetField(fieldYear, sValue);
+  sPage := Copy(sPage, iEndPos, Length(sPage));
+
+  // Category
+  iStartPos := pos('<BR>', sPage) + 4;
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos('<BR>', sPage) - 1;
+  sValue := Copy(sPage, 1, iEndPos);
+  DecodeHTML(sValue);
+  sValue := StringReplace(sValue, '/', ', ');
+  SetField(fieldCategory, sValue);
+  sPage := Copy(sPage, iEndPos, Length(sPage));
+  
+  // Length
+  iStartPos := pos('czas ', sPage) + 5;
+  iEndPos := pos('min', sPage) - 1;
+  iLength := iEndPos - iStartPos;
+  sValue := Copy(sPage, iStartPos, iLength);
+  SetField(fieldLength, sValue);
+
+
+  //Lista plac - Cast & Crew
+  iStartPos := pos('<DIV', sPage);
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iStartPos := pos('href="', sPage) + 6;
+  sPage := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos('">', sPage) - 1;
+  sValue := Copy(sPage, 1, iEndPos);
+  AddressPelnaObsada := 'http://film.onet.pl/' + sValue;
+  PagePelnaObsada := TStringList.Create;
+  PagePelnaObsada.Text := GetPage(AddressPelnaObsada);
+  cPage := PagePelnaObsada.Text;
+  
+  // Actors
+  iStartPos := pos('Obsada', cPage);
+  sTemp := Copy(cPage, iStartPos, Length(cPage));
+  iEndPos := pos('Ekipa', sTemp) - 5;
+  sValue := Copy(sTemp, 1, iEndPos);
+  Cast := '';
+  while pos('<TD class=a2>', sValue) > 0 do
+  begin
+    iStartPos := pos('<TD class=a2>', sValue) + 13;
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    if pos('</TD>', sValue) < pos('osoba.', sValue)
+    then Character := Copy(sValue, 1, pos('</TD>', sValue) - 3)
+    else Character := '';
+    DecodeHTML(Character);
+    iStartPos := pos('osoba.', sValue);
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    iStartPos := pos('">', sValue) + 2;
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    sTemp := Copy(sValue, 1, pos('</A>', sValue) - 1);
+    StripHTML(sTemp);
+    DecodeHTML(sTemp);
+    Cast := Cast + sTemp;
+    case GetOption('AktorzyUklad') of
+      0:Cast := Cast + ', ';
+      1:Cast := Cast + #13#10;
+      2:Cast := Cast + ' - ' + Character + ', ';
+      3:Cast := Cast + ' - ' + Character + #13#10;
+      4:Cast := Cast + ' jako ' + Character + #13#10;
+    end;
+  end;
+  SetField(fieldActors, Cast);
+  
+  iStartPos := pos('Ekipa', cPage);
+  sTemp := Copy(cPage, iStartPos, Length(cPage));
+  
+  // Director
+  sValue := sTemp;
+  Director := '';
+  while pos('yseria', sValue) > 0 do
+  begin
+    iStartPos := pos('yseria', sValue);
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    iStartPos := pos('osoba.', sValue);
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    iStartPos := pos('">', sValue) + 2;
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    Director := Director + Copy(sValue, 1, pos('</A>', sValue) - 1) + ', ';
+  end;
+  Director := copy(Director, 1, Length(Director) - 2);
+  StripHTML(Director);
+  DecodeHTML(Director);
+  SetField(fieldDirector, Director);
+
+  // Producer
+  sValue := sTemp;
+  Producer := '';
+  while pos('rodukcja', sValue) > 0 do
+  begin
+    iStartPos := pos('rodukcja', sValue);
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    iStartPos := pos('osoba.', sValue);
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    iStartPos := pos('">', sValue) + 2;
+    sValue := Copy(sValue, iStartPos, Length(sValue));
+    Producer := Producer + Copy(sValue, 1, pos('</A>', sValue) - 1) + ', ';
+  end;
+  Producer := copy(Producer, 1, Length(Producer) - 2);
+  StripHTML(Producer);
+  DecodeHTML(Producer);
+  if Producer <> '' then SetField(fieldProducer, Producer);
+
+  PagePelnaObsada.Free;
+
+  // Picture
+  case GetOption('Obrazek') of
+    0:begin // Small picture
+      iStartPos := pos('src=', sPage) + 5;
+      sTemp := Copy(sPage, iStartPos, Length(sPage));
+      iStartPos := pos('src="', sTemp) + 5;
+      sTemp := Copy(sTemp, iStartPos, Length(sTemp));
+      iEndPos := pos('"', sTemp)-1;
+      sPicURL := 'http://film.onet.pl/' + Copy(sTemp, 1, iEndPos);
+      GetPicture(sPicURL); // False = do not store picture externally ; store it in the catalog file
+    end;
+    1:begin // Large poster
+      iStartPos := pos(',plakat.html', sPage);
+      if (iStartPos > 0) then
+      begin
+        //sValue := GetField(fieldComments) + '   Znaleznione plakaty: ';
+        iLength := 0;
+        cChar := Copy(sPage, iStartPos, 1);
+        while (cChar <> '"') do
+        begin
+          iStartPos := iStartPos - 1;
+          iLength := iLength + 1;
+          cChar := Copy(sPage, iStartPos, 1);
+        end;
+        iPos := 2;
+        sPosterURL :='http://film.onet.pl/' + Copy(sPage, (iStartPos + 1), (iLength-1)) + ',plakat.html';
+        sTemp := GetPage(sPosterURL);
+        iStartPos := pos('IMG class=pic border=1 src="', sTemp) + 28;
+        sTemp := Copy(sTemp, iStartPos, Length(sTemp));;
+        iEndPos := pos('"', sTemp) - 1;
+        //sValue := sValue + 'http://film.onet.pl/' + Copy(sTemp, 1, iEndPos);
+        sPicURL := 'http://film.onet.pl/' + Copy(sTemp, 1, iEndPos);
+        GetPicture(sPicURL);
+      end;
+    end;
+  end;
+
+  // Description
+  iStartPos := pos('Tre', sPage);
+  if (iStartPos > 0) then
+  begin
+  iStartPos := iStartPos + 5;
+  sTemp := Copy(sPage, iStartPos, Length(sPage));
+  iEndPos := pos('</DIV>', sTemp);
+  sValue := Copy(sTemp, 1, iEndPos);
+  StripHTML(sValue);
+  DecodeHTML(sValue);
+  SetField(fieldDescription, sValue);
+  end
+  else SetField(fieldDescription, 'Brak');
+
+  //DisplayResults;
+end;
+
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if Input('Film.Onet.Pl Import', 'Podaj oryginalny tytu³ filmu:', MovieName) then
+    begin
+      //AnalyzePage('http://film.onet.pl/filmoteka.html?O=1&S='+UrlEncode(MovieName));
+      AnalyzePage('http://film.onet.pl/filmoteka.html?S='+UrlEncode(MovieName)+'&Submit=OK');
+    end;
+  end
+  else ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.1 lub nowszej');
+end.
+
+

@@ -1,0 +1,371 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=LA (Andrey Lukyanov)       (<link>l_a@hotmail.ru</link>)
+Title=Movies NNov
+Description=Imports russian movies info with picture from Movies.nnov.ru
+Site=http://www.movies.nnov.ru/
+Language=RU
+Version=1.0.1 (29.06.2005)
+Requires=3.5.0
+Comments=Few changes was made by Karb0f0s.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+OriginalTitle=2|2|1=Добавлять полное оригинальное название|2=Добавлять только первое оригинальное название
+CountryTranslate=1|1|1=Переводить название страны на русский|2=Оставить на английском
+CategoryTranslate=1|1|1=Переводить жанр на русский|2=Оставить на английском
+DirectorTranslate=3|2|1=Транслитерировать имя режиссера на русский|2=Оставить на английском|3=Транслитерировать имя режиссера на русский, но оставить оригинал в скобках|4=Оставить на английском, но добавить транслитерированный вариант в скобках
+ActorsLayout=1|1|1=Только имена актеров, разделенные запятыми|2=Только имена актеров построчно|3=Имена актеров с персонажами в скобках, разделенные запятыми|4=Имена актеров с персонажами в скобках построчно
+ActorsTranslate=2|2|1=Транслитерировать имена актеров [и персонажей] на русский|2=Оставить на английском
+Picture=1|1|1=Загружать изображение|2=Загружать ТОЛЬКО изображение|3=Не загружать изображение
+
+***************************************************)
+
+program KinoShara;
+const
+  BaseAddress = 'http://www.movies.nnov.ru/cat/';
+var
+  MovieName: string;
+
+// функция преобразования английского текста в русский
+function EngToRus(Text:String):String;
+var
+ i : Integer;
+ Eng, Rus : String;
+begin
+  Eng := 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+  Rus := 'квертиюиопасдфжхюклзсцвбнмКВЕРТИЮИОПАСДФЖХЮКЛЗСЦВБНМ';
+  result := Text;
+   for i := 1 to Length(Eng) do
+     result:=StringReplace(result, Copy(Eng,i,1), Copy(Rus,i,1));
+end;
+
+
+
+function ParseURL(Text:String):String;
+var
+  BeginPos : Integer;
+  EndPos : Integer;
+  Value : String;
+begin
+
+  repeat
+    BeginPos := Pos('<b>',Text);
+    If BeginPos > 0 Then
+    Begin
+      EndPos := Pos('</b>',Text);
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      Value := StringReplace(Value,'<BR>',', ');
+      Value := StringReplace(Value,'<br>',', ');
+      HTMLRemoveTags(Value);
+      Delete(Text,1,EndPos);
+      If Length(result)>0 Then
+        result := result + ', ' + Value
+      else
+        result := Value;
+    end;
+  until BeginPos < 1;
+
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(AnsiLowerCase(Pattern), AnsiLowerCase(List.GetString(i))) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  ID, FilmName, Line: String;
+  Page: TStringList;
+  FilmPage: TStringList;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('c:\page1.txt'); // для отладки
+//  Page.LoadFromFile('c:\page1.txt');
+
+  PickTreeClear; // Очистка дерева фильмов
+  PickTreeAdd('Поиск по слову: ' + MovieName, '');
+  Line:= copy(Page.Text, 1, length(Page.Text));
+  if Pos('<br> <br> <br>', Line) > 1 then
+  begin
+    BeginPos := Pos('</form><br>',Line);
+    Delete(Line, 1, BeginPos + 11);
+    repeat
+     FilmName := Copy(Line, 1, Pos('<br>', Line) - 2);
+     Delete (Line, 1, Pos('<a href=', Line) + 8);
+     ID := Copy(Line, 1, Pos('>', Line) - 2);
+     PickTreeAdd(trim(FilmName), BaseAddress+ID);
+     Delete (Line, 1, Pos('<br> <br> <br>', Line) + 14);
+    until Pos('<br> <br> <br>', Line) < 1;
+  end;
+
+  If PickTreeExec(Address) Then
+    AnalyzeMoviePage(Address); // Проанализировать страницу с фильмом
+end;
+
+procedure AnalyzeMoviePage(Address: String);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value, TmpStr : String;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('c:\page2.txt'); // для отладки
+//  Page.LoadFromFile('c:\page2.txt');
+  Line:= copy(Page.Text, 1, length(Page.Text));
+
+  if GetOption('Picture') <> 2 then
+  begin
+      // URL
+      SetField(fieldURL,Address);
+
+      // Original Title
+      TmpStr := '</td><td><a href="by-originaltitle';
+      Delete(Line, 1, Pos(TmpStr, Line) + Length(TmpStr));
+      BeginPos := Pos('>', Line)+ 1;
+      EndPos := Pos('</a>', Line);
+      Value := Copy (Line, BeginPos, EndPos - BeginPos);
+      if GetOption('OriginalTitle') = 2 then
+       if Pos('/', Value) > 0 then
+         Value := Copy(Value, 1, Pos('/',Value) - 2);
+      Value := StringReplace(Value, #13#10, '');
+      Value := StringReplace(Value, '<META NAME="keywords" CONTENT="', '');
+      if CanSetField(fieldOriginalTitle) then
+       SetField(fieldOriginalTitle, trim(Value));
+
+      // Translated Title
+      TmpStr := '&nbsp;/&nbsp;<a href="by-translatedtitle';
+      Delete(Line, 1, Pos(TmpStr, Line) + Length(TmpStr));
+      BeginPos := Pos('>', Line)+ 1;
+      EndPos := Pos('</a>', Line);
+      Value := Copy (Line, BeginPos, EndPos - BeginPos);
+//      if GetOption('OriginalTitle') = 2 then
+//       if Pos('/', Value) > 0 then
+//         Value := Copy(Value, 1, Pos('/',Value) - 2);
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldTranslatedTitle) then
+       SetField(fieldTranslatedTitle, trim(Value));
+
+//      Delete(Line, 1, Pos('(<a href', Line));
+//      Value := Copy(Line, 1, Pos('</a>)', Line) + 3);
+//      HTMLRemoveTags(Value);
+//      if CanSetField(fieldTranslatedTitle) then
+//       SetField(fieldTranslatedTitle, trim(Value));
+
+      // Director
+      Delete(Line, 1, Pos('Режиссер:', Line) + 8);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      Value := trim(Value);
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldDirector) then
+      begin
+         case GetOption('DirectorTranslate') of
+           1: Value := EngToRus(Value);
+           2: Value := Value;
+           3: Value := EngToRus(Value) + ' /'+Value+'/';
+           4: Value := Value + ' /'+EngToRus(Value)+'/';
+         end;
+         SetField(fieldDirector, trim(Value));
+      end;
+
+      // Country
+      Delete(Line, 1, Pos('Страна:', Line) + 6);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      if GetOption('CountryTranslate') = 1 then
+      begin
+        Value := StringReplace(Value, 'New Zealand', 'Новая Зеландия');
+        Value := StringReplace(Value, 'South Africa', 'Южная Африка');
+        Value := StringReplace(Value, 'South Korea', 'Южная Корея');
+        Value := StringReplace(Value, 'Soviet Union', 'СССР');
+        Value := StringReplace(Value, 'West France', 'Западная Франция');
+        Value := StringReplace(Value, 'Republic Czechoslovakia', 'Республика Чехословакия');
+        Value := StringReplace(Value, 'North Korea', 'Северная Корея');
+        Value := StringReplace(Value, 'East Germany', 'Восточная Германия');
+        Value := StringReplace(Value, 'Federal Republic of Finland', '');
+
+        Value := StringReplace(Value, 'Africa', 'Африка');
+        Value := StringReplace(Value, 'Alger', 'Алжир');
+        Value := StringReplace(Value, 'Argentina', 'Аргентина');
+        Value := StringReplace(Value, 'Australia', 'Австралия');
+        Value := StringReplace(Value, 'Austria', 'Австрия');
+        Value := StringReplace(Value, 'Belgium', 'Бельгия');
+        Value := StringReplace(Value, 'Bosnia-Herzegovina', 'Босния-Герцеговина');
+        Value := StringReplace(Value, 'Botswana', 'Ботсвана');
+        Value := StringReplace(Value, 'Brazil', 'Бразилия');
+        Value := StringReplace(Value, 'Bulgaria', 'Болгария');
+        Value := StringReplace(Value, 'Canada', 'Канада');
+        Value := StringReplace(Value, 'China', 'Китай');
+        Value := StringReplace(Value, 'Croatia', 'Хорватия');
+        Value := StringReplace(Value, 'Czech', 'Чехия');
+        Value := StringReplace(Value, 'Denmark', 'Дания');
+        Value := StringReplace(Value, 'France', 'Франция');
+        Value := StringReplace(Value, 'Germany', 'Германия');
+        Value := StringReplace(Value, 'Hong Kong', 'Гонк Конг');
+        Value := StringReplace(Value, 'Hungary', 'Венгрия');
+        Value := StringReplace(Value, 'Iceland', 'Исландия');
+        Value := StringReplace(Value, 'India', 'Индия');
+        Value := StringReplace(Value, 'Iran', 'Иран');
+        Value := StringReplace(Value, 'Ireland', 'Ирландия');
+        Value := StringReplace(Value, 'Israel', 'Израиль');
+        Value := StringReplace(Value, 'Italy', 'Италия');
+        Value := StringReplace(Value, 'Japan', 'Япония');
+        Value := StringReplace(Value, 'Kazakhstan', 'Казахстан');
+        Value := StringReplace(Value, 'Korea', 'Корея');
+        Value := StringReplace(Value, 'Malta', 'Мальта');
+        Value := StringReplace(Value, 'Mexico', 'Мексика');
+        Value := StringReplace(Value, 'Netherlands', 'Нидерланды');
+        Value := StringReplace(Value, 'Norway', 'Норвегия');
+        Value := StringReplace(Value, 'Peru', 'Перу');
+        Value := StringReplace(Value, 'Philippines', 'Филлипины');
+        Value := StringReplace(Value, 'Poland', 'Польша');
+        Value := StringReplace(Value, 'Romania', 'Романия');
+        Value := StringReplace(Value, 'Russia', 'Россия');
+        Value := StringReplace(Value, 'Spain', 'Испания');
+        Value := StringReplace(Value, 'Sweden', 'Швеция');
+        Value := StringReplace(Value, 'Switzerland', 'Швейцария');
+        Value := StringReplace(Value, 'Taiwan', 'Тайвань');
+        Value := StringReplace(Value, 'Thailand', 'Тайланд');
+        Value := StringReplace(Value, 'Turkey', 'Турция');
+        Value := StringReplace(Value, 'UK', 'Великобритания');
+        Value := StringReplace(Value, 'Ukraine', 'Украина');
+        Value := StringReplace(Value, 'USA', 'США');
+      end;
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldCountry) then
+       SetField(fieldCountry, trim(Value));
+
+      // Жанр
+      Delete(Line, 1, Pos('Жанр:', Line) + 4);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      if GetOption('CategoryTranslate') = 1 then
+      begin
+        Value := StringReplace(Value, 'Action', 'Экшн');
+        Value := StringReplace(Value, 'Adult', 'Порно');
+        Value := StringReplace(Value, 'Adventure', 'Приключение');
+        Value := StringReplace(Value, 'Animation', 'Анимация');
+        Value := StringReplace(Value, 'Anime', 'Анимэ');
+        Value := StringReplace(Value, 'Classic', 'Классика');
+        Value := StringReplace(Value, 'Comedy', 'Комедия');
+        Value := StringReplace(Value, 'Crime', 'Криминал');
+        Value := StringReplace(Value, 'Documentar', 'Документальный');
+        Value := StringReplace(Value, 'Drama', 'Драма');
+        Value := StringReplace(Value, 'Eastern', 'Западный');
+        Value := StringReplace(Value, 'Erotic', 'Эротика');
+        Value := StringReplace(Value, 'Family', 'Семейный');
+        Value := StringReplace(Value, 'Fantasy', 'Фэнтэзи');
+        Value := StringReplace(Value, 'Film-Noir', 'Film-Noir');
+        Value := StringReplace(Value, 'Hentai', 'Хентай');
+        Value := StringReplace(Value, 'Horror', 'Ужасы');
+        Value := StringReplace(Value, 'Music', 'Музыка');
+        Value := StringReplace(Value, 'Musical', 'Мюзикл');
+        Value := StringReplace(Value, 'Mystery', 'Мистика');
+        Value := StringReplace(Value, 'Romance', 'Романтика');
+        Value := StringReplace(Value, 'Sci-Fi', 'Научная Фантастика');
+        Value := StringReplace(Value, 'Series', 'Сериал');
+        Value := StringReplace(Value, 'Short', 'Короткометражный');
+        Value := StringReplace(Value, 'Thriller', 'Триллер');
+        Value := StringReplace(Value, 'War', 'Военный');
+        Value := StringReplace(Value, 'Western', 'Вестерн');
+      end;
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldCategory) then
+        SetField(fieldCategory, trim(Value));
+
+      // Year
+      Delete(Line, 1, Pos('Год:', Line) + 3);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldYear) then
+       SetField(fieldYear, trim(Value));
+
+      // Actors
+      Delete(Line, 1, Pos('Актеры:', Line) + 6);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldActors) then
+      begin
+         case GetOption('ActorsLayout') of
+           1, 2: begin
+                    while Pos('(',Value) > 0 do
+                    begin
+                      EndPos := Pos(')', Value);
+                      if Copy(Value, EndPos + 1, 1) = ')' then
+                        EndPos := EndPos + 1;
+                      Delete(Value, Pos('(', Value) - 1, EndPos - Pos('(', Value) + 2);
+                    end;
+                    if GetOption('ActorsLayout') = 2 then
+                      Value := StringReplace(Value, ', ', #13#10);
+                 end;
+           3, 4: begin
+                 Value := StringReplace(Value, '(as ', '(в роли ');
+                 if GetOption('ActorsLayout') = 4 then
+                   Value := StringReplace(Value, ', ', #13#10);
+                 end;
+         end;
+         if GetOption('ActorsTranslate') = 1 then
+                      Value := EngToRus(Value);
+
+         SetField(fieldActors, trim(Value));
+      end;
+
+      // Description
+      Delete(Line, 1, Pos('Описание:', Line) + 8);
+      Value := Copy(Line, 1, Pos('</td></tr>', Line) + 4);
+      HTMLRemoveTags(Value);
+      Value := StringReplace(Value, '<br>', '');
+      Value := StringReplace(Value, '<BR>', '');
+      Value := StringReplace(Value, '&quot;', '"');
+      Value := StringReplace(Value, #13#10, '');
+      if CanSetField(fieldDescription) then
+       SetField(fieldDescription, trim(Value));
+  end;
+
+  // Picture
+  if (GetOption('Picture') = 1) or (GetOption('Picture') = 2) then
+  begin
+    Delete(Line, 1, Pos('http://movies.nnov.ru/Covers/', Line) - 1);
+    Value := Copy(Line, 1, Pos(' border=', Line) - 2);
+    HTMLRemoveTags(Value);
+    Address := Value;
+    GetPicture(UrlEncode(Address));
+  end;
+
+end;
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    MovieName := StringReplace(MovieName, '_', ' ');
+    MovieName := StringReplace(MovieName, 'DVD', '');
+    MovieName := StringReplace(MovieName, 'Rip', '');
+
+    if Input('Импорт информации с сайта movies.nnov.ru', 'Введите название фильма:', MovieName) then
+      AnalyzePage(BaseAddress+'s.php?s='+UrlEncode(MovieName));
+end.

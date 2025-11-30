@@ -1,0 +1,98 @@
+<!--
+** Version 1.0
+** Author Uwe Mayer         (merkosh@hadiko.de)
+**
+** This is the individual template for displaying a list of movie titles with Ant
+** Movie Catalogue (AMC). See http://www.antp.be/software/moviecatalog/ for details.
+**
+** This template creates a layout for a movie description which looks as follows:
+** |--------|--------------------------------------------------------|
+** |<image> | <id>: <title>                                          |
+** |        |---------------------------------|----------------------|
+** |        | ------------------------------| | |------------------| |
+** |        | | <video codec>               | | | <rating>         | |
+** |        | ------------------------------| | |------------------| |
+** |        | | <framerate>                 | | | <genre>          | |
+** |        | |-----------------------------| | |------------------| |
+** |        | | <resolution>                | | | <language>       | |
+** |        | |-----------------------------| | |------------------| |
+** |        | | <size>        | <no of CDs> | | | <length>         | |
+** |        | ------------------------------- | |------------------| |
+** |--------|---------------------------------|----------------------|
+** | <description>                                                   |
+** |-----------------------------------------------------------------|
+**
+** The outer box is a html table, just as the two inner boxes which contain
+** the <video codec> (left) and <rating> (right).
+** The inner boxes float inside the table cell of the outer table and have a
+** blue and red border, respectively.
+** Because of different font sizes the two inner boxes probably differ in
+** height - I think this looks cool.
+**
+** Later I might offer customizeable stylesheets to adjust color, font, etc.
+** For now you'll have to patch the source code (which is not difficult) to
+** change the color scheme.
+**
+** The only "fancy" thing in this script is that the picture is scaled to fit
+** 100 pixels in width. You can left-click onto the image to get a full sized
+** picture of it.
+**
+** The <title> is linked to the URL from which the movie description was imported.
+**
+-->
+
+<html>
+<head>
+  <title>$$ITEM_FORMATTEDTITLE2</title>
+</head>
+
+<body>
+
+<!-- outer html table --------------------------------------------------------->
+<table width="640" border="1" style="margin-top:30px; border:1px solid black" cellspacing="1" cellpadding="2">
+<tr>
+  <td rowspan="2"><img width="100" src="$$ITEM_PICTUREFILENAME" onclick="window.open('$$ITEM_PICTUREFILENAME','','dependent=yes,location=no,menubar=no,scrollbars=no,status=no,toolbar=no')"></td>
+	<td colspan="3">Id.$$ITEM_NUMBER:&nbsp;&nbsp;<a href="$$ITEM_URL" target="_BLANK">$$ITEM_FORMATTEDTITLE2</a></td>
+</tr>
+<tr>
+	<td colspan="2" valign="top">
+	
+<!-- left inner	html table ---------------------------------------------------->
+	  <table border="0" width="100%" cellspacing="2" cellpadding="1" style="border:1px solid Navy;">
+		<tr>
+			<td><i>Video Codec:</i></td><td colspan="3">$$ITEM_VIDEOFORMAT</td>
+		</tr>
+		<tr>
+			<td><i>Framerate:</i></td><td colspan="3">$$ITEM_FRAMERATE&nbsp;(fps)</td>
+		</tr>
+		<tr>
+			<td><i>Resolution:</i></td><td colspan="3">$$ITEM_RESOLUTION</td>
+    </tr>
+		<tr>
+			<td><i>Size:</i></td><td>$$ITEM_SIZE&nbsp;(MB)</td>
+    	<td><i>CDs:</i></td><td>$$ITEM_DISKS</td>
+		</tr>
+		</table>
+<!-- end of left inner html table --------------------------------------------->
+
+	</td>
+	<td valign="top">
+	
+<!-- right inner html table --------------------------------------------------->	
+	  <table border="0" width="100%" cellspacing="1" cellpadding="1" style="border:1px solid Red;">
+		<tr><td><i>Rating:</i></td><td>$$ITEM_RATING&nbsp;/10</td></tr>
+		<tr><td><i>Genre:</i></td><td>$$ITEM_CATEGORY</td></tr>
+		<tr><td><i>Language:</i></td><td>$$ITEM_LANGUAGES</td></tr>
+		<tr><td><i>Length:</i></td><td>$$ITEM_LENGTH&nbsp;(min)</td></tr>
+		</table>
+<!-- end of right inner html table -------------------------------------------->
+
+	</td>
+</tr>
+<tr>
+  <td colspan="4">$$ITEM_DESCRIPTION</td>
+</tr>
+</table>
+
+</body>
+</html>

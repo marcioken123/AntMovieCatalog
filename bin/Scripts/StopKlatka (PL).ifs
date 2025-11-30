@@ -1,0 +1,396 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2003 Maciej Galkowski
+Title=StopKlatka (PL)
+Description=Movie importation script for StopKlatka
+Site=http://www.stopklatka.pl
+Language=PL
+Version=1.0
+Requires=3.5.0
+Comments=send bugs and reports to: m.galkowski@interia.pl Based on All Movie script|14.02.2005 Improvements made by Adma's
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program StopKlatka;
+var
+  MovieName: string;
+  ImageFrom: Integer;
+  
+  
+procedure SetOPT();
+begin
+//OPTIONS
+//  ImageFrom - 0 = from StopKlatka.pl
+//              1 = from Amazon.com
+//              2 = from Amazon.com, then Stopklatka.pl if not found  (default)
+ImageFrom := 2;
+//END OPTIONS
+end;
+
+// simple string procedures
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+// Loads and analyses page from internet (list of movies or direct hit)
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  // movie list
+  if Pos('Nic nie znaleziono', Page.Text) > 0 then
+  begin
+    ShowMessage('Nic nie znaleziono');
+  end
+  else
+  begin
+    PickTreeClear;
+    PickTreeAdd('Wyniki szukania', '');
+    AddMoviesTitles(Page);
+    if PickTreeExec(Address) then
+      AnalyzeMoviePage(Address);
+  end;
+end;
+
+// Extracts movie details from page
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: string;
+  Value: string;
+  Title: string;
+begin
+  Page := GetPage(Address);
+  
+  // Title
+  if Pos('<h2>',Page) > 0 then
+  begin
+    SetField(fieldOriginalTitle, GetStringFromHTML(Page, '<h2>', '(', ')</h2>',1));
+  end;
+  SetField(fieldTranslatedTitle, GetStringFromHTML(Page, '<h1>', '', '</h1>',1));
+
+  // Year
+  SetField(fieldYear, GetStringFromHTML(Page, '>rok produkcji:', '<b>', '</tr>',1));
+
+  // Country
+  Value := GetStringFromHTML(Page, '>kraj:', '<b>', '</tr>',1);
+  if Pos('/', Value) > 0 then
+  begin
+    Value := StringReplaceAll(Value, ' ','');
+  end;
+  SetField(fieldCountry, Value);
+
+  // Director
+  SetField(fieldDirector, GetStringFromHTML(Page, '>reøyseria:', '<b>', '</tr>',1));
+
+  // Genre -> category
+  Value := GetStringFromHTML(Page, '>gatunek:', '<b>', '</tr>',1);
+  if Pos('/', Value) > 0 then
+  begin
+    Value := StringReplaceAll(Value, ' ','');
+  end;
+  SetField(fieldCategory, Value);
+  
+  //URL
+  SetField(fieldURL,Address);
+
+  // Image
+  case ImageFrom of
+    0 :
+    begin
+      Value := GetStringFromHTML(Page, 'http://img.stopklatka.pl/film/', '', '0.jpg',1);
+      if Length(Value) > 0 then GetPicture(Value + '0.jpg');
+    end;
+    1:
+    begin
+       if GetStringFromHTML(Page, '<h2>', '', '</h2>',1) <> '' then
+          Value := AmazonImageImport(GetStringFromHTML(Page, '<h2>', '', '</h2>',1));
+       else
+          Value := AmazonImageImport(GetStringFromHTML(Page, '<h1>', '', '</h1>',1));
+       if Length(Value) > 0 then GetPicture(Value);
+    end;
+    2:
+    begin
+       if GetStringFromHTML(Page, '<h2>', '', '</h2>',1) <> '' then begin
+          Value := AmazonImageImport(GetStringFromHTML(Page, '<h2>', '', '</h2>',1));
+          end
+       else begin
+          Value := AmazonImageImport(GetStringFromHTML(Page, '<h1>', '', '</h1>',1));
+          end
+       if Length(Value) > 0 then begin
+          GetPicture(Value);
+       end
+       else begin
+          Value := GetStringFromHTML(Page, 'http://img.stopklatka.pl/film/', '', '0.jpg',1);
+          if Length(Value) > 0 then GetPicture(Value + '0.jpg');
+       end
+    end
+  end; //case
+  
+  // Description
+  Value := GetStringFromHTML(Page, '<font  size=2 class="text2">', '', '</font>',1);
+  if Length(Value) > 0 then SetField(fieldDescription, Value);
+
+  // remove trailing newline from description
+  Value := GetField(fieldDescription);
+  if Copy(Value, Length(Value) - 1, 2) = #13#10 then begin
+    Value := Copy(Value, 0, Length(Value) - 2);
+    SetField(fieldDescription, Value);
+  end;
+
+  // Cast -> actors
+  SetField(fieldActors, GetStringFromHTML(Page, '>obsada:', '<b>', '</tr>',1));
+
+  //DisplayResults;
+end;
+
+// Adds movie titles from search results to tree
+procedure AddMoviesTitles(ResultsPage: TStringList);
+var
+  Page: string;
+  MovieTitle, MovieAddress: string;
+begin
+  Page := ResultsPage.Text;
+  // Every movie entry begins with string "<a href="/film/film.asp?"
+  while Pos('<a href="/film/film.asp?', Page) > 0 do
+  begin
+    CutBefore(Page, '<a href="/film/film.asp?');
+    MovieAddress := 'http://www.stopklatka.pl' + GetStringFromHTML(Page, '<a', '"', '">',0);
+    MovieTitle := GetStringFromHTML(Page, '<a', '', ')',0);
+    MovieTitle := StringReplace(MovieTitle, ')', '),  ');
+    if Pos('<i>', MovieTitle) > 0 then
+    begin
+      MovieTitle := MovieTitle + ')';
+    end
+    else
+    begin
+      MovieTitle := GetStringFromHTML(MovieTitle, '<a', '', '(',0);
+    end;
+    HTMLRemoveTags(MovieTitle);
+    CutAfter(Page, '</font>');
+    // add movie to list
+    PickTreeAdd(MovieTitle, MovieAddress);
+  end;
+end;
+
+// Extracts single movie detail (like director, genre) from page
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string; RemoveTags: Integer): string;
+begin
+  Result := '';
+  // recognition tag - if present, extract detail from page, otherwise assume detail is not present
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    // optional cut tag helps finding right string in html page
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+    // movie detail copied with html tags up to end string
+    Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+    // remove html tags (if needed) and decode html string
+    if RemoveTags > 0 then
+    begin
+      HTMLRemoveTags(Result);
+    end;
+    HTMLDecode(Result);
+//  ShowMessage('DEBUG: GetStringFromHTML - StartTag "'+StartTag+'", CutTag "'+CutTag+'", EndTag "'+EndTag+'", Result "'+Result+'" ___ '+Page);
+  end;
+end;
+
+function AmazonImageImport(Title: string):string;
+var
+  AmazonPage: TStringList;
+  THolder, MovieName : string;
+  LineNr, i, CoverNum: Integer;
+begin
+  AmazonPage := TStringList.Create;
+  AmazonPage.Text := GetPage('http://www.amazon.com/exec/obidos/search-handle-url/index=dvd&field-title=' + StringReplace(UrlEncode(Title),'+', '%20'));
+  if (FindLine('Amazon.com: DVD:',AmazonPage,1) <> -1) and
+     (FindLine('dvd-no-image',AmazonPage,1) = -1) then
+    begin
+      LineNr := FindLine('<input type="hidden" name="asin.',AmazonPage,1);
+      AmazonImageImport := 'http://images.amazon.com/images/P/' + AsinParse(AmazonPage.Getstring(LineNr)) + '.01.LZZZZZZZ.jpg';
+      AmazonPage.Free;
+      break;
+    end
+   else
+   if FindLine('DVD Search Results: we were unable to find exact matches for your search for',AmazonPage,1) <> -1 then
+    begin
+      ShowMessage('tuu');
+      AmazonPage.Free;
+      break;
+    end
+   else
+    if (FindLine('Below are results for',AmazonPage,1) <> -1) OR
+       (FindLine('All results',AmazonPage,1) <> -1) OR
+       (FindLine('Most popular results for',AmazonPage,1) <> -1) then
+        begin
+        i := 1;
+        CoverNum := 0;
+        AmazonPage.Text := GetStringFromHTML(AmazonPage.Text,'<b>Sort by:</b>','','<img src="http://g-images.amazon.com/images/G/01/associates/transparent-pixel.gif" width=1 height=1 vspace="0" hspace="0">',0);
+        PickTreeClear;
+        PickTreeAdd('Ok≥adki:','');
+        while (i <= AmazonPage.Count-1) do
+        begin
+          THolder := AmazonPage.GetString(i);
+          HTMLRemoveTags(THolder);
+          if (Pos('/exec/obidos/ASIN/',AmazonPage.GetString(i)) <> 0) and
+             (THolder <> '') and
+             (Pos('Buy new',AmazonPage.GetString(i)) = 0) and
+             (Pos('Used & new from',AmazonPage.GetString(i)) = 0) and
+             (Pos('THUMBZZZ',AmazonPage.GetString(i)) = 0) and
+             (Pos('dvd-no-image',AmazonPage.GetString(i-4)) = 0) then begin
+                PickTreeAdd(THolder,GetToken(AmazonPage.GetString(i),'/',5));
+                CoverNum := CoverNum + 1;
+                end;
+          if (Pos('/exec/obidos/tg/detail/',AmazonPage.GetString(i)) <> 0) and
+             (THolder <> '') and
+             (Pos('Buy new',AmazonPage.GetString(i)) = 0) and
+             (Pos('Used & new from',AmazonPage.GetString(i)) = 0) and
+             (Pos('THUMBZZZ',AmazonPage.GetString(i)) = 0) and
+             (Pos('http://www.amazon.com',AmazonPage.GetString(i)) = 0) and
+             (Pos('In-store Pickup',AmazonPage.GetString(i)) = 0) and
+             (Pos('dvd-no-image',AmazonPage.GetString(i-4)) = 0) then begin
+                PickTreeAdd(THolder,GetToken(AmazonPage.GetString(i),'/',7));
+                CoverNum := CoverNum + 1;
+                end;
+          i := i + 1;
+        end
+        //ShowMessage(FloatToStr(CoverNum));
+        if CoverNum > 0 then begin
+        if PickTreeExec(THolder) then
+        begin
+          AmazonImageImport := 'http://images.amazon.com/images/P/' + THolder + '.01.LZZZZZZZ.jpg';
+          AmazonPage.Free;
+          break;
+        end
+        end
+        AmazonPage.Free;
+        break;
+      end
+    else
+AmazonPage.Free;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+
+function GetToken(aString, SepChar: String; TokenNum: Integer):String;
+var
+   Token     : string;
+   StrLen    : Integer;
+   TNum      : Integer;
+   TEnd      : Integer;
+
+begin
+     StrLen := Length(aString);
+     TNum   := 1;
+     TEnd   := StrLen;
+     while ((TNum <= TokenNum) and (TEnd <> 0)) do
+     begin
+          TEnd := Pos(SepChar,aString);
+          if TEnd <> 0 then
+          begin
+               Token := Copy(aString,1,TEnd-1);
+               Delete(aString,1,TEnd);
+               TNum := TNum + 1;
+          end
+          else
+          begin
+               Token := aString;
+          end;
+     end;
+     if TNum >= TokenNum then
+     begin
+          GetToken := Token;
+     end
+     else
+     begin
+          GetToken := '';
+     end;
+end;
+
+function AsinParse(Line : string): string;
+begin
+  Result := GetToken(GetToken(Line,'.',2),Chr(34),1);
+end;
+
+procedure RemovePronoun(var Str: string);
+var
+  i: Integer;
+  s: string;
+  c: char;
+begin
+  // remove pronouns
+  if (Copy(Str, 0, 2) = 'L ') or (Copy(Str, 0, 2) = 'A ') then
+    Str := Copy(Str, 3, Length(Str) - 2)
+  else if (Copy(Str, 0, 3) = 'Le ') or (Copy(Str, 0, 3) = 'La ') or (Copy(Str, 0, 3) = 'Un ') then
+    Str := Copy(Str, 4, Length(Str) - 3)
+  else if (Copy(Str, 0, 4) = 'Les ') or (Copy(Str, 0, 4) = 'Une ') or (Copy(Str, 0, 4) = 'The ') then
+    Str := Copy(Str, 5, Length(Str) - 4);
+
+  Str := StringReplaceAll(Str, '_', ' ');
+  // remove non-letters, non-digits and non-spaces
+  // polish diacritics chars are allowed
+  s := '';
+  for i := 1 to Length(Str) do begin
+  c := StrGet(Str, i);
+    if ((c<'a') or (c>'z')) and
+       ((c<'A') or (c>'Z')) and
+       ((c<'0') or (c>'9')) and
+       (c<>' ') and (c<>'π') and
+       (c<>'•') and (c<>'Í') and
+       (c<>' ') and (c<>'Ê') and
+       (c<>'∆') and (c<>'ú') and
+       (c<>'å') and (c<>'ø') and
+       (c<>'Ø') and (c<>'ü') and
+       (c<>'è') and (c<>'Û') and
+       (c<>'”') and (c<>'≥') and
+       (c<>'£') and (c<>'Ò') and
+       (c<>'—') then
+    else
+      s := s + Copy(Str, i, 1);
+  end;
+  Str := s;
+end;
+
+begin
+  if CheckVersion(3,5,0) then begin
+    SetOPT();
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then MovieName := GetField(fieldTranslatedTitle);
+    RemovePronoun(MovieName);
+    if Input('Stopklatka.pl Import', 'Podaj tytu≥ filmu (tylko litery,cyfry i spacje):', MovieName) then
+      AnalyzePage('http://www.stopklatka.pl/szukaj/szukaj.asp?szukaj=' + URLEncode(MovieName) + '&kategoria=film&submit=Szukaj')
+  end else ShowMessage('Minimalne wymagania skryptu: wersja 3.5.0 programu Ant Movie Catalog.');
+end.

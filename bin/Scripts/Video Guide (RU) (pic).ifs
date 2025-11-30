@@ -1,0 +1,527 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=m a x
+Title=Videoguide.ru
+Description=Import data & picture from videoguide.ru
+Site=videoguide.ru
+Language=RU
+Version=1.02
+Requires=3.5.0
+Comments=Based on the script made for version 3.x by Yan Sorkin (ysorkin@mail.ru)
+
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+***************************************************)
+
+
+program VideoGuide;
+const
+  BaseAddress = 'http://www.videoguide.ru/';
+var
+  MovieName: string;
+
+function GetTextBlockFrom(Text: string; StartAt: string): string;
+var
+  TextBlock: string;
+  StartPos, EndPos: Integer;
+begin
+  TextBlock := Text;
+  StartPos := pos(StartAt, TextBlock);
+  if StartPos > 0 then
+  begin
+    Delete(TextBlock, 1, StartPos - 1);
+    result := TextBlock;
+  end;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  TextBlock: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('<TITLE>ВидеоГид(R) - Поиск фильма &quot;', Page.Text) = 0 then
+  begin
+    SetField(fieldURL, Address);
+    if pos('<TITLE>ВидеоГид(R) - Релиз на DVD', Page.Text) > 0 then
+    begin
+        AnalyzeVideoPage(Page);
+    end else
+    if pos('<TITLE>ВидеоГид(R) - Релиз на видео', Page.Text) > 0 then
+    begin
+        AnalyzeVideoPage(Page);
+    end else
+    begin
+        AnalyzeMoviePage(Page);
+    end;
+  end else
+  if pos('ReDirect("', Page.Text) > 0 then
+  begin
+    AnalyzeRedirectPage(Page);
+  end else
+  begin
+    PickTreeClear;
+    LineNr := FindLine('Всего найдено фильмов в основной базе', Page, 0);
+    if LineNr > -1 then
+    begin
+      PickTreeAdd('Movies', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    TextBlock := GetTextBlockFrom(Page.Text, 'Всего найдено фильмов в базе видеорелизов');
+    if Length(TextBlock) > 0 then
+    begin
+      PickTreeAdd('Released on video', '');
+      AddReleasesTitles(TextBlock);
+    end;
+    TextBlock := GetTextBlockFrom(Page.Text, 'Всего найдено фильмов в базе релизов DVD');
+    if Length(TextBlock) > 0 then
+    begin
+      PickTreeAdd('Released on DVD', '');
+      AddReleasesTitles(TextBlock);
+    end;
+    LineNr := FindLine('См. также:</b> оставшиеся <a href="', Page, LineNr);
+    if LineNr > -1 then
+    begin
+      AddFindMoreLink(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr, MovieLength: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  // Original Title & Year
+  LineNr := FindLine('<TITLE>', Page, 0);
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('<TITLE>ВидеоГид(R) - ', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 21;
+    EndPos := pos('&nbsp;/', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    Value := AnsiLowerCase(Value);
+    Value := AnsiUpFirstLetter(Value);
+    SetField(fieldTranslatedTitle, Value);
+
+       BeginPos := pos('&nbsp;/', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 7;
+    EndPos := pos('/&nbsp;', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    Value := AnsiLowerCase(Value);
+    Value := AnsiUpFirstLetter(Value);
+    SetField(fieldOriginalTitle, Value);
+ 
+    BeginPos := pos('&nbsp;', Line) + 6;
+    if BeginPos > 0 then
+    begin
+      EndPos := Length(Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      BeginPos := pos('(', Value) + 1;
+      EndPos := pos(')', Value);
+      if (BeginPos > 0) and (EndPos > 0) then
+      begin
+        FullValue := copy(Value, BeginPos, EndPos - BeginPos);
+        SetField(fieldYear, FullValue);
+      end;
+    end;
+  end;
+  
+  // Director
+  LineNr := FindLine('Режиссер:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := '';
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</strong>', Line) + 10;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldDirector, Value);
+  end;
+
+  // Actors
+  LineNr := FindLine('В&nbsp;ролях:', Page, 0);
+  Value := '';
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('</strong>', Line) + 10;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldActors, Value);
+  end
+
+  //Country
+  LineNr := FindLine('<br /><em>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<em>', Line) + 4;
+    EndPos := pos('&nbsp;', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCountry, Value);
+  end;
+
+  //Category
+  LineNr := FindLine('IdGenre=', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('">', Line) + 2;
+    EndPos := pos('</a>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCategory, Value);
+  end
+  else
+  begin
+  LineNr := FindLine('</small><br />', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</small><br />', Line) + 14;
+    EndPos := pos('</td>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCategory, Value);
+  end;
+  end;
+
+  //Year and Length - LineNr is from the previous search
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 2);
+    BeginPos := 1;
+    EndPos := pos(';&nbsp;', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLRemoveTags(Value);
+    SetField(fieldYear, Value);
+    
+    BeginPos := pos(';&nbsp;', Line) + 7;
+    EndPos := Length(Line);
+    Line := copy(Line, BeginPos, EndPos - BeginPos);
+    BeginPos := 1;
+    EndPos := pos(',', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    MovieLength := StrToInt(Value, 0) * 60;
+    BeginPos := EndPos + 1;
+    EndPos := pos(';&', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    MovieLength := MovieLength + StrToInt(Value, 0);
+    if MovieLength > 0 then
+      SetField(fieldLength, IntToStr(MovieLength));
+  end;
+
+  //Description
+    Value2 := '<p align="justify">';
+    LineNr := FindLine(Value2, Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos(Value2, Line) + Length(Value2);
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<BR>', #13#10);
+    Value := StringReplace(Value, '<p', #13#10#13#10 + '<p');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+  // Picture
+  LineNr := FindLine('<img src="\img\films\', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="/img/films/', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('src="', Line) + 4;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('"', Line);
+    Value := copy(Line, 1, EndPos - 1);
+    GetPicture(Value); // False = do not store picture externally ; store it in the catalog file
+  end;
+
+//  DisplayResults;
+end;
+
+procedure AnalyzeVideoPage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr, MovieLength: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  // Title, Original Title, Country, Year, Length, Category
+  LineNr := FindLine('<p><b><a href="card_film.asp?IDFilm=', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<p><b><font color="Navy">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    // Title
+    BeginPos := pos('">', Line) + 2;
+    EndPos := pos('</b>', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    FullValue := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(FullValue);
+    HTMLRemoveTags(FullValue);
+    FullValue := AnsiLowerCase(FullValue);
+    FullValue := AnsiUpFirstLetter(FullValue);
+    SetField(fieldOriginalTitle, FullValue);
+
+    // Original Title (if exists)
+    BeginPos := pos('<br><small>/', Line) + 12;
+    EndPos := pos('/ &nbsp;', Line);
+    if (BeginPos > 0) and (EndPos > 0) then
+    begin
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      Value := AnsiLowerCase(Value);
+      Value := AnsiMixedCase(Value, ' .-');
+      SetField(fieldOriginalTitle, Value);
+      SetField(fieldTranslatedTitle, FullValue);
+      Delete(Line, 1, EndPos + 7);
+    end;
+    
+    // Country
+    BeginPos := pos('<br><small>', Line);
+    if BeginPos = 0 then
+      BeginPos := 1;
+    EndPos := pos(' &nbsp;', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldCountry, Value);
+    Delete(Line, 1, EndPos + 6);
+
+    // Year and Length
+    BeginPos := 1;
+    EndPos := pos(' &nbsp;', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldYear, Value);
+    
+    BeginPos := pos(' &nbsp;', Line) + 7;
+    EndPos := pos('&nbsp;мин', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLength, Value);
+  end;
+
+  //Category
+  LineNr := FindLine('</small><br />', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('/>', Line) + 2;
+    EndPos := Length(Line) + 1;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    SetField(fieldCategory, Value);
+  end;
+
+  // Director
+  LineNr := FindLine('Режиссер:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b> ', Line) + 5;
+    EndPos := Length(Line) + 1;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldDirector, Value);
+  end;
+
+  // Actors
+  LineNr := FindLine('В ролях:', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('</b> ', Line) + 6;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    SetField(fieldActors, Value);
+  end;
+
+  //Description
+  LineNr := FindLine('<p align="justify">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<p align="justify">', Line) + 19;
+    EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLDecode(Value);
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<BR>', #13#10);
+    Value := StringReplace(Value, '<p', #13#10#13#10 + '<p');
+    HTMLRemoveTags(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+  // Picture
+  LineNr := FindLine('<img src="\img\films\', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="/img/films/', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="\img\rel\', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="/img/rel/', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="\img\dvd\', Page, 0);
+  if LineNr = -1 then
+    LineNr := FindLine('<img src="/img/dvd/', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('src="', Line) + 4;
+    Delete(Line, 1, BeginPos);
+    EndPos := pos('"', Line);
+    Value := copy(Line, 1, EndPos - 1);
+    GetPicture(Value); // False = do not store picture externally ; store it in the catalog file
+  end;
+
+//  DisplayResults;
+end;
+
+procedure AnalyzeRedirectPage(Page: TStringList);
+var
+  Address: string;
+  BeginPos, EndPos: Integer;
+begin
+  BeginPos := pos('ReDirect("', Page.Text) + 10;
+  EndPos := pos('")</script>', Page.Text);
+  Address := BaseAddress + copy(Page.Text, BeginPos, EndPos - BeginPos);
+  AnalyzePage(Address);
+end;
+
+procedure AddFindMoreLink(Page: TStringList; var LineNr: Integer);
+var
+  Line, Value, Address: string;
+  StartPos, EndPos: Integer;
+begin
+  Line := Page.GetString(LineNr);
+  StartPos := pos('См. также:</b> оставшиеся <a href="', Line) + 35;
+  EndPos := pos('</a> фильм', Line);
+  Value := copy(Line, StartPos, EndPos - StartPos);
+  StartPos := 1;
+  EndPos := pos('">', Value);
+  Address := BaseAddress + copy(Value, StartPos, EndPos - StartPos);
+  PickTreeMoreLink(Address);
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('="', Line);
+    EndPos := pos('</OL>', Line);
+    if (StartPos > 0) and (EndPos = 0) then
+    begin
+      StartPos := StartPos + 2;
+      MovieAddress := copy(Line, StartPos, pos('">', Line) - StartPos);
+      StartPos := pos('">', Line) + 2;
+      MovieTitle := copy(Line, StartPos, pos('</a>', Line) - StartPos);
+      Line := Page.GetString(LineNr + 1);
+      MovieTitle := MovieTitle + copy(Line, 1, pos('</small>', Line) - 1);
+      HTMLDecode(Movietitle);
+      HTMLRemoveTags(MovieTitle);
+      PickTreeAdd(MovieTitle, BaseAddress + MovieAddress);
+    end;
+  until EndPos > 0;
+end;
+
+procedure AddReleasesTitles(TextBlock: string);
+var
+  MovieTitle, MovieAddress: string;
+  StartPos, EndPos, EndTablePos: Integer;
+begin
+  repeat
+    StartPos := pos('<td><b><a href="', TextBlock);
+    EndTablePos :=  pos('</table>', TextBlock);
+    if StartPos > 0 then
+    begin
+      Delete(TextBlock, 1, StartPos - 1);
+    end;
+    if (StartPos > 0) and (StartPos < EndTablePos) then
+    begin
+      EndPos := pos('</td>', TextBlock);
+      MovieTitle := copy(TextBlock, 1, EndPos - 1);
+      HTMLDecode(MovieTitle);
+      HTMLRemoveTags(MovieTitle);
+      MovieAddress := copy(TextBlock, 17, pos('">', TextBlock) - 17);
+      PickTreeAdd(MovieTitle, BaseAddress + MovieAddress);
+      Delete(TextBlock, 1, EndPos - 1);
+    end;
+  until (StartPos = 0) or (StartPos > EndTablePos);
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import from VideoGuide', 'Введите название фильма:', MovieName) then
+    begin
+      AnalyzePage('http://www.videoguide.ru/find.asp?Search=Simple&types=film&titles='+UrlEncode(MovieName));
+//      AnalyzePage('http://localhost/search1.htm');
+    end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.
+

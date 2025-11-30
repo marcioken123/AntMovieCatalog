@@ -1,0 +1,109 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=LA (Andrey Lukyanov)       (<link>l_a@hotmail.ru</link>)
+Title=XMLImport
+Description=Imports movies info from another Ant Movie catalog in XML format.
+Site=
+Language=?
+Version=1.0 (03.07.2005)
+Requires=3.5.0
+Comments=
+License=This script is free; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+// ver 1.1 - verification for property existence has been added
+program XMLImport;
+var
+  MovieName, DatabaseFile: string;
+  XMLFile: TJvSimpleXml;
+  CurItem: TJvSimpleXmlProps;
+
+procedure AnalyzeDatabase;
+var
+  s, s1, s2: string;
+  i: Integer;
+begin
+ XMLFile := TJvSimpleXml.Create(nil);
+ XMLFile.LoadFromFile(DatabaseFile);
+ if XMLFile.Root.Name = 'AntMovieCatalog' then
+  begin
+    if XMLFile.Root.Items.Count = 0 then
+    begin
+      ShowInformation('Chosen XML Catalog is empty.');
+      XMLFile.Free;
+      Exit;
+    end;
+    PickTreeClear;
+    PickTreeAdd('Search result of movie: ' + MovieName, '');
+    for i := 0 to XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.Count-1 do
+    begin
+      CurItem := XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.GetItem(i).Properties;
+      s1 := CurItem.GetItemNamed('TranslatedTitle').Value;
+      s2 := CurItem.GetItemNamed('OriginalTitle').Value;
+      s := s1;
+      if s <> '' then
+       if (s2 <> '') and (s2 <> s1) then s := s1 + ' / ' + s2 else s := s2;
+      if Pos(AnsiUpperCase(MovieName), AnsiUpperCase(s)) > 0 then
+       PickTreeAdd(s, IntToStr(i));
+    end;
+    If PickTreeExec(DatabaseFile) Then
+      AnalyzeMovieItem(DatabaseFile);
+  end;
+ XMLFile.Free;
+end;
+
+procedure AnalyzeMovieItem(MovieI: String);
+begin
+  CurItem := XMLFile.Root.Items.GetItem(0).Items.GetItemNamed('Contents').Items.GetItem(StrToInt(MovieI, 0)).Properties;
+  // ShowMessage(CurItem.GetItemNamed('MediaLabel').Value);
+  if CurItem.GetItemNamed('MediaLabel') <> nil then
+    SetField(fieldMedia,CurItem.GetItemNamed('MediaLabel').Value);
+  if CurItem.GetItemNamed('TranslatedTitle') <> nil then
+    SetField(fieldTranslatedTitle,CurItem.GetItemNamed('TranslatedTitle').Value);
+  if CurItem.GetItemNamed('OriginalTitle') <> nil then
+    SetField(fieldOriginalTitle,CurItem.GetItemNamed('OriginalTitle').Value);
+  if CurItem.GetItemNamed('Rating') <> nil then
+    SetField(fieldRating,CurItem.GetItemNamed('Rating').Value);
+  if CurItem.GetItemNamed('Director') <> nil then
+    SetField(fieldDirector,CurItem.GetItemNamed('Director').Value);
+  if CurItem.GetItemNamed('Country') <> nil then
+    SetField(fieldCountry,CurItem.GetItemNamed('Country').Value);
+  if CurItem.GetItemNamed('Category') <> nil then
+    SetField(fieldCategory,CurItem.GetItemNamed('Category').Value);
+  if CurItem.GetItemNamed('Year') <> nil then
+    SetField(fieldYear,CurItem.GetItemNamed('Year').Value);
+  if CurItem.GetItemNamed('Length') <> nil then
+    SetField(fieldLength,CurItem.GetItemNamed('Length').Value);
+  if CurItem.GetItemNamed('Actors') <> nil then
+    SetField(fieldActors,CurItem.GetItemNamed('Actors').Value);
+  if CurItem.GetItemNamed('URL') <> nil then
+    SetField(fieldURL,CurItem.GetItemNamed('URL').Value);
+  if CurItem.GetItemNamed('Description') <> nil then
+    SetField(fieldDescription,CurItem.GetItemNamed('Description').Value);
+  if CurItem.GetItemNamed('Size') <> nil then
+    SetField(fieldSize,CurItem.GetItemNamed('Size').Value);
+  if CurItem.GetItemNamed('Disks') <> nil then
+    SetField(fieldDisks,CurItem.GetItemNamed('Disks').Value);
+// if CurItem.GetItemNamed('Picture') <> nil then
+//    SetField(fieldPicture,CurItem.GetItemNamed('Picture').Value);
+// GetPicture(dirApp+CurItem.GetItemNamed('Picture').Value);
+
+end;
+
+begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    DatabaseFile := '..\Catalogs\mlist.xml';
+    Input('Import from another XML database', 'Enter the database name and path:', DatabaseFile);
+    if Input('Import from another XML database', 'Enter the title of the movie:', MovieName) then
+      AnalyzeDatabase;
+end.

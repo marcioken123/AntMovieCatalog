@@ -1,0 +1,218 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=LA (Andrey Lukyanov)       (<link>l_a@hotmail.ru</link>)
+Title=Oper (Goblin)
+Description=Imports Goblin's movies info from oper.ru
+Site=http://www.oper.ru
+Language=RU
+Version=1.0 (09.04.2005)
+Requires=3.5.0
+Comments=»мпортирует информацию (оригинальное название, переведенное гоблиновское название и описание) о фильме в гоблинском переводе с официального сайта Goblin'a.
+License=This script is free; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+TrTitle_AddWordGoblin=0|1|1=ƒобавл€ть '(Goblin)' в конце переведенного названи€|0=Ќе добавл€ть '(Goblin)' в конце переведенного названи€
+OrTitle_AddWordGoblin=0|1|1=ƒобавл€ть '(Goblin)' в конце оригинального названи€|0=Ќе добавл€ть '(Goblin)' в конце оригинального названи€
+Language_Goblin=0|1|1=«аписывать в поле язык значение 'Goblin'|0=Ќе записывать в поле язык значение 'Goblin'
+
+***************************************************)
+
+program Oper;
+const
+  BaseAddress = 'http://www.oper.ru';
+  STR_WIN = 'јаЅб¬в√гƒд≈е∆ж«з»и…й кЋлћмЌнќоѕп–р—с“т”у‘ф’х÷ц„чЎшўщЏъџы№ьЁэёюя€';
+  STR_KOI = 'юёајбЅц÷дƒе≈ф‘г√х’и»й…к лЋмћнЌоќпѕ€яр–с—т“у”ж∆в¬ь№ыџз«шЎэЁщўч„ъЏ';
+
+var
+  MovieName: string;
+  PagesAddresses: Array of String;
+  PagesTitles: Array of String;
+
+function ParseURL(Text:String):String;
+var
+  BeginPos : Integer;
+  EndPos : Integer;
+  Value : String;
+begin
+
+  repeat
+    BeginPos := Pos('<b>',Text);
+    If BeginPos > 0 Then
+    Begin
+      EndPos := Pos('</b>',Text);
+      Value := copy(Text, BeginPos, EndPos - BeginPos);
+      Value := StringReplace(Value,'<BR>',', ');
+      Value := StringReplace(Value,'<br>',', ');
+      HTMLRemoveTags(Value);
+      Delete(Text,1,EndPos);
+      If Length(result)>0 Then
+        result := result + ', ' + Value
+      else
+        result := Value;
+    end;
+  until BeginPos < 1;
+
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(AnsiLowerCase(Pattern), AnsiLowerCase(List.GetString(i))) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+// процедура из скрипта Animator (RU)
+function KOIToWin(Source: string): string;
+var
+  i: integer;
+  s: string;
+  c: char;
+  chars: array of char;
+begin
+  Result := '';
+  SetArrayLength(chars, 256);
+  for i := 0 to 255 do
+    chars[i] := chr(i);
+  for i := 1 to length(STR_WIN) do
+    chars[ord(copy(STR_WIN, i, 1))] := copy(STR_KOI, i, 1);
+  for i := 1 to Length(Source) do
+    Result := Result + chars[ord(copy(Source, i, 1))];
+  Result := StringReplace(Result,'£','Є'); // исправл€ет ошибку с буквой Є
+end;
+
+procedure AnalyzePage;
+var
+  ID, FilmName, Line, Address: String;
+  Page: TStringList;
+  FilmPage: TStringList;
+  BeginPos, EndPos, LineBeginPos, LineEndPos: Integer;
+  LinkI: Byte;
+begin
+  PickTreeClear; // ќчистка дерева фильмов
+  Page := TStringList.Create;
+  PickTreeAdd('ѕоиск фильма: ' + MovieName, '');
+
+  for LinkI := 0 to GetArrayLength(PagesAddresses)-1 do
+  begin
+      Address := BaseAddress+PagesAddresses[LinkI];
+      Page.Text := KOIToWin(GetPage(Address));
+      // Page.SaveToFile('c:\page'+IntToStr(LinkI)+'.txt'); // дл€ отладки
+      // Page.LoadFromFile('c:\page'+IntToStr(LinkI)+'.txt');
+      PickTreeAdd(PagesTitles[LinkI], '');
+      LineBeginPos := FindLine('—писок переводов:', Page, 10); // находим начало списка переводов
+      LineEndPos := FindLine('<b>Ќовинки:</b><br><br>', Page, 10); // далее этой линии фильма не может быть
+      repeat
+      LineBeginPos := FindLine(MovieName, Page, LineBeginPos+1); // далее c этой позиции ищем фильм
+      if (LineBeginPos > 0) and (LineBeginPos < LineEndPos) then // фильм найден
+        begin
+              Line:= Page.GetString(LineBeginPos); // ѕолучаем строку с фильмом
+              BeginPos := Pos('<a href=',Line)+8;
+              EndPos := Pos('>',Line);
+              ID := BaseAddress+copy(Line, BeginPos, EndPos - BeginPos); // ѕолучаем адрес страницы
+
+              BeginPos := Pos('>',Line)+1;
+              EndPos := Pos('<hr ',Line);
+              FilmName := Copy(Line, BeginPos, EndPos - BeginPos); // ѕолучаем название дл€ выбора
+              FilmName := StringReplace(FilmName,'</a><br>',' (')+')';
+              PickTreeAdd(FilmName, ID);
+        end;
+      until (LineBeginPos = -1) or (LineBeginPos > LineEndPos);
+  end;
+  // PickTreeMoreLink('http://www.yandex.ru/yandsearch?ras=1&date=&text='+MovieName+'&spcctx=notfar&zone=all&linkto=&wordforms=all&lang=all&within=0&from_day=&from_month=&from_year=&to_day=9&to_month=4&to_year=2005&mime=all&Link=&numdoc=10&site=www.oper.ru&ds=');
+  If  PickTreeExec(Address) Then
+      AnalyzeMoviePage(Address); // ѕроанализировать страницу с фильмом
+end;
+
+procedure AnalyzeMoviePage(Address: String);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value, TmpStr : String;
+  BeginPos, EndPos : Integer;
+
+begin
+  Page := TStringList.Create;
+  Page.Text := KOIToWin(GetPage(Address));
+  // Page.SaveToFile('c:\movie.txt'); // дл€ отладки
+  // Page.LoadFromFile('c:\movie.txt');
+
+  // URL
+  SetField(fieldURL,Address);
+
+  TmpStr := '<font size=2 class=verdana color=white><h1>';
+  LineNr := FindLine(TmpStr, Page, 0);
+  if LineNr > -1 then
+  begin
+    // Translated Title
+    Line := Page.GetString(LineNr);
+    Delete(Line,1, Pos(TmpStr,Line) + Length(TmpStr) - 1);
+    EndPos := pos('</h1>', Line) - 1;
+    Value := copy(Line, 1, EndPos);
+    Value := Trim(Value);
+    if GetOption('TrTitle_AddWordGoblin') = 1 then Value := Value + ' (Goblin)';
+    SetField(fieldTranslatedTitle, Value);
+
+    // Original Title
+    Delete(Line,1,EndPos+5);
+    BeginPos:=pos('<h1>', Line)+4;
+    EndPos := pos('</h1>', Line)-1;
+    Value := copy(Line, BeginPos, EndPos - BeginPos + 1);
+    Value := Trim(Value);
+    if GetOption('OrTitle_AddWordGoblin') = 1 then Value := Value + ' (Goblin)';
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+  // Description
+  TmpStr := '<tr><td style="padding:20px" bgcolor=#252525><font size=2 class=verdana>';
+  LineNr := FindLine(TmpStr, Page, 1); // Ќачало строки описани€
+  if LineNr > -1 then
+  begin
+    Value := '';
+    Line := Page.GetString(LineNr);
+    repeat
+      Value := Value + Line;
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+    until (Pos('–екомендуетс€ к просмотру ', Line)>0) or (Pos('<br><br>&raquo; ', Line)>0) or (Pos('</table>', Line)>0);
+    Value := StringReplace(Value, '<br><br>', #13#10);
+    Value := StringReplace(Value, '<BR><BR>', #13#10);
+    Value := StringReplace(Value, '<br>', #13#10);
+    Value := StringReplace(Value, '<BR>', #13#10);
+    HTMLRemoveTags(Value);
+    Value := Trim(Value);
+    SetField(fieldDescription,Value);
+  end;
+
+  // Language
+  if GetOption('Language_Goblin') = 1 then
+    SetField(fieldLanguages,'Goblin');
+
+end;
+
+begin
+    SetArrayLength(PagesAddresses, 2);
+    SetArrayLength(PagesTitles, 2);
+    PagesAddresses[0] := '/trans/?d=1';
+    PagesAddresses[1] := '/trans/?d=2';
+    PagesTitles[0] := '—туди€ полный ѕэ';
+    PagesTitles[1] := '—туди€ Ѕожь€ »скра';
+
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import from oper.ru', 'Enter the title of the movie:', MovieName) then
+      AnalyzePage;
+end.

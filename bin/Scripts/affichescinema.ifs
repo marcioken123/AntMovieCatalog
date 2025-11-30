@@ -1,0 +1,147 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=JulotSoft modifié par Dedej
+Title=AffichesCinema
+Description=Récupère des affiches de AffichesCinema.com
+Site=http://www.affichescinema.com/
+Language=EN,FR
+Version=1.1 du 13/01/2009
+Requires=3.5.0
+Comments=Ce script nécessite le fichier "StringUtils1.pas"|Le nom d'un film (pour ce site) ne peut pas commencer par un chiffre.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=JulotSoft modifié par Dedej
+Title=AffichesCinema
+Description=Récupère des affiches de AffichesCinema.com
+Site=http://www.affichescinema.com/
+Language=EN,FR
+Version=1.1 du 13/01/2009
+Requires=3.5.0
+Comments=Ce script nécessite le fichier "StringUtils1.pas"|Le nom d'un film (pour ce site) ne peut pas commencer par un chiffre.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program AffCinema;
+// to do : vérifier si le film est présent +sieurs fois sur la page
+//         et présenter le choix en réponse !
+uses
+  StringUtils1;
+
+const
+  UrlBase = 'http://www.affichescinema.com';
+
+var
+  szMovieName, szOriginalTitle, szTranslatedTitle:  string;
+  szPremiereLettre:string;
+  szUrlPage: string;
+
+//------------------------------------------------------------------------------
+// returns a string with 1st article removed (first word only)
+// Script de scorpion7552 modifié pour l'occasion. Merci à lui.
+//------------------------------------------------------------------------------
+function RemoveArticles(str1: string) :string;
+var
+  Articles: array of string;
+  i: integer;
+  str2: String;
+
+begin
+	SetArrayLength(Articles,9);
+  Articles[0]:='le ';
+  Articles[1]:='la ';
+  Articles[2]:='l''';
+  Articles[3]:='l ';
+  Articles[4]:='les ';
+  Articles[5]:='des ';
+  Articles[6]:='un ';
+  Articles[7]:='une ';
+  Articles[8]:='the ';
+
+  str2 := AnsiLowerCase(str1);
+  for i := 0 to GetArrayLength(articles)-1 do
+  begin
+    if Pos(Articles[i], str2) = 1 then
+    begin
+			str1 := Copy(str1, Length(Articles[i])+1, length(str1));
+      Break;
+    end;
+  end;        {for i}
+	result := Trim(str1);
+end;
+
+
+//-----------------------------------------------------------
+procedure AnalyzePageAffiche;
+var
+  szLine: string;
+  szNomImage: string;
+  LaListe: TStringList;
+  iNumLigne: integer;
+  szTemp: string;
+  szpos: string;
+begin
+  LaListe:= TStringList.Create;
+
+  szLine := AnsiLowerCase(GetPage(szUrlPage));
+  if Pos(szMovieName, szLine) = 0 then
+    begin
+      ShowMessage('Aucun film trouvé');
+      Exit;
+    end;
+
+  LaListe.Text := szLine;
+  iNumLigne := FindLine(szMovieName, LaListe, 0);
+  szTemp := LaListe.GetString(iNumLigne);
+  szNomImage := TextBetween(szTemp, 'f="', '"');
+  //szNomImage := TextBefore(szLine, '" target="_blank">'+ szMovieName, 'insc_'+szPremiereLettre+'/');
+  szLine := AnsiLowerCase(GetPage(UrlBase + '/' + szNomImage));
+  LaListe.Text := szLine;
+  iNumLigne := FindLine('<img border="0"', LaListe, 0);
+  szTemp := LaListe.GetString(iNumLigne);
+  szNomImage := TextBetween(szTemp, 'src="', '"></td>');
+  GetPicture(szNomImage);
+  LaListe.free;
+end;
+//-----------------------------------------------------------
+
+// Main -- Programme principal
+begin
+  if CheckVersion(3,5,0) then
+    begin
+      szTranslatedTitle := GetField(fieldTranslatedTitle);
+      szOriginalTitle := GetField(fieldOriginalTitle);
+      if (szTranslatedTitle <> '') then
+        szMovieName := szTranslatedTitle
+      else
+        szMovieName := szOriginalTitle;
+      if (Input('AffichesCinema - By JulotSoft', 'Entrer le titre du film:', szMovieName)) then
+        begin
+          szMovieName:=  AnsiLowerCase(RemoveArticles(szMovieName)); //à voir pour le "a"
+          //szMovieName:=  AnsiLowerCase(szMovieName);
+          szPremiereLettre:= left(szMovieName,1);
+          szUrlPage :=  UrlBase + '/page.php?lettre=' +  szPremiereLettre;
+          AnalyzePageAffiche;
+        end;
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

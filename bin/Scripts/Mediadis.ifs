@@ -1,0 +1,322 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Antoine Potten, Tim Roelandt
+Title=Mediadis
+Description=English version of Mediadis.com (Old DVDZone2)
+Site=http://www.mediadis.com
+Language=EN
+Version=1.01
+Requires=3.5.0
+Comments=Modded version of Antoine Potten's script for DVDZone2 that stopped working.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DVDZone2_FR;
+var
+  MovieName: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Line, MovieItem, MovieTitle, MovieAddress: string;
+  TitlePos, BeginPos, EndPos: Integer;
+  List: TStringList;
+begin
+  Line := GetPage(Address);
+  PickTreeClear;
+  if Pos('</strong>&nbsp;:&nbsp;<strong>0</strong>&nbsp;item(s) found<br>', Line) = 0 then
+  begin
+    PickTreeAdd('Search results from Mediadis', '');
+    BeginPos := Pos('<!-- /BREADCRUMBS -->', Line);
+    EndPos := Pos('S BE PARTNERS -->', Line);
+    Line := Copy(Line, BeginPos, EndPos - BeginPos);
+    List := TStringList.Create;
+    repeat
+      TitlePos := Pos('<td align="left" valign="top" class="search-list">', Line);
+      if TitlePos > 0 then
+      begin
+        Delete(Line, 1, TitlePos);
+        MovieItem := Copy(Line, 1, Pos(' Eur</span><br>', Line));
+        BeginPos := Pos('<a href="', MovieItem) + 9;
+        EndPos := Pos('" class="a-blue"', MovieItem);
+        MovieAddress := Copy(MovieItem, BeginPos, EndPos - BeginPos);
+        BeginPos := Pos(' : Mediadis">', MovieItem) + 13;
+        EndPos := Pos('</a>', MovieItem);
+        MovieTitle := Copy(MovieItem, BeginPos, EndPos - BeginPos);
+        List.Text := MovieItem;
+        MovieItem := Trim(List.GetString(3));
+        if MovieItem <> '' then
+          MovieTitle := MovieTitle + ' [' + MovieItem + ']';
+        MovieItem := Trim(List.GetString(9));
+        if MovieItem <> '' then
+          MovieTitle := MovieTitle + ' (' + MovieItem + ')';
+        PickTreeAdd(MovieTitle, MovieAddress);
+        Delete(Line, 1, 25);
+      end;
+    until TitlePos = 0;
+    List.Free;
+  end;
+  if PickTreeExec(Address) then
+    AnalyzeMoviePage(Address);
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Line, Value, FullValue: string;
+  LineNr: Integer;
+  BeginPos, EndPos: Integer;
+  Page: TStringList;
+begin
+  Line := GetPage(Address);
+  BeginPos := Pos('<!-- /BREADCRUMBS -->', Line);
+  EndPos := Pos('<!-- VIDEO PROMOTIONS -->', Line);
+  Line := Copy(Line, BeginPos, EndPos - BeginPos);
+  
+  // title
+  BeginPos := Pos('<span class="detail-title">', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos('>', Line) + 1;
+  EndPos := Pos('</', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldOriginalTitle, Value);
+  
+  // picture
+  BeginPos := Pos('http://www.mediadis.com/pictures/big/', Line);
+  if BeginPos > 0 then
+  begin
+    Delete(Line, 1, BeginPos - 1);
+    EndPos := Pos('"', Line);
+    Value := Copy(Line, 1, EndPos - 1);
+    GetPicture(Value);
+  end;
+  
+  // description
+  BeginPos := Pos('<p>', Line);
+  if BeginPos > 0 then
+  begin
+  Delete(Line, 1, BeginPos + 2);
+  EndPos := Pos(#13, Line);
+  Value := StringReplace(Copy(Line, 1, EndPos - 1), '<p>', #13#10#13#10);
+  HTMLRemoveTags(Value);
+  HTMLDecode(Value);
+  SetField(FieldDescription, Value);
+  end;
+
+  // rating
+  BeginPos := Pos('Global rating', Line);
+  if BeginPos > 0 then
+  begin
+    Delete(Line, 1, BeginPos);
+    BeginPos := Pos('<strong>', Line);
+    if BeginPos > 0 then
+    begin
+      BeginPos := BeginPos + 8;
+      EndPos := Pos('/', Line);
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+      SetField(fieldRating, Value);
+    end;
+  end;
+  
+  Page := TStringList.Create;
+  BeginPos := Pos('<td height="120" width="50%" class="dvd-detail-border-c" valign="top" align="left">', Line);
+  Delete(Line, 1, BeginPos);
+  EndPos := Pos('</table>', Line);
+  Page.Text := Copy(Line, 1, EndPos);
+
+  // director
+  //SetField(fieldDirector, GetInfo('<strong>Director(s)', Page));
+  Value := '';
+  BeginPos := Pos('<strong>Director(s)', Line);
+  Delete(Line, 1, BeginPos);
+  if Pos('</strong>&nbsp;:&nbsp;<br />', Line) <> 19 then
+begin
+repeat
+  if Pos('<br />', Line) <> 1 then
+  begin
+    BeginPos := Pos('">', Line) + 2;
+    EndPos := Pos('</a>', Line);
+    if Value <> '' then
+    begin
+      Value := Value + ', ' + Copy(Line, BeginPos, EndPos - BeginPos);
+    end;
+    if Value = '' then
+    begin
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    end;
+    HTMLDecode(Value);
+    Delete(Line, 1, EndPos + 3);
+  end;
+until Pos('<br />', Line) = 1;
+end;
+  SetField(fieldDirector, Value);
+
+  // actors
+  //SetField(fieldActors, StringReplace(GetInfo('<b>Actors', Page), ' - ', ', '));
+  Value := '';
+  BeginPos := Pos('<strong>Actors', Line);
+  Delete(Line, 1, BeginPos);
+begin
+repeat
+  if Pos('<br />', Line) <> 1 then
+  begin
+    BeginPos := Pos('">', Line) + 2;
+    EndPos := Pos('</a>', Line);
+    if Value <> '' then
+    begin
+      Value := Value + ', ' + Copy(Line, BeginPos, EndPos - BeginPos);
+    end;
+    if Value = '' then
+    begin
+      Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    end;
+    HTMLDecode(Value);
+    Delete(Line, 1, EndPos + 3);
+  end;
+until Pos('<br />', Line) = 1;
+end;
+  SetField(fieldActors, Value);
+  
+  // country
+  //SetField(fieldCountry, GetInfo('<b>Country', Page));
+  BeginPos := Pos('<strong>Country', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos(':&nbsp;', Line) + 7;
+  EndPos := Pos('<br />', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldCountry, Value);
+
+  // year
+  //SetField(fieldYear, GetInfo('<b>Year', Page));
+  BeginPos := Pos('<strong>Year', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos(':&nbsp;', Line) + 7;
+  EndPos := Pos('<br />', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldYear, Value);
+
+  // studio (producer)
+  //SetField(fieldProducer, GetInfo('<b>Studio', Page));
+  BeginPos := Pos('<strong>Studio', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos(':&nbsp;', Line) + 7;
+  EndPos := Pos('<br />', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldProducer, Value);
+
+  // category
+  //SetField(fieldCategory, GetInfo('<b>Genres', Page));
+  BeginPos := Pos('<strong>Genres', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos(':&nbsp;', Line) + 7;
+  EndPos := Pos('<br />', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldCategory, Value);
+
+  //Release Date
+  BeginPos := Pos('<strong>Release date', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos('<br />', Line) - 4;
+  EndPos := Pos('<br />', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldYear, Value);
+
+  // length
+  BeginPos := Pos('<strong>Duration', Line);
+  Delete(Line, 1, BeginPos);
+  BeginPos := Pos(':&nbsp;', Line) + 7;
+  EndPos := Pos('&nbsp;min', Line);
+  Value := Copy(Line, BeginPos, EndPos - BeginPos);
+  HTMLDecode(Value);
+  SetField(fieldLength, Value);
+  
+  // special features (comments)
+  BeginPos := Pos('<span class="detail-title">Special features</span>', Line);
+  Delete(Line, 1, BeginPos);
+  EndPos := Pos('</table>', Line);
+  Delete(Line, EndPos, Length(Line));
+  FullValue := '';
+  repeat
+    BeginPos := Pos('</tr>', Line);
+    Delete(Line, 1, BeginPos);
+    BeginPos := Pos('<tr>', Line);
+    if BeginPos > 0 then
+    begin
+      BeginPos := Pos('<strong>', Line);
+      if BeginPos > 0 then
+      begin
+        Value := Copy(Line, BeginPos + 8, Length(Line));
+        EndPos := Pos(#10, Value);
+        Value := StringReplace(Copy(Value, 1, EndPos - 1), '<br />', ' ');
+        HTMLRemoveTags(Value);
+        HTMLDecode(Value);
+        FullValue := FullValue + '- ' + Value + #13#10;
+      end;
+    end;
+  until (Pos('<tr>', Line) = 0) or (Pos('<strong>', Line) = 0);
+  if FullValue <> '' then
+    SetField(fieldComments, 'DVD Special features:' + #13#10 + FullValue);
+
+  Page.Free;
+  //DisplayResults;
+end;
+
+function GetInfo(Name: string; Page: TStringList): string;
+var
+  LineNr, BeginPos, EndPos: Integer;
+  Value, Line: string;
+begin
+  LineNr := FindLine(Name, Page, 0);
+  if LineNr > 0 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := Pos(':&nbsp;', Line) + 7;
+    EndPos := Pos('<br>', Line);
+    Value := Copy(Line, BeginPos, EndPos - BeginPos);
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Result := Value;
+  end else
+    Result := '';
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Mediadis Import', 'Enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.mediadis.com/products/search.asp?t=1&kw=' + UrlEncode(MovieName) + '&kwt=t&pl=all');
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,41 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=SoulSnake
+Title=ReimportPictures.ifs
+Description=Reimport movie pictures to store them in catalog or copy them in catalog folder (depends of selected import in preferences)
+Site=http://mickaelvanneufville.online.fr/AMCU/scripts/
+Language=?
+Version=1.1 (11/12/2011)
+Requires=4.1.0
+Comments=
+License=
+GetInfo=0
+
+[Options]
+
+***************************************************)
+
+program ReimportPictures;
+const
+  TempFolder = 'C:\Windows\Temp';
+  TempPicName = '__movie-picture-amc-tmp__';
+var
+  TempPath: string;
+begin
+  if PictureExists then
+  begin
+    if (PicturePath <> '') then
+      ImportPicture(PicturePath)
+    else
+    begin
+      TempPath := TempFolder + '\' + TempPicName + PictureExt;
+      ExportPicture(TempPath);
+      ImportPicture(TempPath);
+      DeleteFile(TempPath);
+    end;
+  end;
+end.

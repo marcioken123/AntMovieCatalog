@@ -1,0 +1,249 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN, jmcc, baffab, HerveM
+Title=Amazon.fr
+Description=Récupère les informations DVD d'Amazon.fr à partir d'un code EAN de DVD
+Site=http://www.amazon.fr
+Language=FR
+Version=15 du 29/12/2023
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web|4=Demande l'EAN (Code-Barre)
+Casse Choisie=3|3|0=Titre et Nom en minuscule|1=Titre et Nom en majuscule|2=Première lettre en majuscule|3=Première lettre de chaque mot en majuscule
+Titre en double=0|0|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Fichier de log=1|1|0=Oui|1=Non
+
+[Parameters]
+
+***************************************************)
+
+program Amazon_FR;
+uses
+  ScorEpioNCommonScript;
+
+const
+  AmazonUrl = 'https://www.amazon.fr/';
+  AmazonSearch = 'https://www.amazon.fr/s?i=dvd&k=';
+var
+  MovieName, Address : string;
+  i, premiereExecution: Integer;
+  listeResultat: TStringList;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES RESULTATS AMAZON.FR
+//------------------------------------------------------------------------------
+
+procedure imageAmazon(title : String);
+var
+  adresseRecherche, Line : String;
+  StartPos: Integer;
+begin
+  PickTreeClear;
+  adresseRecherche := AmazonSearch+UrlEncode(title);
+  Line := GetPage(adresseRecherche);
+  if (pos('a-link-normal s-no-outline', Line) > 0) then
+  begin
+      StartPos := pos('a-link-normal s-no-outline', Line);
+      delete(Line, 1, StartPos);
+      StartPos := pos('/', Line);
+      delete(Line, 1, StartPos);
+      StartPos := pos('"', Line);
+      Line := copy(Line, 1, StartPos-1);
+      recupInfo(AmazonUrl+Line);
+  end else
+  begin
+      showmessage('EAN non trouvé');
+  end;
+  //recupInfo('http://www.amazon.fr/Inception-Blu-ray-Leonardo-DiCaprio/dp/B003WJREA0/ref=sr_1_1?s=dvd&ie=UTF8&qid=1358672797&sr=1-1');
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS
+//------------------------------------------------------------------------------
+
+procedure recupInfo(Adresse : String);
+var
+   Value, Value2, Line, Line2: String;
+   StartPos: Integer;
+begin
+   Line := GetPage(Adresse);
+   //Line := UTF8Decode(Line);
+   Line2 := Line;
+   StartPos := pos('id="imgTagWrapperId"', Line2);
+   delete(Line2, 1, StartPos-1);
+   StartPos := pos('src="', Line2);
+   delete(Line2, 1, StartPos-1);
+    Value := findInfo('src="', '"', Line2,'0');
+// Jaquette DVD
+   if CanSetPicture then
+     GetPicture(Value);
+// Titre Traduit
+   if CanSetField(fieldTranslatedTitle) then
+   begin
+      Line2 := Line;
+      StartPos := pos('product-title-word-break">', Line2);
+      delete(Line2, 1, StartPos-1);
+      StartPos := pos('</span>', Line2);
+      Line2 := copy(Line2, 1, StartPos+6);
+      Line2 := UTF8Decode(Line2);
+      Line2 := DecodeUTF(Line2);
+      Value := formatTitre(findInfo('product-title-word-break">', '</span>', Line2,'0'),GetOption('Casse Choisie'));
+      MonSetField(fieldTranslatedTitle, Value);
+   end;
+// Acteurs
+   if CanSetField(fieldActors) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Acteurs', Line2);
+      delete(Line2, 1, StartPos-1);
+      MonSetField(fieldActors, formatTitre(findInfo('<span>', '</span>', Line2,'0'),GetOption('Casse Choisie')));
+   end;
+// Réalisateur
+   if CanSetField(fieldDirector) then
+   begin
+      Line2 := Line;
+      Line2 := UTF8Decode(Line2);
+      StartPos := pos('>Réalisateur', Line2);
+      delete(Line2, 1, StartPos-1);
+      MonSetField(fieldDirector, formatTitre(findInfo('<span>', '</span>', Line2,'0'),GetOption('Casse Choisie')));
+   end;
+// Date de parution
+   if CanSetField(fieldYear) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Date de sortie', Line2);
+      delete(Line2, 1, StartPos-1);
+      Value := findInfo('<span>', '</span>', Line2,'0');
+      MonSetField(fieldYear, copy(Value,length(Value)-4,length(Value)));
+   end;
+// Editeur
+   if CanSetField(fieldProducer) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Studio', Line2);
+      delete(Line2, 1, StartPos-1);
+      MonSetField(fieldProducer, findInfo('<span>', '</span>', Line2,'0'));
+   end;
+// Langue
+   if CanSetField(fieldLanguages) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Langue', Line2);
+      delete(Line2, 1, StartPos-1);
+      Line2 := UTF8Decode(Line2);
+      MonSetField(fieldLanguages, findInfo('<span class="a-size-base po-break-word">', '</span>', Line2,'0'));
+   end;
+// Sous-titre
+   if CanSetField(fieldSubtitles) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Sous-titre', Line2);
+      delete(Line2, 1, StartPos-1);
+      Line2 := UTF8Decode(Line2);
+      MonSetField(fieldSubtitles, findInfo('<span>', '</span>', Line2,'0'));
+   end;
+// Nombre de Disques
+   if CanSetField(fieldDisks) then
+   begin
+      Line2 := Line;
+      StartPos := pos('>Nombre de disques', Line2);
+      delete(Line2, 1, StartPos-1);
+      MonSetField(fieldDisks, findInfo('<span>', '</span>', Line2,'0'));
+   end;
+// Durée
+   if CanSetField(fieldLength) then
+      MonSetField(fieldLength, findInfo('<b>Durée :</b> ', 'minutes', Line,'0'));
+
+   if CanSetField(fieldMediaType) then
+      MonSetField(fieldMediaType, findInfo('<b>Format :</b>', '</li>', Line,'0'));
+
+
+// Synopsis
+   if CanSetField(fieldDescription) then
+   begin
+    Line2 := Line;
+    StartPos := pos('<div id="productDescription"', Line2);
+    delete(Line2, 1, StartPos-1);
+    Line2 := UTF8Decode(Line2);
+    Value := deleteMultiSpace(findInfo('<p>', '</p>', Line2, '4'));
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    Value := DecodeUTF(Value);
+    Value := StringReplace(Value, '		', RC);
+    Value := StringReplace(Value, RC+RC, RC);
+    Value := deleteTab(Value);
+    MonSetField(fieldDescription, Value);
+   end;
+// Adresse Web
+   if CanSetField(fieldURL) then
+      SetField(fieldURL, Adresse);
+
+
+// Affichage des titres si original et traduit identique
+  titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRIME LES ACCENTS
+//------------------------------------------------------------------------------
+
+function supprimeAccents(NomFilm : String) : String;
+begin
+     NomFilm := supprimeLesAccents(NomFilm);
+     delete(NomFilm, pos(' - ',NomFilm), length(NomFilm));
+     if (pos(', ',NomFilm) > 0) then
+        delete(NomFilm, 1, pos(', ',NomFilm)+1);
+     if (pos('(',NomFilm) > 0) then
+        delete(NomFilm, pos('(',NomFilm), length(NomFilm));
+     if (pos(':',NomFilm) > 0) then
+        delete(NomFilm, pos(':',NomFilm), length(NomFilm));
+     result := trim(NomFilm);
+end;
+
+Function DecodeUTF(Description : String) : String;
+var
+  Value2 : string;
+begin
+  Value2 := StringReplace2(Description, '&#xE0;','à', false, true);
+  Value2 := StringReplace2(Value2, '&#xE7;','ç', false, true);
+  Value2 := StringReplace2(Value2, '&#xE8;','è', false, true);
+  Value2 := StringReplace2(Value2, '&#xE9;','é', false, true);
+  Value2 := StringReplace2(Value2, '&#xEA;','ê', false, true);
+  Value2 := StringReplace2(Value2, RC, '', false, true);
+  Value2 := StringReplace2(Value2, '&#39;', '''', false, true);
+
+  result := trim(Value2);
+end;
+
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    if Input('amazon.fr', 'Entrez le code-barre (EAN) du DVD :', MovieName) then
+      begin
+          imageAmazon(MovieName);
+
+          //if MovieName <> '' then
+          //   recupInfo(MovieName)
+          //else
+          //   exit;
+      end;
+  end else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

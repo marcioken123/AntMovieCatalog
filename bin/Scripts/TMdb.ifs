@@ -1,0 +1,444 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Francois BOYER (from FRANCE) - fbr1969
+Title=TMDB_NG
+Description=Importation des données, images et Fanart en provenance de TMDB (The Movie Database) - This product uses the TMDB API but is not endorsed or certified by TMDB
+Site=https://www.themoviedb.org/?language=fr
+Language=FR
+Version=1.2 du 01/11/2024
+Requires=4.2.2
+Comments=Il est impératif de modifier les paramères du script pour y inclure votre clès d'accès à l'API de TMDB - You must change your API TOKEN !!! - Ces données sont accessibles uniquement pour une utilisation personnelle ; en aucun cas elles ne peuvent être utilisées commerciallement ou publiquement !|
+License=Ce script permet de récupérer les données du site de TMDB pour une utilisation personnelle uniquement.|Ces données ne peuvent pas être récupérées ni exploitées dans un but commercial ou même pour une utilisation publique.|En utilisant ce script vous déclarez accepter ces conditions et endosser toute responsabilité dans la manière dont vous utilisez ces données.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Debug=0|0|0=Mode Debug OFF|1=Mode Debug ON
+
+[Parameters]
+Language=fr-FR|fr-FR|The language code system in use is 3161-1
+Region=FR|FR|The region paramater will act as a filter to search for and display matching release date information. This parameter is expected to be an ISO 3166-1 code.
+Number of actors=20|20|Maximum number of actors
+Number of poster=1|1|Maximum number of poster (affiche de film) - If > to 1, put them in extrafield
+Size of poster=original|original|Size value : w92, w154, w185, w342, w500, w780, original
+Poster language=fr|fr|Language for the poster - iso_639_1
+Number of backdrop=10|3|Maximum number of backdrop (fanart)
+Size of backdrop=original|original|Size value : w300, w780, w1280, original
+API Token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|YOU MUST INCLUDE YOUR TOKEN|API Read Access Token - Look your account setting, API, on TMDB website
+Filtrage des Genres=1|1|Filtrage du champ GENRE - Callibré dans le script pour rendre les genres TMDB compatibles avec les genres ALLOCINE --> TMDB (0 inactif par défaut - 1 pour l'utiliser)
+
+***************************************************)
+
+// API Token=YOU MUST INCLUDE YOUR TOKEN|YOU MUST INCLUDE YOUR TOKEN|API Read Access Token - Look your account setting, API, on TMDB website
+
+program TMDB_NG;
+
+uses
+  StringUtils1;
+
+const
+  TMDB_BASE_URL_IMAGE = 'https://image.tmdb.org/t/p/';
+
+var
+  Tmdb_Url, Tmdb_Json, Retour_a_decoder, Retour_Equipe, Retour_Acteurs, Retour_Poster, Retour_backdrop: string;
+  Url_Header_Text, HTTP_HEADER1: string;
+  Url_Requete, Url_Image: string;
+  rech_titre, rech_name, rech_limite: string;
+  par_filtrage_genres, par_langage, par_region, par_nb_actors, par_poster_language, par_nb_poster, par_nb_backdrop, par_size_poster, par_size_backdrop, par_api_token: string;
+  json_date, json_title, json_id, json_collection, json_genre, json_otitle, json_ttitle, json_overview, json_country, json_pdate, json_runtime, json_rating, json_director, json_producer, json_writer, json_composer, json_acteur: string;
+  json_temp, json_temp_chaine, json_analyse, json_temp_name, json_temp_character: string;
+  PickReturn, RechResult, verif_str: string;
+  cpt, cpt_max, cpt_max_poster, cpt_max_backdrop, i, opt_debug: integer;
+  Extra_Number: integer;
+  fconvert: extended;
+
+// ********************************  
+// *** Déclaration de fonctions ***
+// ********************************
+
+// ***** Fonction de filtrage de genre pour rendre compatible les genres de TMDB avec ceux d'Allocine ****
+function FiltrageGenre(str1: string) :string;
+begin
+	str1 := StringReplace2(str1, 'Familial', 'Famille',True,True);
+	str1 := StringReplace2(str1, 'Histoire', 'Historique',True,True);
+	str1 := StringReplace2(str1, 'Horreur', 'Epouvante-horreur',True,True);
+	str1 := StringReplace2(str1, 'Science-Fiction', 'Science fiction',True,True);
+	result := str1;
+end;
+
+
+// ***** decode rapidApi charset ****
+function decodeRapidApiCharsetToCP1252(str: string): string;
+begin
+  // Romanian chars fix
+  str := StringReplace(str, (chr(195) + chr(136) + chr(194)), chr(200)); 
+  
+  // UTF-8 fix
+  str := StringReplace(str, (chr(195) + chr(130) + chr(194)), chr(194));  
+  str := StringReplace(str, (chr(195) + chr(131) + chr(194)), chr(195));
+  str := StringReplace(str, (chr(195) + chr(132) + chr(194)), chr(196)); 
+  str := StringReplace(str, (chr(195) + chr(133) + chr(194)), chr(197));  
+  
+  result := UTF8Decode(str);
+  if (result = '') then
+    result := str;
+end;
+
+// **************************
+// *** début du programme ***
+// **************************
+
+begin
+// Récupération des paramètres
+opt_debug := GetOption('Debug');
+par_langage := GetParam('Language');
+par_region := GetParam('Region');
+par_nb_actors := GetParam('Number of actors');
+par_nb_poster := GetParam('Number of poster');
+par_nb_backdrop := GetParam('Number of backdrop');
+par_size_poster := GetParam ('Size of poster');
+par_size_backdrop := GetParam ('Size of backdrop');
+par_poster_language := GetParam('Poster language');
+par_api_token := GetParam('API Token');
+par_filtrage_genres := GetParam('Filtrage des Genres');
+
+// Convertion des paramètres numériques
+cpt_max := StrToInt(trim(par_nb_actors),20);
+cpt_max_poster := StrToInt(trim(par_nb_poster),10);
+cpt_max_backdrop := StrToInt(trim(par_nb_backdrop),10);
+
+// Recherche par défaut sur le titre original, sinon sur le titre traduit - Définition des titres à rechercher et limite dans le JSON 
+rech_titre := getfield(fieldOriginalTitle);
+if rech_titre <> '' then
+	begin
+		rech_titre := getfield(fieldOriginalTitle);
+		rech_name := '"original_title":"';
+		rech_limite := '"overview":';
+	end else
+	begin
+		rech_titre := getfield(fieldTranslatedTitle);
+		rech_name := '"title":"';
+		rech_limite := '"video":';
+	end;
+
+// Initialisation requete de connection utilisateur Guest
+Url_Header_Text := 'accept=application/json' + #13#10 + 'Authorization=Bearer ' + par_api_token + #13#10;
+// Lancement reguete de connexion
+Tmdb_Json := GetPage5('https://api.themoviedb.org/3/authentication/guest_session/new','','','*/*',Url_Header_Text);
+if Tmdb_Json = '' then
+  begin
+      ShowError('La connexion à TMDB a échoué - Vérifiez votre clé API dans le paramétrage du script !');
+      Exit;
+  end;
+
+// Lancement reguete interrogation film
+Url_Requete := 'https://api.themoviedb.org/3/search/movie?query=' + rech_titre + '&include_adult=true&language=' + par_langage + '&region=' + par_region + '&page=1';
+Url_Requete := URLEncode(Url_Requete);
+if opt_debug = 1 then ShowMemo(Url_Requete);
+Tmdb_Json := GetPage5(Url_Requete,'','','*/*',Url_Header_Text);
+Retour_a_decoder := decodeRapidApiCharsetToCP1252(Tmdb_Json);
+verif_str := textbetween(Retour_a_decoder, '"total_results":', '}');
+if strtoint(verif_str,10) = 0 then
+	begin
+		ShowInformation('Film non trouvé : ' + rech_titre);
+	end else
+	begin
+		// Creation de la liste de films
+		PickTreeClear;
+		PickTreeTitle('Files found');
+		PickTreeAdd('Film --> ' + rech_titre + '[' + GetField(fieldYear) + ']','');
+
+		// Suppression de l'entete JSON
+		Delete(Retour_a_decoder, 1, (pos('[', Retour_a_decoder)));
+		if opt_debug = 1 then ShowMemo(Retour_a_decoder);
+
+		// Boucle de recherche de films
+		while (pos('"adult"', Retour_a_decoder) > 0) do
+			begin
+				// Titre
+				json_title := copy(Retour_a_decoder, 0, pos(rech_limite, Retour_a_decoder));
+				json_title := textbetween(json_title, rech_name,'"');
+				json_date := copy(Retour_a_decoder, 0, pos(',"title":', Retour_a_decoder));
+				json_date := textbetween(json_date,'"release_date":"','"');
+				json_id := copy(Retour_a_decoder, 0, pos(',"original_language":', Retour_a_decoder));
+				json_id := textbetween(json_id,'"id":',',');
+				Delete(Retour_a_decoder, 1, (pos('}', Retour_a_decoder) + 1)); // Suppression de cette entrée
+				PickTreeAdd(json_title + ' (' + json_date + ')', json_id);
+			end;
+			if PickTreeExec(PickReturn) then RechResult := PickReturn;
+			if opt_debug = 1 then ShowMessage('PickReturn-->' + PickReturn + '<--');
+
+		// *****************************************	
+		// Recherche des détails du film sélectionné
+		// *****************************************
+
+		// ************************************
+		// Lancement reguete interrogation film
+		// ************************************
+		Url_Requete := 'https://api.themoviedb.org/3/movie/' + PickReturn + '?language=' + par_langage;
+		Tmdb_Json := GetPage5(Url_Requete,'','','*/*',Url_Header_Text);
+		Retour_a_decoder := decodeRapidApiCharsetToCP1252(Tmdb_Json);
+		if opt_debug = 1 then ShowMemo(Retour_a_decoder);
+
+
+		// ** Collection         
+		// ** Collection non exploité pour le moment !!! (future option de script)
+		if pos('"belongs_to_collection":null', Retour_a_decoder) = 0 then
+		begin
+			json_collection := TextBetween(Retour_a_decoder, '"belongs_to_collection":{', '"budget":');
+			json_collection := textbetween(json_collection,'"name":"' ,'"');
+			if opt_debug = 1 then ShowMessage('json_collection-->' + json_collection +'<--');
+			json_collection :='';
+		end;
+
+		// ** Genre 
+		json_genre := TextBetween(Retour_a_decoder, '"genres":[' , '"homepage":');
+		while (pos('"name"', json_genre) > 0) do
+			begin
+				json_temp := textbetween(json_genre,'"name":"', '"');
+        if par_filtrage_genres = '1' then
+          begin
+  				json_temp := FiltrageGenre(json_temp);
+  				end;
+				json_temp_chaine := json_temp_chaine + ', ' + json_temp;
+				delete(json_genre, 1, (pos('}', json_genre))); // Suppression de cette entrée
+			end;
+		delete(json_temp_chaine, 1, 2);
+		json_genre := json_temp_chaine;
+		if opt_debug = 1 then ShowMessage('json_genre-->' + json_genre +'<--');
+		SetField(fieldCategory, json_genre);
+		json_genre := '';
+		json_temp := '';
+		json_temp_chaine := '';
+
+		// ** Titre original
+		json_otitle := copy(Retour_a_decoder, 0, pos('"overview":', Retour_a_decoder));
+		json_otitle := textbetween(json_otitle,'"original_title":"' ,'"');
+		if opt_debug = 1 then ShowMessage('json_otitle-->' + json_otitle +'<--');
+		SetField(fieldOriginalTitle, json_otitle);
+
+		// ** Titre traduit 
+		json_ttitle := copy(Retour_a_decoder, 0, pos('"video":', Retour_a_decoder));
+		json_ttitle := textbetween(json_ttitle,'"title":"' ,'"');
+		if opt_debug = 1 then ShowMessage('json_ttitle-->' + json_ttitle +'<--');
+		SetField(fieldTranslatedTitle, json_ttitle);
+
+		// ** Aperçu film       
+		json_overview := copy(Retour_a_decoder, 0, pos('"popularity":', Retour_a_decoder));
+		json_overview := textbetween(json_overview,'"overview":"' ,'"');
+		if opt_debug = 1 then ShowMessage('json_overview-->' + json_overview +'<--');
+		SetField(fieldDescription, json_overview);
+		json_overview := '';
+
+		// ** Pays de production 
+		json_country := TextBetween(Retour_a_decoder, '"production_countries":', '"release_date":');
+		while (pos('"name"', json_country) > 0) do
+			begin
+				json_temp := textbetween(json_country,'"name":"', '"');
+				json_temp_chaine := json_temp_chaine + ', ' + json_temp;
+				delete(json_country, 1, (pos('}', json_country))); // Suppression de cette entrée
+			end;
+		delete(json_temp_chaine, 1, 2);
+		json_country := json_temp_chaine;
+		if opt_debug = 1 then ShowMessage('json_country-->' + json_country +'<--');
+		SetField(fieldCountry, json_country);
+		json_country := '';
+		json_temp := '';
+		json_temp_chaine := '';
+
+		// ** Date 
+		json_pdate := copy(Retour_a_decoder, 0, pos('"revenue":', Retour_a_decoder));
+		json_pdate := textbetween(json_pdate,'release_date":"' ,'"');
+		json_pdate := copy(json_pdate,1,4);
+		if opt_debug = 1 then ShowMessage('json_pdate-->' + json_pdate +'<--');
+		SetField(fieldYear, json_pdate);
+		json_pdate := '';
+
+		// ** Runtime 
+		json_runtime := copy(Retour_a_decoder, 0, pos('"spoken_languages":', Retour_a_decoder));
+		json_runtime := textbetween(json_runtime,'"runtime":' ,',');
+		if opt_debug = 1 then ShowMessage('json_runtime-->' + json_runtime +'<--');
+		SetField(fieldLength, json_runtime);
+		json_runtime := '';
+
+		// ** Votes utilisateurs
+		json_rating := copy(Retour_a_decoder, 0, pos('"vote_count":', Retour_a_decoder));
+		json_rating := textbetween(json_rating,'"vote_average":' ,',');
+		fconvert := StrToFloat(json_rating);
+		json_rating := FloatToStr(round(fconvert*100)/100);
+		if opt_debug = 1 then ShowMessage('json_rating-->' + json_rating +'<--');
+		SetField(fieldRating, json_rating);
+		json_rating := '';
+
+		// ** Génération du lien TMDB du Film - https://www.themoviedb.org/movie/xxxxx
+		json_temp := 'https://www.themoviedb.org/movie/' + PickReturn;
+		SetField(fieldURL, Json_temp);
+		json_temp := '';
+
+		// ***************************************************
+		// Lancement reguete interrogation des crédits du film
+		// ***************************************************
+		Url_Requete := 'https://api.themoviedb.org/3/movie/' + PickReturn + '/credits?language=' + par_langage;
+		Tmdb_Json := GetPage5(Url_Requete,'','','*/*',Url_Header_Text);
+		Retour_a_decoder := decodeRapidApiCharsetToCP1252(Tmdb_Json);
+		Retour_Equipe := textbetween(Retour_a_decoder, '"crew"', ']}');
+		Retour_Acteurs := textbetween(Retour_a_decoder, '"cast"', ']}');
+		if opt_debug = 1 then ShowMemo(Retour_Equipe);
+		if opt_debug = 1 then ShowMemo(Retour_Acteurs);
+
+		// Equipe du film
+		while (pos('"adult"', Retour_Equipe) > 0) do
+			begin
+				json_temp := copy(Retour_Equipe, 0, pos('}', Retour_Equipe));
+				json_analyse := textbetween(json_temp,'"job":"' ,'"');
+				case json_analyse of
+					'Director': // Equipe du film - Réalisateur
+						begin
+						json_temp := textbetween(json_temp, '"name":"', '"' );
+						json_director := json_director + ', ' + json_temp;
+						if opt_debug = 1 then ShowMessage('Job-->' + json_analyse + ' == ' + json_temp +'<--');
+						delete(Retour_Equipe, 1, (pos('}', Retour_Equipe))); // Suppression de cette entrée
+						end;
+					'Executive Producer': // Equipe du film - Producteur executif
+						begin
+						json_temp := textbetween(json_temp, '"name":"', '"' );
+						json_producer := json_producer + ', ' + json_temp;
+						if opt_debug = 1 then ShowMessage('Job-->' + json_analyse + ' == ' + json_temp +'<--');
+						delete(Retour_Equipe, 1, (pos('}', Retour_Equipe))); // Suppression de cette entrée
+						end;	
+					'Writer': // Equipe du film - Scenariste
+						begin
+						json_temp := textbetween(json_temp, '"name":"', '"' );
+						json_writer := json_writer + ', ' + json_temp;
+						if opt_debug = 1 then ShowMessage('Job-->' + json_analyse + ' == ' + json_temp +'<--');
+						delete(Retour_Equipe, 1, (pos('}', Retour_Equipe))); // Suppression de cette entrée
+						end;	
+					'Original Music Composer': // Equipe du film - Compositeur
+						begin
+						json_temp := textbetween(json_temp, '"name":"', '"' );
+						json_composer := json_composer + ', ' + json_temp;
+						if opt_debug = 1 then ShowMessage('Job-->' + json_analyse + ' == ' + json_temp +'<--');
+						delete(Retour_Equipe, 1, (pos('}', Retour_Equipe))); // Suppression de cette entrée
+						end;	
+				else
+					begin
+						delete(Retour_Equipe, 1, (pos('}', Retour_Equipe))); // Suppression de cette entrée
+					end;
+				end;
+			end;
+		delete(json_director, 1, 2);
+		delete(json_producer, 1, 2);
+		delete(json_writer, 1, 2);
+		delete(json_composer, 1, 2);
+		SetField(fieldDirector, json_director);
+		SetField(fieldProducer, json_producer);
+		SetField(fieldWriter, json_writer);
+		SetField(fieldComposer, json_composer);
+		json_temp := '';
+		json_analyse := '';
+		json_director := '';
+		json_producer := '';
+		json_writer := '';
+		json_composer := '';
+
+		// Acteurs du film
+		cpt:= 0;
+		while ((pos('"adult"', Retour_Acteurs) > 0) or (cpt <= cpt_max )) do
+			begin
+				json_temp := copy(Retour_Acteurs, 0, pos('}', Retour_Acteurs));
+				json_analyse := textbetween(json_temp,'"known_for_department":"' ,'"');
+				case json_analyse of
+					'Acting': // Equipe du film - Acteur
+						begin
+						json_temp_name := textbetween(json_temp, '"name":"', '"' );
+						json_temp_character := textbetween(json_temp, '"character":"', '"' );
+						json_acteur := json_acteur + ', ' + json_temp_name + ' (' + json_temp_character + ')';
+						if opt_debug = 1 then ShowMessage('Acteur-->' + json_acteur + '<--');
+						delete(Retour_Acteurs, 1, (pos('}', Retour_Acteurs))); // Suppression de cette entrée
+						end;
+				else
+					begin
+						delete(Retour_Acteurs, 1, (pos('}', Retour_Acteurs))); // Suppression de cette entrée
+					end;
+				end;
+				cpt := cpt + 1;
+			end;
+		delete(json_acteur, 1, 2);
+		if opt_debug = 1 then ShowMessage('Acteurs-->' + json_acteur + '<--');
+		SetField(fieldActors, json_acteur);
+		Json_temp := '';
+		json_temp_name := '';
+		json_temp_character := '';
+		json_analyse := '';
+		json_acteur := '';
+
+		// *******************************************
+		// Récupération des images - Poster + Language
+		// *******************************************
+		Url_Requete := 'https://api.themoviedb.org/3/movie/' + PickReturn + '/images?language=' + par_poster_language;
+		Tmdb_Json := GetPage5(Url_Requete,'','','*/*',Url_Header_Text);
+		Retour_a_decoder := decodeRapidApiCharsetToCP1252(Tmdb_Json);
+		Retour_Poster := textbetween(Retour_a_decoder, '"posters"', ']');
+		cpt:= 0;
+		while pos('"aspect_ratio"', Retour_Poster) > 0 do
+			begin
+				// Récupération du chemin de l'image
+				cpt := cpt + 1;
+				if cpt > cpt_max_poster then Break;
+				json_temp := copy(Retour_Poster, 0, pos('}', Retour_Poster));
+				json_analyse := textbetween(json_temp,'"file_path":"' ,'"');
+				if json_analyse = '' then Break;
+				if opt_debug = 1 then ShowMessage('Json_analyse>' + json_analyse +'<--');
+				delete(Retour_Poster, 1, (pos('}', Retour_Poster))); // Suppression de cette entrée
+				// Création de l'URL de Récupération
+				Url_Image := TMDB_BASE_URL_IMAGE + par_size_poster + json_analyse;
+				// Creation d'un extrafield et sauvegarde de l'image
+				if cpt > 1 then
+					begin
+					Extra_Number := AddExtra;
+					SetExtraField(Extra_Number, extraFieldCategory, 'Poster'); // extraFieldCategory est une constante de AMC
+					GetExtraPicture(Extra_Number, Url_Image);
+					end;
+				// Sauvegarde le 1er poster sur la fiche du film
+				if cpt = 1 then GetPicture(Url_Image); 
+			end;
+		Json_temp := '';
+		json_analyse := '';
+		Retour_Poster := '';
+		json_temp_character := '';
+
+		// *****************************************************************
+		// Récupération des images - Backdrop (pas de filtrage par language)
+		// *****************************************************************
+		Url_Requete := 'https://api.themoviedb.org/3/movie/' + PickReturn + '/images';
+		Tmdb_Json := GetPage5(Url_Requete,'','','*/*',Url_Header_Text);
+		Retour_a_decoder := decodeRapidApiCharsetToCP1252(Tmdb_Json);
+		Retour_backdrop := textbetween(Retour_a_decoder, '"backdrops"', ']');
+		cpt:= 0;
+		while pos('"aspect_ratio"', Retour_backdrop) > 0 do
+			begin
+				// Récupération du chemin de l'image
+				cpt := cpt + 1;
+				if cpt > cpt_max_backdrop then Break;
+				json_temp := copy(Retour_backdrop, 0, pos('}', Retour_backdrop));
+				json_analyse := textbetween(json_temp,'"file_path":"' ,'"');
+				if json_analyse = '' then Break;
+				if opt_debug = 1 then ShowMessage('Json_analyse>' + json_analyse +'<--');
+				delete(Retour_backdrop, 1, (pos('}', Retour_backdrop))); // Suppression de cette entrée
+				// Création de l'URL de Récupération
+				Url_Image := TMDB_BASE_URL_IMAGE + par_size_backdrop + json_analyse;
+				// Creation d'un extrafield et sauvegarde de l'image
+				Extra_Number := AddExtra;
+				SetExtraField(Extra_Number, extraFieldCategory, 'Backdrop'); // extraFieldCategory est une constante de AMC
+				GetExtraPicture(Extra_Number, Url_Image);
+			end;
+		Json_temp := '';
+		json_analyse := '';
+		Retour_Poster := '';
+		json_temp_character := '';
+	end;
+end.

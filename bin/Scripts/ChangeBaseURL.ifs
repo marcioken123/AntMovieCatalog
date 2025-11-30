@@ -1,0 +1,135 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=scorpion7552 
+Title=ChangeBaseURL 
+Description=Change base URL (see Comments)
+Site=
+Language=EN
+Version=1.0
+Requires=3.5.0
+Comments=Use this script when the base URL of a site change|select all your movies and enter the old base URL and the new one|Don't forget to save your base before using this script|at the end, a log file is created (caution: this file is re-created each time) 
+License=This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+GetInfo=0
+
+[Options]
+***************************************************)
+
+program ChangeBaseURL;
+
+var
+	batchlog, confbatch: TstringList;  
+	batchlogfic, firstcall, abort, oldURL, newURL, curURL: String;
+
+//------------------------------------------------------------------------------
+// init batch log
+//------------------------------------------------------------------------------
+procedure initBatchLog;
+begin
+	batchlog := TStringList.Create;  
+	batchlog.Add('Change base URL');
+// input old and new url
+	oldURL := InputURL('Enter old base URL');
+	if oldURL = '' then
+	begin
+		abort := 'o';
+		exit;
+	end;
+	newURL := InputURL('Enter new base URL');
+	if newURL = '' then
+	begin
+		abort := 'o';
+		exit;
+	end;
+	batchlog.Add('old URL='+oldURL);
+	batchlog.Add('new URL='+newURL);
+	batchlog.Add(StringOfChar('*',80));
+	batchlog.SaveToFile(batchlogfic);
+// confirm your choice
+	confbatch := TStringList.Create;
+	confbatch.Add('Your are going to change base URL');
+	confbatch.Add('Have you saved your base?');
+	confbatch.Add('');
+  confbatch.Add('"'+oldURL+'" will be changed to "'+newURL+'"'); 
+	confbatch.Add('');
+	confbatch.Add('At the end, look at file '+batchlogfic+' for errors/infos');
+	confbatch.Add(''); 
+	confbatch.Add('confirm your choice');
+	if not ShowWarning(confbatch.Text) then
+		abort := 'o';
+end;	
+
+//------------------------------------------------------------------------------
+// add a message to log with item number
+//------------------------------------------------------------------------------
+procedure LogMessage(m: string);
+begin
+	AddToLog('item '+GetField(fieldNumber)+': '+m)
+end;
+
+//------------------------------------------------------------------------------
+// add a message in log and save it on disk
+// (because I don't know when it's finished...)
+//------------------------------------------------------------------------------
+procedure AddToLog(m: string);
+begin
+	batchlog.Add(m);
+	batchlog.SaveToFile(batchlogfic);
+end;
+
+//------------------------------------------------------------------------------
+// input an URL and check syntax
+//------------------------------------------------------------------------------
+function InputURL(msgano: string) :string;
+var
+	url: string;
+	
+begin
+ 	repeat
+	if not Input('Change Base URL', msgano, url) or (url = '') then exit;
+// check syntax
+	if left(AnsiLowerCase(url),7) <> 'http://' then
+	begin
+		msgano := 'invalid syntax "'+url+'" must begin with "http://"';
+		url := '';
+	end;
+	until (url <> '');
+	result := url;
+end;
+
+
+//------------------------------------------------------------------------------
+//  start here 
+//------------------------------------------------------------------------------                                                
+begin
+	if abort = 'o' then exit;                        // batch mode not confirmed
+	if firstcall <> 'done' then
+	begin                                            // 1st call init parms
+		firstcall := 'done';
+		if not CheckVersion(3,5,0) then
+		begin
+			ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+			abort := 'o';
+			exit;
+		end;				
+		batchlogfic := 'c:\amc_ChangeBaseURL_batchlog.txt';      // name of log file
+		initBatchLog;                                            // init log
+			if abort = 'o' then
+			begin
+				AddToLog('batch mode cancelled'); 
+				exit;
+			end;
+	end;
+// here we go
+	curURL := GetField(fieldURL);
+	if Pos(oldURL, curURL) <> 1 then LogMessage('not changed ("'+curURL+'")')
+	else
+	begin
+		curURL := StringReplace(curURL, oldURL, newURL);
+		SetField(fieldURL, curURL);
+		LogMessage('OK')
+	end;
+end.

@@ -1,0 +1,436 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=KaraGarga (modded maksobus)
+Title=Excalibur Films
+Description=Excalibur Films Adult DVD
+Site=http://alldvdmovies.com
+Language=EN
+Version=0.3 - 21.11.2007
+Requires=3.5.0
+Comments=ExcaliburFilms| Written by KaraGarga| karagarga@gmail.com|Editor maksobus| natorbanich@yahoo.com| Script Date: 21.11.2007
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program Excalibur;
+
+const
+    ImportActors = True;
+    ImportBigCover = True;
+    ImportSmallCover = False;
+    ImportCustomerReview = True;
+    ImportReview = True;
+    ImportLenght = True;
+    { True: Related info will be parsed
+      False: Related info won't be parsed }
+var
+  MovieName: string;
+  MovieURL: string;
+  a: string;
+  b: Integer;
+  c: Integer;
+
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+  while Pos(Old, S) > 0 do
+    S := StringReplace(S, Old, New);
+  Result := S;
+end;
+
+
+
+function DeleteSpace(val: string): string;
+begin
+  b := 1;
+     repeat
+      a := Copy(val, b,1);
+      if a <> ' ' then
+            val :=  Copy(val, b,100);
+      b := b+1;
+      c :=  Pos(' ', a);
+     until c < 1;
+   Result := val;
+     
+end;
+
+
+
+
+
+procedure CutAfter(var Str: string; Pattern: string);
+begin
+  Str := Copy(str, Pos(Pattern, Str) + Length(Pattern), Length(Str));
+end;
+
+procedure CutBefore(var Str: string; Pattern: string);
+begin
+  Str := Copy(Str, Pos(Pattern, Str), Length(Str));
+end;
+
+function GetStringFromHTML(Page, StartTag, CutTag, EndTag: string): string;
+begin
+  Result := '';
+  if Pos(StartTag, Page) > 0 then begin
+    CutBefore(Page, StartTag);
+    if Length(CutTag) > 0 then
+      CutAfter(Page, CutTag);
+      Result := Copy(Page, 0, Pos(EndTag, Page) - 1);
+      HTMLDecode(Result);
+  end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  if pos('<title>Buy', Page.Text) > 0 then
+  begin
+    AnalyzeMoviePage(Page)
+  end;
+  if pos('<title>ALL DVD Movies ;DVD Sale:DVD movie, dvd club, dvd rental, win dvd, dvd review, buy dvd, discount dvd, dvd release date, dvd for sale, wholesale dvd and dvd movie club</title>', Page.Text) > 0 then
+  begin
+    PickTreeClear;
+    AddMoviesTitles(Page);
+    if PickTreeExec(Address) then
+    AnalyzePage(Address);
+  end;
+  if pos('Sorry, no DVD result matches your search.', Page.Text) > 0 then
+  begin
+  ShowMessage('Sorry, no DVD result matches your search. Please narrow your search criteria.');
+  if Input('Excalibur Films: Adult DVD Script 0.1', 'Please enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.alldvdmovies.com/IndexS2.htm?SearchFor=Title.x&Search=AdultDVDMovies&Case=AllDVDMovies&x=0&y=0&searchString='+UrlEncode(MovieName));
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2 : string;
+  LineNr: Integer;
+  BeginPos, EndPos : Integer;
+begin
+
+// URL--------------------------------------------------------------------------
+// <input type="hidden" name="callerPage" value="www.alldvdmovies.com/AdultDVD/23057D1_Zazel_dvd.htm">
+  LineNr := FindLine('name="callerPage"', Page, 0);
+  Line := Page.GetString(LineNr);
+  if LineNr > -1 then
+  begin
+    BeginPos := pos('value="', Line);
+    if BeginPos > 0 then
+      BeginPos := BeginPos + 7;
+    EndPos := pos('.htm', Line);
+    if EndPos = 0 then
+      EndPos := Length(Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos );
+    HTMLDecode(Value);
+    SetField(fieldURL, 'http://'+Value+'.htm');
+  end;
+
+
+//Title-------------------------------------------------------------------------
+  LineNr := FindLine('<font color="Navy"><h2>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr);
+    HTMLDecode(Value);
+    BeginPos := pos('<h2>', Value) + 4;
+    EndPos := pos('DVD', Value);
+
+    Value := copy(Value, BeginPos, EndPos - BeginPos);
+    HTMLRemoveTags(Value);
+    Value := DeleteSpace(Value);
+    SetField(fieldOriginalTitle, Value);
+  end;
+
+//Sub-Title
+  LineNr := FindLine('<font color="Navy" class="size15">', Page, 0);
+  if LineNr > -1 then
+    begin
+    Value2 := Page.GetString(LineNr);
+    HTMLDecode(Value2);
+    HTMLRemoveTags(Value2);
+    SetField(fieldOriginalTitle, Value+' '+Value2);
+    end;
+  if LineNr < 0 then
+    begin
+    SetField(fieldOriginalTitle, Value)
+    end;
+
+// Rating-----------------------------------------------------------------------
+  LineNr := FindLine('Customer Rating:</font>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr + 1);
+    if Pos('excal/Stars_', Line) > 0 then
+    begin
+      BeginPos := pos('Stars_', Line) + 6;
+      EndPos := pos('.gif"', Line);
+      Value := copy(Line, BeginPos, EndPos - BeginPos);
+      Value := StringReplace(Value, '-', ',');
+      SetField(fieldRating, Value);
+    end;
+  end;
+
+// Director---------------------------------------------------------------------
+  LineNr := FindLine('Director: </font>', Page, 0);
+  if LineNr > -1 then
+  begin
+  Line := Page.GetString(LineNr+1);
+  // BeginPos := pos('>', Line) + 6;
+  // EndPos := pos('</FONT>', Line);
+  //    Value := copy(Line, BeginPos, EndPos - BeginPos);
+     HTMLRemoveTags(Line);
+     Line := StringReplace(Line,#9,'');
+     HTMLDecode(Line);
+     Line := DeleteSpace(Line);
+     SetField(fieldDirector, Line);
+  end;
+
+
+//By ------------------------------------------------------------
+  LineNr := FindLine('By: ', Page, 0);
+  if LineNr > -1 then
+  begin
+  Line := Page.GetString(LineNr);
+     HTMLRemoveTags(Line);
+     Line := StringReplace(Line,#9,'');
+     Line := StringReplace(Line,'By: ','');
+     HTMLDecode(Line);
+     Line := DeleteSpace(Line);
+     SetField(fieldProducer, Line);
+  end;
+
+//Small Picture-----------------------------------------------------------------
+  if ImportSmallCover then
+    begin
+    LineNr := FindLine('<img src="http://images.excaliburfilms.com/dvd/reviews/', Page, 0);
+      if LineNr > -1 then
+        begin
+        Line := Page.GetString(LineNr);
+        BeginPos := pos('src="', Line) + 4;
+        Delete(Line, 1, BeginPos);
+        EndPos := pos('"', Line);
+        Value := copy(Line, 1, EndPos - 1);
+        HTMLDecode(Value);
+        GetPicture(Value);
+        end;
+    end;
+
+
+//Big Picture-------------------------------------------------------------------
+  if ImportBigCover then
+    begin
+    LineNr := FindLine('<img src="http://images.excaliburfilms.com/DVD/reviews/', Page, 0);
+    if LineNr > -1 then
+      begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('src="', Line) + 4;
+      Delete(Line, 1, BeginPos);
+      EndPos := pos('"', Line);
+      Value := copy(Line, 1, EndPos - 1);
+      Value := StringReplace(Value, 'WY/', 'WY/largemoviepic/');
+      Value := StringReplace(Value, '_dvd.jpg', '.JPG');
+      HTMLDecode(Value);
+      GetPicture(Value);
+      end;
+    end;
+
+//Category----------------------------------------------------------------------
+  LineNr := FindLine('Category: </font>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    //BeginPos := pos('Rated: </font>', Line) + 14;
+    //EndPos := pos('</a><BR>', Line);
+    //Value := copy(Line, BeginPos, EndPos - BeginPos);
+      Value :=  Line;
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := StringReplace(Value, 'Category: ', '');
+    Value := StringReplace(Value,#9,'');
+    Value := DeleteSpace(Value);
+    SetField(fieldCategory, Value);
+  end;
+
+//Synopsis----------------------------------------------------------------------
+  LineNr := FindLine('Description:</font></a>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Value := Page.GetString(LineNr);
+    //Value := StringReplace(Value, '<p>', #13#10);
+
+    BeginPos := pos('Description:', Value) + 11;
+    Delete(Value, 1, BeginPos);
+
+    Value := StringReplace(Value, 'Description:', '');
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    Value := StringReplace(Value,'quot;','');
+    Value := StringReplace(Value,'"','');
+    Value := DeleteSpace(Value);
+    SetField(fieldDescription, Value);
+  end;
+
+// Excalibur Review-------------------------------------------------------------
+//  if ImportReview then
+ // begin
+  //LineNr := FindLine('br clear="all"><font color="black" class="size14verdanabold">Themes:', Page, 0);
+  //if LineNr > -1 then
+  //begin
+   // Value:= GetStringFromHTML(Page.Text, 'class="size14verdanabold">Themes: </font> ', '<font color="Black" class="size14verdana">', '<CENTER>');
+    //Value := StringReplace(Value, '<br>', #13#10);
+   // Value := StringReplace(Value, '<p>', #13#10);
+    //Value := StringReplace(Value, '<P>', #13#10);
+    //Value := StringReplace(Value, #13#10+' ', #13#10);
+    //Value := StringReplace(Value, #13#10+#13#10, #13#10);
+    //HTMLRemoveTags(Value);
+    //HTMLDecode(Value);
+    //SetField(fieldComments, Value);
+ // end;
+ // end;
+
+
+// Customer Review--------------------------------------------------------------
+  if ImportCustomerReview then
+  begin
+  LineNr := FindLine('Customer Reviews:</font>', Page, 0);
+  if LineNr > 0 then
+    begin
+    Value:= GetStringFromHTML(Page.Text, 'Customer Reviews:</font>', '<font color="Black" class="size14verdana">', '</td></tr></table>');
+    Value := StringReplace(Value, '<P>', #13#10+#13#10);
+    Value := StringReplace(Value, '<BR>', #13#10);
+    Value := StringReplace(Value, 'Customer Reviews:', '');
+    Value := StringReplace(Value, #13#10+#13#10, #13#10);
+    HTMLRemoveTags(Value);
+    HTMLDecode(Value);
+    SetField(fieldComments, GetField(fieldComments)+'CUSTOMER REVIEW(s):'+Value);
+    end;
+  end;
+
+
+// Length-----------------------------------------------------------------------
+//  if ImportLenght then
+//  LineNr := FindLine('Run Time: </font>', Page, 0);
+// if LineNr > -1 then
+//  begin
+//    Value := Page.GetString(LineNr);
+//    HTMLRemoveTags(Value);
+//    HTMLDecode(Value);
+//    Value := StringReplace(Value, 'Run Time:', '');
+//    Value := StringReplace(Value, ' ', '');
+//    Value := StringReplace(Value, 'min.', '');
+//    SetField(fieldLength, Value);
+//  end;
+
+
+// Actors-----------------------------------------------------------------------
+  if ImportActors then
+  begin
+  LineNr := FindLine('Starring:</font>', Page, 0);
+  if LineNr > -1 then
+  begin
+   Value := Page.GetString(LineNr+2);
+   //Value := StringReplace(Value, 'Starring:</font> ', '');
+   //Value := StringReplace(Value, 'Starring:</font>', '');
+   HTMLRemoveTags(Value);
+   HTMLDecode(Value);
+   Value := StringReplace(Value,#9,'');
+   Value := DeleteSpace(Value);
+   SetField(fieldActors, Value);
+  end;
+  end;
+
+//Release Year------------------------------------------------------------------
+  LineNr := FindLine('Released: </font>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos(')">', Line) + 3;
+    EndPos := pos('</a>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    Value := DeleteSpace(Value);
+    SetField(fieldYear, Value);
+  end;
+
+  //DisplayResults;
+end;
+
+
+procedure AddMoviesTitles(Page: TStringList);
+var
+  Line, Result: string;
+  LineNr: Integer;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+begin
+  LineNr := FindLine('<font class=searchTitle>', Page, 0);
+  if LineNr > -1 then
+  begin
+    LineNr:=FindLine('<font color="White"><b>Records:</b>', Page, 0);;
+    Result:= Page.GetString(LineNr+3);
+    StartPos := pos('<b>', Result) + 3;
+    Result := Copy(Result, StartPos, Pos('</b>', Result) - StartPos);
+    PickTreeAdd('Excalibur Films Search >> Number of Results: '+'('+Result+')', '');
+    LineNr := FindLine('<table lang="en" width="375" align="center" cellpadding="0" cellspacing="0" hspace="0" border="0">', Page, 0);
+    LineNr := LineNr +2;
+    Line := Page.GetString(LineNr);
+    repeat
+      StartPos := Pos('class=searchTitle><font class=searchTitle>', Line) + 18;
+      MovieTitle := Copy(Line, StartPos, Pos('</font></a>', Line) - StartPos);
+      HTMLRemoveTags(MovieTitle);
+      HTMLDecode(MovieTitle);
+      StartPos := pos('a href=', Line) + 7;
+      Delete(Line, 1, StartPos);
+      MovieAddress := Copy(Line, 1, pos('" onmouseover=', Line) - 1);
+      if MovieTitle <> '' then
+      if MovieTitle <> '">We GUARANTEE' then
+          PickTreeAdd(MovieTitle, MovieAddress);
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      until Pos('<p align="center">', Line) > 0;
+    end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Excalibur Films: Adult DVD Script 0.1', 'Please enter the title of the movie:', MovieName) then
+    begin
+      AnalyzePage('http://www.alldvdmovies.com/IndexS2.htm?SearchFor=Title.x&Search=AdultDVDMovies&Case=AllDVDMovies&x=0&y=0&searchString='+UrlEncode(MovieName));
+    end;
+  end
+  else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

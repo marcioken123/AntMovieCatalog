@@ -1,0 +1,306 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Nagy Tamás (<link>n.tamas@freemail.hu</link>)
+Title=FilmZona.hu
+Description=FilmZona.hu (HUN) import
+Site=http://www.filmzona.hu
+Language=HU
+Version=1.0
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program filmzona;
+
+var
+  MovieName: string;
+
+function RemoveHTML(Szoveg: string): String;
+begin
+  Szoveg := StringReplace(Szoveg, '%20', ' ');
+  Szoveg := StringReplace(Szoveg, '<i>', '');
+  Szoveg := StringReplace(Szoveg, '</i>', '');
+  Szoveg := StringReplace(Szoveg, '<b>', '');
+  Szoveg := StringReplace(Szoveg, '</b>', '');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '  ', ' ');
+  Szoveg := StringReplace(Szoveg, '<li>', chr(13)+chr(10));
+  Szoveg := StringReplace(Szoveg, '</p>', chr(13)+chr(10));
+  HTMLRemovetags(Szoveg);
+  HTMLDecode(Szoveg);
+  result := Trim(Szoveg);
+end;
+
+function AddHTML(Szoveg: string): String;
+begin
+  Szoveg := StringReplace(Szoveg, ' ','%20');
+  result := Szoveg;
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+//  Page.SaveToFile('c:\\FilmZona.htm');
+  if pos('>Keresett szó/szavak:', Page.Text) = 0 then begin
+    AnalyzeMoviePage(Page)
+  end else begin
+    PickTreeClear;
+    LineNr := 0;
+    LineNr := FindLine('<a href="index.php?a=film&id=', Page, LineNr);
+    if LineNr > -1 then    begin
+      PickTreeAdd('Talált filmek (DVD)', '');
+      AddMoviesTitles(Page, LineNr);
+    end;
+    if PickTreeExec(Address) then
+      AnalyzePage(Address);
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line, Value, Value2, FullValue: string;
+  LineNr: Integer;
+  Adder: Integer;
+  Rate: Integer;
+  BeginPos, EndPos: Integer;
+begin
+
+  SetField(fieldSource,'FilmZona.hu');
+  SetField(fieldMediaType, 'DVD');
+
+  // fieldTranslated Title & Original Title
+  LineNr := FindLine('<div class="film_title">', Page, 0);
+  if LineNr > -1 then begin
+  // Translated Title
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('<div class="film_title">', Line)+24;
+    EndPos := pos('</div>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldTranslatedTitle,RemoveHTML(Value));
+
+  // Original Title
+    Line := Copy( line , EndPos +10 , Length( Line)-EndPos );
+    BeginPos := pos('sub">Eredeti cím:', Line)+17;
+    EndPos := pos(' (', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldOriginalTitle, RemoveHTML(Value));
+
+  // Country
+    Line := Copy( line , EndPos+2 , Length( Line)-EndPos );
+    EndPos := Pos(' - ', Line);
+    Value := copy(Line, 1, EndPos );
+    SetField(fieldCountry, Value);
+
+  // Year
+    BeginPos := EndPos+3;
+    EndPos := Pos(')', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldYear, Value);
+  end;
+
+  // Director Rendezõ
+  LineNr := FindLine('">Rendezte:', Page, 0);
+  if LineNr > -1 then  begin
+    Line := Page.GetString(LineNr);
+    FullValue := '';
+    repeat
+      Line := Copy( Line, pos('rendezo&id=', Line) + 11, Length( Line));
+      Value := copy(Line, pos( '">', Line )+2 , pos('</a>', Line)-1);
+      HTMLDecode(Value);
+      if FullValue > '' then
+        Fullvalue := Fullvalue + ', ';
+      FullValue := FullValue + Value;
+    until pos('rendezo&id', Line) = 0;
+
+    SetField(fieldDirector, RemoveHTML(FullValue));
+  end;
+
+  // Actors
+  LineNr := FindLine('">Szereplõk:', Page, 0);
+  if LineNr > -1 then  begin
+    Line := Page.GetString(LineNr);
+    FullValue := '';
+    repeat
+      Line := Copy( Line, pos('szereplo&id=', Line) + 12, Length( Line));
+      BeginPos := pos( '">', Line )+2;
+      EndPos := pos('</a>', Line);
+      Value := copy(Line, BeginPos , EndPos - BeginPos);
+      HTMLDecode(Value);
+      if FullValue > '' then
+        Fullvalue := Fullvalue + ', ';
+      FullValue := FullValue + Value;
+    until pos('szereplo&id=', Line) = 0;
+
+    SetField(fieldActors, RemoveHTML(FullValue));
+  end;
+
+  //Category
+  LineNr := FindLine('">Mûfaj:', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('<span><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldCategory, RemoveHTML(Value));
+  end;
+
+
+
+  // fieldProducer  - studió
+  LineNr := FindLine('">Stúdió/Forgalmazó:', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldProducer,RemoveHTML(Value));
+  end;
+
+  // fieldRating Képarány
+  LineNr := FindLine('">Kép: <', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldRating,RemoveHTML(Value));
+  end;
+
+  // fieldLength hossz
+  LineNr := FindLine('">Hossz:', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span><br>', Line)-5;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLength,RemoveHTML(Value));
+  end;
+
+  // Feliratok
+  LineNr := FindLine('">Felirat nyelv:', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    if Value <> 'Nincs' then
+      SetField(fieldSubtitles,RemoveHTML(Value));
+  end;
+
+  // hangsávok
+  LineNr := FindLine('">Hang:', Page, 0);
+  if LineNr > -1 then begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span><br>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldLanguages,RemoveHTML(Value));
+  end;
+
+  //Description / Rövid tartalom
+  LineNr := FindLine('a=kosarba&id=', Page, 0);
+  if LineNr > -1 then  begin
+    LineNr := LineNr +5;
+    Line := '';
+    repeat
+      Line := Line + Page.GetString(LineNr);
+      LineNr := LineNr +1;
+    until pos('</span>', Line) >0 ;
+    while pos( '<br />' , line )<> 0 do begin
+      Line := copy( line, 1, pos( '<br />',Line)-1 ) +
+              copy( line, pos( '<br />',Line)+6 , Length( Line))
+    end;
+    BeginPos := pos('"film_datatext2"', Line)+17;
+    EndPos := pos('</span>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+
+    SetField(fieldDescription, RemoveHTML(Value));
+  end;
+
+  // Picture
+  LineNr := FindLine('padding-right:30px"><img src="', Page, 0);
+  if LineNr > -1 then  begin
+    Line := Page.GetString(LineNr);
+    BeginPos := pos('padding-right:30px"><img src="', Line)+30;
+    EndPos := pos('.jpg" ', Line);
+    Value := 'http://www.filmzona.hu' + copy(Line, BeginPos, EndPos - BeginPos) + '.jpg';
+//ShowMessage( value);
+//    GetPicture(Value,False);
+  end;
+
+//  DisplayResults;
+end;
+
+procedure AddMoviesTitles(Page: TStringList; var LineNr: Integer);
+var
+  Line: string;
+  MovieTitle, MovieAddress,OTitle: string;
+  StartPos: Integer;
+begin
+  repeat
+    LineNr := LineNr + 1;
+    Line := Page.GetString(LineNr);
+    StartPos := pos('list_filmcim', Line);
+    if StartPos > 0 then begin
+      StartPos := pos('film&id=', Line)+8;
+      MovieAddress := copy(Line, StartPos, 20);
+      MovieAddress := copy(MovieAddress, 1, pos('">', MovieAddress)-1 );
+
+      StartPos := StartPos+length(MovieAddress)+2;
+      MovieTitle := copy(Line, StartPos , pos('</a>', Line) - StartPos);
+
+      LineNr := FindLine('list_datatext1">', Page, LineNr+1);
+      Line := Page.GetString(LineNr);
+      StartPos := pos('list_datatext1">', Line)+22;
+      OTitle := copy(Line, StartPos, pos('</span>', Line) - StartPos );
+      LineNr := FindLine('</td></tr></table>', Page, LineNr+1);
+      Line := Page.GetString(LineNr);
+
+      PickTreeAdd(MovieTitle+' <-> '+OTitle, 'http://www.filmzona.hu/index.php?a=film&id=' + MovieAddress);
+    end;
+  until pos('</html>', Line) > 0;
+end;
+
+begin
+  if CheckVersion(3,5,0) then  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('FilmZona.hu import', 'Add meg a keresendõ részletet:', MovieName) then    begin
+      AnalyzePage('http://www.filmzona.hu/index.php?stext='+AddHTML(MovieName)+'&PHPSESSID=&a=keres&stype=2');
+    end;
+  end else
+    ShowMessage('Ehhez a scripthez az Ant Movie Catalog újabb verziója szükséges (legalább a 3.4.0 verzió)');
+end.
+

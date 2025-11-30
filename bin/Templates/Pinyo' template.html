@@ -1,0 +1,45 @@
+<html><head>
+<title>DVD lista</title>
+<style TYPE="text/css">
+  text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: #cccccc; }
+  HR { color: black; }
+  A:link { COLOR: #003399; background: #cccccc; }
+  A:visited { COLOR: #001309; background: #cccccc; }
+  A:hover { COLOR: #CC0000; background: #cccccc; }
+  A:active { COLOR: #CC0000; background: white; }
+  td.blk { color: white; background: black; border: solid; border-color: black; }
+  table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+  table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+  p.title { font-size: 18pt; font-weight: bold; }
+</style></head>
+<body>
+<Center><B><U><font size=+3></FONT></U></B><br>
+$$DATE, $$TOTALMOVIES t&eacute;tel
+<BR><BR><BR>
+<table class="blk" border="1" cellspacing="0" cellpadding="5" bgcolor="#CCCCCC" bordercolor="#6699FF">        <td colspan="7">$$ITEM_BEGIN</td>
+</tr><tr>
+<td class="lgt" colspan="7">
+
+            <p><a href="$$ITEM_URL"><u><font size="5"><strong><b>$$ITEM_FORMATTEDTITLE2
+            </b></strong></font></u></a></p>
+
+</td></tr><tr>
+<td class="lgt" align="center">$$ITEM_RESOLUTION&nbsp;&nbsp;<br><strong>$$ITEM_PICTURE&nbsp;&nbsp;<br>$$ITEM_APPRECIATION</strong></td>
+<td class="lgt" align="left" valign="top" colspan="6" style="text-align:justify;">
+            
+            <b>Kateg&oacute;ria: </b>$$ITEM_CATEGORY&nbsp;<br>
+            <b>Nyelvek: </b>$$ITEM_LANGUAGES&nbsp;<br>
+            <b>Feliratok: </b>$$ITEM_SUBTITLES&nbsp;<br>
+            <b>Év: </b>$$ITEM_YEAR&nbsp;<br>
+            <b>M&eacute;diatipus: </b>$$ITEM_VIDEOFORMAT, $$ITEM_TYPE, $$ITEM_DISKS lemez&nbsp;<br>&nbsp;
+<br>$$ITEM_DESCRIPTION&nbsp;</td>
+</tr><tr><td colspan="7" class="blk"></td>
+</tr>
+    <td>$$ITEM_END</td>
+    <td></td>    <td></td>
+    <td></td>    <td></td>
+    <td></td>    <td></td>
+</tr>
+</table></body>
+</html></CENTER>

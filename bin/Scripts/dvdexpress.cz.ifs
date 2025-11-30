@@ -1,0 +1,287 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=pprosoft@post.cz
+Title=dvdexpress.cz
+Description=Import dat ze serveru www.dvdexpress.cz
+Site=www.dvdexpress.cz
+Language=CZ
+Version=1.0
+Requires=3.5.0
+Comments=10.6.2005   v1.0
+License=Chceteli pripadne ocenit financnim prispevkem vytvoreni tohoto scriptu, nebo financne vyvoj dalsich novych scriptu, prosim napiste si na email o kontaktni informace. Prededm dekuji za Vasi pripadnou podporu. pprosoft@post.cz|This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.|
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program dvdexpress_cz;
+const
+  BaseAddress = 'http://www.dvdexpress.cz/';
+var
+  MovieName: string;
+
+function GetLines(Page: TStringList; LineNr: Integer): String;
+var Value, Line: String;
+    StartPos : Integer;
+begin
+  Value := '';
+  Line := Page.GetString(LineNr);
+  Value:=Line;
+  If Pos('&nbsp;',Line) > 0 Then Begin
+    Value := StringReplace(Line, '•', '');
+    HTMLDecode(Value);
+    HTMLRemoveTags(Value);
+    repeat
+      LineNr := LineNr + 1;
+      Line := Page.GetString(LineNr);
+      If Pos('&nbsp;',Line) > 0 Then Begin
+        Value := Value + ',' + StringReplace(Line, '•', '');
+        HTMLDecode(Value);
+        HTMLRemoveTags(Value);
+      end;
+    until Pos('&nbsp;',Line) < 1
+  end;
+  HTMLDecode(Value);
+  HTMLRemoveTags(Value);
+  result := Trim(Value);
+end;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+function NactiPolozku(Page: TStringList;Polozka: String): String;
+var Value, Line: String;
+    LineNR : Integer;
+begin
+      LineNr := FindLine(Polozka, Page, 0);
+      if LineNr > -1 then begin
+         Line := Page.GetString(LineNr);
+         Value:=Copy(Line,Pos('detail_propertylist_content', Line)+29,length(Line));
+         HTMLDecode(Value);
+         HTMLRemoveTags(Value);
+         result := Trim(Value);
+      end else result :='';
+end;
+
+procedure RozdelStat(Line: string);
+var CarkaPos1, CarkaPos2, minPos : Integer;
+begin
+//rozdeleni roku, statu a delky
+    CarkaPos1 := Pos(',', Line);
+    if CarkaPos1 > 0 then
+    begin
+      CarkaPos2 := Pos(',', copy(Line, CarkaPos1+1, length(Line)));
+      if CarkaPos2 > 0 then
+      begin
+        minPos := Pos('min', copy(Line, CarkaPos1+CarkaPos2+1, length(Line)));
+        if minPos > 0 then
+        begin
+          SetField(fieldYear, trim(copy(Line, 0, CarkaPos1-1)));
+          SetField(fieldCountry, trim(copy(Line, CarkaPos1+1, CarkaPos2-1)));
+          SetField(fieldLength, trim(copy(Line, CarkaPos1+CarkaPos2+1, minPos-1)));
+        end
+      end else begin
+          SetField(fieldYear, trim(copy(Line, 0, CarkaPos1-1)));
+          SetField(fieldCountry, trim(copy(Line, CarkaPos1+1, Length(Line)-CarkaPos1  )));
+      end
+    end
+end;
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  i, LineNr, LineNrEnd : Integer;
+  Line, Value : String;
+  StartPos, EndPos: Integer;
+  AktualStrana, MaxStrana: String;
+  FilmName, FilmAddr, dalsi : String;
+  Stranka:boolean;
+  
+begin
+    Stranka:=true;
+    Page := TStringList.Create;
+
+    while Stranka=true do begin
+       Page.Text := GetPage(Address);
+       LineNr := FindLine('Prohledáváním nebylo nic nalezeno', Page, 0);
+       if LineNr > -1 then
+          ShowMessage('Nebyly nalezeny žádné záznamy.')
+       else begin
+          LineNr := FindLine('Seznam titulù obsahujících v názvu', Page, 0)+18;
+          LineNrEnd := FindLine('</TABLE>', Page, LineNR);
+          For i:= LineNr to LineNrEnd do begin
+              Line := Page.GetString(i);
+              If (Pos('class='+Chr(39)+'s'+Chr(39),Line) > 0)  then begin
+                 StartPos := Pos('class='+Chr(39)+'s'+Chr(39),Line)+10;
+                 EndPos := Pos('</A></TD>',Line);
+                 FilmName := Copy(Line, StartPos,EndPos-StartPos);
+                 StartPos := Pos('http',Line);
+                 EndPos := Pos(' class='+Chr(39)+'s'+Chr(39),Line)-1;
+                 PickTreeAdd(FilmName, Copy(Line, StartPos, EndPos-StartPos));
+              end;
+         end;
+       end;
+       LineNr := FindLine('Strana', Page, 0);
+       if LineNr > -1 then begin
+          Line := Page.GetString(LineNR);
+          Value:=Trim(Copy(Line,7, Pos('z',Line)-1-7));
+          HTMLDecode(Value);
+          HTMLRemoveTags(Value);
+          AktualStrana:=(Value);
+          Line:=Trim(Copy(Line, Pos('z',Line)+1,Length(Line)));
+          Value:=Copy(Line, 1, Pos('&nbsp',Line)-1);
+          HTMLDecode(Value);
+          HTMLRemoveTags(Value);
+          MaxStrana:=(Value);
+          If AktualStrana=MaxStrana then Stranka:=false
+          else begin
+             LineNr := FindLine('</TD><TD CLASS='+Chr(39)+'pg_navi', Page, 0);
+             LineNr := FindLine('bold', Page, LineNr);
+             Line := Page.GetString(LineNr+1);
+             StartPos := Pos('http',Line);
+             EndPos := Pos(Chr(39)+'>',Line);
+             Address:=Copy(Line, StartPos, EndPos-StartPos);
+             Page := TStringList.Create;
+          end;
+       end else begin
+          Stranka:=false;
+       end;
+    end;
+    If  PickTreeExec(Address) Then AnalyzeMoviePage(Address);
+
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr : Integer;
+  Line, Value : String;
+  BeginPos, EndPos : Integer;
+begin
+    Page := TStringList.Create;
+    Page.Text := GetPage(Address);
+    LineNr := FindLine('product_title', Page, 0);
+
+      Line := Page.GetString(LineNr);
+
+      //prelozeny nazev
+      //originalni nazev
+      BeginPos:=Pos('bold',Line) +6;
+      Line:=copy(Line, BeginPos, Length(Line));
+      Value:=Copy(Line, 1, Pos('</SPAN>',Line)-1);
+      SetField(fieldTranslatedTitle, Value);
+      BeginPos:=Pos('ital',Line) +8;
+      Line:=copy(Line, BeginPos, Length(Line));
+      Value:=Copy(Line, 1, Pos('</SPAN>',Line)-2);
+      SetField(fieldOriginalTitle, Value);
+
+      //distribuce
+      SetField(fieldProducer, NactiPolozku(Page, 'Distribuce'));
+
+      //Datum distribuce
+      SetField(fieldDate, NactiPolozku(Page, 'Datum distribuce'));
+
+      //rezie
+      LineNr := FindLine('Režie', Page, 0)+1;
+      Line := Page.GetString(LineNr);
+      If (Pos('detail_propertylist_title', Line)= 0) then begin
+         SetField(fieldDirector, GetLines(Page, LineNr));
+      end;
+      
+      //rok, stat, delka
+      LineNr := FindLine('detail_propertylist_title', Page, LineNr);
+      RozdelStat(GetLines(Page, LineNr));
+
+      //kategorie
+      SetField(fieldCategory, NactiPolozku(Page, 'Žánr'));
+
+      // Zvuk
+      SetField(fieldLanguages, NactiPolozku(Page, 'Zvuk'));
+
+      //titulky
+      SetField(fieldSubtitles, NactiPolozku(Page, 'Titulky'));
+
+      //Obraz
+      SetField(fieldResolution, NactiPolozku(Page, 'Obraz'));
+
+      // hrají
+      LineNr := FindLine('Hrají', Page, 0)+1;
+      Line := Page.GetString(LineNr);
+      Value:='';
+      While Pos('content', Line)>0 do begin
+         Value := Value+GetLines(Page, LineNr);;
+         LineNr:=LineNr+1;
+         Line := Page.GetString(LineNr);
+      end;
+      SetField(fieldActors, Value);
+
+      // URL
+      SetField(fieldURL, Address);
+   
+    // picture
+    LineNr := FindLine('IMG SRC="http://www.dvdexpress.cz/express/images/catalog', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      BeginPos := pos('<IMG SRC="http://', Line) + 10;
+      if BeginPos > 10 then
+        begin
+          EndPos := pos('" WIDTH', Line);
+          Value := copy(Line, BeginPos, EndPos - BeginPos);
+          GetPicture(Value);
+        end;
+    end;
+    // Info
+    LineNr := FindLine('product_description', Page, 0);
+    if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      Line:=Copy(Line,Pos('product_description', Line)+21,length(Line));
+      Line:=StringReplace(Line, '</td></tr></table>', '');
+      Line:=StringReplace(Line, '<BR></TD>', '');
+      Line:=StringReplace(Line, '</td></tr>', Chr(13)+Chr(10));
+      Line:=StringReplace(Line, '<p>  ', Chr(13)+Chr(10)+Chr(13)+Chr(10));
+      Line:=StringReplace(Line, '<BR>  ', Chr(13)+Chr(10));
+      Line:=StringReplace(Line, '<BR>', Chr(13)+Chr(10));
+      Line:=StringReplace(Line, '<br>  ', Chr(13)+Chr(10));
+      Line:=StringReplace(Line, '<br> ', Chr(13)+Chr(10));
+
+      Value:=Line;
+      HTMLDecode(Value);
+      HTMLRemoveTags(Value);
+      SetField(fieldDescription, Trim(Value));
+    end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Import movie from www.dvdexpress.cz', 'Enter the title of the movie:', MovieName) then
+    begin
+       PickTreeClear;
+       PickTreeAdd('Filmy: ' + MovieName, '');
+       AnalyzePage(BaseAddress + 'express/search.asp?type=title&keyword='+UrlEncode(MovieName)+'&view=3&Page=1&submit=go');
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

@@ -1,0 +1,138 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Tadeu Cunha
+Title=Google Picture Import
+Description=Get picture from google.com images
+Site=http://www.google.com
+Language=EN
+Version=1.00 - 01.06.2013
+Requires=3.5.0
+Comments=See code comments. Thanks to the authors of IMDB.ifs and IAFD.ifs
+License=GPL
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+AutoSelect=0|1|0=Always show movie selection dialog|1=Auto-select movie if there is only one
+GetOnlyFirstPicture=0|0|0=Show available pictures|1=Get Only the first picture found
+
+[Parameters]
+
+***************************************************)
+
+program GooglePics;
+
+// no mail; comments only in web
+
+uses
+  StringUtils1;
+var
+  MovieName: string;
+const
+  BaseURL  = 'http://www.google.com/search?safe=off&tbo=d&source=lnms&tbm=isch&sa=X&q=';
+  MaxItems = 50;
+
+// ---
+function RemoveBrackets(wholetext: string) : string;
+var
+  str1: String;
+  i: Integer;
+begin
+  str1 := Trim(TextBefore(wholetext, '[', ''));
+  if str1 <> '' then
+  begin
+    if Pos(']', RemainingText) > 0 then
+      wholetext := str1+' '+Trim(TextAfter(RemainingText, ']'));  // + end of text or ''
+  end;
+  result := Trim(wholetext);
+end;
+// ---
+function RemovePar(wholetext: string) : string;
+var
+  str1: String;
+  i: Integer;
+begin
+  str1 := Trim(TextBefore(wholetext, '(', ''));
+  if str1 <> '' then
+  begin
+    if Pos(')', RemainingText) > 0 then
+      wholetext := str1+' '+Trim(TextAfter(RemainingText, ')'));  // + end of text or ''
+  end;
+  result := Trim(wholetext);
+end;
+
+// ---
+procedure AnalyzePage(Address: string);
+var
+  LineCnt: Integer;
+  PageText,strRef, strImg: string;
+begin
+  // Read the whole page
+   PageText := GetPage(Address);
+ 
+  // Looks for the first images
+  LineCnt:= MaxItems;
+  PickTreeClear;
+  PickTreeTitle(MovieName);
+  while LineCnt > 0 do
+  begin
+    // Looks for tag imgrefurl
+    if pos('imgrefurl=', PageText) = 0 then
+    begin
+      if LineCnt = MaxItems then
+      begin
+        ShowError('Error: imgrefurl tag not found! Probably something changed at Google :(');
+        exit;
+      end;
+      break;
+    end;
+   
+    // Get the img reference
+    strRef := TextBetween(PageText,'imgrefurl=', '&');
+    PageText := RemainingText;
+   
+    // Get the img url
+    if pos('imgurl=', PageText) = 0 then
+    begin
+      if LineCnt = MaxItems then
+      begin
+        ShowError('Error: imgurl tag not found! Probably something changed at Google :(');
+        exit;
+      end;
+      break;
+    end; 
+    strImg := TextBetween(PageText,'imgurl=', '&');
+    PageText := RemainingText;
+   
+    if (GetOption('GetOnlyFirstPicture') = 1) then
+    begin
+      // That's it, we have the picture!
+      GetPicture (strImg);
+      exit;
+    end
+   
+    // Add this option to the tree
+    PickTreeAdd(strRef, strImg);
+    LineCnt := LineCnt - 1;
+  end
+ 
+  // User choose the image, get it!
+  if PickTreeExec(strImg) then
+    GetPicture (strImg);
+end;
+//------------------------------------------------------------------------------
+
+begin
+  //SetField(fieldChecked, '');
+
+  MovieName := GetField(fieldOriginalTitle);
+  if MovieName = '' then MovieName := GetField(fieldTranslatedTitle);
+  if (GetOption('AutoSelect') = 0) or (MovieName = '') then
+   if Input('Google Picture Import', 'Input title:', MovieName) = False then exit;
+  MovieName := RemovePar(RemoveBrackets(MovieName));
+  AnalyzePage(BaseURL + UrlEncode(MovieName));
+end. 

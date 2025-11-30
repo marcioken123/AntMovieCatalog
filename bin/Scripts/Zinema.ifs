@@ -1,0 +1,394 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Zinema
+Description=
+Site=www.zinema.com
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program ZinemaLegrad;
+ Uses StringUtils7552;
+
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function UpFirstLetterWord(texto:string):string;
+var espaco:integer;
+sst:string;
+begin
+texto:=AnsiUpFirstLetter(AnsiLowerCase(texto));
+repeat
+    espaco:=Pos(' ',texto);
+    sst:=AnsiUpperCase(Copy(texto,espaco+1,1));
+
+texto:=Copy(texto,1,espaco-1)+'/|\'+sst+Copy(texto,espaco+2,length(texto));
+until Pos(' ',texto)=0;
+texto := StringReplace(texto, '/|\', ' ');
+if Copy(texto,1,1)=' ' then
+  texto:=Copy(texto,2,length(texto));
+result:=texto;
+end;
+//---------------------------------------------------------
+function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+      // quitamos los tabuladores
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+//----------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, strPages, MovieAddr, MovieTitle, MovieDate, MovieID: string;
+  BeginPos, EndPos, BeginPo, EndPo: Integer;
+  Line: string;
+  LineNr: Integer;
+  Page: TStringList;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos(' en el dominio <b>www.zinema.com', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.zinema.com/pelicula/', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('.htm"', strPage);
+          MovieId := Copy(strPage, +37, EndPos-37);
+          MovieAddr := 'http://www.zinema.com/pelicula/' + MovieId+'.htm';
+          BeginPos := Pos(')"',strPage);
+          EndPos := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPos, EndPos);
+          MovieTitle  := TextBetween (MovieTitle , '>', '</a>');
+          MovieTitle  := StringReplace (MovieTitle , '√Å', '¡');
+          MovieTitle  := StringReplace (MovieTitle , '√°', '¡');
+          MovieTitle  := StringReplace (MovieTitle , '√â', '…');
+          MovieTitle  := StringReplace (MovieTitle , '√ì', '”');
+          MovieTitle  := StringReplace (MovieTitle , '√©', 'È');
+          MovieTitle  := StringReplace (MovieTitle , '√ç', 'Õ');
+          MovieTitle  := StringReplace (MovieTitle , '„Å', '·');
+          MovieTitle  := StringReplace (MovieTitle , '√≠', 'Ì');
+          MovieTitle  := StringReplace (MovieTitle , '√≥', 'Û');
+          MovieTitle  := StringReplace (MovieTitle , '√∫', '˙');
+          MovieTitle  := StringReplace (MovieTitle , 'ZINEMA', '');
+          MovieTitle  := StringReplace (MovieTitle , '√±', 'Ò');
+          MovieTitle  := StringReplace (MovieTitle , ' - ', '');
+          MovieTitle  := AnsiLowerCase(MovieTitle );
+          MovieTitle  := UpFirstLetterWord(MovieTitle );
+          HTMLRemoveTags(MovieTitle);
+          PickTreeAdd(MovieTitle,MovieAddr);
+          PickTreeSort;
+          BeginPos := Pos('href="http://www.zinema.com/pelicula/', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+    SetField(fieldURL, Address);
+end;
+//------------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+  BaseURL2: string;
+  Beginpos: string;
+  titre_film: string;
+  EndPos: string;
+  Movie: string;
+begin
+  Description := '';
+  Comments := '';
+ // URL
+  SetField(fieldURL, Address);
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+   //Titulo Original
+ LineNr := FindLine('original</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('original</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'original</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := StringReplace(Item ,'  ',' ');
+    Item  := Trim(Item );
+    HTMLRemoveTags(Item);
+    HTMLDecode(Item);
+    Item  := UpFirstLetterWord(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+      end;
+       //Titulo Traducido
+ LineNr := FindLine('<title>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<title>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<title>', '</title>');
+    Item  := StringReplace(Item ,'ZINEMA - ','');
+    Item  := Trim(Item );
+    HTMLRemoveTags(Item);
+    HTMLDecode(Item);
+    Item  := UpFirstLetterWord(Item);
+    SetField(fieldTranslatedTitle, Trim (Item));
+      end;
+      // AÒo
+  LineNr := FindLine('<strong>AÒo</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<strong>AÒo</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>AÒo</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldYear, trim (Item));
+      end;
+      // Nacionalidad
+  LineNr := FindLine('Nacionalidad</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Nacionalidad</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'color="#666666', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := StringReplace(Item ,'     ','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'    ',' ');
+    Item  := StringReplace(Item ,'">','');
+    Item  := StringReplace(Item ,'-',', ');
+    SetField(fieldCountry, trim (Item));
+      end;
+  //GÈnero
+ LineNr := FindLine('<strong>GÈnero</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<strong>GÈnero</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>GÈnero</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    SetField(fieldCategory, trim (Item));
+      end;
+       //Duracion
+ LineNr := FindLine('DuraciÛn</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('DuraciÛn</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'DuraciÛn</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := StringReplace(Item ,'m.','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldLength, trim (Item));
+      end;
+      // Director
+  LineNr := FindLine('<strong>DirecciÛn</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<strong>DirecciÛn</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>DirecciÛn</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := StringReplace(Item ,'   ','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    SetField(fieldDirector, trim (Item));
+  end;
+      // Reparto
+  LineNr := FindLine('IntÈrpretes</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('IntÈrpretes</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<strong>', 'GuiÛn</strong>');
+    Item  := StringReplace(Item ,#13#10,'');
+    Item  := StringReplace(Item ,')',')*');
+    Item  := StringReplace(Item ,'*',#13#10);
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'  ','');
+    Item  := StringReplace(Item ,'">','');
+    SetField(fieldActors, trim (Item));
+      end;
+  //Sinopsis
+  LineNr := FindLine('Sinopsis</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Sinopsis</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'color="#666666', '</font>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'     ',' ');
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'">','');
+    SetField(fieldDescription, Trim (Item));
+  end;
+
+  // GuiÛn
+ LineNr := FindLine('GuiÛn</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('GuiÛn</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'GuiÛn</strong>', '<td width="15%"></td>');
+    Item  := StringReplace(Item ,#13#10#,'');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'  ',' ');
+    Item  := StringReplace(Item ,'         ',' ');
+    Comments := Comments + 'GuiÛn: '+Item+#13#10;
+  end;
+
+
+  // Fotografia
+   LineNr := FindLine('FotografÌa</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('FotografÌa</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'FotografÌa</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'    ','');
+    HTMLRemoveTags(Item);
+    Comments := Comments + 'FotografÌa: ' + Item + #13#10;
+  end;
+  // M˙sica
+   LineNr := FindLine('M˙sica</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('M˙sica</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'M˙sica</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'    ','');
+    HTMLRemoveTags(Item);
+    Comments := Comments + 'M˙sica: ' + Item + #13#10;
+  end;
+   // Montaje
+   LineNr := FindLine('Montaje</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Montaje</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'Montaje</strong>', '</tr>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'    ','');
+    HTMLRemoveTags(Item);
+    Comments := Comments + 'Montaje: ' + Item + #13#10+'------------------------------------'+#13#10;
+  end;
+ 
+  // Pros y contras
+   LineNr := FindLine('<strong>Contra</strong>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('<strong>Contra</strong>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<td width="4%" valign="top"></td>', '</table>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'    ','');
+    Item  := Trim(Item );
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'       ',' ');
+    Item  := StringReplace(Item ,'   ','');
+    Comments := Comments + 'Pros y contras: ' + Item +#13#10+'------------------------------------'+#13#10;
+  end;
+  // Referencia
+   LineNr := FindLine('Referencias</font>', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('Referencias</font>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'Referencias</font>', '</table>');
+    Item  := StringReplace(Item ,#13#10,' ');
+    Item  := StringReplace(Item ,'  ','');
+    Item  := Trim(Item);
+    DeleteTags(Item);
+    HTMLDecode(Item);
+    Item  := StringReplace(Item ,'   ',' ');
+    Comments := Comments + 'Referencias: ' + Item +#13#10;
+  end;
+
+  // Picture
+  LineNr := FindLine('src="../../carteles/', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Item := copy(Page.Text, pos('src="../../carteles/',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'src="../../carteles/', '" width');
+    HTMLDecode(Item);
+   GetPicture ('http://www.zinema.com/carteles/'+Item);
+  end;
+  HTMLDecode(Comments);
+  SetField(fieldComments, Comments);
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+            Input('ZinemaLegrad', 'Buscar:', MovieName);
+
+     if(GetOption('') = 0) then  Input('ZinemaLegrad', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=allinanchor%3A+' + UrlEncode(MovieName)+'+site%3Awww.zinema.com&btnG=B%C3%BAsqueda&meta=');
+end.

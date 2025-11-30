@@ -1,0 +1,526 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=(c) 2004 åwistak, (c) 2005 BestiaPL
+Title=Film.WP (PL)
+Description=Skrypt importu informacji z Film.WP.pl - åwistak, plakaty - BestiaPL
+Site=http://film.wp.pl
+Language=PL
+Version=2
+Requires=3.5.0
+Comments=Informacje o filmie i plakaty, czÍúciowo bazowane na skrypcie FilmWeb (Piotr Kardasz, Adma)|14.02.2005 Poprawki - Adma|13.02.2006 Pobieranie plakatÛw i pe≥nego tytu≥u - BestiaPL
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program FilmWP;
+var
+  MovieName, adres: string;
+  Link, id: string;
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+  var
+  i: Integer;
+  begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+      begin
+      result := i;
+      Break;
+      end;
+  end;
+
+procedure DecodeHTML(var Value: String);
+  var
+  FullValue, CharCode: String;
+  Counter: Integer;
+  begin
+  if Value <> '' then begin
+    FullValue := '';
+    Counter := 1;
+    repeat
+      if StrGet(Value, Counter) <> '&' then
+        begin
+        CharCode := copy(Value, Counter, 1);
+        case CharCode of
+          '±': CharCode := 'π';
+          '∂': CharCode := 'ú';
+          '°': CharCode := '•';
+          'º': CharCode := 'ü';
+          '¶': CharCode := 'å';
+          '¨': CharCode := 'è';
+          end;
+        FullValue := FullValue + CharCode;
+        Counter := Counter + 1;
+        end
+      else
+        begin
+        CharCode := copy(Value, Counter, 7);
+        case CharCode of
+          '&#x105;': FullValue := FullValue + 'π';
+          '&#x107;': FullValue := FullValue + 'Ê';
+          '&#x119;': FullValue := FullValue + 'Í';
+          '&#x142;': FullValue := FullValue + '≥';
+          '&#x144;': FullValue := FullValue + 'Ò';
+          '&#x0f3;': FullValue := FullValue + 'Û';
+          '&#x15b;': FullValue := FullValue + 'ú';
+          '&#x17a;': FullValue := FullValue + 'ü';
+          '&#x17c;': FullValue := FullValue + 'ø';
+          '&#x104;': FullValue := FullValue + '•';
+          '&#x106;': FullValue := FullValue + '∆';
+          '&#x118;': FullValue := FullValue + ' ';
+          '&#x141;': FullValue := FullValue + '£';
+          '&#x143;': FullValue := FullValue + '—';
+          '&#x0d3;': FullValue := FullValue + '”';
+          '&#x15a;': FullValue := FullValue + 'å';
+          '&#x179;': FullValue := FullValue + 'è';
+          '&#x17b;': FullValue := FullValue + 'Ø';
+          '&#x160;': FullValue := FullValue + ' ';
+          '&#x161;': FullValue := FullValue + '°';
+          '&#x162;': FullValue := FullValue + '°';
+          '&#x163;': FullValue := FullValue + '£';
+          '&#x164;': FullValue := FullValue + '§';
+          '&#x165;': FullValue := FullValue + '•';
+          '&#x166;': FullValue := FullValue + 'å';
+          '&#x167;': FullValue := FullValue + 'ß';
+          '&#x168;': FullValue := FullValue + '®';
+          '&#x169;': FullValue := FullValue + '©';
+          '&#x170;': FullValue := FullValue + '™';
+          '&#x171;': FullValue := FullValue + '´';
+          '&#x172;': FullValue := FullValue + '¨';
+          '&#x173;': FullValue := FullValue + '≠';
+          '&#x174;': FullValue := FullValue + 'Æ';
+          '&#x175;': FullValue := FullValue + 'Ø';
+          '&#x176;': FullValue := FullValue + '∞';
+          '&#x177;': FullValue := FullValue + '±';
+          '&#x178;': FullValue := FullValue + '≤';
+          '&#x180;': FullValue := FullValue + '¥';
+          '&#x181;': FullValue := FullValue + 'µ';
+          '&#x182;': FullValue := FullValue + '∂';
+          '&#x183;': FullValue := FullValue + '∑';
+          '&#x184;': FullValue := FullValue + '∏';
+          '&#x185;': FullValue := FullValue + 'π';
+          '&#x186;': FullValue := FullValue + '∫';
+          '&#x187;': FullValue := FullValue + 'ª';
+          '&#x188;': FullValue := FullValue + 'º';
+          '&#x189;': FullValue := FullValue + 'Ω';
+          '&#x190;': FullValue := FullValue + 'æ';
+          '&#x191;': FullValue := FullValue + 'ø';
+          '&#x192;': FullValue := FullValue + '¿';
+          '&#x193;': FullValue := FullValue + '¡';
+          '&#x194;': FullValue := FullValue + '¬';
+          '&#x195;': FullValue := FullValue + '√';
+          '&#x196;': FullValue := FullValue + 'ƒ';
+          '&#x197;': FullValue := FullValue + '≈';
+          '&#x198;': FullValue := FullValue + '∆';
+          '&#x199;': FullValue := FullValue + '«';
+          '&#x200;': FullValue := FullValue + '»';
+          '&#x201;': FullValue := FullValue + '…';
+          '&#x202;': FullValue := FullValue + ' ';
+          '&#x203;': FullValue := FullValue + 'À';
+          '&#x204;': FullValue := FullValue + 'Ã';
+          '&#x205;': FullValue := FullValue + 'Õ';
+          '&#x206;': FullValue := FullValue + 'Œ';
+          '&#x207;': FullValue := FullValue + 'œ';
+          '&#x208;': FullValue := FullValue + '–';
+          '&#x209;': FullValue := FullValue + '—';
+          '&#x210;': FullValue := FullValue + '“';
+          '&#x211;': FullValue := FullValue + '”';
+          '&#x212;': FullValue := FullValue + '‘';
+          '&#x213;': FullValue := FullValue + '’';
+          '&#x214;': FullValue := FullValue + '÷';
+          '&#x215;': FullValue := FullValue + '◊';
+          '&#x216;': FullValue := FullValue + 'ÿ';
+          '&#x217;': FullValue := FullValue + 'Ÿ';
+          '&#x218;': FullValue := FullValue + '⁄';
+          '&#x219;': FullValue := FullValue + '€';
+          '&#x220;': FullValue := FullValue + '‹';
+          '&#x221;': FullValue := FullValue + '›';
+          '&#x222;': FullValue := FullValue + 'ﬁ';
+          '&#x223;': FullValue := FullValue + 'ﬂ';
+          '&#x224;': FullValue := FullValue + '‡';
+          '&#x225;': FullValue := FullValue + '·';
+          '&#x226;': FullValue := FullValue + '‚';
+          '&#x227;': FullValue := FullValue + '„';
+          '&#x228;': FullValue := FullValue + '‰';
+          '&#x229;': FullValue := FullValue + 'Â';
+          '&#x230;': FullValue := FullValue + 'Ê';
+          '&#x231;': FullValue := FullValue + 'Á';
+          '&#x232;': FullValue := FullValue + 'Ë';
+          '&#x233;': FullValue := FullValue + 'È';
+          '&#x234;': FullValue := FullValue + 'Í';
+          '&#x235;': FullValue := FullValue + 'Î';
+          '&#x236;': FullValue := FullValue + 'Ï';
+          '&#x237;': FullValue := FullValue + 'Ì';
+          '&#x238;': FullValue := FullValue + 'Ó';
+          '&#x239;': FullValue := FullValue + 'Ô';
+          '&#x240;': FullValue := FullValue + '';
+          '&#x241;': FullValue := FullValue + 'Ò';
+          '&#x242;': FullValue := FullValue + 'Ú';
+          '&#x243;': FullValue := FullValue + 'Û';
+          '&#x244;': FullValue := FullValue + 'Ù';
+          '&#x245;': FullValue := FullValue + 'ı';
+          '&#x246;': FullValue := FullValue + 'ˆ';
+          '&#x247;': FullValue := FullValue + '˜';
+          '&#x248;': FullValue := FullValue + '¯';
+          '&#x249;': FullValue := FullValue + '˘';
+          '&#x250;': FullValue := FullValue + '˙';
+          '&#x251;': FullValue := FullValue + '˚';
+          '&#x252;': FullValue := FullValue + '¸';
+          '&#x253;': FullValue := FullValue + '˝';
+          '&#x254;': FullValue := FullValue + '˛';
+          '&#x255;': FullValue := FullValue + 'ˇ';
+          '&#x%DF;': FullValue := FullValue + 'ﬂ';
+          '&#x34;': FullValue := FullValue + '"';
+          '&#8211;': FullValue := FullValue + '-';
+          '&#8216;': FullValue := FullValue + '"';
+          '&#8217;': FullValue := FullValue + '"';
+          '&#8220;': FullValue := FullValue + '"';
+          '&#8221;': FullValue := FullValue + '"';
+          '&#8222;': FullValue := FullValue + '"';
+          else
+            FullValue := FullValue + CharCode;
+          end;
+        Counter := Counter + 7;
+      end;
+    until Counter > Length(Value);
+    HTMLDecode(FullValue);
+    Value := FullValue;
+    end
+  end;
+
+
+function extractLineText(Line: string; startToken: string; endToken: string): string;
+  var
+  StartPos: Integer;
+  token: string;
+  begin
+  StartPos := pos(startToken, Line) + Length(startToken);
+  Line := copy(Line, StartPos, Length(Line) - StartPos +1);
+  Line := copy(Line, 1, Pos(endToken, Line)-1);
+  HTMLRemoveTags(Line);
+  DecodeHTML(Line);
+  extractLineText := Trim(Line);
+  end;
+
+function extractText(Page: TStringList; startToken: string; endToken: string; startPos: Integer): string;
+  var
+  Line: String;
+  begin
+  Line := copy(Page.Text, startPos, Length(Page.Text)-startPos);
+  StartPos := pos(startToken, Line);
+  if (StartPos > 0) then
+    begin
+    StartPos := pos(startToken, Line) + Length(startToken);
+    //aby zepewniÊ obs≥ugÍ przypadku, gdy endToken wystÍpuje takøe przed startToken
+    Line := copy(Line, StartPos, Length(Page.Text) - StartPos +1);
+    Line := copy(Line, 1, Pos(endToken, Line)-1);
+    HTMLRemoveTags(Line);
+    DecodeHTML(Line);
+    Line := Trim(Line);
+    Line := StringReplace(Line, #13#10, '');
+    end
+  else
+    Line := '';
+
+  extractText := Line;
+  end;
+
+function ExtractMovieAddress(Line: string): String ;
+  var
+  MovieAddress: string;
+  StartPos: Integer;
+  begin
+  StartPos := Pos('<a href=', Line);
+  if (StartPos > 0) then
+    begin
+    MovieAddress := copy(Line, StartPos, Length(Line)-StartPos);
+    MovieAddress := copy(MovieAddress, 10, Pos('">', MovieAddress)-10);
+    end;
+  extractMovieAddress := MovieAddress;
+end;
+
+procedure AddMoviesTitles(Page: TStringList);
+  var
+  LineNr: Integer;
+  Line: string;
+  MovieTitle, MovieAddress: string;
+  StartPos: Integer;
+  begin
+  //NajczÍúciej szukane
+  LineNr := FindLine('szukane:', Page, 0);
+  if LineNr > -1 then
+  begin
+    PickTreeAdd('NajczÍúciej szukane:', '');
+    MovieTitle := extractLineText(Page.GetString(LineNr+16), '<i>', '</i>');
+    if (MovieTitle<>'') then
+      MovieTitle := ' (' + MovieTitle + ')';
+    MovieTitle := extractLineText(Page.GetString(LineNr+15), '<b>', '</a>')+MovieTitle;
+
+    Line := Page.GetString(LineNr+15);
+    MovieAddress := extractMovieAddress(Line);
+    PickTreeAdd(MovieTitle, MovieAddress);
+
+    //Znalezionych
+    LineNr := FindLine('Znalezionych:', Page, LineNr);
+    Line := Page.GetString(LineNr);
+    //Sprawdzamy ile WP znalaz≥o pozycji
+    StartPos := pos('<b>', Line)+3;
+    Line := copy(Line, StartPos, pos('</b>', Line)-StartPos);
+    if (StrToInt(Line, 0)>1) then
+      begin
+      PickTreeAdd('Znalezione ('+Line+'):', '');
+      LineNr := LineNr+6;
+      repeat
+        Line := Page.GetString(LineNr);
+        if (pos('span class', Line)>0) then
+          begin
+          MovieTitle := extractLineText(Page.GetString(LineNr+1), '<i>', '</i>');
+          if (MovieTitle<>'') then
+            MovieTitle := ' (' + MovieTitle + ')';
+          MovieTitle := extractLineText(Page.GetString(LineNr), '&nbsp;', '</a>')+MovieTitle;
+          MovieAddress := ExtractMovieAddress(Line);
+          PickTreeAdd(MovieTitle, MovieAddress);
+          end
+        else if (pos('znalezione pozycje', Line)>0) then
+          begin
+          MovieAddress := ExtractMovieAddress(Line);
+          PickTreeAdd('Pokaø wszystkie pozycje...' , MovieAddress);
+          end;        
+        LineNr := LineNr+1;
+      until Pos('</table>', Line) > 0;
+      end;
+    end;
+  end;
+
+procedure AnalyzePage(Address: string; PostQuery: string);
+  var
+  Page: TStringList;
+  
+  begin
+  adres := address;
+  Page := TStringList.Create;
+  if (PostQuery <> '') then
+    Page.Text := PostPage(Address, PostQuery)
+  else
+    Page.Text := GetPage(Address);
+  Link := Address;
+  if pos('Podyskutuj na Forum', Page.Text) > 0 then
+    AnalyzeMoviePage(Page)
+  else if pos('Znalezionych:', Page.Text) > 0 then
+    begin
+    PickTreeClear;
+    AddMoviesTitles(Page);
+    if PickTreeExec(Address) then
+      AnalyzePage(Address, '');
+    end
+    else
+     begin
+     DecodeHTML(MovieName);
+     ShowMessage('Nie znaleziono øadnego filmu spe≥niajπcego kryteria: "'+MovieName+'".');
+     end
+
+  Page.Free;
+  end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+  var
+  Line, Obsada, OrgLine, linia, tytul: string;
+  LineNr, licznik, pozycja, pozycja2: Integer;
+  StartPos, endPos: Integer;
+  stronka: TStringList;
+  ok: boolean;
+  id_plakatu: string;
+
+begin
+  // Tytu≥ polski & Rok produkcji
+  Line := extractText(Page, '<b class="ti" style="font-size: 15px">', '</b>', 0);
+  //czasami wp dodaje rok produkcji do lini z tytu≥em
+  StartPos := Pos('(', Line);
+  if (StartPos > 0) then
+    begin
+    SetField(fieldYear, Copy(Line, StartPos+1, 4));
+    Line := Copy(Line, 0, StartPos-1);
+    end
+  setField(fieldTranslatedTitle, Line);
+
+  // Tytu≥ oryginalny
+  Line := extractText(Page, '<i class="ti" id="gr" style="font-size: 14px">', '</i>', 0);
+  //czasami wp w linii, gdzie jest polski tytu≥ umieszcza angielski, polskiego nie za≥πczajπc wogÛle...
+  if ((Pos('<i class="ti" id="gr" style="font-size: 14px">', Page.Text) > Pos('TwÛrcy:', Page.Text)) or (Line = '')) then
+    begin
+    Line := getField(fieldTranslatedTitle);
+    setField(fieldTranslatedTitle, '');
+    end
+  setField(fieldOriginalTitle, Line);
+
+  // Kategoria
+  setField(fieldCategory, extractText(Page, '<b>Gatunek:</b>', '<br>', 0));
+
+  // Kraj
+  setField(fieldCountry, extractText(Page, '<b>Kraj:</b>', '<br>', 0));
+  
+  // Czas trwania
+  setField(fieldLength, extractText(Page, '<b>Czas trwania:</b>', 'min', 0));
+
+  // Rok produkcji
+//  Line := extractText(Page, '<b>Premiera kinowa:</b>', '<br>', 0);
+//  Line := copy(Line, 1, 4);
+//  SetField(fieldYear, Line);
+
+  // Ocena
+  Line := extractText(Page, 'Ocena internautÛw:', '</b>', 0);
+  if (Line <> '') then
+    SetField(fieldRating, IntToStr(Round(StrToFloat(Line))));
+
+  // Producent
+  //brak
+
+  // Reøyseria
+  SetField(fieldDirector, extractText(Page, '<b>Reøyseria:</b>', '<br>', 0));
+
+  // Obsada
+  LineNr := FindLine('<b>Obsada:</b>', Page, 0)+1;
+  if (LineNr>0) then
+    begin
+    Obsada := '';
+    Line := Page.GetString(LineNr);
+    while (Pos('<div align="right">', Line) = 0) do
+      begin
+      if (Obsada<>'') then
+        Obsada := Obsada + ', ';
+      HTMLRemoveTags(Line);
+      DecodeHTML(Line);
+      if (Pos('..... ', Line) > 0) then
+        begin
+        Line := StringReplace(Line, '..... ', '(jako ');
+        Line := Line + ')';
+        end;
+      Obsada := Obsada + Line;
+      LineNr := LineNr+1;
+      Line := Page.GetString(LineNr);
+      end;
+    SetField(fieldActors, Obsada);
+    end;
+
+  // Czas trwania
+  //brak
+
+  // Opis filmu
+  StartPos := Pos('<b class="ti" id="or">Opis:</b>', Page.Text);
+  if (StartPos > 0) then
+//    SetField(fieldDescription, extractText(Page, '<span id="mi">', '</span>', StartPos));
+    SetField(fieldDescription, StringReplace(extractText(Page, '<span id="mi">', '</span>', StartPos), '"', chr(39)));
+
+  //Komentarze
+  StartPos := Pos('<b class="ti" id="or">Recenzje:', Page.Text);
+  //czasami zamiast 'Recenzje' jest 'Opinie'
+  if (StartPos = 0) then
+    StartPos := Pos('<b class="ti" id="or">Opinie:', Page.Text);
+ // if (StartPos > 0) then
+   // SetField(fieldComments, extractText(Page, '<span id="mi">', '</span>', StartPos));
+
+  //URL
+  setField(fieldURL, Link);
+  
+  //Plakat
+  //pobranie plakatu ze strony
+  LineNr:=0;
+  LineNr := FindLine('m,plakat,film_foto.html', Page, 0);
+  if (LineNr>0) then
+  begin
+    stronka := TStringList.Create;
+    startPos := pos('id,', adres);
+    adres := copy(adres, startPos+3, startPos+10);
+    endPos := pos(',', adres);
+    id := copy(adres, 0, endPos - 1);
+    link := 'http://film.wp.pl/id,' + id + ',m,plakat,film_foto.html';
+    stronka.Text := GetPage(link);
+    PickTreeClear;
+    PickTreeAdd('Wybierz plakat','');
+    licznik := 0;
+    pozycja := FindLine('newWindow = openWin('+chr(39)+'foto.html', stronka, 0);
+    pozycja2 := FindLine('galeria: ', stronka, pozycja + 1);
+    repeat
+     begin
+      linia := stronka.GetString(pozycja);
+      startPos := pos('foto.html?id=', linia);
+      if (startPos <> 0) then
+      begin
+       delete(linia, 1, startPos + 12);
+       startPos:=length(id)+2;
+       endPos := pos('p=1', linia);
+       id_plakatu:=copy(linia, startPos, endPos-startPos-1);
+       licznik := licznik + 1;
+       startPos := pos('alt="', linia);
+       delete(linia, 1, startPos + 4);
+       endPos := pos('">', linia);
+       tytul := copy(linia, 1, endPos - 1);
+       adres:='http://film.wp.pl/p/foto.html?id='+id+','+id_plakatu+'&p=1';
+       PickTreeAdd(tytul, adres);
+      end;
+      pozycja := pozycja + 1;
+     end;
+    until (pozycja >= pozycja2);
+    ok:=True;
+    if licznik > 1 then
+    begin
+      ok:=PickTreeExec(adres);
+    end;
+    if ((licznik = 1) or ok) then
+    begin
+     stronka.text := GetPage(adres);
+     pozycja := FindLine('http://film.wp.pl/f/foto', stronka, 0);
+     linia := stronka.GetString(pozycja);
+     startPos:=pos('src="',linia);
+     delete(linia,1,startPos+4);
+     endPos:=pos('" width',linia);
+     adres:=copy(linia,1,endPos-1);
+     GetPicture(adres);
+    end;
+    stronka.Free;
+  end;
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+    begin
+    MovieName := GetField(fieldOriginalTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldTranslatedTitle);
+    if Input('Film.WP.pl Import', 'Podaj tytu≥ filmu:', MovieName) then
+      begin
+      // Zamiana na ISO-8859-2
+      MovieName:=StringReplace(MovieName, 'π', chr(177));
+      MovieName:=StringReplace(MovieName, 'Ê', chr(230));
+      MovieName:=StringReplace(MovieName, 'Í', chr(234));
+      MovieName:=StringReplace(MovieName, '≥', chr(179));
+      MovieName:=StringReplace(MovieName, 'Ò', chr(241));
+      MovieName:=StringReplace(MovieName, 'Û', chr(243));
+      MovieName:=StringReplace(MovieName, 'ú', chr(182));
+      MovieName:=StringReplace(MovieName, 'ü', chr(188));
+      MovieName:=StringReplace(MovieName, 'ø', chr(191));
+      MovieName:=StringReplace(MovieName, '•', chr(161));
+      MovieName:=StringReplace(MovieName, '∆', chr(198));
+      MovieName:=StringReplace(MovieName, ' ', chr(202));
+      MovieName:=StringReplace(MovieName, '£', chr(163));
+      MovieName:=StringReplace(MovieName, '—', chr(209));
+      MovieName:=StringReplace(MovieName, '”', chr(211));
+      MovieName:=StringReplace(MovieName, 'å', chr(166));
+      MovieName:=StringReplace(MovieName, 'è', chr(172));
+      MovieName:=StringReplace(MovieName, 'Ø', chr(175));
+      AnalyzePage('http://film.wp.pl/p/szukaj.html', 'fromBox=1&szukaj='+MovieName+'&lista=a0');
+      end;
+    end
+  else
+    ShowMessage('Skrypt wymaga programu Ant Movie Catalog w wersji 3.5.0 lub nowszej');
+end.

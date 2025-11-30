@@ -1,0 +1,329 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=folgui (folgui@bigfoot.com), gilistico
+Title=AdictosAlCine (ES)
+Description=Movie importation script for adictosalcine
+Site=http://www.adictosalcine.com
+Language=ES
+Version=0.4 (04/03/2007)
+Requires=3.5.0
+Comments=
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.|
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program adictosalcine;
+uses
+  StringUtils1;
+const
+  SearchInitialURL = 'http://www.adictosalcine.com/buscar.phtml?letra=&year=&texto=';
+  SearchFinalURL = '&tip=1&lan=&cat=&orden=4';
+  BaseURL = 'http://www.adictosalcine.com/';
+var
+  MovieName: string;
+  MovieURL: string;
+
+
+//------------------------------------------------------------------------------------
+
+
+
+procedure AnalyzePage(Address: string);
+var
+     Page: TStringList;
+     LineNr: Integer;
+     Line: string;
+     MovieTitle, MovieAddress: string;
+
+begin
+   PickTreeClear;
+     Page := TStringList.Create;
+     Page.Text := GetPage(Address);
+     if Pos('Resultados de la búsqueda', Page.Text) = 0 then
+     begin
+          ShowMessage('No se ha podido establecer la conexion.');
+      Page.Free;
+      exit;
+   end;
+
+   LineNr := FindLine('<strong>Título de la Película </strong>', Page, 0);
+       LineNr := LineNr + 7;
+       Line := Page.GetString(LineNr);
+
+       if Pos ('No se han encontrado coincidencias', Line) <> 0 then
+       begin
+            ShowMessage('No se han encontrado resultados para "' + MovieName + '"');
+      Page.Free;
+      exit;
+   end;
+
+   LineNR := 0;
+
+   while TRUE do
+   begin
+      LineNr := FindLine('&titulo=', Page, LineNR+1);
+      if LineNR = -1 then
+         break;
+
+            Line := Page.GetString(LineNr);
+           MovieTitle := TextBetween (Line, 'class="menu" target="_top">', '</a></td>');
+           HTMLDecode(MovieTitle);
+           MovieAddress := TextBetween (Line, '<a href="', '" class="menu" ');
+            Line := Page.GetString(LineNr+4);
+           MovieTitle := MovieTitle + ' ('+ TextBetween (Line, '<strong>', '</strong>') + ')';
+
+           PickTreeAdd(MovieTitle, BaseURL + MovieAddress);
+   end;
+
+   if PickTreeExec(Address) then
+           AnalyzeMoviePage(Address);
+
+
+   Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr, aux: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Producers: string;
+  Directors: string;
+  Writers: string;
+  Description: string;
+
+begin
+  Comments := '';
+  Actors := '';
+  Writers := '';
+  Producers := '';
+  Description := '';
+
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(UrlEncode(Address));
+
+  //Genero
+  LineNr := FindLine('<strong>GÉNERO</strong>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+1);
+     Item := TextBetween (Line, 'class="azul">','</a>');
+     HTMLDecode(Item);
+     SetField(fieldCategory, Trim(Item));
+  end;
+
+  //Valoracion
+  LineNr := FindLine('<strong> Media:</strong>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+1);
+     HTMLRemoveTags(Line);
+     Item := IntToStr(Round(StrToInt(StrGet(Line, 1), 0)));
+     SetField(fieldRating, Item);
+  end;
+
+  //URL
+  LineNr := FindLine('<b>Dirección:</b> ', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, '</b> ','<br>');
+     HTMLDecode(Item);
+     SetField(fieldURL, Trim(Item));
+   end;
+
+  //Titulo
+  LineNr := FindLine('<td width="100%" align="center" valign="top" bgcolor="#617D99"><font size="4" color="#FFFFFF">', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, '<strong>', '</strong></font>');
+     HTMLDecode(Item);
+     SetField(fieldTranslatedTitle, Trim(Item));
+     SetField(fieldOriginalTitle, Trim(Item));
+  end;
+
+  //Sinopsis
+  LineNr := FindLine('<strong>Sinopsis', Page, 0);
+  if LineNR <> -1 then
+  begin
+   Line := '';
+   While TRUE do
+   begin
+      LineNr := LineNr +1;
+        Line   := Line + Page.GetString(LineNr);
+      if Pos ('</font></p>', Line) > 0 then
+         break;
+   end
+ 
+    Item := TextBetween (Line, '<font style="font-size: 12px;">', '</font></p>');
+   HTMLRemoveTags(Item);
+     HTMLDecode(Item);
+     SetField(fieldDescription, Trim(Item));
+  end;
+
+  //Titulo Original
+  LineNr := FindLine('<strong>TÍTULO ORIGINAL</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+1);
+     Item := TextBetween (Line, '<td width="100%" bgcolor="#EEEEEE">', '</td>');
+     HTMLDecode(Item);
+     SetField(fieldOriginalTitle, Trim(Item));
+   end;
+
+  //Country
+  LineNr := FindLine('<strong>NACIONALIDAD</strong>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+2);
+     Item := TextBetween (Line, 'class="azul">','class="azul"></a>');
+     HTMLRemoveTags(Item);
+     HTMLDecode(Item);
+     SetField(fieldCountry, Trim(Item));
+  end;
+
+  //Director
+  if LineNR <> -1 then
+  begin
+     LineNr := FindLine('<td><strong>DIRECTOR</strong></td>', Page, 0);
+     Line := Page.GetString(LineNr+3);
+     Item := TextBetween (Line, '<a href="buscar.phtml?texto=','&tip=0"');
+     HTMLDecode(Item);
+     SetField(fieldDirector, Trim(Item));
+  end;
+
+  //Actores
+  LineNr := FindLine('<td><strong>LISTA DE INTÉRPRETES</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+   LineNr := LineNr + 3;
+       Line := Page.GetString(LineNr);
+       Actors := Actors + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+       LineNr := LineNr + 1;
+       Line := Page.GetString(LineNr);
+       while Pos ('</td></tr>', Line) = 0 do
+        begin
+            Actors := Actors + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+        end;
+       SetField(fieldActors, Copy(Actors, 1, Length(Actors)-2));
+  end;
+
+  //Año
+  LineNr := FindLine('<td><strong>AÑO</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+1);
+     Item := TextBetween (Line, '<a href="buscar.phtml?year=','&orden=4"');
+     HTMLDecode(Item);
+     SetField(fieldYear, Trim(Item));
+   end;
+
+  //Duracion
+  LineNr := FindLine('<td><strong>DURACIÓN</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+1);
+     Item := TextBetween (Line, '<td bgcolor="#EEEEEE">',' minutos</td>');
+     HTMLDecode(Item);
+     SetField(fieldLength, Trim(Item));
+  end;
+
+  // Productor
+  LineNr := FindLine('<td><strong>PRODUCTOR</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+   LineNr := LineNr + 3;
+   Line := Page.GetString(LineNr);
+   Producers := Producers + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+   LineNr := LineNr + 1;
+   Line := Page.GetString(LineNr);
+   while Pos ('</td></tr>', Line) = 0 do
+   begin
+      Producers := Producers + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+        end;
+       SetField(fieldProducer, Copy(Producers, 1, Length(Producers)-2));
+  end;
+
+  //Guionista
+  LineNr := FindLine('<td><strong>GUIONISTA</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+   LineNr := LineNr + 3;
+       Line := Page.GetString(LineNr);
+       Writers := Writers + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+       LineNr := LineNr + 1;
+       Line := Page.GetString(LineNr);
+       while Pos ('</td>', Line) = 0 do
+        begin
+            Writers := Writers + TextBetween (Line, '<a href="buscar.phtml?texto=', '&tip=0"') + ', ';
+            LineNr := LineNr + 1;
+            Line := Page.GetString(LineNr);
+        end;
+       Comments := Comments + 'Guionista: ' + Copy(Writers, 1, Length(Writers)-2) + #13#10;
+  end;
+ 
+  //Musica
+  LineNr := FindLine('<td><strong>MÚSICA</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+3);
+     Item := TextBetween (Line, '<a href="buscar.phtml?texto=','&tip=0"');
+     HTMLDecode(Item);
+     Comments := Comments + 'Música: ' + Item + #13#10;
+  end;
+
+  //Fotografia
+  LineNr := FindLine('<td><strong>FOTOGRAFIA</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+3);
+     Item := TextBetween (Line, '<a href="buscar.phtml?texto=','&tip=0"');
+     HTMLDecode(Item);
+     Comments := Comments + 'Fotografía: ' + Item + #13#10;
+   end;
+
+  //Montaje
+  LineNr := FindLine('<td><strong>MONTAJE</strong></td>', Page, 0);
+  if LineNR <> -1 then
+  begin
+     Line := Page.GetString(LineNr+3);
+     Item := TextBetween (Line, '<a href="buscar.phtml?texto=','&tip=0"');
+     HTMLDecode(Item);
+     Comments := Comments + 'Montaje: ' + Item + #13#10;
+  end;
+
+  HTMLDecode(Comments);
+  SetField(fieldComments, Comments);
+
+end;
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    if Input('Importar de Adictos al Cine', 'Introduzca el titulo de la pelicula:', MovieName) then
+    begin
+      AnalyzePage(SearchInitialURL + UrlEncode(MovieName) + SearchFinalURL);
+    end;
+  end
+  else
+    ShowMessage('Este script requiere una version mas reciente de Ant Movie Catalog (por lo menos la version 3.5.0)');
+end.

@@ -1,0 +1,61 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="content-language" content="de">
+<meta name="author" content="$$OWNER_NAME">
+<title>$$OWNER_NAME's Movie List</title>
+<style>
+body {scrollbar-3d-light-color:#000000;
+      scrollbar-arrow-color:#00FFFF;
+      scrollbar-base-color:#000000;
+      scrollbar-dark-shadow-color:#000000;
+      scrollbar-face-color:#000000;
+      scrollbar-highlight-color:#0000000;
+      scrollbar-shadow-color:#000000}
+</style>
+</head>
+<body text="#00FFFF" bgcolor="#000000" link="#00FFFF" alink="#00FFFF" vlink="#00FFFF">
+<font face="Impact" size="+2">
+<p><i><center>Movies</center></i></p>
+</font>
+<font face="Tahoma" size ="-1">
+<table border="1" bordercolorlight="#171717" bordercolordark="#000000" bgcolor="#000000" width="960" align="center">
+<colgroup>
+  <col align="left">
+  <col align="center">
+	<col align="left">
+  <col align="right">
+	<col align="right">
+	<col align="right">
+	<col align="right">
+ 	<col align="right">
+</colgroup>
+<tr>
+<td><font face="Tahoma" size="-3"><b>Titel</b></font></td>
+<td><font face="Tahoma" size="-3"><b>Bewertung</b></font></td>
+<td><font face="Tahoma" size="-3"><b>Format</b></font></td>
+<td><font face="Tahoma" size="-3"><b>Sprache</b></font></td>
+<td><font face="Tahoma" size="-3"><b>Aufl&ouml;sung</b></font></td>
+<td><font face="Tahoma" size="-3"><b>L&auml;nge</b></font></td>
+<td><font face="Tahoma" size="-3"><b>CD(s)</b></font></td>
+<td><font face="Tahoma" size="-3"><b>CD Nr.</b></font></td>
+</tr>
+$$ITEM_BEGIN
+<tr>
+<td><a href="$$ITEM_FILEINDIV" target="_blank">$$ITEM_TRANSLATEDTITLE</a></td>
+<td>$$ITEM_APPR10</td>
+<td>$$ITEM_VIDEOFORMAT&nbsp;</td>
+<td>$$ITEM_LANGUAGES&nbsp;</td>
+<td>$$ITEM_RESOLUTION&nbsp;</td>
+<td>$$ITEM_LENGTH&nbsp;</td>
+<td>$$ITEM_DISKS&nbsp;</td>
+<td>$$ITEM_NUMBER&nbsp;</td>
+</tr>
+$$ITEM_END
+</table>
+<br><br>
+<center>
+<p><b>Insgesamt $$TOTALMOVIES Filme</b><br><br>Letzte Aktualisierung: $$DATE<br><br>Erstellt mit: <br><br><a href="http://www.antp.be/software/moviecatalog/" target="_blank">Ant Movie Catalog</p>
+</center>
+</body>
+</html>

@@ -1,0 +1,554 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Bobo
+Title=dvd-maxxx.com
+Description=dvd-maxxx.com (FR) - Recherche de films
+Site=dvd-maxxx.com
+Language=FR
+Version=
+Requires=3.5.0
+Comments=
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program DvdMaxxx;
+const
+  ConfirmTitre = 1;
+    { 1: Demande le titre avant de lancer le script
+      2: Ne demande pas le titre avant de lancer le script, 0 : Ne demande aucune comfirmation, 3 : Aucune Confirmation Premier Film si multiples resultats}
+  // Pour récupérer ou non un champs
+  TitreTraduitConst = True;
+  TitreOrignalConst = True;
+  CategorieConst = True;
+  AdresseWebConst = True;
+  SynopsisConst = True;
+ 
+var
+  MovieName, Adresse, AdressePlus, La_liste, LaAllocine_FR, LaPremiereGrandeImage, Reponse, AdresseSuivant, AdressePrecedent, LePremierFilmAdresse, strTemp, aucunAmazon : string;
+  numPage, numPageG, numPageR, grandeTaille, premiereTaille, compteur, premiereExecution, numTemp : Integer;
+
+//------------------------------------------------------------------------------
+// TROUVE UNE SOUS-CHAINE DE CARACTERE DANS UNE CHAINE
+//------------------------------------------------------------------------------
+
+function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      result := i;
+      Break;
+    end;
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DE RECHERCHES
+//------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  BeginPos, EndPos : Integer;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  if pos('Aucun produit',Page.Text) <> 0 then
+  begin
+  if (ConfirmTitre = 1) or (ConfirmTitre = 2) then
+  begin
+    showmessage('Aucun film trouvé pour : '+MovieName);
+    exit;
+  end else
+  begin
+    SetField(fieldURL, 'DVD Maxxx : aucun résultat');
+    exit;
+  end;
+  end;
+
+    PickTreeClear;
+
+    //on se limite à la section où ya les liens du résultat de la recherche
+    BeginPos := Pos('vAlign=bottom align="center"><A href=', Page.Text);
+    EndPos := length(Page.Text);
+    Line := copy(Page.Text,BeginPos,EndPos-BeginPos);
+    EndPos := Pos('produits trouvés', Line);
+    Line := copy(Line,1,EndPos-1);
+
+    PickTreeAdd('Films trouvés pour ' + MovieName + ' :', '');
+    AddMoviesTitles(Line);
+    PickTreeAdd(' ', '');
+    PickTreeAdd('Verifier si vous avez la dernière version', 'version');
+
+    if compteur = 1 then
+    begin
+      compteur := 0;
+      AnalyzeMoviePage();
+      exit;
+    end else if (ConfirmTitre = 1) or (ConfirmTitre = 2) then
+    begin
+      begin
+        if PickTreeExec(Address) then
+        begin
+          Adresse := Address;
+
+     if (Adresse = AdressePlus) then
+          begin
+            numPageR := numPageR+1;
+       AnalyzePage(AdressePlus);
+          end else
+          if (Adresse = AdressePrecedent) then
+          begin
+            numPageR := numPageR-1;
+       AnalyzePage(AdressePrecedent);
+          end else
+          if (Adresse = AdresseSuivant) then
+          begin
+            numPageR := numPageR+1;
+       AnalyzePage(AdresseSuivant);
+          end else
+          begin
+            AnalyzeMoviePage();
+          end;
+        end;
+      end;
+    end else
+    begin
+      if (ConfirmTitre = 3) then
+      begin
+        Adresse := LePremierFilmAdresse;
+        AnalyzeMoviePage();
+      end else
+      begin
+        SetField(fieldURL, 'dvd-maxxx : résultats multiples');
+        exit;
+      end;
+    end;
+  Page.Free;
+end;
+
+
+//------------------------------------------------------------------------------
+// FONCTION CONVERSION DUREE HEURES EN MINUTES
+//------------------------------------------------------------------------------
+function h2m(heures : String) : string;
+var
+  intH, intM : Integer;
+ 
+begin
+  intH := StrToInt(copy(heures,1,1),0);
+  intM := StrToInt(copy(heures,3,2),0);
+  result := IntToStr(intH*60+intM);
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalyzeMoviePage();
+var
+  Line, Value, Value2, AdresseCasting, AdresseSecret, AdresseGalerie, aucun : string;
+  LineNr, IntValue: Integer;
+  BeginPos, EndPos, FinPos, DureeProdReal: Integer;
+begin
+
+//charge la page
+  Line := GetPage(Adresse);
+
+// URL
+  if AdresseWebConst = True then
+  begin
+    if (ConfirmTitre = 3) then
+    begin
+      SetField(fieldURL, 'DVD Maxxx : à verifier');
+    end else
+    begin
+      SetField(fieldURL, URLEncode(Adresse));
+    end;
+  end;
+
+//titre
+//exemple : <span class="txt_title">Les co-locataires - DVD</span>
+  if TitreTraduitConst = True then
+  begin
+  BeginPos := pos('<span class="txt_title">', Line);
+  delete(Line,1, BeginPos+3); // +3 : une pette marge
+  BeginPos := pos('>', Line)+1;
+  EndPos := pos('</span>', Line);
+  Value := copy(Line, BeginPos, EndPos - BeginPos);
+  if pos(' - DVD', Value) >0 then
+  begin
+    delete(Value,pos(' - DVD', Value),6);
+  end;
+  if pos(' - VHS', Value) >0 then
+  begin
+    delete(Value,pos(' - VHS', Value),6);
+  end;
+  Value := AnsiUpFirstLetter(Value);
+  Value := AnsiMixedCase(Value,' -');
+  SetField(fieldTranslatedTitle, Value);
+  end;
+
+//titre originale (ici = titre)
+  if TitreOrignalConst = True then
+  begin
+    SetField(fieldOriginalTitle, Value);
+  end;
+ 
+// Affiche
+  BeginPos := pos('<span class="txt_title">', Line);
+  Value := copy(Line,BeginPos, length(Line)-BeginPos+1);
+  BeginPos := pos('<img src=', Value)+ 10;
+  EndPos := pos('" align="left"', Value);
+  Value := copy(Value,BeginPos, EndPos-BeginPos);
+  if pos('https', Value) > 0 then
+  begin
+     delete(Value, pos('https', Value)+4,1);
+  end;
+  GetPicture(Value);
+
+// Résumé
+  DureeProdReal := 1;
+  BeginPos := pos('<p> <strong>Scénario:</strong> ', Line)+31;
+  if BeginPos > 31 then
+  begin
+    Value := copy(Line,BeginPos, length(Line)-BeginPos+1);
+    EndPos := pos('<!-- fin scenario -->', Value)-1;
+    Value := copy(Value,1, EndPos);
+    if pos('Points forts', Value) >0 then
+    begin
+      //points forts dans Commentaires
+      Value2 := copy(Value, pos('Points forts', Value)+14, EndPos);
+      SetField(fieldComments, cleanText(Trim(Value2)));
+      delete(Value, pos('Points forts', Value)-1, EndPos);
+    end else if pos('Points Forts', Value) >0 then
+    begin
+      Value2 := copy(Value, pos('Points Forts', Value)+14, EndPos);
+      SetField(fieldComments, cleanText(Trim(Value2)));
+      delete(Value, pos('Points Forts', Value)-1, EndPos);
+    end;
+    SetField(fieldDescription, Trim(cleanText(Value)));
+  end else
+  begin
+    DureeProdReal := 0;
+    BeginPos := pos('value="Ajouter au panier"', Line);
+    Value := copy(Line, BeginPos, length(Line)-BeginPos+1);
+    BeginPos := pos('<br>', Value)+4;
+    EndPos := pos('<br></td></tr>', Value)-1;
+    Value := copy(Value,BeginPos, EndPos-BeginPos+1);
+    SetField(fieldDescription, Trim(cleanText(Value)));
+  end;
+
+// durée
+  if DureeProdReal = 1 then
+  begin
+    BeginPos := pos('<strong>Fiche technique:</strong>', Line)+33;
+    Value := copy(Line,BeginPos, 30); //une marge
+    BeginPos := pos('durée', Value);
+    Value := copy(Value, BeginPos, 20); // marge
+    BeginPos := pos('h', Value)-1;
+    Value := copy(Value,BeginPos, 4);  //style 1h12
+    Value := h2m(Value);
+    SetField(fieldLength, Value);
+
+// producteur
+// exemple : <strong>Studio:</strong> Colmax</p>
+    BeginPos := pos('Studio:</strong>', Line);
+    delete(Line,1, BeginPos+3); // +3 : une pette marge
+    BeginPos := pos('>', Line)+2;
+    EndPos := pos('</p>', Line);
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldProducer, cleanText(Trim(Value)));
+
+// réalisateur
+// exemple : Réalisateur:</strong> Judy Blue
+    BeginPos := pos('Réalisateur:</strong>', Line);
+    delete(Line,1, BeginPos+3); // +3 : une pette marge
+    BeginPos := pos('>', Line)+2;
+    EndPos := pos('<!-- fin realisateur', Line)-2;
+    Value := copy(Line, BeginPos, EndPos - BeginPos);
+    SetField(fieldDirector, cleanText(Trim(Value)));
+  end;
+ 
+// acteurs
+  BeginPos := pos('Acteurs / Actrices :', Line);
+  delete(Line,1, BeginPos+3); // +3 : une pette marge
+  BeginPos := pos('star_name=', Line);
+  EndPos := pos('</a></li><br clear="left">', Line);
+  Value := copy(Line, BeginPos, EndPos - BeginPos+5); //marge
+  AddActors(Value);
+
+// Category
+  if CategorieConst = True then
+  begin
+    SetField(fieldCategory, 'XXX');
+  end;
+
+  //DisplayResults;
+end;
+
+//------------------------------------------------------------------------------
+// AJOUTE LES ACTEURS
+//------------------------------------------------------------------------------
+
+procedure AddActors(var Line: string);
+var
+  acteurs : String;
+  StartPos, EndPos : Integer;
+begin
+
+acteurs :='';
+  repeat
+    StartPos := pos('star_name=', Line);
+    if StartPos > 0 then
+    begin
+      delete(Line,1,StartPos+10);
+      StartPos := pos('>', Line)+1;
+      EndPos := pos('</a>', Line);
+      acteurs := acteurs + copy(Line, StartPos, EndPos-StartPos)+', ';
+      delete(Line,1,EndPos);
+    end;
+  until (StartPos < 1);
+  delete(acteurs, Length(acteurs)-1, 2);
+  SetField(fieldActors, Trim(acteurs));
+end;
+
+//------------------------------------------------------------------------------
+// AJOUTE UN COUPLE FILM / ADRESSE A LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+procedure AddMoviesTitles(var Line: string);
+var
+  MovieTitle, MovieAddress : string;
+  StartPos, EndPos : Integer;
+begin
+
+//compte les résultats
+  compteur := 0;
+  repeat
+    StartPos := pos('vAlign=bottom align="center"><A href="http://www.dvd-maxxx.com', Line)+38;
+    if StartPos > 38 then
+    begin
+      MovieAddress := '';
+      MovieTitle := '';
+    //exemple lien : <A href="http://www.dvd-maxxx.com/?lang=fr&task=produit&prd_id=2289"
+    //exemple titre : <span class=nom_produit>Sinset Boulevard - DVD</span>
+
+      EndPos := pos('" title="', Line);
+      MovieAddress := copy(Line, StartPos, EndPos-StartPos);
+     
+      StartPos := pos('<span class=nom_produit>', Line);
+      delete(Line,1,StartPos+23);
+      EndPos := pos('</span>', Line);
+      MovieTitle := copy(Line, 1, EndPos-1);
+      PickTreeAdd(MovieTitle, MovieAddress);
+      adresse := MovieAddress;
+      if (compteur = 0) then
+      begin
+        LePremierFilmAdresse := adresse;
+      end;
+      compteur := compteur+1;
+    end;
+  until (StartPos < 39);
+end;
+
+//------------------------------------------------------------------------------
+// NETTOIE LES TAGS DES TEXTES
+//------------------------------------------------------------------------------
+
+function cleanText(text : String) : string;
+var
+  temp : String;
+begin
+  temp := text;
+  temp := StringReplace(temp, #13, '');
+  temp := StringReplace(temp, #10, '');
+  temp := StringReplace(temp, '<p>', #13#10);
+  temp := StringReplace(temp, '</p>', #13#10);
+  temp := StringReplace(temp, '<br>', #13#10);
+  result := temp;
+end;
+
+//------------------------------------------------------------------------------
+// NETTOIE LE TITRE DU FICHIER POUR AVOIR LE TITRE DE FILM
+//------------------------------------------------------------------------------
+
+function cleanTitle(title : String) : string;
+var
+  i,j, fin : Integer;
+  temp : String;
+
+begin
+  title := AnsiUpperCase(title);
+
+  if title <> '' then
+  begin
+// Nettoie les tags fichiers, merci Atmosfear pour les tags
+  i:=pos('.DVD',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.DIVX',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.FREN',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.GERM',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.INT',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.LIM',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.PROP',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.REPACK',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.SUBB',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.UNSUB',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.WS',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.XVID',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.AC3',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+  i:=pos('.UNRAT',title);
+  if i <> 0 then
+  begin
+    title := copy(title,1,i-1);
+  end;
+
+   title := StringReplace(title, '.', ' ');
+   title := StringReplace(title, ',', ' ');
+   title := StringReplace(title, ':', '');
+   title := StringReplace(title, '-', '');
+   title := StringReplace(title, '  ', ' ');
+
+   i := 0;
+// Nettoie les tags de team
+   if (pos('(',title) <> 0) then
+   begin
+     i := pos('(',title);
+     temp := copy(title,0,i-1);
+     j := pos(')',title);
+     fin := Length(title);
+     title := temp + copy(title,j+1,fin);
+   end;
+
+   if (pos('[',title) <> 0) then
+   begin
+     i := pos('[',title);
+     temp := copy(title,1,i-1);
+     j := pos(']',title);
+     fin := Length(title);
+     title := temp + copy(title,j+1,fin);
+   end;
+
+   title := AnsiLowerCase(title);
+   title := AnsiUpFirstLetter(title);
+   title := AnsiMixedCase(title,' -');
+  end;
+   result := title;
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    numPageR := 1;
+    MovieName := GetField(fieldTranslatedTitle);
+    if MovieName = '' then
+      MovieName := GetField(fieldOriginalTitle);
+    MovieName := cleanTitle(MovieName);
+    if (ConfirmTitre = 1) then
+    begin
+      if Input('DVD Maxxx', 'Entrez le titre du film :', MovieName) then
+      begin
+        if Pos('dvdmaxxx.', MovieName) > 0 then
+        begin
+          adresse := MovieName;
+          AnalyzeMoviePage();
+        end else
+        begin
+          AnalyzePage('http://www.dvd-maxxx.com/index.php?task=search&keywords='+UrlEncode(MovieName));
+        end;
+      end;
+    end else
+    begin
+      if (premiereExecution = 0) then
+      begin
+          premiereExecution := -1;
+     PickTreeClear;
+         PickTreeAdd('Vous allez executer le script DVD Maxxx sans confirmation', '');
+          PickTreeAdd('Cliquez ici pour continuer', 'Oui');
+     PickTreeAdd('Cliquez sur annuler pour ne pas executer le script', '');
+     begin
+       if PickTreeExec(Reponse)=true then
+             if (Reponse = 'Oui') then
+             begin
+              AnalyzePage('http://www.dvd-maxxx.com/index.php?task=search&keywords='+UrlEncode(MovieName));
+       end;
+     end;
+      end else
+      begin
+          AnalyzePage('http://www.dvd-maxxx.com/index.php?task=search&keywords='+UrlEncode(MovieName));
+      end;
+    end;
+  end else
+  ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 3.5.0)');
+end.

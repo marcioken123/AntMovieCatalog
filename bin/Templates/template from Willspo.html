@@ -1,0 +1,352 @@
+<html>
+<head>
+<!-- Template by Willspo -->
+<!-- Bascially it works like this:
+
+      You browse to a movie and Click the play button. A dialog will pop up:
+      Please insert (media type) with movie # (movie number) (media label)
+      You insert the right cd and press ok
+      The program will launch the first avi file on the disc.
+
+For any of this to work you have to modify the "user variables" in the script:
+cdDriveLetter and playerPath.
+
+Important: This is a hta template. Choose export, html but when you are prompted
+to enter a file name type: filename.hta! Otherwise it will not work at all.
+-->
+<hta:application border="none" singleinstance="yes" windowstate="maximize" scroll="no" caption="no" innerborder="no">
+</hta:application>
+<style>
+   body {
+      background: black;
+      color: white;
+      font-family: Tahoma, Arial, Verdana;
+   }
+   
+   h1 {         /* Title */
+      font-size: 21px;
+   }
+   
+   p {
+      font-size: 16px;
+      line-height: 125%;
+   }
+   
+   td {
+      font-size: 16px;
+   }
+   
+   #picture {
+       width: 333px;
+       height: 475px;
+       overflow: hidden;
+       border: 2px solid #666666;
+   }
+   
+   .button {      /* Next / Prev and category buttons */
+       height: 15px;
+      padding-left: 18px;
+      padding-right: 18px;
+      border: 2px solid #666666;
+      font-weight: bold;
+      cursor: hand;
+   }
+   
+   #exit {
+         color: #FF6666;
+   }
+   
+   #play {
+      color: #99FF00;
+   }
+   
+   #counter {      /* Movie number between next and prev */
+         width: 100px;
+         height: 15px;
+         font-weight: bold;
+         text-align: center;
+   }
+
+   #contentDiv {   /* The area that contains the movies */
+       height: 479px;
+       overflow: hidden;
+       margin-top: 20px;
+       margin-bottom: 20px;
+     }
+   
+   #playDialog {
+      position: absolute;
+      visibility: hidden;
+      background: black;
+      padding: 10px;
+      border: 2px solid #666666;
+   }
+</style>
+<script language="javaScript">
+   /* User variables */
+   var playerPath = "D:\\Progra~1\\BSPlayer\\bplay.exe";
+   var cdDriveLetter = "f";
+   
+   /* System variables */
+var movies = new Array();
+   var category  = "";         // Current category
+   var movie = null;         // Current movie
+   var categoryButton = null;   // Active category button
+   var index = 0;            // Current movie number in this category
+   var isReady = true;         // Is ready for input from user
+   
+   /*
+    * Gets called by body onload.
+    * Organizes all div elements with the attribute category in different arrays
+    * depending on category.
+    */
+   function init() {
+      var elements = document.body.getElementsByTagName("div");   
+      var catArray = null;
+      movies["All"] = new Array();
+      createCategory("All");
+      for (var i = 0; i < elements.length; i++) {
+         category = elements[i].category;
+         if (category != null && category != "") {
+            catArray = movies[category];
+            if (catArray == null) {
+               catArray = new Array();
+               movies[category] = catArray;
+               catArray[0] = elements[i];
+               createCategory(category);
+            } else {
+               catArray[catArray.length] = elements[i];
+            }
+            movies["All"][movies["All"].length] = elements[i];
+         }
+      }
+      category = "All";
+      showMovie(0);
+   }
+   
+   /*
+    * Called by init()
+    * Writes the html code for a category button with given name
+    */
+   function createCategory(name) {
+      html = "<span class='button' onclick='setCategory(\"" + name + "\")'>" + name + "</span>";
+      document.all.categoryDiv.innerHTML += html;
+   }
+   
+   /*
+    * Called when the user presses a category button.
+    * Sets the category to the given value.
+    */
+   function setCategory(name) {
+      if (!isReady) return;
+      category = name;
+      index = 0;
+      showMovie(index);
+      
+      // Changes apperance of the pressed category button
+      if (categoryButton != null) {
+        categoryButton.style.borderColor = "#666666";
+        categoryButton.style.color = "white";
+      }
+      categoryButton = window.event.srcElement;
+      categoryButton.style.borderColor = "99FF00";
+      categoryButton.style.color = "99FF00";
+   }
+   
+   /*
+    * Gets called when user presses next button
+    * Switches to the next movie in this category
+    */
+   function next() {
+      if (!isReady) return;
+      index++;
+         if (index >= movies[category].length)
+             index = 0;
+         showMovie(index);
+   }
+   
+   /*
+    * Gets called when user presses prev button
+    * Switches to the previous movie in this category
+    */
+   function prev() {
+      if (!isReady) return;
+         index--;
+         if (index < 0)
+           index = movies[category].length - 1;
+         showMovie(index);
+   }
+
+   /*
+    * Called by functions next and prev.
+    * Shows the movie with specified number in this category.
+    * Also responsible for loading and displaying the picture for this movie
+    */
+   function showMovie(i) {
+      if (movie != null) {
+          movie.style.display = "none";
+         }
+         movie = movies[category][i];
+        movie.style.display = "inline";
+      document.all.picture.src = movie.img;
+        document.all.counter.innerHTML = (i + 1) + "/" + movies[category].length;
+   }
+
+   /*
+    * Gets called when the user presses the exit button.
+    * Closes the program.
+    */
+   function exit() {
+      window.close();
+   }
+
+   /*
+    * Gets called when the user presses the play button.
+    * Initializes the play dialog: "Insert CD_ROM with movie #... label"
+    */
+   function play() {
+      if (movie != null) {
+         var playDialog = document.all.playDialog;
+         var type = (movie.media == "") ? "CD-ROM" : movie.media;
+         isReady = false;
+         html = "<table cellpadding='10' cellspacing='0' border='0'><tr><td align='center'>";
+         html += "Insert " + type + " with movie #" + movie.nr + " " + movie.media;
+         html += "</td></tr><tr><td align='center'>";
+         html += "<span id='ok' class='button' onclick='ok()'>Ok</span>";
+         html += "<span id='cancel' class='button' onclick='cancel()'>Cancel</span>";
+         html += "</td></tr></table>";
+         playDialog.innerHTML = html;
+
+         // Center th eplay dialog on screen
+         var posX = screen.availWidth / 2 - playDialog.offsetWidth / 2;
+         var posY = screen.availHeight / 2 - playDialog.offsetHeight / 2;
+         playDialog.style.posTop = posY;
+         playDialog.style.posLeft = posX;
+         playDialog.style.visibility = "visible";
+      }
+   }
+   
+   /* Gets called when the user presses the ok button in the play dialog
+    * Searches the specified cd drive for the first avi file.
+    * Launches the specified player with the avi file as argument.
+    * Hopefully the player will start the movie.
+    */
+   function ok() {
+      document.all.playDialog.style.visibility = "hidden";
+      var wScript = new ActiveXObject("Wscript.Shell");
+      var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var folder = fso.GetFolder(cdDriveLetter + ":");
+        var fc = new Enumerator(folder.files);
+      var file = null;
+        for (; !fc.atEnd(); fc.moveNext()){
+         if ( fc.item().Name.indexOf(".avi") != -1 ) {
+            file = fc.item().ShortPath;
+            break;
+         }
+      }
+      if (file != null) {
+         wScript.run(playerPath + " " + file);
+      } else {
+         alert("Could not find any avi file on  " + cdDriveLetter + "!");
+      } 
+      isReady = true;
+   }
+
+   /* Gets called when the user presses the cancel button in the play dialog */
+   function cancel() {
+      document.all.playDialog.style.visibility = "hidden";
+      isReady = true;
+   }
+</script>
+</head>
+<body onLoad="init()" topmargin="5" leftmargin="15">
+<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0">
+   <tr>
+      <td align="center">
+         <table width="780" height="600" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+               <td valign="top" align="center">
+                  <div id="categoryDiv">
+                  </div>
+                  <div id="contentDiv">
+                     <table class="$$ITEM_CATEGORY" cellspacing="0" cellpadding="0" border="0" width="100%"  >
+                        <tr>
+                           <td width="350" valign="top">
+                              <img src="" id="picture">
+                           </td>
+                           <td valign="top">
+                              $$ITEM_BEGIN
+                              <div category="$$ITEM_CATEGORY" style="display: none" nr="$$ITEM_NUMBER" type="$$ITEM_TYPE" media="$$ITEM_MEDIA" img="$$ITEM_PICTUREFILENAME">
+                              <h1>$$ITEM_FORMATTEDTITLE2 $$ITEM_APPRECIATION</h1>
+                                 <table cellspacing="0" cellpadding="0">
+                                    <tr>
+                                       <td><b>Category:&nbsp;&nbsp;</b>
+                                       </td>
+                                       <td>$$ITEM_CATEGORY
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td><b>Year:</b>
+                                       </td>
+                                       <td>$$ITEM_YEAR
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td><b>Director:</b>
+                                       </td>
+                                       <td>$$ITEM_DIRECTOR
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td><b>Length:</b>
+                                       </td>
+                                       <td>$$ITEM_LENGTH
+                                       </td>
+                                    </tr>
+                                 </table>
+                                 <br>
+                                 <p>
+                                    <b>Description:</b>
+                                    <br>
+                                    $$ITEM_DESCRIPTION
+                                 </p>
+                              </div>
+                              $$ITEM_END
+                           </td>
+                        </tr>
+                     </table>
+                  </div>
+                  <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                     <tr>
+                        <td width="200">&nbsp;
+                        </td>
+                        <td align="center">
+                           <span id="prev" class="button" onClick="prev()">
+                              Prev
+                           </span>
+                           <span id="counter">
+                           </span>
+                           <span id="next" class="button" onClick="next()">
+                              Next
+                           </span>
+                        </td>
+                        <td width="200" align="right">
+                           <span id="play" class="button" onClick="play()">
+                              Play
+                           </span>
+                           <span id="exit" class="button" onClick="exit()">
+                              Exit
+                           </span>
+                        </td>
+                     </tr>
+                  </table>
+               </td>
+            </tr>
+         </table>
+      </td>
+   </tr>
+</table>
+<div id="playDialog">
+</div>
+</body>
+</html>

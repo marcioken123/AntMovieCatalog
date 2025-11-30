@@ -1,0 +1,842 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=ScorEpioN + modifications de baffab
+Title=Cinemasie.com
+Description=Recherche de films asiatiques, staff, synopsis et images
+Site=http://www.cinemasie.com
+Language=EN,FR
+Version=28 du 15/12/2009
+Requires=3.5
+Comments=Ce script nécessite le fichier ScorEpioNCommonScript.pas|.==.| :   ' ( ( ( ( /\ |  "==()))))):     © ScorEpioN ©|       ( ( ( ( \_/
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Langue (Français/English)=0|0|0=Français|1=English
+Type de Lancement=0|0|0=Demande le titre avant de lancer le script|1=Ne demande pas le titre avant de lancer le script|2=Cherche le meilleur résultat sans confirmation|3=Lancement automatique sur l'adresse web
+Casse Choisie=3|3|0=Titre en minuscule|1=Titre en majuscule|2=Première lettre du titre en majuscule|3=Première lettre de chaque mot du titre en majuscule
+Titre en double=0|2|0=Garde les titres originaux et traduits même identiques|1=Garde les titres originaux si identiques|2=Garde les titres traduits si identiques
+Choix titres originaux=2|0|0=Titre Original|1=Titre Anglais|2=Autres titres si titre original identique à titre traduit
+Recherche sur le titre=0|0|0=Traduit|1=Original
+Détail des critiques=1|0|0=Aucune critique|1=Critiques Cinémasie|2=Critiques Visiteurs|3=Critiques Cinémasie & Visiteurs
+Champ commentaire (critique)=1|0|0=Remplace|1=Ajoute en début|2=Ajoute en fin
+Fichier de log=1|1|0=Oui|1=Non
+Auto-Update=1|1|0=Oui|1=Non
+
+***************************************************)
+
+program CINEMASIE_SEARCH;
+uses
+  ScorEpioNCommonScript;
+const
+  VersionScript = '26 du 20/07/2006';
+  NomScript = 'CINEMASIE';
+  urlDomain = 'cinemasie.com';
+  urlBase   = 'http://www.cinemasie.com';
+  urlBaseFR = 'http://www.cinemasie.com/fr';
+  urlBaseUS = 'http://www.cinemasie.com/en';
+  urlSearch = '/listes/recherche/recherche.php?texte=';
+  urlImage  = '/visuels/affichettes/';
+  urlImage2 = '/visuels/jaqsdvd/';
+
+var
+  MovieName, NomFilm, TypeExec : string;
+  i, premiereExecution : Integer;
+  listeResultat: TStringList;
+  listeFR, listeUS : array of string;
+
+//------------------------------------------------------------------------------
+// URL EN FRANCAIS OU EN ANGLAIS
+//------------------------------------------------------------------------------
+
+function urlBaseFRUS() : string;
+begin
+  if (GetOption('Langue (Français/English)') = 0) then
+    result := urlBaseFR
+  else if (GetOption('Langue (Français/English)') = 1) then
+    result := urlBaseUS;
+end;
+
+//------------------------------------------------------------------------------
+// RETOURNE ELEMENT EN FR OU EN US
+//------------------------------------------------------------------------------
+
+function retourneElement(j : Integer) : string;
+begin
+  if (GetOption('Langue (Français/English)') = 0) then
+    result := listeFR[j]
+  else if (GetOption('Langue (Français/English)') = 1) then
+    result := listeUS[j];
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DE RECHERCHES
+//------------------------------------------------------------------------------
+
+procedure AnalyzePage(Address: string);
+var
+  Line, annee, titre, titre_exact, adresse : String;
+  StartPos, EndPos : Integer;
+begin
+// Charge la page
+  Line := GetPage(Address);
+// Traduction des champs
+  SetArrayLength(listeFR,6);
+  SetArrayLength(listeUS,6);
+  listeFR[0] := 'pas de résultats avec le texte entré';
+  listeUS[0] := 'There is no result for the text you have provided.';
+  listeFR[1] := 'Aucun film trouvé pour : ';
+  listeUS[1] := 'No result : ';
+  listeFR[2] := 'résultat(s) exact(s)';
+  listeUS[2] := 'accurate Results';
+  listeFR[3] := 'année';
+  listeUS[3] := 'year';
+  listeFR[4] := 'titres les plus demandés';
+  listeUS[4] := 'all the results';
+  listeFR[5] := 'tous les titres';
+  listeUS[5] := 'all the titles';
+//teste si il y a des films trouvés
+  if Pos(retourneElement(0), Line) <> 0 then
+  begin
+    if (GetOption('Type de Lancement') = 0) then
+    begin
+       if Input(NomScript+' by ScorEpioN', retourneElement(1)+' pour '''+MovieName+''' :', MovieName) then
+       begin        
+        if Pos(urlDomain, MovieName) > 0 then
+        begin
+          AnalysePageFilm(MovieName);
+        end else
+        begin
+          //remplace les caractères accentués
+          MovieName := supprimeLesAccents(MovieName);
+          MovieName := StringReplace(MovieName, ' ', '+');
+          AnalyzePage(urlBaseFRUS()+urlSearch+ UrlEncode(MovieName));
+        end;
+       end else
+        exit;
+       //showmessage(retourneElement(1) + MovieName)
+    end else
+        SetField(fieldChecked, '');
+    exit;
+  end else
+  begin
+    listeResultat := TStringList.Create;
+// Titres exacts
+    if pos(retourneElement(2),Line) <> 0 then
+    begin
+      StartPos := pos(retourneElement(2), Line);
+      delete(Line, 1, StartPos-1);
+      StartPos := pos('"indpic">', Line);
+      delete(Line, 1, StartPos-1);
+      repeat
+        StartPos := pos('"indpic">', Line);
+        delete(Line, 1, StartPos-1);
+        titre := findInfoC('"indpic">', '</a>', Line,'0');
+        adresse := urlBaseFRUS()+findInfoC('<a href="', '"', Line,'0');
+        annee := findInfoC(retourneElement(3)+'</b></td><td>', '</td>', Line,'0');
+        listeResultat.Add(annee+'|'+titre+distingueFAM(adresse)+'|'+adresse);
+        delete(Line, 1, length('"indpic">'));
+        EndPos := pos('</table>', Line);
+        StartPos := pos('"indpic">', Line);
+      until (StartPos > EndPos);
+    end;
+    titre_exact := titre;
+// Autres titres
+    if pos(retourneElement(4),Line) <> 0 then
+    begin
+      StartPos := pos(retourneElement(4), Line);
+      delete(Line, 1, StartPos-1);
+      StartPos := pos('"indpic">', Line);
+      delete(Line, 1, StartPos-1);
+      repeat
+        StartPos := pos('"indpic">', Line);
+        delete(Line, 1, StartPos-1);
+        annee := findInfoC('"indpic">', '</td>', Line,'0');
+        adresse := urlBaseFRUS()+findInfoC('<a href="', '"', Line,'0');
+        titre := findInfoC('<td>', '</a>', Line,'0');
+        if (GetOption('Langue (Français/English)') = 0)then
+          titre := titre + ' ('+findInfoC('</a></td>', '</a>', Line,'0')+')';
+        titre := StringReplace(titre , '		 ', '');
+        titre := StringReplace(titre , '	', '');
+        titre := StringReplace(titre , '()', '');
+        if titre <> titre_exact then
+          listeResultat.Add(annee+'|'+titre+distingueFAM(adresse)+'|'+adresse);
+        delete(Line, 1, length('"indpic">'));
+        EndPos := pos('</table>', Line);
+        StartPos := pos('"indpic">', Line);
+      until (StartPos =0);
+    end;
+// Tous les titres
+    if pos(retourneElement(5),Line) <> 0 then
+    begin
+      StartPos := pos('tous les titres', Line);
+      delete(Line, 1, StartPos-1);
+      StartPos := pos('"indpic">', Line);
+      delete(Line, 1, StartPos-1);
+      repeat
+        StartPos := pos('"indpic">', Line);
+        delete(Line, 1, StartPos-1);
+        annee := findInfoC('"indpic">', '</td>', Line,'0');
+        adresse := urlBaseFRUS()+findInfoC('<a href="', '"', Line,'0');
+        titre := findInfoC('<td>', '</a>', Line,'0');
+        if titre <> titre_exact then
+        begin
+          if (GetOption('Langue (Français/English)') = 0)then
+            titre := titre + ' ('+findInfoC('</a></td>', '</a>', Line,'0')+')';
+          titre := StringReplace(titre , '		 ', '');
+          titre := StringReplace(titre , '	', '');
+          titre := StringReplace(titre , '()', '');
+          listeResultat.Add(annee+'|'+titre+distingueFAM(adresse)+'|'+adresse);
+        end;          
+        delete(Line, 1, length('"indpic">'));
+        EndPos := pos('</table>', Line);
+        StartPos := pos('"indpic">', Line);
+      until (StartPos = 0);
+    end;
+// Création de la liste de résultats
+    afficheResultat(MovieName);
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+procedure afficheResultat(title : String);
+var
+   StartPos : Integer;
+   Texte, couple, annee, complement, titre, adresse : String;
+begin
+  if (GetOption('Type de Lancement') = 0) or (GetOption('Type de Lancement') = 1) then
+  begin
+   PickTreeClear;
+   if (GetOption('Langue (Français/English)') = 0) then
+    Texte := 'Films trouvés pour '
+   else if (GetOption('Langue (Français/English)') = 1) then
+    Texte := 'Movies founds for ';
+   PickTreeAdd(Texte + title + ' :', '');
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     delete(couple, 1, length(adresse)+1);
+     PickTreeAdd('['+annee+'] '+titre, adresse);
+   end;
+
+   if listeResultat.Count = 1 then
+   begin
+     AnalysePageFilm(adresse);
+     exit;
+   end;
+
+    begin
+      if PickTreeExec(adresse)=true then
+      begin
+          AnalysePageFilm(adresse);
+      end;
+    end;
+  end else if (GetOption('Type de Lancement') = 2) then
+  begin
+   if listeResultat.Count = 1 then
+   begin
+     couple := listeResultat.GetString(0);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     delete(couple, 1, length(adresse)+1);
+     AnalysePageFilm(adresse);
+     exit;
+   end else
+   begin
+     trouveTitle(title);
+   end;
+  end;
+end;
+
+//------------------------------------------------------------------------------
+// ANALYSE DE LA PAGE DU FILM
+//------------------------------------------------------------------------------
+
+procedure AnalysePageFilm(Address: string);
+var
+   Value, Value2, Line, LineAux, titre_film, titre_traduit, titre_fr, titre_original, titre_anglais, autre_titre, les_titres, NoteMoy, Note1, Note2, LesCritiques, CritiqueCinemasie, CritiqueVisiteur : String;
+   StartPos, IntValue : Integer;
+  
+begin
+//charge la page
+  Sleep(500);
+  Line := GetPage(Address);
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     beforeUpdate();
+// Traduction des champs
+  SetArrayLength(listeFR,16);
+  SetArrayLength(listeUS,16);
+  listeFR[0] := 'Titre Anglais';
+  listeUS[0] := 'English Title';
+  listeFR[1] := 'Titre Original';
+  listeUS[1] := 'Original Title';
+  listeFR[2] := 'Titre Français';
+  listeUS[2] := 'French Title';
+  listeFR[3] := 'Année';
+  listeUS[3] := 'Year';
+  listeFR[4] := 'pays';
+  listeUS[4] := 'Country';
+  listeFR[5] := 'réalisateur';
+  listeUS[5] := 'director';
+  listeFR[6] := 'interprète';
+  listeUS[6] := 'actor';
+  listeFR[7] := 'producteur';
+  listeUS[7] := 'producer';
+  listeFR[8] := 'genres';
+  listeUS[8] := 'Genre';
+  listeFR[9] := 'Durée';
+  listeUS[9] := 'Duration';
+  listeFR[10] := 'Scénario';
+  listeUS[10] := 'Synopsis';
+  listeFR[11] := 'notes';
+  listeUS[11] := 'grades';
+  listeFR[12] := 'Moyenne';
+  listeUS[12] := 'average';
+  listeFR[13] := 'Critiques';
+  listeUS[13] := 'Reviews';
+  listeFR[14] := 'textes';
+  listeUS[14] := 'texts';
+  listeFR[15] := 'Visiteurs';
+  listeUS[15] := 'Visitors';
+
+// Les Titres
+  //titre_original := StringReplace(findInfoC(retourneElement(1), '</tr>', Line,'0'), '	', '');
+  titre_film     := StringReplace(findInfoC('<title>', '</title>', Line,'0'), '	', '');
+  titre_anglais  := StringReplace(findInfoC(retourneElement(0), '</tr>', Line,'0'), '	', '');
+  titre_original := StringReplace(findInfoC(retourneElement(1), '</tr>', Line,'0'), '	', '');
+  titre_fr       := StringReplace(findInfoC(retourneElement(2), '</tr>', Line,'0'), '	', '');
+  autre_titre    := StringReplace(findInfoC('autres titres', '</tr>', Line,'0'), '	', '');
+
+// Titre Traduit
+  if CanSetField(fieldTranslatedTitle) then
+  begin
+    if titre_fr <> '' then
+      les_titres := titre_fr
+    else if titre_anglais <> '' then
+     les_titres := titre_anglais
+    else if titre_film <> '' then
+     les_titres := titre_film
+    else if deleteAsianChar(titre_original) <> '' then
+     les_titres := deleteAsianChar(titre_original);
+    titre_traduit := formatTitre(Trim(les_titres),GetOption('Casse Choisie'));
+    MonSetField(fieldTranslatedTitle, titre_traduit);
+  end;             
+// Titre Original
+   if CanSetField(fieldOriginalTitle) then
+   begin
+// tests les titres :
+      if (GetOption('Choix titres originaux') = 0) then
+      begin
+        if deleteAsianChar(titre_original) <> '' then
+          les_titres := deleteAsianChar(titre_original)
+        else if titre_anglais <> '' then
+         les_titres := titre_anglais
+        else if autre_titre <> '' then
+         les_titres := autre_titre;
+      end else
+      if (GetOption('Choix titres originaux') = 1) then
+      begin
+        if titre_anglais <> '' then
+         les_titres := titre_anglais
+        else if titre_original <> '' then
+         les_titres := deleteAsianChar(titre_original)
+        else if autre_titre <> '' then
+         les_titres := autre_titre;
+      end else
+      if (GetOption('Choix titres originaux') = 2) then
+      begin
+        if (trim(AnsiLowerCase(titre_traduit)) <> trim(AnsiLowerCase(titre_original))) and (titre_original <> '') then
+           les_titres := deleteAsianChar(titre_original)
+        else if autre_titre <> '' then
+           les_titres:= autre_titre
+        else
+           les_titres:= titre_anglais;
+      end;
+      les_titres := formatTitre(Trim(les_titres),GetOption('Casse Choisie'));
+      MonSetField(fieldOriginalTitle, les_titres);
+   end;
+// Année
+   if CanSetField(fieldYear) then
+      MonSetField(fieldYear, StringReplace(findInfoC(retourneElement(3), '</tr>', Line,'0'), '	', ''));
+// Pays
+   if CanSetField(fieldCountry) then
+   begin
+      Value := findInfoC(retourneElement(4), '<br></td>', Line,'-1');
+      Value := StringReplace(Value, RC, ', ');
+      Value := StringReplace(Value, '	', '');
+      MonSetField(fieldCountry, deleteEnd(Value, ', , '));
+   end;
+// Réalisateur
+   if CanSetField(fieldDirector) then
+   begin
+      Value := findInfoC(retourneElement(5), 'interprète', Line,'1');
+      Value := StringReplace(Value, '<i>', ' (');
+      Value := StringReplace(Value, '</i>', '), ');
+      Value := StringReplace(Value, ' (), ', ', ');
+      Value := StringReplace(Value, '	', '');
+      Value := coupeInfo('<div class="titrecol">', '</div>', '', Value);
+      Value := StringReplace(Value, ' - ', '');
+      Value := StringReplace(Value, '   ', ' ');
+      Value := StringReplace(Value, '  ', ' ');
+      Value := deleteEnd(formatTitre(Value,GetOption('Casse Choisie')), ',');      
+      MonSetField(fieldDirector, Value);
+   end;
+// Acteurs
+   if CanSetField(fieldActors) then
+   begin
+      Value := findInfoC(retourneElement(6), retourneElement(7), Line,'1');
+      if (Value = '') then Value := findInfoC(retourneElement(6), 'compositeur', Line,'1');
+      if (Value = '') then Value := findInfoC(retourneElement(6), 'scénariste', Line,'1');
+      if (Value = '') then Value := findInfoC(retourneElement(6), '</table>', Line,'1');
+      Value := StringReplace(Value, '<i>', ' (');
+      Value := StringReplace(Value, '</i>', '), ');
+      Value := StringReplace(Value, ' (), ', ', ');
+      Value := StringReplace(Value, '	', '');
+      Value := coupeInfo('<div class="titrecol">', '</div>', '', Value);
+      Value := StringReplace(Value, ' - ', '');
+      Value := StringReplace(Value, '   ', ' ');
+      Value := StringReplace(Value, '  ', ' ');
+      Value := Trim(deleteEnd(formatTitre(Value,GetOption('Casse Choisie')), ','))+'.';
+      if Value <> '.' then
+         MonSetField(fieldActors, Value);
+   end;
+// Producteur
+   if CanSetField(fieldProducer) then
+   begin
+      Value := formatTitre(StringReplace(findInfoC(retourneElement(7), '</tr>', Line,'0'), '	', ''),GetOption('Casse Choisie'));
+      Value := StringReplace(Value, ' - ', ', ');
+      Value := deleteEnd(Value, ', ');
+      Value := deleteEnd(Value, ' -');
+      MonSetField(fieldProducer, Value);
+   end;
+// Adresse Web
+  if CanSetField(fieldURL) then
+      SetField(fieldURL, Address);
+// Durée
+   if CanSetField(fieldLength) then
+   begin
+       Value := findInfoC(retourneElement(9)+'</td><td>', '</td>', Line,'0');
+       if pos('m', Value)>0 then
+       begin
+         IntValue := 0;
+         delete(Value,pos('m',Value),length(Value));
+         IntValue := IntValue + StrToInt(trim(Value), 0);
+       end else
+       begin
+         IntValue := StrToInt(copy(Value, 1, 1), 0) * 60;
+         if pos('H', Value)>0 then
+          delete(Value,1,pos('H', Value))
+         else if pos('h',Value)>0 then
+          delete(Value,1,pos('h', Value));
+         if pos(' ',Value)>0 then
+          delete(Value,pos(' ', Value),length(Value));
+          Value := copy(Value, 1, length(Value)); 
+          Value := StringReplace(Value, ' ', '');
+          IntValue := IntValue + StrToInt(Value, 0);
+       end; 
+       if IntValue>0 then
+       MonSetField(fieldLength, IntToStr(IntValue));
+    end;
+// Genre
+   if CanSetField(fieldCategory) then
+   begin
+      Value := findInfoC(retourneElement(8), '</tr>', Line,'-1');
+      Value := StringReplace(Value, RC, ', ');
+      Value := StringReplace(Value, '	', '');
+      MonSetField(fieldCategory, formatTitre(deleteEnd(Value, ', , '),GetOption('Casse Choisie')));
+   end;
+// Image
+   if CanSetPicture then
+   begin
+     Sleep(400);
+     if findInfoC(urlImage, '"', Line,'0') <> '' then
+       MonGetPicture(urlBase+urlImage+findInfoC(urlImage, '"', Line,'0'))
+     else if findInfoC(urlImage2, '"', Line,'0') <> '' then
+       MonGetPicture(urlBase+urlImage2+findInfoC(urlImage2, '"', Line,'0'));
+   end;
+// L'histoire
+   if CanSetField(fieldDescription) then
+   begin
+     Value := findInfoC(retourneElement(10), '</div>', Line,'0');
+     Value := StringReplace(Value, '	', '');
+     if pos('This text does not yet exist, please click on ', Value) = 0 then
+        MonSetField(fieldDescription, Value);
+   end;
+// Critiques et notes
+   Note1 := '0';
+   Note2 := '0';
+   LesCritiques := '';
+   CritiqueCinemasie := '';
+   CritiqueVisiteur := '';
+   if pos('critiques.html', Line) <> 0 then
+   begin
+     // --- Charge la page ---
+     Sleep(400);
+     Line := GetPage(Address+'critiques.html');
+     
+       Line := StringReplace(Line, '&rsquo;', '''');
+       Line := StringReplace(Line, '&hellip;', '...');
+       Line := StringReplace(Line, '&oelig;', 'oe');
+       Line := StringReplace(Line, '&ndash;', '-');
+
+     // --- Récupérer la moyenne globale ---
+     Value := findInfoC(retourneElement(12), '/5', Line,'0');
+     NoteMoy := Value;
+     // --- Nombre de critiques et moyenne ---
+     if (length(Value)>0) then
+       Value2 := Value2+retourneElement(12)+' : '+Value+'/5 ' + RCN(2);
+     LineAux := findInfoC('</h1>', '<table', Line, '1');
+     Value := findInfoC('avis de Cinemasie', 'critiques', LineAux,'0');
+     Value2 := Value2+ 'Cinemasie : ' + Value + ' notes';
+     if (Value<>'0') then
+     begin
+       Value := findInfoC('critiques:', '/5', LineAux,'0');
+       Value2 := Value2 + ', moyenne : ' + Value + '/5 ';
+     end;
+     Value2 := Value2 + RCN(1);
+     LineAux := findInfoC('</h2>', '', LineAux, '1');
+     Value := findInfoC('vos avis', 'critiques', LineAux,'0');
+     Value2 := Value2+ 'Visiteurs : ' + Value + ' notes';
+     LineAux := findInfoC('</h2>', '', LineAux, '1');
+     if (Value<>'0') then
+     begin
+       Value := findInfoC('critiques:', '/5', LineAux,'0');
+       Value2 := Value2+ ', moyenne : ' + Value + '/5 ';
+     end;
+     Value2 := Value2 + RCN(2);
+     //Note1 := Value;
+     //Value2 := Value2+retourneElement(12)+' : '+NoteMoy+'/5 ';
+     if ((GetOption('Détail des critiques') = 1) or (GetOption('Détail des critiques') = 3)) then
+     // --- Récupérer les critiques cinémasie ---
+     begin
+       if pos('<h3>', Line) <> 0 then
+       begin
+         LineAux := '<a NAME=' + findInfoC('<a NAME=', '<table', Line,'4');
+         CritiqueCinemasie := Getcritiques(LineAux);
+         CritiqueCinemasie := ' -- Critiques cinémasie : --'+RCN(2)+CritiqueCinemasie;
+         if (GetOption('Détail des critiques') = 3) then
+           CritiqueCinemasie := CritiqueCinemasie+RC;
+       end;
+     end;
+     if ((GetOption('Détail des critiques') = 2) or (GetOption('Détail des critiques') = 3)) then
+     // --- Récupérer les critiques visiteurs ---
+     begin
+       if pos('<td class="">visiteur</td>', Line) <> 0 then
+       begin
+         LineAux := findInfoC('<td class="">visiteur</td>', '<script', Line, '1');
+         LineAux := '<a NAME=' + findInfoC('<a NAME=', '', LineAux,'4');
+         CritiqueVisiteur := Getcritiques(LineAux);
+         CritiqueVisiteur := ' -- Critiques visiteurs : --'+RCN(2)+CritiqueVisiteur;
+         if (GetOption('Détail des critiques') = 3) then
+           CritiqueVisiteur := CritiqueVisiteur+RC;
+       end;
+     end;
+   end;
+   // --- Mettre en forme les critiques ---
+   Value := Value2;
+   LesCritiques := CritiqueCinemasie + CritiqueVisiteur;
+   Value := Value + RCN(1) + LesCritiques;
+   Value2 := GetField(fieldComments);
+   if (Value2<>'') then
+      begin
+         if (GetOption('Champ commentaire (critique)') = 1) then
+             Value := '*** CRITIQUES CINEMASIE ***' + RCN(1) + Value + RCN(1) + RCN(1) + Value2;
+         if (GetOption('Champ commentaire (critique)') = 2) then
+             Value := Value2 + RCN(1) + RCN(1) + '*** CRITIQUES CINEMASIE ***' + RCN(1) + Value;
+      end;
+   if CanSetField(fieldComments) then
+       SetField( fieldComments,Value);
+   if CanSetField(fieldRating) then
+       MonSetField(fieldRating, calculMoyenne(Note1, Note2));  
+// Pour le mode Batch
+   if (GetOption('Fichier de log') = 0) then
+     afterUpdate();
+// Affichage des titres si original et traduit identique
+   titreDouble(GetOption('Titre en double'));
+
+end;
+
+//------------------------------------------------------------------------------
+// Format les critiques
+//------------------------------------------------------------------------------
+
+function formatCritique(Value : String) : string;
+begin
+   Value := StringReplace(Value, '|', '-');            
+   Value := StringReplace(Value, '<a NAME="', '][<a NAME="');   
+   HTMLRemoveTags(Value);
+   Value := deleteAsianChar(Value);   
+   Value := deleteMultiSpace(Value);   
+   Value := deleteTab(Value);       
+   Value := deleteMultiReturn(Value);  
+   Value := StringReplace(Value, '][','');
+   result := Value;
+end;
+
+//------------------------------------------------------------------------------
+// Récupérer les critiques
+//------------------------------------------------------------------------------
+
+function GetCritiques(pLine_E : String) : String;
+var
+   Line, LineAux, LineCritiques, auteur, note, critique, datec : String;
+begin
+   Line := pLine_E;
+   Line := StringReplace(Line, '&rsquo;', '''');
+   Line := StringReplace(Line, '&hellip;', '...');
+   LineAux := Line;
+   while (pos('<a NAME=', Line) > 0) and (length(LineAux)>length('<a NAME=')) do
+   begin
+     LineAux := '<a NAME=' + findInfoC('<a NAME=', '<a NAME=', Line + '<a NAME=', '4');
+     if length(LineAux) > length('<a NAME=') then
+     begin
+       auteur := findInfoC('"', '">', LineAux, '0');
+       note := findInfoC('</h3>', '</div>', LineAux, '0');
+       critique := findInfoC('</div>', '<div class="pied">', LineAux, '0');
+       datec := findInfoC('<div class="pied">', '</div>', LineAux, '0');
+       LineCritiques := LineCritiques + auteur + ' : ' + note + RCN(1) + '(' + datec + ')' + RCN(1) +  critique + RCN(2);
+       delete(Line, 1, length(LineAux));
+     end;
+   end;
+   result := LineCritiques;
+end;
+
+//------------------------------------------------------------------------------
+// CALCUL DE LA NOTE
+//------------------------------------------------------------------------------
+
+function calculMoyenne(Note1, Note2 : String) : string;
+begin
+    if (Note1 = '0') and (Note2 = '0') then
+      result := ''
+    else if (Note1 = '0') then
+      result := FloatToStr(StrToFloat(Note2)+StrToFloat(Note2))
+    else if (Note2 = '0') then
+      result := FloatToStr(StrToFloat(Note1)+StrToFloat(Note1))
+    else
+      result := FloatToStr(StrToFloat(Note1)+StrToFloat(Note2));
+end;
+
+//------------------------------------------------------------------------------
+// TROUVE LE BON TITRE SI LE PREMIER N'EST PAS LE BON
+//------------------------------------------------------------------------------
+
+procedure trouveTitle(title : String);
+var
+   oK, couple, annee, titre, adresse : String;
+begin
+   for i:=0 to listeResultat.Count-1 do
+   begin
+     couple := listeResultat.GetString(i);
+     annee := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(annee)+1);
+     titre := copy(couple,0,pos('|',couple)-1);
+     delete(couple, 1, length(titre)+1);
+     HTMLDecode(titre);
+     adresse := copy(couple,0,length(couple));
+     delete(couple, 1, length(adresse)+1);
+     oK := compareTitle(title,titre);
+     if oK = 'OK' then
+     begin
+       AnalysePageFilm(adresse);
+       exit;
+     end;
+   end;
+   listeResultat.Free;
+
+end;
+
+//------------------------------------------------------------------------------
+// COMPARE LE TITRE PASSE ET LE TITRE TROUVE
+//------------------------------------------------------------------------------
+
+function compareTitle(titleAllo, title : String) : String;
+begin
+     title := supprimeLesAccents(trim(AnsiLowerCase(title)));
+     titleAllo := supprimeLesAccents(trim(AnsiLowerCase(titleAllo)));
+     if (title = titleAllo) then
+     begin
+       result := 'OK';
+     end else
+     begin
+       result := 'KO';
+     end;
+end;
+
+//------------------------------------------------------------------------------
+// DISTINGUE UN FILM D'UN ANIME OU D'UN MANGA
+//------------------------------------------------------------------------------
+
+function distingueFAM(testAdresse : String) : String;
+begin
+  if pos('manga/', testAdresse)>0 then
+    result := ' (manga)'
+  else if pos('animes/', testAdresse)>0 then
+    result := ' (anime)'    
+  else
+    result := '';  
+end;
+
+
+//------------------------------------------------------------------------------
+// TROUVE LA CHAINE VOULUE SANS SE SOUCIER DE LA CASSE
+//------------------------------------------------------------------------------
+
+function findInfoC(Debut, Fin, Line, Option : String) : string;
+var
+   infos : String;
+   BeginPos, EndPos : Integer;
+begin
+   infos := '';
+   if (length(Debut) = 0) then
+     BeginPos := 1
+   else
+     BeginPos := pos(AnsiLowerCase(Debut), AnsiLowerCase(Line));
+   if BeginPos > 0 then
+   begin
+     delete(Line, 1, BeginPos + length(Debut) - 1);
+     result := Debut;
+     if (length(Fin) = 0) then
+       EndPos := length(Line)
+     else
+       EndPos := pos(AnsiLowerCase(Fin), AnsiLowerCase(Line));
+     infos := copy(Line,0,EndPos-1);
+     if option = '-1' then                              // Pour garder les sauts de ligne
+     begin
+       infos := StringReplace(infos, '<BR>', RC);
+       infos := StringReplace(infos, '<br>', RC);
+       infos := StringReplace(infos, '&#8211;', '-');
+       HTMLRemoveTags(infos);
+       infos := deleteAsianChar(infos);
+       HTMLDecode(infos);
+     end else
+     if option = '0' then                               // Pour supprimer les sauts de ligne et tabulations
+     begin
+       HTMLRemoveTags(infos);
+       infos := deleteAsianChar(infos);
+       infos := deleteTab(infos);
+       HTMLDecode(infos);
+       infos := StringReplace(infos, RC, '');
+     end else
+     if option = '1' then                               // Pour supprimer les sauts de ligne et ne pas enlever les balises
+     begin
+       infos := deleteAsianChar(infos);
+       HTMLDecode(infos);
+       infos := StringReplace(infos, RC, '');
+     end else
+     if option = '2' then                               // Pour supprimer les sauts de ligne
+     begin
+       HTMLRemoveTags(infos);
+       HTMLDecode(infos);
+       infos := StringReplace(infos, RC, '');
+     end else
+     if option = '3' then                              // Pour garder les sauts de ligne et ne pas enlever les balises
+     begin
+       infos := StringReplace(infos, '<BR>', RC);
+       infos := StringReplace(infos, '<br>', RC);
+       infos := StringReplace(infos, '&#8211;', '-');
+       infos := deleteAsianChar(infos);
+       HTMLDecode(infos);
+     end else
+     if option = '4' then                               // Pour ne rien faire
+     begin
+       result := infos;
+     end;
+   end;
+   result := Trim(infos);
+end;
+
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(3,5,0) then
+  begin
+    // Pour une mise à jour automatique su script
+    // Début    
+    if GetOption('Auto-Update') = 0 then
+    begin     
+      AutoUpdate(GetStatic('LastUPD'), VersionScript, NomScript);
+      SetStatic('LastUPD',GetField(fieldDate));
+    end;
+    // Fin    
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    // Pour ne pas avoir l'alerte sur le type de lancement à chaque fois mais uniquement à la première execution
+    // Début
+    TypeExec := GetStatic('LastExec');      
+    if (TypeExec <> IntToStr(GetOption('Type de Lancement'))) then
+    begin        
+      if (ShowConfirmation('Vous exécutez le script avec le type de lancement << '+IntToStr(GetOption('Type de Lancement'))+' >> pour la première fois.'+RCN(2)+'Cliquer sur ''''OUI'''' pour continuer.') = False) then
+         exit         
+      else
+        SetStatic('LastExec',IntToStr(GetOption('Type de Lancement')));       
+    end;         
+    // Fin
+    NomFilm := recupTitreRecherche(GetOption('Recherche sur le titre'));
+    // Pour la création du fichier log
+    // Début
+    if (GetOption('Fichier de log') = 0) and (premiereExecution = 0) then
+    begin
+      premiereExecution := -1;
+      batch(NomScript);
+      AddToLog('Les films ayant été mis à jour sont maintenant cochés');
+    end;
+    // Fin    
+    if (GetOption('Type de Lancement') = 0) then
+    begin      
+      if Input(NomScript+' by ScorEpioN', 'Entrez le titre du film :', NomFilm) then
+      begin
+        if Pos(urlDomain, NomFilm) > 0 then
+        begin
+              AnalysePageFilm(NomFilm);
+        end else
+        begin
+          //remplace les caractères accentués
+          MovieName := NomFilm;
+          NomFilm := supprimeLesAccents(NomFilm);
+          NomFilm := StringReplace(NomFilm, ' ', '+');
+          NomFilm := urlBaseFRUS()+urlSearch+ UrlEncode(NomFilm);
+          AnalyzePage(NomFilm);
+        end;
+      end;
+    end else
+    if (GetOption('Type de Lancement') = 3) then
+    begin                        
+      NomFilm := GetField(fieldURL);
+      if Pos(urlDomain, NomFilm) > 0 then
+         AnalysePageFilm(NomFilm);
+    end else
+    begin
+      MovieName := NomFilm;
+      NomFilm := supprimeLesAccents(NomFilm);
+      NomFilm := StringReplace(NomFilm, ' ', '+');      
+      AnalyzePage(urlBaseFRUS()+urlSearch+ UrlEncode(NomFilm));
+    end;
+  end else
+    ShowMessage('Ce script requiert une version plus récente de Ant Movie Catalog (au moins la version 3.5.0)');
+end.

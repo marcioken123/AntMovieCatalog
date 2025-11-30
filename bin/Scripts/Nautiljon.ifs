@@ -1,0 +1,1755 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=baffab
+Title=Nautiljon.com
+Description=Recherche d'infos sur le site Nautiljon.com
+Site=http://www.nautiljon.com
+Language=FR
+Version=5 - 01/09/2018
+Requires=4.2.1
+Comments=Suite au passage du site en https, il faut passer à la version 4.2.1 de AMC (ou une version ultérieure). Suite à des erreurs SSL, il faut passer à la version 4.2.2 pour être pleinement opérationnel et avoir les images.
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Mise à jour=1|1|0=Oui|1=Non
+Recherche sur le titre=0|0|0=Traduit|1=Original
+TailleImage=0|0|0=Grande|1=Petite
+Catégorie=0|0|0=Sélection|1=Film|2=Drama|3=Anime|4=Manga|5=Littérature|6=OST|7=JPOP par titre d'album|8=JPOP par artiste
+ActeursCommentaires=0|0|0=Remplacer la valeur courante|1=Ajouter à la valeur courante
+
+[Parameters]
+
+***************************************************)
+
+program Nautiljon;
+
+const
+  VersionScript = '';
+  NomScript = 'nautiljon';
+  RC = #13#10;
+
+  INDEX_TOUS = 0;
+  INDEX_FILM = 1;
+  INDEX_DRAMA = 2;
+  INDEX_ANIME = 3;
+  INDEX_MANGA = 4;
+  INDEX_LIVRE = 5;
+  INDEX_LNOVEL = 6;
+  INDEX_OST = 7;
+  INDEX_JPOPT = 8;
+  INDEX_JPOPA = 9;
+
+  TYPE_TOUS = 'tous';
+  TYPE_FILM = 'asian_movies/';
+  TYPE_DRAMA = 'dramas/';
+  TYPE_ANIME = 'animes/';
+  TYPE_MANGA = 'mangas/';
+  TYPE_LIVRE = 'litterature_asiatique/';
+  TYPE_LNOVEL = 'light_novels/';
+  TYPE_OST = 'ost/';
+  TYPE_JPOPT = 'jmusic/';
+  TYPE_JPOPA = 'people/';
+
+  LABEL_TOUS = 'tous';
+  LABEL_FILM = 'Film asiatique';
+  LABEL_DRAMA = 'Drama';
+  LABEL_ANIME = 'Anime';
+  LABEL_MANGA = 'Manga';
+  LABEL_LIVRE = 'Littérature asiatique';
+  LABEL_LNOVEL = 'Light novels';
+  LABEL_OST = 'OST';
+  LABEL_JPOPT = 'JPOP par titre d''album';
+  LABEL_JPOPA = 'JPOP par artiste';
+
+var
+  gMovieName, gAddress, gDivImg, gCat : string;
+  gTypeIndex : Integer;
+  gList: TStringList;
+  gSSLbug: boolean;
+
+
+
+function CountOccurences( SubText: string;
+                          Text: string): Integer;
+begin
+  if (SubText = '') OR (Text = '') OR (Pos(SubText, Text) = 0) then
+    Result := 0
+  else
+    Result := (Length(Text) - Length(StringReplace(Text, SubText, ''))) div  Length(subtext);
+end;
+
+
+//------------------------------------------------------------------------------
+// RECHERCHE UNE SOUS-CHAINE AVEC LA CASSE PUIS SANS LA CASSE SI BESOIN
+//------------------------------------------------------------------------------
+
+function PosX(pSub: string; pLine: string): Integer;
+begin
+  result := pos(pSub, pLine);
+  if (result = 0) then result := pos(AnsiLowerCase(pSub), AnsiLowerCase(pLine));
+  result := result;
+end;
+
+
+//------------------------------------------------------------------------------
+// SUPPRIMER LE CONTENU ENTRE PARANTHESE
+//------------------------------------------------------------------------------
+
+function DeleteParentheses(pLine: string; pSaufAnnees: boolean): string;
+var
+  ValueTemp, ValueTempYear : String;
+  StartPos, EndPos, IntVal : Integer;
+begin
+  ValueTemp := pLine;
+  StartPos := PosX('(', ValueTemp);
+  EndPos := PosX(')', ValueTemp);
+  if (pSaufAnnees) then
+  begin
+     ValueTempYear := GetValueField(ValueTemp, '(', ')',0);
+     IntVal := StrToInt(ValueTempYear, 0);
+     if (IntVal=0) then
+      begin
+        delete(ValueTemp, StartPos, EndPos - StartPos + 1);
+      end;
+  end
+  else
+  begin
+    delete(ValueTemp, StartPos, EndPos - StartPos + 1);
+    StartPos := PosX('(', ValueTemp);
+  end;
+  DeleteParentheses := Trim(ValueTemp);
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE INFO DE Nautiljon.FR
+//------------------------------------------------------------------------------
+
+procedure rechercheNautiljon(pTitre : String);
+var
+  lURL, lLine, lTitre, ValueTemp : String;
+  StartPos, lRes, lPage : Integer;
+begin
+  lRes := -2;
+  lPage := 0;
+  PickTreeClear;
+  
+  //Init
+  gTypeIndex := GetOption('Catégorie');
+  
+  if (gTypeIndex = INDEX_TOUS) then
+  begin
+    gTypeIndex := recupType();
+  end
+
+  //if (gTypeIndex = 1) then Exit;
+  
+  if (gTypeIndex = INDEX_FILM) then
+  begin
+    gCat := TYPE_FILM;
+    gDivImg := 'am';
+  end
+  else if (gTypeIndex = INDEX_DRAMA) then
+  begin
+    gCat := TYPE_DRAMA;
+    gDivImg := '';
+  end
+  else if (gTypeIndex = INDEX_ANIME) then
+  begin
+    gCat := TYPE_ANIME;
+    gDivImg := 'anime';
+  end
+  else if (gTypeIndex = INDEX_MANGA) then
+  begin
+    gCat := TYPE_MANGA;
+    gDivImg := 'mangas';
+  end
+  else if (gTypeIndex = INDEX_LIVRE) then
+  begin
+    gCat := TYPE_LIVRE;
+    gDivImg := 'litterature_asiatique';
+  end
+  else if (gTypeIndex = INDEX_LNOVEL) then
+  begin
+    gCat := TYPE_LNOVEL;
+    gDivImg := 'light_novels';
+  end
+  else if (gTypeIndex = INDEX_OST) then
+  begin
+    gCat := TYPE_OST;
+    gDivImg := 'ost';
+    pTitre := pTitre + ' ost';
+  end
+  else if (gTypeIndex = INDEX_JPOPT) then
+  begin
+    gCat := TYPE_JPOPT;
+    gDivImg := 'jmusic';
+    pTitre := pTitre;
+  end
+  else if (gTypeIndex = INDEX_JPOPA) then
+  begin
+    gCat := TYPE_JPOPA;
+    gDivImg := 'jmusic';
+    pTitre := 'cds ' + pTitre;
+  end;
+
+  //gAddress := 'http://www.nautiljon.com/'+gCat+'/'+StringReplace(UrlEncode(pTitre),'%20', '+')+'.html';
+  //lLine := GetPage(gAddress);
+
+  if (lLine = '') then
+  begin
+    //Google search
+    gAddress := '';
+    //lURL := 'http://www.google.com/custom?sitesearch=www.nautiljon.com&domains=www.nautiljon.com&q=' + UrlEncode(pTitre);
+    //lURL := 'http://www.google.fr/cse?cx=partner-pub-0881008410530095%3Awldi2c-wugz&cof=FORID%3A10&ie=ISO-8859-1&q=' + UrlEncode(pTitre) + '&sa.x=23&sa.y=7&ad=w9&num=10&rurl=http://www.nautiljon.com/search.php?cx=partner-pub-0881008410530095%3Awldi2c-wugz&cof=FORID%3A10&ie=ISO-8859-1&q=' + UrlEncode(pTitre) + '&sa.x=23&sa.y=7';
+    //lURL := 'http://www.nautiljon.com/search.php?cx=partner-pub-0881008410530095%3Ad1y8wrnakj0&cof=FORID%3A10&ie=UTF-8&q=' + StringReplace(UrlEncode(pTitre),'%20', '+') + '&sa.x=0&sa.y=0';
+    //lURL := 'http://www.google.fr/cse?cx=partner-pub-0881008410530095:d1y8wrnakj0&cof=FORID:10&ie=UTF-8&q=' + StringReplace(UrlEncode(pTitre),'%20', '+') + '&ad=n9&num=10&rurl=http://www.nautiljon.com/search.php%3Fcx%3Dpartner-pub-0881008410530095%253Ad1y8wrnakj0%26cof%3DFORID%253A10%26ie%3DUTF-8%26q%3D' + UrlEncode(pTitre) + '%26sa.x%3D0%26sa.y%3D0&nojs=1';
+
+    lURL := 'https://www.google.fr/search?q=' + UrlEncode(pTitre) + '+site:nautiljon.com&gws_rd=ssl';
+    StringReplace(lURL, ' ', '+')
+
+    //PickTreeClear;
+    lLine := GetPage(lURL);
+    if ((pos('<div id=res>', lLine) = 0) and (pos('<div id="res">', lLine) = 0)) then
+    begin
+      exit;
+    end else
+    while (((pos('<div id=res>', lLine) > 0) or (pos('<div id="res">', lLine) > 0)) and (lRes<>-1) and (lPage<4)) do
+    begin
+        PickTreeClear;
+        ValueTemp := '<li class="g">';
+        StartPos := pos(ValueTemp, lLine);
+        if (StartPos<=0) then StartPos := pos(ValueTemp, lLine);
+        delete(lLine, 1, StartPos);
+        if (lPage<4) then PickTreeMoreLink(lURL + '&start=' + IntToStr((lPage+1)*10));
+        lRes := recupNautiljonGoogle(lLine, pTitre);
+        lPage := lPage + 1;
+        if ((lRes<>-1) and ((pos('>Suivant</span>', lLine)>0) or (pos('>Next</span>', lLine)>0))) then
+        begin
+          Sleep(1000);
+          lLine := GetPage(lURL + '&start=' + IntToStr(lPage*10));
+        end;
+    end;
+    if (lRes<>-1) then
+    begin
+      //Not found: add categorie in search
+      lURL := 'https://www.google.fr/search?q=' + UrlEncode(pTitre + ' ' + gCat) + '+site:nautiljon.com&gws_rd=ssl';
+      StringReplace(lURL, ' ', '+')
+      lLine := GetPage(lURL);
+      lRes := recupNautiljonGoogle(lLine, pTitre + ' ' + gCat);
+      PickTreeMoreLink(lURL);
+    end;
+  end
+  else
+    recupInfosFromURL(gAddress);
+
+end;
+
+
+//------------------------------------------------------------------------------
+// MENU DE SOURCE
+//------------------------------------------------------------------------------
+
+function recupType() : Integer;
+var
+   lType : String;
+   lTypeIndice : Integer;
+
+begin
+
+  PickTreeClear;
+
+  //PickTreeAdd(LABEL_TOUS, LABEL_TOUS);
+  PickTreeAdd(LABEL_FILM, LABEL_FILM);
+  PickTreeAdd(LABEL_DRAMA, LABEL_DRAMA);
+  PickTreeAdd(LABEL_ANIME, LABEL_ANIME);
+  PickTreeAdd(LABEL_MANGA, LABEL_MANGA);
+  PickTreeAdd(LABEL_LIVRE, LABEL_LIVRE);
+  PickTreeAdd(LABEL_LNOVEL, LABEL_LNOVEL);
+  PickTreeAdd(LABEL_OST, LABEL_OST);
+  PickTreeAdd(LABEL_JPOPT, LABEL_JPOPT);
+  PickTreeAdd(LABEL_JPOPA, LABEL_JPOPA);
+
+
+  if (PickTreeExec(lType)=true) then
+  begin
+    gCat := lType;
+    if (lType = LABEL_TOUS) then result := INDEX_TOUS
+    else if (lType = LABEL_FILM) then result := INDEX_FILM
+    else if (lType = LABEL_DRAMA) then result := INDEX_DRAMA
+    else if (lType = LABEL_ANIME) then result := INDEX_ANIME
+    else if (lType = LABEL_MANGA) then result := INDEX_MANGA
+    else if (lType = LABEL_LIVRE) then result := INDEX_LIVRE
+    else if (lType = LABEL_LNOVEL) then result := INDEX_LNOVEL
+    else if (lType = LABEL_OST) then result := INDEX_OST
+    else if (lType = LABEL_JPOPT) then result := INDEX_JPOPT
+    else if (lType = LABEL_JPOPA) then result := INDEX_JPOPA;
+  end
+  else result := -1;
+
+
+end;
+
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DE RESULTAT
+//------------------------------------------------------------------------------
+
+function recupNautiljonGoogle(pLine, pTitre : String) : Integer;
+var
+   StartPos, cpt, lIndex: Integer;
+   lLine, lLineAux, titre, adresse : String;
+   lListAd: TStringList;
+
+begin
+  cpt := 0;
+  lLine := pLine;
+  lListAd := TStringList.Create;
+  StartPos := pos('<h3 class=', lLine);
+  repeat
+
+    delete(lLine, 1, StartPos+length('<h3 class=')-1);
+
+    lLineAux := copy(lLine, 1, pos('</table>', lLine));
+    if (Pos('</a>', lLineAux) > Pos('<em>', lLineAux)) then //and (Pos('</em></a>', couple) > 0) then
+    begin
+      adresse := recupAddress(lLineAux);
+      adresse := StringReplace(adresse,'%2B','+');
+      titre := recupTitle(lLineAux);
+      if (((Pos(gCat, adresse) > 0)
+        or ((gTypeIndex = 0) and ((Pos(TYPE_FILM, adresse) > 0) or (Pos(TYPE_DRAMA, adresse) > 0) or (Pos(TYPE_ANIME, adresse) > 0) or (Pos(TYPE_MANGA, adresse) > 0) or (Pos(TYPE_LIVRE, adresse) > 0) or (Pos(TYPE_LNOVEL, adresse) > 0) or (Pos(TYPE_OST, adresse) > 0) or (Pos(TYPE_JPOPT, adresse) > 0) or (Pos(TYPE_JPOPA, adresse) > 0))))
+        and ((gTypeIndex <> INDEX_JPOPA) xor ((PosX('CD ', titre)>0) and (gTypeIndex <> 0)))
+        and (Pos('galerie/', adresse) = 0) and (Pos('actualite/', adresse) = 0) and (Pos('http', adresse) > 0)
+        and (lListAd.IndexOf(adresse)<0)) then
+      begin
+        PickTreeAdd(titre, adresse);
+        lListAd.Add(adresse);
+        gAddress := adresse;
+        cpt := cpt + 1;
+      end;
+    end;
+    StartPos := pos('</li>', lLine);
+    delete(lLine, 1, StartPos+length('</li>')-1);
+    StartPos := pos('<h3 class=', lLine);
+
+  until (StartPos = 0);
+
+    lListAd.Free;
+
+   if (cpt = 0) then
+   begin
+     cpt := -2;
+   end
+   //else   if (cpt = 1) then
+   //begin
+   //  GetPicture(recupImageFromURL(gAddress));
+   //end
+   else
+   //if (PickTreeExec2(gAddress, cpt)=true) then
+   begin
+       PickTreeExec2(gAddress, cpt);
+       if (cpt>=0) then
+       begin
+         if ((gTypeIndex = INDEX_JPOPA) or ((gTypeIndex = INDEX_OST) and (PosX('ost/people', gAddress)>0))) then
+         begin
+           recupListeCds(gAddress);
+            cpt := -1
+         end
+         else
+         if (pos('webcache', gAddress)<=0) and (pos('google', gAddress)>0) then
+           cpt := -1
+         else
+         begin
+           if CanSetPicture then
+           begin
+              //GetPicture(recupImageFromURL(Address));
+              recupInfosFromURL(gAddress);
+              cpt := -1
+           end
+         end;
+       end
+      //else cpt := 1;
+   end
+
+   result := cpt;
+
+end;
+
+//------------------------------------------------------------------------------
+// CREATION DE LA LISTE DES CDS
+//------------------------------------------------------------------------------
+
+function recupListeCds(pAdress : String) : Integer;
+var
+  StartPos, cpt: Integer;
+  lLine, lLineAux, titre, adresse, lType : String;
+  lWait: Boolean;
+
+begin
+  PickTreeClear;
+  cpt := 0;
+  lLine := GetPage(pAdress);
+  lType := GetValueField(lLine, '<h3>', '</h3>', -1);
+  PickTreeAdd(lType, '');
+  //lLine := GetValueField(lLine, '<th>Titre', '</table>', -1);
+  lLine := GetValueField(lLine, 'content_menu_onglets_cd', 'content_menu_onglets_cd', -1);
+  lLine := GetValueField(lLine, '', '<h4>', -1);
+
+  //lLine := GetValueField(lLine, '<th>Titre', '</table>', -1);
+  StartPos := pos('</tr>', lLine);
+  delete(lLine, 1, StartPos-1);
+  repeat
+
+     lLineAux := GetValueField(lLine, '</tr>', '</tr>', -1);
+
+     begin
+       adresse := 'https://www.nautiljon.com/' + Trim(GetValueField(Trim(lLineAux), 'href="', '" ', 1));
+       titre := GetValueField(lLineAux, '</td>', '</td>', 1);
+       if (length(titre)=0) then  titre := GetValueField(lLineAux, ';">', '</a>', 1);
+       begin
+         if (titre='') then
+         begin
+           titre := GetValueField(lLine, '<h3>', '</h3>', -1);
+           adresse := '';
+           if (PosX('single', titre)=0) then
+             lWait:=false
+           else
+             lWait:=true;
+           //PickTreeAdd(titre, '');
+         end
+         if (not lWait) then PickTreeAdd(titre, adresse);
+         gAddress := adresse;
+         cpt := cpt + 1;
+       end;
+     end;
+     StartPos := pos('<tr', lLine);
+     if (StartPos>0) then
+     begin
+       delete(lLine, 1, StartPos-1);
+       StartPos := pos('</tr>', lLine);
+       delete(lLine, 1, StartPos-1);
+       StartPos := pos('<tr', lLine);
+     end;
+  until (StartPos = 0);
+
+
+	if (cpt = 0) then
+	begin
+	end
+	//else   if (cpt = 1) then
+	//begin
+	//  GetPicture(recupImageFromURL(gAddress));
+	//end
+	else
+	if (PickTreeExec(gAddress)=true) then
+	begin
+	  if (pos('google', gAddress)>0) then
+        cpt := -1
+	  else
+	begin
+	 if CanSetPicture then
+		//GetPicture(recupImageFromURL(Address));
+		recupInfosFromURL(gAddress);
+	end;
+	end
+	else cpt := 1;
+
+	result := cpt;
+
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS 
+//------------------------------------------------------------------------------
+
+function recupInfosFromURL(pAddress : String) : String;
+var
+   lPageContents, lValue, lValueTemp, lTagBegin : String;
+   BeginPos: Integer;
+begin
+
+  lPageContents := UTF8Decode(GetPage(pAddress));
+  
+  if (gSSLbug=true) then
+  begin
+	  SetField(fieldURL, 'http' + GetValueField(StringReplace(pAddress,'%252B','+'),':http', 'html', 0) + 'html');
+  end
+  else
+  begin
+    SetField(fieldURL, StringReplace(pAddress,'%252B','+'));
+  end
+
+  if (GetOption('ActeursCommentaires')=0) then
+  begin
+    SetField(fieldComments, '');
+    SetField(fieldActors, '');
+  end;
+
+  //Image
+  lValueTemp := '"og:image" content="';
+  BeginPos := PosX(lValueTemp, lPageContents);
+  if (BeginPos=0) then
+  begin
+    lValueTemp := '<img src="';
+    BeginPos := PosX(lValueTemp, lPageContents);
+  end;
+
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(lPageContents, lValueTemp, '"/>', 1);
+    if (Posx('?', lValueTemp)>0) then lValue := copy(lValue, 1, Posx('?', lValue)-1);
+	  if (PosX(lValue, lPageContents)>0) then lValue := lValue;
+    //GetPicture('http://www.nautiljon.com/' + Trim(lValue));
+    if (gSSLbug=false) then GetPicture(Trim(lValue));
+    if (GetOption('TailleImage')=0) then
+    begin
+      lValue := StringReplace(lValue, '/mini/', '/');
+      if (gSSLbug=false) then GetPicture(Trim(lValue));
+    end;
+  end;
+
+  lTagBegin := '<title>';
+  BeginPos := PosX(lTagBegin, lPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(lPageContents, lTagBegin, '</title>', 1);
+    SetField(fieldTranslatedTitle, Trim(lValue));
+    SetField(fieldOriginalTitle, Trim(lValue));
+  end;
+
+  //Titre original
+  lTagBegin := '>Titre original :';
+  BeginPos := PosX(lTagBegin, lPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(lPageContents, lTagBegin, '</li>', 1);
+    lValue := GetValueField(lValue, '', ' / ', 1);
+    if (lValue<>'') and (PosX('?', lValue)<=0) then SetField(fieldOriginalTitle, Trim(lValue));
+  end;
+  
+  //Titre alternatif
+  lTagBegin := '>Titre alternatif :';
+  BeginPos := PosX(lTagBegin, lPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(lPageContents, lTagBegin, '</li>', 1);
+    lValue := GetValueField(lValue, '', '/', 1);
+    //if (lValue<>'') and (PosX('?', lValue)<=0) then SetField(fieldTranslatedTitle, Trim(lValue));
+  end;
+
+  //Classements
+  lValueTemp := '<div class="moyNote">';
+  BeginPos := PosX(lValueTemp, lPageContents);
+  if (BeginPos>0) then
+  begin
+    lValue := GetValueField(StringReplace(StringReplace(lPageContents, '<br />', ' - '), '</p>', RC), lValueTemp, '</div>', 0);
+    addComments(Trim(lValue));
+  end;
+  lValueTemp := '<div class="topsAll">';
+  BeginPos := PosX(lValueTemp, lPageContents);
+  if (BeginPos>0) then
+  begin
+    lValue := GetValueField(StringReplace(StringReplace(lPageContents, '<br />', ' - '), '</p>', RC), lValueTemp, '</div>', 0);
+    addComments(Trim(lValue));
+  end;
+
+  //Note
+  lValueTemp := '<span itemprop="ratingValue">';
+  BeginPos := PosX(lValueTemp, lPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(lPageContents, lValueTemp, '</span>', 1);
+    //if (Pos('(', lValue)>0) then
+    begin
+      //lValue := GetValueField(lValue, '(', '/', 1);
+      SetField(fieldRating, Trim(lValue));
+    end;
+  end;
+
+  
+  if (gCat=TYPE_FILM) then recupInfosVideo(lPageContents)
+  else if (gCat=TYPE_DRAMA) then recupInfosVideo(lPageContents)
+  else if (gCat=TYPE_ANIME)  then recupInfosVideo(lPageContents)
+  else if (gCat=TYPE_MANGA)  then recupInfosLivre(lPageContents)
+  else if (gCat=TYPE_LIVRE)  then recupInfosLivre(lPageContents)
+  else if (gCat=TYPE_LNOVEL)  then recupInfosLivre(lPageContents)
+  else if (gCat=TYPE_OST)  then recupInfosMusique(lPageContents)
+  else if (gCat=TYPE_JPOPT)  then recupInfosMusique(lPageContents)
+  else if (gCat=TYPE_JPOPA)  then recupInfosMusique(lPageContents)
+  else 
+  begin
+    if (Pos('/' + TYPE_FILM, pAddress)>0) then recupInfosVideo(lPageContents)
+    else if (Pos('/' + TYPE_DRAMA, pAddress)>0) then recupInfosVideo(lPageContents)
+    else if (Pos('/' + TYPE_ANIME, pAddress)>0)  then recupInfosVideo(lPageContents)
+    else if (Pos('/' + TYPE_MANGA, pAddress)>0)  then recupInfosLivre(lPageContents)
+    else if (Pos('/' + TYPE_LIVRE, pAddress)>0)  then recupInfosLivre(lPageContents)
+    else if (Pos('/' + TYPE_LNOVEL, pAddress)>0)  then recupInfosLivre(lPageContents)
+    else if (Pos('/' + TYPE_OST, pAddress)>0)  then recupInfosMusique(lPageContents)
+    else if (Pos('/' + TYPE_JPOPT, pAddress)>0)  then recupInfosMusique(lPageContents)
+    else if (Pos('/' + TYPE_JPOPA, pAddress)>0)  then recupInfosMusique(lPageContents)
+    else recupInfosVideo(lPageContents);
+  end;
+  
+end;
+  
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS VIDEO
+//------------------------------------------------------------------------------
+
+function recupInfosVideo(pPageContents : String) : String;
+var
+    lPageContents, lPageContentsAux, lStaff, lValue, lValueTemp, lTagBegin, lTagEnd, lValueAux1, lValueAux2 : String;
+    lDirector, lProducer, lWriter, lMusic : String;
+    BeginPos, BeginPosAux, NbEpisodes, DureeEpisode, Duree: Integer;
+begin
+
+  lTagEnd := '</li>';
+
+  //Année
+  lTagBegin:= '>Diffusion ';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (Pos(' au ', lValue)>0) then lValue := GetValueField(lValue, '', ' au ', 1);
+    while (PosX('/', lValue)>0) do
+      delete(lValue,1,PosX('/', lValue));
+    if (Trim(lValue)<>'') then SetField(fieldYear, Trim(lValue));
+  end;
+
+  //Année
+  lTagBegin := '>Date de sortie :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    while (PosX('/', lValue)>0) do
+     delete(lValue,1,PosX('/', lValue));
+    SetField(fieldYear, Trim(lValue));
+  end;
+
+  //Réalisateur
+  lTagBegin := '>Réalisateur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' (réalisateur)', '');
+    SetField(fieldDirector, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (réalisateur), ') + ' (Réalisateur)';
+  end;
+
+  //Réalisateur
+  lTagBegin := '>Réalisateurs :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' (réalisateur)', '');
+    SetField(fieldDirector, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (réalisateur), ') + ' (Réalisateur)';
+  end;
+
+  //Scénariste
+  lTagBegin := '>Scénariste :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' (scénariste)', '');
+    SetField(fieldWriter, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Scénariste), ') + ' (Scénariste)';
+  end;
+
+  //Scénariste
+  lTagBegin := '>Scénaristes :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' (scénariste)', '');
+    //Supprimer la liste des épisodes
+    lTagBegin := ' (eps ';
+    lValueTemp := GetValueField(lValue, lTagBegin, ')', 1);
+    while (lValueTemp<>'') do
+    begin
+      lValue := StringReplace(lValue, lTagBegin + lValueTemp + ')', '');
+      lValueTemp := GetValueField(lValue, lTagBegin, ')', 1);
+    end;
+    SetField(fieldWriter, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Scénariste), ') + ' (Scénariste)';
+  end;
+
+  //Chara-Design
+  lTagBegin := '>Chara-Design :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Chara-Design), ') + ' (Chara-Design)';
+  end;
+  lTagBegin := '>Character designer :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Chara-Design), ') + ' (Chara-Design)';
+  end;
+
+  //Musique
+  lTagBegin := '>Compositeurs / Musique :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldComposer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Musique), ') + ' (Musique)';
+  end
+  else
+  begin
+    lTagBegin := '>Musique :';
+    BeginPos := PosX(lTagBegin, pPageContents);
+    if  (BeginPos > 0) then
+    begin
+      lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+      SetField(fieldComposer, Trim(lValue));
+      lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Musique), ') + ' (Musique)';
+    end
+    else
+    begin
+      lTagBegin := '>Compositeurs :';
+      BeginPos := PosX(lTagBegin, pPageContents);
+      if  (BeginPos > 0) then
+      begin
+        lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+        SetField(fieldComposer, Trim(lValue));
+        lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Musique), ') + ' (Musique)';
+      end
+    end;
+  end;
+
+  //Studio
+  lTagBegin := '>Studio :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Studio), ') + ' (Studio)';
+  end;
+
+  //Studio
+  lTagBegin := '>Studio d''animation :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Studio), ') + ' (Studio)';
+  end;
+
+  //Studios
+  lTagBegin := '>Studios :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (lValue<>'') then SetField(fieldProducer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Studio), ') + ' (Studio)';
+  end;
+    
+  //Durée série
+  lTagBegin := '>Episodes :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos <= 0) then
+  begin
+	  lTagBegin := '>Épisodes :';
+	  BeginPos := PosX(lTagBegin, pPageContents);
+  end;
+  if (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    NbEpisodes := StrToInt(lValue,0);
+    lTagBegin := '>Durée par épisode :';
+    BeginPos := PosX(lTagBegin, pPageContents);
+    if (BeginPos > 0) then
+    begin
+      lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+      lValue := GetValueField(lValue, '', ' ', 1);
+      DureeEpisode := StrToInt(lValue,0);
+    end
+    else
+      begin
+      lTagBegin := '>Durée d''un épisode :';
+      BeginPos := PosX(lTagBegin, pPageContents);
+      if  (BeginPos > 0) then
+      begin
+        lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+        lValue := GetValueField(lValue, '', ' ', 1);
+        DureeEpisode := StrToInt(lValue,0);
+      end;
+    end;
+
+    if (DureeEpisode > 0) then SetField(fieldLength, IntToStr(NbEpisodes*DureeEpisode));
+  end;
+
+  //Durée
+  lTagBegin := '>Durée :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := GetValueField(lValue, '', ' ', 1);
+    if (PosX('h', lValue)>0) then
+    begin
+      Duree := StrToInt(GetValueField(lValue, '', 'h', 1),0);
+      Duree := Duree*60 + StrToInt(GetValueField(lValue, 'h', '', 1),0);
+      lValue := IntToStr(Duree);
+    end;
+    if (lValue<>'') then SetField(fieldLength, lValue);
+  end;
+
+  //Genres
+  lTagBegin := '>Genres :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' - ', ', ');
+    SetField(fieldCategory, Trim(lValue));
+  end;
+
+  //Pays
+  lTagBegin := '>Pays :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldCountry, Trim(lValue));
+  end;
+
+  if (gCat <> TYPE_ANIME) then lStaff := '';
+
+  //Acteurs principaux
+  lTagBegin := '<div class="unPeople">';
+  //lTagBegin := '>Acteurs principaux<';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := '';
+    //lPageContents := GetValueField(pPageContents, lTagBegin, '<div class="top_bloc">', -1);
+    lPageContents := GetValueField(pPageContents, '<div class="unPeople">', '', -1);
+    //lPageContents := GetValueField(lPageContents,'', '</div>', -1);
+    //lPageContents := StringReplace(lPageContents, '<span class="nom_role">', ' - ');
+      lPageContents := StringReplace(lPageContents, 'unPeople more nodisplay', 'unPeople');
+      lPageContents := StringReplace(lPageContents, '>Principaux<', '');
+      lPageContents := StringReplace(lPageContents, '>Secondaires<', '');
+
+  //if (gCat <> TYPE_ANIME) then lPageContents := GetValueField(lPageContents, '', '<h2>Staff</h2>', -1);
+      lPageContents := StringReplace(lPageContents, '<h2>Staff</h2>', '<Staff>');
+      if (PosX('<Staff>',lPageContents)=0) then lPageContents := lPageContents + '<Staff>';
+
+    BeginPos := PosX('<div class="unPeople">', lPageContents);
+    while (BeginPos>0) do
+    begin
+      BeginPos := PosX('<div class="unPeople">', lPageContents);
+      lValueTemp := GetValueField(lPageContents,'</a>', '<div class="unPeople">', -1);
+      //Name
+        lValueAux1 := GetValueField(lValueTemp,'', '</a>', 0);
+      lValueAux1 := DeleteParentheses(lValueAux1, true);
+        lValueAux1 := StringReplace(StringReplace(lValueAux1, ')', ']'), '(', '[');
+      //Role
+      lValueAux2 := GetValueField(lValueTemp,'</a>', '</div>', 0);
+      lValueAux2 := StringReplace(StringReplace(lValueAux2, ')', ']'), '(', '[');
+      
+      if (lValueAux2='Réalisateur') then
+      begin
+        lDirector := addTo(lValueAux1, lDirector);
+      end;
+      if (lValueAux2='Producteur') then
+      begin
+        lProducer := addTo(lValueAux1, lProducer);
+      end;
+      if (lValueAux2='Musique') or (lValueAux2='Musique [Compositeur]') or (lValueAux2='Directeur du son') then
+      begin
+        lMusic := addTo(lValueAux1, lMusic);
+      end;
+      if (lValueAux2='Scénariste') then
+      begin
+        lWriter := addTo(lValueAux1, lWriter);
+      end;
+
+        lValueTemp := lValueAux1;
+        if (lValueAux2<>'') then
+        begin
+          if (PosX('(',lValueAux2)=1) then
+          begin
+        	 lValueTemp := lValueTemp + ' ' + lValueAux2;
+          end
+        	else
+          begin
+        	 lValueTemp := lValueTemp + ' (' + lValueAux2 + ')';
+          end;
+        end;
+       BeginPosAux  := PosX('<Staff>',lPageContents);
+      if (gCat = TYPE_ANIME) or (PosX('<Staff>',lPageContents)>0) then
+      begin
+        if (lValue = '') then
+          lValue := lValueTemp
+        else
+          lValue := lValue + ', ' + lValueTemp;
+      end;
+           
+      delete(lPageContents,1,BeginPos + length('<div class="unPeople">')-1);
+  	end;
+	
+    lValue := StringReplace(lValue, ' (acteur)', '');
+    lValue := StringReplace(lValue, ' [acteur]', '');
+    lValue := StringReplace(lValue, ' (actrice)', '');
+    lValue := StringReplace(lValue, ' [actrice]', '');
+    HTMLRemoveTags(lValue);
+    HTMLDecode(lValue);
+    lValue := StringReplace(lValue, ',  ', ', ');
+    
+    if (lStaff = '') then
+      lStaff := lValue
+    else
+      lStaff := lStaff + ', ' + lValue;
+  end;
+
+
+
+  lStaff := StringReplace(lStaff, ', ,', ', ');
+  if (Pos(', ', Trim(lStaff)) = 1) then delete(lStaff,1,2);
+  SetField(fieldActors, Trim(lStaff));
+
+  SetField(fieldDirector, Trim(lDirector));
+  SetField(fieldProducer, Trim(lProducer));
+  SetField(fieldComposer, Trim(lMusic));
+  SetField(fieldWriter, Trim(lWriter));
+
+  
+  //Description
+  lTagBegin := '<th>Description</th>';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, '</td></tr>', 0);
+    SetField(fieldDescription, Trim(lValue));
+  end;
+
+  //Synopsis
+  lTagBegin := '<th>Synopsis</th>';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, '</td></tr>', 0);
+    lValue := GetValueField(lValue, '', 'Synopsis r', 0);
+    SetField(fieldDescription, Trim(lValue));
+  end;
+
+  //Histoire
+  lTagBegin := '<div class="description">';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    //lValue := GetValueField(pPageContents, lTagBegin, '</span>', 0);
+    lValue := GetValueField(pPageContents, lTagBegin, '<div class="bio_infos">', 0);
+    lValue := GetValueField(lValue, '', 'voir la suite', 0);
+    lValue := GetValueField(lValue, '', ' Voir plus', 0);
+
+    SetField(fieldDescription, Trim(lValue));
+  end;
+
+  //Comments
+  lValue := '';
+  lTagBegin := '>Chaine TV :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Chaine TV : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Thème :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Thème : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Thèmes :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Thèmes : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Format :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Format : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Origine :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Origine : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Episodes :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Episodes : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Durée par épisode :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Durée par épisode : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Durée d''un épisode :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Durée d''un épisode : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Pour public averti :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Pour public averti : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin:= '>Diffusion ';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Diffusion ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin:= 'Fiches liées';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    //lValue := lValue + RC + 'Fiches liées : ' + GetValueField(StringReplace(StringReplace(pPageContents, '<li>', '%%'), '<h3>', '$$'), lTagBegin, '<script', 1) + RC;
+    lValueTemp := 'Fiches liées : ' + GetValueField(StringReplace(StringReplace(StringReplace(pPageContents, '<div class="imagesBorder', '%%<div class="imagesBorder'), '</div>', ' '), '<h3', '$$<h3'), lTagBegin, '<script', -1);
+    lValueTemp := GetValueField(lValueTemp, '', '<div class="top_bloc"', 1);
+    lValueTemp := StringReplace(StringReplace(lValueTemp, '$$', RC + '  *  '), '%%', RC + '   -  ');
+    lValueTemp := StringReplace(StringReplace(lValueTemp, '(', ' ('), 'Voir plus', '');
+    lValue := lValue + RC + lValueTemp + RC;
+  end;
+  addComments(Trim(lValue));
+
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS PERSONNES
+//------------------------------------------------------------------------------
+
+function addTo(pNew : String; pFull : String) : String;
+begin
+      if (pFull = '') then
+        addTo := pNew
+      else
+        addTo := pFull + ', ' + pNew;
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS LIVRE
+//------------------------------------------------------------------------------
+
+function recupInfosLivre(pPageContents : String) : String;
+var
+    lStaff, lValue, lValueTemp, lTagBegin, lTagEnd : String;
+    BeginPos: Integer;
+begin
+
+  lTagEnd := '</li>';
+
+  //Titre original
+  lTagBegin := '>Titre original :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := GetValueField(lValue, '', ' / ?', 1);
+    SetField(fieldOriginalTitle, Trim(lValue));
+  end;
+
+  //Année VO
+  lTagBegin := '>Année VO :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValueTemp := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (length(lValueTemp)<=4) then SetField(fieldYear, Trim(lValueTemp));
+  end;
+
+  //Année
+  lTagBegin := '>Date de sortie :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValueTemp := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    while (PosX('/', lValueTemp)>0) do
+      delete(lValueTemp,1,PosX('/', lValueTemp));
+    SetField(fieldYear, Trim(lValueTemp));
+  end;
+
+  //Année / Pays
+  lTagBegin := '>Origine :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValueTemp := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (PosX('/', lValueTemp)>0) then
+    begin
+    while (PosX('/', lValueTemp)>0) do
+      delete(lValueTemp,1,PosX('/', lValueTemp));
+    end
+    else if (PosX('-', lValueTemp)>0) then
+    begin
+      SetField(fieldCountry, trim(copy(lValueTemp, 1, PosX('-', lValueTemp)-1)));
+      delete(lValueTemp,1,PosX('-', lValueTemp));
+    end;
+    SetField(fieldYear, Trim(lValueTemp));
+  end;
+
+  //Auteur
+  lTagBegin := '>Auteur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldDirector, Trim(lValue));
+    lStaff := StringReplace(lValue, ', ', ' (Auteur), ') + ' (Auteur)';
+  end;
+
+  //Auteur
+  lTagBegin := '>Auteurs :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldDirector, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Auteur), ') + ' (Auteur)';
+  end;
+
+  //Auteur Original
+  lTagBegin := '>Auteur Original :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldDirector, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Auteur Original), ') + ' (Auteur Original)';
+  end;
+
+  //Scénariste
+  lTagBegin := '>Scénariste :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldWriter, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Scénariste), ') + ' (Scénariste)';
+  end;
+
+  //Dessinateur
+  lTagBegin := '>Dessinateur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldComposer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Dessinateur), ') + ' (Dessinateur)';
+  end;
+  lTagBegin := '>Illustrateur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldComposer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Illustrateur), ') + ' (Illustrateur)';
+  end;
+
+
+  //Editeur
+  lTagBegin := '>Éditeur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (lValue<>'') SetField(fieldProducer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Éditeur), ') + ' (Éditeur)';
+  end;
+  lTagBegin := '>Editeur :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (lValue<>'') then SetField(fieldProducer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Editeur VO), ') + ' (Editeur VO)';
+  end;
+
+  //Editeur VO
+  lTagBegin := '>Éditeur VO :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  lValue := '';
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (lValue<>'') then SetField(fieldProducer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Editeur VO), ') + ' (Editeur VO)';
+  end;
+  lTagBegin := '>Editeur VO :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (lValue<>'') then SetField(fieldProducer, Trim(lValue));
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Editeur VO), ') + ' (Editeur VO)';
+  end;
+
+  //Editeur VF
+  lTagBegin := '>Éditeur VF :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  lValue := '';
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Editeur VF), ') + ' (Editeur VF)';
+  end;
+  lTagBegin := '>Editeur VF :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lStaff := lStaff + ', ' + StringReplace(lValue, ', ', ' (Editeur VF), ') + ' (Editeur VF)';
+  end;
+
+  //Pays
+  lTagBegin := '>Pays :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldCountry, Trim(lValue));
+  end;
+
+  //Genres
+  lTagBegin := '>Genres :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    lValue := StringReplace(lValue, ' - ', ', ');
+    SetField(fieldCategory, Trim(lValue));
+  end;
+
+  //Genre
+  lTagBegin := '>Genre :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    SetField(fieldCategory, Trim(lValue));
+  end;
+
+  //Volumes
+  lTagBegin := '>Nb volumes vo :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+    if (pos('(', lValue)>0) then lValue := copy(lValue, 1, pos('(', lValue)-1);
+    SetField(fieldLength, Trim(lValue));
+  end;
+
+  if (Pos(', ', Trim(lStaff)) = 1) then delete(lStaff,1,2);
+  SetField(fieldActors, Trim(lStaff));
+
+  //Description
+  lTagBegin := '<div class="description">';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := GetValueField(pPageContents, lTagBegin, '<div id="onglets_2_volumes"', 0);
+    lValue := GetValueField(lValue, '', 'voir la suite', 0);
+    lValue := GetValueField(lValue, '', ' Voir plus', 0);
+    lValue := StringReplace(lValue, 'Modifier la description', '');
+    lValue := StringReplace(lValue, 'Historique des descriptions', '');
+    SetField(fieldDescription, Trim(lValue));
+  end;
+
+  //Comments
+  lValue := '';
+  lTagBegin := '>Type :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Type : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Thèmes :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Thèmes : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Nb. pages :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Nb. pages : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Prépublié dans :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Prépublié dans : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin := '>Pour public averti :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Pour public averti : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin:= '>Existe en anime :';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    lValue := lValue + 'Existe en anime : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+  end;
+  lTagBegin:= 'Fiches liées';
+  BeginPos := PosX(lTagBegin, pPageContents);
+  if  (BeginPos > 0) then
+  begin
+    //lValue := lValue + RC + 'Fiches liées : ' + GetValueField(StringReplace(StringReplace(pPageContents, '<li>', '%%'), '<h3>', '$$'), lTagBegin, '<script', 1) + RC;
+    lValueTemp := 'Fiches liées : ' + GetValueField(StringReplace(StringReplace(StringReplace(pPageContents, '<div class="imagesBorder', '%%<div class="imagesBorder'), '</div>', ' '), '<h3', '$$<h3'), lTagBegin, '<script', -1);
+    lValueTemp := GetValueField(lValueTemp, '', '<div class="top_bloc"', 1);
+    lValueTemp := StringReplace(StringReplace(lValueTemp, '$$', RC + ' *  '), '%%', RC + '   -  ');
+    lValueTemp := StringReplace(StringReplace(lValueTemp, '(', ' ('), 'Voir plus', '');
+    lValue := lValue + RC + lValueTemp + RC;
+  end;
+  addComments(Trim(lValue));
+  
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE LES INFOS MUSIQUE
+//------------------------------------------------------------------------------
+
+function recupInfosMusique(pPageContents : String) : String;
+var
+    lStaff, lValue, lValueTemp, lTagBegin, lTagEnd : String;
+    BeginPos: Integer;
+begin
+
+    //Artiste
+    lValueTemp := '';
+    lValue := '';
+    BeginPos := 0;
+    lTagEnd := '</li>';
+    //lStaff := copy(pPageContents, 1, PosX('tracklist', pPageContents));
+    lStaff := GetValueField(pPageContents, 'liste_infos', '</ul>', -1);
+
+    //Année
+    lTagBegin := '>Date de sortie :';
+    BeginPos := PosX(lTagBegin, pPageContents);
+    if  (BeginPos > 0) then
+    begin
+      lValueTemp := GetValueField(pPageContents, lTagBegin, lTagEnd, 1);
+      while (PosX('/', lValueTemp)>0) do
+        delete(lValueTemp,1,PosX('/', lValueTemp));
+      SetField(fieldYear, Trim(lValueTemp));
+    end;
+
+    lTagBegin := '>Paroles :';
+    if (Pos(lTagBegin, lStaff)>0) then
+    begin
+      lValueTemp := GetValueField(lStaff, lTagBegin, lTagEnd, 2);
+      SetField(fieldWriter, Trim(lValueTemp));
+      if (lValueTemp<>'') then
+      begin
+        lValueTemp := StringReplace(lValueTemp, ', ', ' (paroles), ') + ' (paroles)';
+        if (lValue<>'') then
+          lValue := lValue + ', ' + lValueTemp
+        else
+          lValue := lValueTemp;
+        if (BeginPos=0) then BeginPos := pos(lTagBegin, pPageContents);
+      end;
+    end;
+
+    lTagBegin := '>Artistes :';
+    if (Pos(lTagBegin, lStaff)>0) then
+    begin
+      lValueTemp := GetValueField(lStaff, lTagBegin, lTagEnd, 2);
+      SetField(fieldDirector, Trim(lValueTemp));
+      if (lValueTemp<>'') then
+      begin
+        lValueTemp := StringReplace(lValueTemp, ', ', ' (artiste), ') + ' (artiste)';
+        if (lValue<>'') then
+          lValue := lValue + ', ' + lValueTemp
+        else
+          lValue := lValueTemp;
+        if (BeginPos=0) then BeginPos := pos(lTagBegin, pPageContents);
+      end;
+    end;
+
+    lTagBegin := '>Artiste :';
+    if (Pos(lTagBegin, lStaff)>0) then
+    begin
+      lValueTemp := GetValueField(lStaff, lTagBegin, lTagEnd, 2);
+      SetField(fieldDirector, Trim(lValueTemp));
+      if (lValueTemp<>'') then
+      begin
+        lValueTemp := StringReplace(lValueTemp, ', ', ' (artiste), ') + ' (artiste)';
+        if (lValue<>'') then
+          lValue := lValue + ', ' + lValueTemp
+        else
+          lValue := lValueTemp;
+        if (BeginPos=0) then BeginPos := pos(lTagBegin, pPageContents);
+      end;
+    end;
+
+    lTagBegin := '>Compositeur :';
+    if (Pos(lTagBegin, lStaff)>0) then
+    begin
+      lValueTemp := GetValueField(lStaff, lTagBegin, lTagEnd, 2);
+      SetField(fieldComposer, Trim(lValueTemp));
+      if (lValueTemp<>'') then
+      begin
+        lValueTemp := StringReplace(lValueTemp, ', ', ' (compositeur), ') + ' (compositeur)';
+        if (lValue<>'') then
+          lValue := lValue + ', ' + lValueTemp
+        else
+          lValue := lValueTemp;
+        if (BeginPos=0) then BeginPos := pos(lTagBegin, pPageContents);
+      end;
+    end;
+
+    lTagBegin := '>Compositeurs :';
+    if (Pos(lTagBegin, lStaff)>0) then
+    begin
+      lValueTemp := GetValueField(lStaff, lTagBegin, lTagEnd, 2);
+      SetField(fieldComposer, Trim(lValueTemp));
+      if (lValueTemp<>'') then
+      begin
+        lValueTemp := StringReplace(lValueTemp, ', ', ' (compositeur), ') + ' (compositeur)';
+        if (lValue<>'') then
+          lValue := lValue + ', ' + lValueTemp
+        else
+          lValue := lValueTemp;
+        if (BeginPos=0) then BeginPos := pos(lTagBegin, pPageContents);
+      end;
+    end;
+
+    SetField(fieldActors, Trim(lValue));
+    
+    //Tracklist
+    //lValue := GetValueField(pPageContents, 'Tablature', '</table>', 0);
+    //SetField(fieldDescription, Trim(lValue));
+
+    //Type
+    lTagBegin := '>Type :';
+    lValue := GetValueField(pPageContents, lTagBegin, lTagEnd, 2);
+    addComments('Type : ' + Trim(lValue));
+    SetField(fieldCategory, Trim(lValue));
+
+    //Description
+    lValue := GetValueField(pPageContents, 'Tabs.', '</table>', -1);
+    lValue := StringReplace(lValue, '</td><td>', ' : ');
+    lValue := StringReplace(lValue, '</td></tr>', RC);
+    lValue := StringReplace(lValue, '</td>', ' - ');
+    lValue := StringReplace(lValue, '<strong>', ' * ');
+    HTMLRemoveTags(lValue);
+    HTMLDecode(lValue);
+    lValue := StringReplace(lValue, '-  -  - ', '- ');
+    lValue := StringReplace(lValue, '-  - ', '- ');
+    lValue := StringReplace(lValue, '-  -', '-');
+    SetField(fieldDescription, lValue);
+
+    lTagBegin := '>Label / Distributeur :';
+    BeginPos := PosX(lTagBegin, pPageContents);
+    if  (BeginPos > 0) then
+    begin
+      lValue := 'Label / Distributeur : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+      addComments(Trim(lValue));
+    end;
+    lTagBegin := '>Featuring :';
+    BeginPos := PosX(lTagBegin, pPageContents);
+    if  (BeginPos > 0) then
+    begin
+      lValue := 'Featuring : ' + GetValueField(pPageContents, lTagBegin, lTagEnd, 1) + RC;
+      addComments(Trim(lValue));
+    end;
+
+end;
+
+
+//------------------------------------------------------------------------------
+// AJOUTER AUX COMMENTAIRES
+//------------------------------------------------------------------------------
+
+procedure addComments(pValue : String);
+var
+   lCurrentComment : String;
+begin
+    if (StringReplace(pValue, '?', '')<>'') then
+    begin
+      lCurrentComment := GetField(fieldComments);
+      if (StringReplace(lCurrentComment, '?', '')<>'') then
+         lCurrentComment := lCurrentComment + RC + RC + pValue
+      else
+         lCurrentComment := pValue;
+      SetField(fieldComments, lCurrentComment);
+    end;
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LE CHAMP SUIVANT FORMATTE
+//
+// Récupère un texte entre deux balise sans tenir compte de la casse dans une chaine données.
+// Si la première balise est '' alors on part du début de la chaine.
+//
+// Paramètres :
+//     - Texte à analyser
+//     - Balise de début
+//     - Balise de fin
+//     - Type de nettoyage
+//            - <0 : aucun
+//            - >=0 : supprimer les balises html
+//            - =1 : supprimer les balises html, supprimer les caractères spéciaux (#09, #10, #13)
+//            - =2 : supprimer les balises html avec remplacement des '<br />' par ', '
+//            - =3 : supprimer les balises html avec remplacement des '<br />' par '$$'
+//------------------------------------------------------------------------------
+
+function GetValueField(pLine: string; pBegin: string; pEnd: string; pClean: Integer): string;
+var
+  lValue: string;
+  BeginPos, EndPos : integer;
+begin
+  lValue := pLine;
+
+  if (pBegin='') then
+    BeginPos := 0
+  else
+    BeginPos := Pos(AnsiLowerCase(pBegin), AnsiLowerCase(lValue)) + length(pBegin);
+  
+  if (BeginPos=0) or (BeginPos>length(pBegin)) then
+  begin
+    delete(lValue, 1, BeginPos - 1);
+
+    EndPos := Pos(AnsiLowerCase(pEnd), AnsiLowerCase(lValue));
+    delete(lValue, EndPos, length(lValue));
+	
+    if (pClean = 2) Then lValue := StringReplace(lValue, '<br />', ', ');
+    //if (pClean = 3) Then lValue := StringReplace(StringReplace(lValue, ',', ''), '<br />', ', ');
+    if (pClean = 3) Then lValue := StringReplace(lValue, '<br />', '$$');
+    if (pClean >= 0) then
+    begin
+      HTMLRemoveTags(lValue);
+      HTMLDecode(lValue);
+    end;
+    if (pClean = 1) Then lValue := DelCRC(lValue);
+    result := Trim(lValue);
+  end
+  else
+    result := '';
+
+end;
+
+
+
+//------------------------------------------------------------------------------
+// SUPPRIMER LES CARACTERES SPECIAUX DANS UNE CHAINE
+//------------------------------------------------------------------------------
+
+function DelCRC(pLine: string): string;
+var
+  lLine: string;
+begin
+  lLine := pLine;
+
+  while (pos(#09, lLine) > 0 ) do
+      lLine := StringReplace(lLine,#09, '');
+  while (pos(#13, lLine) > 0 ) do
+      lLine := StringReplace(lLine,#13, '');
+  while (pos(#10, lLine) > 0 ) do
+      lLine := StringReplace(lLine,#10, '');
+
+  result := lLine;
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE L'ADRESSE DE L'IMAGE
+//------------------------------------------------------------------------------
+
+function recupImageFromURL(pURL : String) : String;
+var
+   ImageAddress, Line : String;
+   StartPos: Integer;
+begin
+   ImageAddress := GetPage(pURL);
+   
+   result := recupImageFromHTML(ImageAddress);
+
+end;
+
+
+//------------------------------------------------------------------------------
+// RECUPERE L'ADRESSE DE L'IMAGE
+//------------------------------------------------------------------------------
+
+function recupImageFromHTML(pHTML : String) : String;
+var
+   ImageAddress, Line : String;
+   StartPos: Integer;
+begin
+     ImageAddress := pHTML;
+     
+     StartPos := pos('<div id="' + gDivImg + '">', ImageAddress);
+     delete(ImageAddress, 1, StartPos-1);
+
+     StartPos := pos('<img src=', ImageAddress);
+     delete(ImageAddress, 1, StartPos+9);
+
+     ImageAddress := copy(ImageAddress, 1, pos('" ', ImageAddress) - 1);
+
+     if (ImageAddress <> '') then
+        result := 'http://www.nautiljon.com' + ImageAddress
+     else
+        result := '';
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE LE TITRE
+//------------------------------------------------------------------------------
+
+function recupTitle(pLine : String) : String;
+var
+   lLine, lTitle : String;
+   StartPos: Integer;
+begin
+    lLine := pLine;
+    StartPos := pos('<a', lLine);
+    delete(lLine, 1, StartPos-1);
+    lTitle := copy(lLine, 1, pos('</a>', lLine)-1);
+    HTMLRemoveTags(lTitle);
+    lTitle := StringReplace(lTitle, #13#10, '');
+    lTitle := StringReplace(lTitle, ' - Nautiljon', '');
+    result := lTitle;
+end;
+
+//------------------------------------------------------------------------------
+// RECUPERE L'ADRESSE
+//------------------------------------------------------------------------------
+
+function recupAddress(pLine : String) : String;
+var
+   lLine, lAddress : String;
+   StartPos: Integer;
+begin
+   lLine := pLine;
+   
+   //StartPos := pos('<a href="', lLine);
+   //delete(lLine, 1, StartPos+8);
+   //StartPos := pos('"', lLine);
+   //lAddress := copy(lLine, 1, StartPos-1);
+   //HTMLRemoveTags(lAddress);
+   
+   if (gSSLbug=true) then
+   begin
+	   StartPos := pos('//webcache', lLine) ;
+	   delete(lLine, 1, StartPos-1);
+	   StartPos := pos('html', lLine);
+	   lAddress := 'https:' + copy(lLine, 1, StartPos-1) + 'html+&cd=1&hl=fr&ct=clnk&gl=fr';
+	   lAddress := StringReplace(lAddress,'search%3Fq%3Dcache','search?q=cache');
+   end
+   else
+   begin
+	   StartPos := pos('https:', lLine);
+	   delete(lLine, 1, StartPos-1);
+	   StartPos := pos('html', lLine);
+	   lAddress := copy(lLine, 1, StartPos+3);
+   end
+   
+   HTMLRemoveTags(lAddress);
+   lAddress := StringReplace(lAddress, #13#10, '');
+   result := lAddress;
+end;
+
+//------------------------------------------------------------------------------
+// SUPPRESSION DES CARACTERES ASIATIQUES
+//------------------------------------------------------------------------------
+
+function deleteAsianChar(Value : string) : String;
+var
+  taille :Integer;
+begin
+  repeat
+    if (copy(Value, pos('&#',Value)+7, 1) = ';') then
+      taille := 8
+    else
+      taille := 7;
+    delete (Value, pos('&#',Value), taille);
+  until (pos('&#',Value) = 0);
+  result := Value;
+end;
+
+//------------------------------------------------------------------------------
+// RECHERCHE SUR LE TITRE ORIGINAL OU TRADUIT
+//------------------------------------------------------------------------------
+
+function recupTitreRecherche(pOption : Integer) : string;
+var
+  lNomFilm : String;
+begin
+if (pOption = 0) then
+    begin
+      lNomFilm := GetField(fieldTranslatedTitle);
+      if lNomFilm = '' then
+        lNomFilm := GetField(fieldOriginalTitle);
+    end else
+    if (pOption = 1) then
+    begin
+      lNomFilm := GetField(fieldOriginalTitle);
+      if lNomFilm = '' then
+        lNomFilm := GetField(fieldTranslatedTitle);
+    end;
+    //NomFilm := cleanTitle(NomFilm);
+    result := lNomFilm;
+end;
+
+//------------------------------------------------------------------------------
+// PROGRAMME PRINCIPAL
+//------------------------------------------------------------------------------
+
+begin
+  if CheckVersion(4,2,1) then
+  begin
+  	if (CheckVersion(4,2,2)) then
+  		gSSLbug:=false
+  	else
+  		gSSLbug:=true;
+    if GetOption('Mise à jour') = 0 then
+    begin
+       execMenuMAJ(VersionScript,NomScript);
+       exit;
+    end;
+    gMovieName := recupTitreRecherche(GetOption('Recherche sur le titre'));
+
+    if Input(NomScript, 'Entrez le titre de l''oeuvre :', gMovieName) then
+    begin
+      rechercheNautiljon(gMovieName);
+    end;
+	
+  end else
+    ShowMessage('Ce script nécessite une version plus récente de Ant Movie Catalog (au moins la version 4.2.1)');
+end.

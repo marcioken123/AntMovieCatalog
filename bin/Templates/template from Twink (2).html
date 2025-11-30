@@ -1,0 +1,470 @@
+<!-- Movie Template #2 - Created By Twink - TwinkMan666@hotmail.com      -->
+<!-- Made for Ant Movie Cataglog http://www.buypin.com/moviecatalog.php  -->
+<!-- Based on my old template with lots of ideas from Willspo's Template -->
+<!-- Keep up the good work guys!!!                                       -->
+<!-- LastUpdated: 17/10/02  Version BETA 0.5                             -->
+
+<!-- Start of Variables -->
+<script>
+/* User Variables (CHANGABLE)*/
+var category = "(All)";                    //Category to Show First
+var MaxPerPage = 20;                       //Movies Per Page
+</script>
+<!-- End of Variables -->
+
+<!-- Start of HTML -->
+<html>
+<head>
+<title>$$OWNER_NAME's Movie List</title>
+  <style TYPE="text/css">
+    text,body,p,div,span,th,td,ul,li { FONT-SIZE: 10pt; FONT-FAMILY: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif; color: black; background: white; }
+    HR { color: black; }
+    A:link { COLOR: #FFFFFF; background: black; }
+    A:visited { COLOR: #FFFFFF; background: black; }
+    A:hover { COLOR: #CC0000; background: black; }
+    A:active { COLOR: #CC0000; background: black; }
+    td.blk { color: white; background: black; border: solid; border-color: black; }
+    table.blk { color: white; background: black; border: solid; border-color: black; border-width: thin; }
+    table.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+    td.lgt { color: black; background: white; border: solid; border-width: thin; border-color: #F5F5F5; }
+    p.title { font-size: 18pt; font-weight: bold; }
+  </style>
+</head>
+
+<body onLoad="init()">
+  <p>
+    $$OWNER_NAME's Movie List<br>
+    Last updated on $$DATE<BR>
+    Total: $$TOTALMOVIES movies<br>
+
+    <a style="color: #000000; background-color: #FFFFFF" href="javascript:dToggle(oOptions,-1)">
+      Options
+    </a>&nbsp
+    <a style="color: #000000; background-color: #FFFFFF" href="javascript:dToggle(oFind,-1)">
+      Search
+    </a>
+</p>
+
+<script>
+  <!-- Waiting Picture/Message In here
+    document.write("<table id = 'wait' class='blk' border='1' cellspacing='0' cellpadding='5'>");
+    document.write("<tr><td id='wait_text'>Please wait while list loads...</td></tr>");
+    document.write("</table>");
+  -->
+</script>
+
+<table ID='oOptions' class= "blk" border='20' cellspacing='0' cellpadding='5' style='display:none'>
+<thead>
+   <tr>
+    <td class="blk" nowrap colspan="2"><b>Options</b></td>
+   </tr>
+</thead>
+<tbody>
+   <tr>
+       <td class="lgt" nowrap>Items Per Page</td>
+       <td class="lgt" nowrap><input type="text" name = "perpage" onChange="MaxPerPage = round(perpage.value,0);showCategory();">
+</td>
+   </tr>
+   <tr>
+
+       <td class="lgt" nowrap>Group By</td>
+       <td ID = 'oOptionsCategories' class="lgt" nowrap>
+       </td>
+       
+   </tr>
+</tbody>
+</table>
+
+<table ID = 'oFind' class = "blk" border='20' cellspacing='0' cellpadding='5' style='display:none'>
+<thead>
+  <tr>
+    <td class="blk" nowrap colspan="2"><b>Search</b></td>
+    </td>
+  </tr>
+</thead>
+<tbody>
+  <td class="lgt" nowrap>
+    <input type="text" name = "oFindText">
+    <input type="submit" value = "Search" onclick = "javascript:search(oFindText.value);">
+  </td>
+</tbody>
+</table>
+
+<br>
+
+<table ID='oMovieTable' class= "blk" border='20' cellspacing='0' cellpadding='5' style='display:none'>
+<thead>
+  <tr>
+    <td class="blk" nowrap>&nbsp</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('OriginalTitle')">Title</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('Borrower')">Lent To</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('Category')">Genre</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('Length')">Length</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('Source')">Source</td>
+    <td class="blk" nowrap style="cursor:hand" onclick ="sortby('VideoFormat')">Format</td>
+  </tr>
+  <tr>
+    <td ID='oGroupSel' class = "blk">
+    <td ID='oGroupName' colSpan='6' class = "blk">
+    </td>
+  </tr>
+</thead>
+  <tbody ID='oMovieList' class = "lgt">
+  </tbody>
+  <tbody ID='oPages'>
+     <td ID = 'oPagesBack' class = 'blk'>
+     </td>
+     <td ID = 'oPagesMid' class = 'blk' colspan = "5">
+     </td>
+     <td ID = 'oPagesNext'class = 'blk'>
+     </td>
+  </tbody>
+</table>
+
+<p>Created with <a style="color: #000000; background-color: #FFFFFF" href="http://www.buypin.com/moviecatalog.php" target="_blank">Ant Movie Catalog</a>.</p>
+</body>
+</html>
+<!-- End of HTML -->
+
+<!-- Start of Script -->
+<script>
+//SYSTEM VARIABLES
+var StartFrom = 0;        // Start Showing From (used for pages)
+var movies = null;        // Holds All Movies
+var movie = null;         // Current movie
+var index = 0;            // Current movie number in this category
+var sortedby = 0;         // Last Column Sorted By
+var sortasc = true;       // Sort Ascending/Decending
+var ShownCategory = new Array();  //Array of Category Types
+perpage.value = MaxPerPage;
+
+//GENERAL FUNCTIONS
+String.prototype.trim = function(){
+   return this.replace(/(^\s*)|(\s*$)/g, "");
+}
+
+function round(number,X) {
+   return Math.round(number*Math.pow(10,X))/Math.pow(10,X);
+}
+
+function dToggle(x,y){
+   if (y==-1&&x.style.display==""||y==0)
+     x.style.display="none";
+   else x.style.display="";
+}
+
+//DISPLAY FUNCTIONS
+//Add Type of Category (Letters, Genre, Format)
+function AddCategoryType(Name,Variable){
+    var o = ShownCategory.length;
+    ShownCategory[o] = new ShownCategoryType(Name,Variable);
+    if(o==0) ShownCategory[o].shown=true; //Default to Showing First Category.
+    oOptionsCategories.innerHTML +=  "<input type = 'checkbox' "+(ShownCategory[o].shown==true?"checked":"")+" onclick='ShownCategory["+o+"].shown=!ShownCategory["+o+"].shown;init();'>"+Name+"<br>";
+}
+
+//Create Actual Category (A-Z, Action/Comedy, Divx/MPEG)
+var ShownCategories = new Array();
+function clearCategories(){
+   ShownCategories = new Array();
+}
+function createCategory(X){
+  ShownCategories[ShownCategories.length]=X;
+}
+
+function showCategories(){
+   oGroupName.innerHTML = "";
+   ShownCategories.sort(sort2);
+   for(var i=0;i<ShownCategories.length;i++){
+     oGroupName.innerHTML += "<a href='javascript:StartFrom=0;category=\""+ShownCategories[i]+"\";showCategory();'>"+ShownCategories[i]+"</a>&nbsp";
+   }
+   oGroupName.align = "center";
+   oGroupName.style.fontWeight = "Bold";
+}
+
+//Wipe All Movies From Display (called when swapping Category/Page)
+function clearMovies(){
+   oMovieList.innerText ="";
+}
+
+//Toggles Extra Movie Details
+function showDetails(){
+   dToggle(eval(window.event.srcElement.toggle),-1);
+}
+
+
+
+//Reads Movies into Array Sorting into Categories
+function init() {
+   movies  = new Array();
+   var catArray = null;
+   var cArray = null;
+   var temp;
+   var Category = "";
+   oGroupName.innerHTML = "";
+   clearCategories();
+
+    var elements = document.body.getElementsByTagName("Movie");
+//  var xmldoc=new ActiveXObject("MSXML2.DOMDocument.3.0");
+//  xmldoc.load("movies.xml");
+//  elements = xmldoc.getElementsByTagName("Movie");
+
+
+   movies["(All)"] = new Array();
+   createCategory("(All)");
+   for (var i = 0; i < elements.length; i++) {
+     temp = "";
+     for(var x =0;x<ShownCategory.length;x++){
+       var value = eval("elements[i]."+ShownCategory[x].Variable);
+       if(ShownCategory[x].shown==true)temp += " / " + (value!=""?value:"(None)");
+     }
+
+     cArray = new String(temp).split(" / ");
+     for (var j = 0; j < cArray.length;j++){
+       Category = cArray[j].trim();
+       if (Category != null && Category != "" && Category != "undefined") {
+         catArray = movies[Category];
+         if (catArray == null) {
+           catArray = new Array();
+           movies[Category] = catArray;
+           catArray[0] = elements[i];
+           createCategory(Category);
+         } else {
+           catArray[catArray.length] = elements[i];
+         }
+       }
+    }
+    movies["(All)"][movies["(All)"].length] = elements[i];
+   }
+   showCategories();
+   showCategory();
+}
+
+//Loop Through Movie[category] and Show each movie
+function showCategory(){
+   if(movies[category]==null) category = "(All)";
+   oGroupSel.innerHTML = "<STRONG><CENTER>"+category+"<CENTER></STRONG>";
+   clearMovies();
+
+   EndAt=((movies[category].length-StartFrom)<MaxPerPage?(movies[category].length):MaxPerPage+StartFrom);
+   
+   if(movies[category].length==0||StartFrom==EndAt){
+      oRow = oMovieList.insertRow();
+      oCell = oRow.insertCell();
+      oCell.align = "center";
+      oCell.className = "lgt";
+      oCell.innerHTML = "No Movies to Display<br>";
+      oCell.colSpan="7";
+   } else {
+     for(var i = StartFrom; i<EndAt;i++){
+       if(i!=StartFrom){
+         oRow = oMovieList.insertRow();
+         oCell=oRow.insertCell();
+         oCell.colSpan="7";
+         oCell.className = "blk";
+       }
+       showMovie(i);
+     }
+   }
+   
+
+ 
+   if(movies[category].length>MaxPerPage){
+     oPagesBack.innerHTML = "<CENTER><a href='javascript:StartFrom="+(StartFrom-MaxPerPage>0?StartFrom-MaxPerPage:0)+";showCategory();'>Back</a></CENTER>";
+     oPagesMid.innerHTML = "<STRONG><CENTER>Page: " + round((StartFrom/MaxPerPage)+1,0) + " of " + round((movies[category].length/MaxPerPage)+1,0) + "</CENTER></STRONG>";
+     oPagesNext.innerHTML = "<CENTER><a href='javascript:StartFrom="+(StartFrom+MaxPerPage<movies[category].length?StartFrom+MaxPerPage:StartFrom)+";showCategory();'>Next</a></CENTER";
+   }else{
+     oPagesBack.innerHTML = "";
+     oPagesMid.innerHTML = "";
+     oPagesNext.innerHTML = "";
+   }
+ 
+   dToggle(oMovieTable,1);
+   dToggle(wait,0);
+}
+
+function showMovie(i){
+  movie = movies[category][i];
+
+  var oRow;
+  var oCell;
+  var temp;
+
+  oRow = oMovieList.insertRow();
+
+  temp="<center>";
+if(movie.URL!="")temp+="<a href = '"+movie.URL+"' target='_blank'> ";
+  if(movie.PICTURE!=""){
+    temp+="<img src='"+movie.Picture+"' width='98' height='140'>";
+  }else{
+    temp+="<img src='nopic.gif' width='98' height='140'>";
+}
+if(movie.URL!="")temp+="</a>";
+  temp+="<br><img src='appr"+round(movie.Rating/10*4,0)+".gif' >";
+  temp+="</center>";
+
+  var layout = new Array()
+  layout[0] = new Array();
+ 
+  layout[0][0] = new Field("123");
+  layout[0][0].HTML = temp;
+  layout[0][0].rowSpan = "2";
+  layout[0][0].action = false;
+
+  layout[0][1] = new Field("movie.OriginalTitle");
+  layout[0][1].fontWeight = "Bold";
+  layout[0][2] = new Field("movie.Borrower");
+  layout[0][3] = new Field("movie.Category");
+  layout[0][4] = new Field("movie.Length");
+  layout[0][5] = new Field("movie.Source");
+  layout[0][6] = new Field("movie.VideoFormat");
+
+  layout[1] = new Array();
+  layout[1][0] = new Field("movie.Description")
+  layout[1][0].action = false;
+  layout[1][0].colSpan = "6"
+
+  for(y=0;y<layout.length;y++){
+   if(layout[y] == null)break;
+   oRow = oMovieList.insertRow();
+    for(x=0;x<layout[0].length;x++) {
+       if(layout[y][x] == null)break;
+      (oCell = oRow.insertCell());
+      oCell.innerHTML = eval(layout[y][x].field)+ "&nbsp";
+      if(layout[y][x].HTML!="")oCell.innerHTML = layout[y][x].HTML;
+
+      if(layout[y][x].action==true){
+        oCell.style.cursor = "hand";
+        oCell.onclick = showDetails;
+        oCell.toggle =  "Expand" + movie.Number;
+      }
+      oCell.className = "lgt";
+      oCell.rowSpan = layout[y][x].rowSpan;
+      oCell.colSpan = layout[y][x].colSpan;
+      oCell.style.fontWeight = layout[y][x].fontWeight;
+    }
+  }
+
+  oRow = oMovieList.insertRow();
+  oRow.id= "Expand" + movie.Number;
+  oCell = oRow.insertCell();
+  oCell.className = "lgt";
+  oCell.vAlign = "top";
+  oCell.innerHTML = "<strong>Year:<br>Director:<br>Actors:</strong>"
+  oCell.align = "center";
+  oCell = oRow.insertCell();
+  oCell.className = "lgt";
+  oCell.innerHTML = movie.Year + "&nbsp<br>" + movie.Director + "&nbsp<br>" + movie.Actors;
+  oCell.colSpan="6";
+  oCell.vAlign = "top";
+  oRow.style.display = "none";
+ 
+}
+
+//STRUCTS
+function Field(FieldName){
+   this.field = FieldName;
+   this.rowSpan = "1";
+   this.colSpan = "1";
+   this.fontWeight = "";
+   this.HTML = "";
+   this.action = true;
+}
+
+function ShownCategoryType(Name,Variable){
+   this.Name = Name;
+   this.Variable = Variable;
+   this.shown = false;
+}
+
+
+//SORT FUNCTIONS
+function sortby(X){
+   if(sortedby!=X||sortedby==X&&sortasc==false){
+     sortedby = X;
+     movies[category] = movies[category].sort(sort);
+     sortasc=true;
+   } else {
+     movies[category] = movies[category].sort(revsort);
+     sortasc=false;
+   }
+   showCategory();
+}
+
+function sort2(X,Y){
+   if(X<Y)return -1;
+   if(X>Y)return 1;
+   return 0;
+}
+
+function sort(X,Y){
+   if (eval("X."+sortedby)<eval("Y."+sortedby)) return -1;
+   if (eval("X."+sortedby)>eval("Y."+sortedby)) return 1;
+   return 0;
+}
+
+function revsort(X,Y){
+   if (eval("X."+sortedby)>eval("Y."+sortedby)) return -1;
+   if (eval("X."+sortedby)<eval("Y."+sortedby)) return 1;
+   return 0;
+}
+
+//FIND
+function search(X){
+   if(movies["(Search)"]==null) createCategory("(Search)");
+   movies["(Search)"] = new Array();
+   var v_regexp = new RegExp(X,"gi");
+
+   for(var i = 0;i<movies["(All)"].length;i++){
+   if(v_regexp.test(movies["(All)"][i].OriginalTitle)||v_regexp.test(movies["(All)"][i].Description))
+       movies["(Search)"][movies["(Search)"].length] = movies["(All)"][i];
+   }
+
+   showCategories();
+   category="(Search)";
+   StartFrom = 0;
+   showCategory();
+}
+
+
+</script>
+<!-- End of Scripts -->
+
+
+<!-- Start of Movies -->
+</Movies>
+  $$ITEM_BEGIN
+  <Movie
+    Number = "$$ITEM_NUMBER"
+    Source = "$$ITEM_SOURCE"
+    Rating = "$$ITEM_RATING"
+    OriginalTitle = "$$ITEM_FORMATTEDTITLE1"
+    Director = "$$ITEM_DIRECTOR"
+    Country = "$$ITEM_COUNTRY"
+    Category = "$$ITEM_CATEGORY"
+    Year = "$$ITEM_YEAR"
+    Length = "$$ITEM_LENGTH"
+    Actors = "$$ITEM_ACTORS"
+    URL = "$$ITEM_URL"
+    Description = "$$ITEM_DESCRIPTION"
+    Comments = "$$ITEM_COMMENTS"
+    VideoFormat = "$$ITEM_VIDEOFORMAT"
+    Languages = "$$ITEM_LANGUAGES"
+    Disks = "$$ITEM_DISKS"
+    Picture = "$$ITEM_PICTUREFILENAME"
+    Borrower="$$ITEM_BORROWER"
+  />
+  $$ITEM_END
+</Movies>
+<!-- End of Movies -->
+
+
+<script>
+//CATEGORIES
+AddCategoryType("Letters","getAttribute('OriginalTitle').charAt(0)");
+AddCategoryType("Category","getAttribute('Category')");
+AddCategoryType("Source","getAttribute('Source')");
+AddCategoryType("Format","getAttribute('VideoFormat')");
+AddCategoryType("Borrower","getAttribute('Borrower')");
+// AddCategoryType("Number","getAttribute('Number')");
+AddCategoryType("Director","getAttribute('Director').charAt(0)");
+</script>

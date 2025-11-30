@@ -1,0 +1,102 @@
+<html><head>
+<META NAME="DESCRIPTION" CONTENT="Layout based on Rainbow Seagull by OKCK">
+<META NAME="DESCRIPTION" CONTENT="Needs AMC v4.2">
+<META NAME="DESCRIPTION" CONTENT="v4.2.0.2 - 20.10.2013 by J/Soulsnake">
+<style type="text/css">
+a:link {text-decoration:none; color:#444}
+body,td,th {font-family:arial; font-size:12px; color:#444}
+body {background-color:#eee; padding-top:10px}
+.actors {text-align:center; padding-top:5px; vertical-align:top}
+.imdb-rating {font-size:22px; letter-spacing:-2px; padding:-29px 0 5px 32px}
+.my-rating {font-size:22px; letter-spacing:-2px; padding:-31px 0 5px 102px}
+.rinfo {margin-top:10px; color:#777}
+.rinfo b {color:#000}
+img.stills {width:150px; margin-top:7px}
+.more_pics {font-size:16px; padding-top:7px; font:bold}
+.line {margin:30px 0 0 0; border-top:1px solid #ccc; width:150px}
+.background {width:150px; margin-top:7px}
+.format {margin-top:20px}
+</style></head>
+
+<body>
+
+<table><tr valign="top"><td>
+
+<!-- content -->
+<div style="padding-left:10px">
+  <!-- info -->
+  <span style="font-size:24px">$$ITEM_ORIGINALTITLE</span><br/>
+  <span style="color:#aaa">$$ITEM_TRANSLATEDTITLE - $$ITEM_YEAR / $$ITEM_COUNTRY ( $$ITEM_LENGTH min ) - $$ITEM_CATEGORY</span><br/>
+  <span style="font-size:6px">&nbsp;</span>
+  <!-- actors -->
+	<div style="padding:15px 0 10px 0; border-top:1px solid #ccc; text-align:center">
+		<table>
+			<tr>
+			$$ITEM_EXTRA_BEGIN(Actors,,1,5)
+			<td><img src="$$ITEM_EXTRA_PICFILENAME" width="92px" border="0"/></td>
+			$$ITEM_EXTRA_END
+			</tr>
+			<tr>
+			$$ITEM_EXTRA_BEGIN(Actors,,1,5)
+			<td class="actors" width="92px"><a href="http://www.imdb.com/name/$$ITEM_EXTRA_URL"><b>$$ITEM_EXTRA_TITLE</b></a><br>$$ITEM_EXTRA_DESCRIPTION</td>
+			$$ITEM_EXTRA_END
+			</tr>
+		</table>
+	</div>
+  <!-- text -->
+	<div style="padding-top:10px; border-top:1px solid #ccc">
+	<b>$$ITEM_DESCRIPTION</b><br /><br />$$ITEM_COMMENTS
+	</div>
+</div>
+
+</td><td>
+
+<!-- pictures -->
+<div style="width:150px; padding-left:10px; padding-top:10px; text-align:center">
+	<!-- cover -->
+	<img src="$$ITEM_PICTUREFILENAME" width="150">
+	<!-- cover back -->
+	$$ITEM_EXTRA_BEGIN(Coverback,True,1,1)
+	<div class="line"></div>
+	<div class="more_pics">Cover back</div>
+	<img class="background" src="$$ITEM_EXTRA_PICFILENAME">
+	$$ITEM_EXTRA_END
+	<!-- stills -->
+	$$ITEM_EXTRA_BEGIN(Stills,,1,1)
+	<div class="line"></div>
+	<div class="more_pics">Movie stills</div>
+	$$ITEM_EXTRA_END
+	$$ITEM_EXTRA_BEGIN(Stills,,1,10)
+	<img class="stills" src="$$ITEM_EXTRA_PICFILENAME">
+	$$ITEM_EXTRA_END
+	<!-- backgrounds -->
+	$$ITEM_EXTRA_BEGIN(Backgrounds,,1,1)
+	<div class="line"></div>
+	<div class="more_pics">Backgrounds</div>
+	$$ITEM_EXTRA_END
+	$$ITEM_EXTRA_BEGIN(Backgrounds,,1,4)
+	<img class="background" src="$$ITEM_EXTRA_PICFILENAME">
+	$$ITEM_EXTRA_END
+</div>
+
+</td><td>
+
+<!-- right info -->
+<div style="width:150px; padding-left:10px; padding-right:10px; padding-top:10px">
+	<img src="imdb.png" height="30"><img src="R$$ITEM_COLORTAG.png" height="30" hspace="40">
+	<div class="imdb-rating">&nbsp;$$ITEM_RATING</div><div class="my-rating">&nbsp;$$ITEM_USERRATING</div>
+	<div class="rinfo"><b>$$LABEL_LANGUAGES (UT)</b><br />$$ITEM_LANGUAGES ($$ITEM_SUBTITLES)<br/></div>
+	<div class="rinfo"><b>$$LABEL_DIRECTOR</b><br />$$ITEM_DIRECTOR</div>
+	<div class="rinfo"><b>$$LABEL_PRODUCER</b><br />$$ITEM_PRODUCER</div>
+	<div class="rinfo"><b>$$LABEL_WRITER</b><br />$$ITEM_WRITER</div>
+	<div class="rinfo" style="padding-bottom:5px"><b>$$LABEL_COMPOSER</b><br />$$ITEM_COMPOSER</div>
+	<div class="rinfo" style="padding-top:15px; border-top:1px solid #ddd"><b>$$LABEL_DATEADD</b><br/>$$ITEM_DATEADD</div>
+	<div class="rinfo"><b>$$LABEL_DATEWATCHED</b><br />$$ITEM_DATEWATCHED</div>
+	<div class="rinfo"><b>$$LABEL_MEDIA</b><br />$$ITEM_MEDIA</div>
+	<div class="rinfo"><b>Format</b><br />$$ITEM_VIDEOFORMAT / $$ITEM_AUDIOFORMAT</div>
+<!--	<div class="format"><img src="$$ITEM_VIDEOFORMAT.jpg" height="30" width="60">&nbsp;&nbsp;<img src="$$ITEM_AUDIOFORMAT.jpg" height="30" width="60"></div>   -->
+</div>
+
+</td></tr></table>
+
+</body>

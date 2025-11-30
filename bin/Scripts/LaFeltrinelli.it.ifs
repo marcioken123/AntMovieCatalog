@@ -1,0 +1,310 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Gigibop (luca.marcato@gmail.com)
+Title=LaFeltrinelli
+Description=Get movie info from http://www.lafeltrinelli.it
+Site=http://www.lafeltrinelli.it
+Language=IT
+Version=1.3.0 - 2013-11-10
+Requires=3.5.0
+Comments=Changes|27.08.2010 v. 1.0: First revision (Gigibop)|02.09.2010 v. 1.1: Added an option (CercaTitoloEsatto) to search for exact movie title or all around site (Gigibop)|03.06.2012 v. 1.2: Fixed complete script due to site HTML changes (Gigibop)|26.08.2013 v. 1.2.1: Fixed:  no "sinopsi" but "description" for field-description (Fulvio53s03)|10.11.2013 v. 1.3.0: Cambiata la struttura della pagina di ricerca (Fulvio53s03)
+License=The source code of the script can be used in another program only if full credits to script author and a link to Ant Movie Catalog website are given in the About box or in the documentation of the program.
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+CercaTitoloEsatto=1|1|1=Cerca il titolo esatto (Standard)|0=Cerca in tutto il settore cinema del sito
+
+[Parameters]
+
+***************************************************)
+
+program LaFeltrinelli;
+uses
+  GiLib;
+
+var
+  MovieName, indirizzo: string;
+  TheMovieAddress: string;
+const
+  UrlBase = 'http://www.lafeltrinelli.it';
+ 
+procedure AnalyzePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: integer;
+  BeginPos: integer;
+  PageStr: string;
+begin
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+  PageStr:= Page.Text;
+  LineNr := FindLine('<div class="product-result">', Page, 0);
+  if LineNr = -1 then
+  begin
+    SetField(fieldURL, Address);
+    AnalyzeMoviePage(Page);
+  end
+  else
+  begin
+    PickTreeClear;
+    AddMoviesTitles(Page);
+    if TheMovieAddress='' then
+    begin
+      if PickTreeExec(Address) then AnalyzePage(Address);
+    end
+    else
+    begin
+      SetField(fieldURL, TheMovieAddress);
+      Page.Text := GetPage(TheMovieAddress);
+      AnalyzeMoviePage(Page);
+    end;
+  end;
+  Page.Free;
+end;
+
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+  Line: String;
+  LineNr: Integer;
+  PageStr: string;
+begin
+ 
+  PageStr:= Page.Text;
+  // Translated Title
+  LineNr := FindLine('<span itemprop="name">', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line:= Page.GetString(LineNr);
+      Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<span itemprop="name">', '</span>'),True,True);
+      SetField(fieldTranslatedTitle, Line);
+    end;
+
+  // Original Title
+  LineNr := FindLine('<span class="name">Titolo in lingua originale</span>', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line:= Page.GetString(LineNr);
+      Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<span class="name">Titolo in lingua originale</span>', '</span>'),True,True);
+      SetField(fieldOriginalTitle, Line);
+    end;
+
+  // Director
+  LineNr := FindLine('<span itemprop="name">', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '</span></h1><h2>Regia di: ', '</a><br/>'),True,True);
+      SetField(fieldDirector,Line);
+    end;
+
+  // Cast
+  LineNr := FindLine('<span itemprop="name">', Page, 0);
+  if LineNr > -1 then
+    begin
+      Line := Page.GetString(LineNr);
+      Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '</a><br/>Con: ', '<div class="social">'),True,True);
+      SetField(fieldActors,Line);
+    end;
+
+  //  Production
+  LineNr := FindLine('Produzione</span><span class="value">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), 'Produzione</span><span class="value">', '</span>'),True,True);
+    Line := StringReplace(Line, ']', '');  //fs2013-11-10
+    SetField(fieldProducer,Line);
+  end;
+
+  //  Genre
+  LineNr := FindLine('<span class="name">Genere:</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">Genere:</span>', '</span>'),True,True);
+    SetField(fieldCategory,Line);
+  end;
+
+  // Year
+  LineNr := FindLine('<span class="name">Data uscita</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := TextAfter(GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<span class="name">Data uscita</span>', '</span>'),True,True),'/');
+    SetField(fieldYear,Line);
+  end;
+
+  // Lenght
+  LineNr := FindLine('<span class="name">Durata</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<span class="name">Durata</span>', '</span>'),True,True);
+    SetField(fieldLength,Line);
+  end;
+
+  // Disks Number
+  LineNr := FindLine('<span class="name">N. DVD</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line:= GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<span class="name">N. DVD</span>', '</span>'),True,True);
+    SetField(fieldDisks,Line);
+  end;
+
+  // Description
+  LineNr := FindLine('<div class="block"><h3>Descrizione', Page, 0);  //fs  era <div class="block"><h3>Sinossi
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+//fs    Line:= UTF8Decode(GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<h3>Sinossi</h3><p>', '</p></div>'),True,True));
+    Line:= UTF8Decode(GHtmlDecodeAndClean(TextBetween(Page.GetString(LineNr), '<h3>Descrizione</h3><p>', '</p></div>'),True,True));
+
+    SetField(fieldDescription,Line);
+  end;
+
+  // Picture
+  LineNr := FindLine('</div><div class="basic-info"><div class="left col-left">', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := TextBetween(Line,'src="//','" class="picture"');
+    Line := GHtmlDecodeAndClean(Line,false,false);
+    GetPicture('http://' + Line);
+    //GetPicture(UrlBase + Line);
+  end;
+
+  //  Audio Tracks
+  LineNr := FindLine('<span class="name">Lingue</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">Lingue</span>', '</span>'),True,True);
+    SetField(fieldLanguages, Line);
+  end
+
+  // SubTitles
+  LineNr := FindLine('<span class="name">Sottotitoli</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">Sottotitoli</span>', '</span>'),True,True);
+    SetField(fieldSubtitles, Line);
+  end;
+
+// MediaLabel --> Barcode
+//fs 2013-11-10  LineNr := FindLine('<span class="name">EAN</span>', Page, 0);
+//fs 2013-11-10  if LineNr > -1 then
+//fs 2013-11-10  begin
+//fs 2013-11-10    Line := Page.GetString(LineNr);
+//fs 2013-11-10    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">EAN</span>', '</span>'),True,True);
+//fs 2013-11-10    SetField(fieldMedia, Line);
+//fs 2013-11-10  end;
+
+// Media Type
+//fs 2013-11-10  LineNr := FindLine('<span class="name">Supporto</span>', Page, 0);
+//fs 2013-11-10  if LineNr > -1 then
+//fs 2013-11-10  begin
+//fs 2013-11-10    Line := Page.GetString(LineNr);
+//fs 2013-11-10    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">Supporto</span>', '</span>'),True,True);
+//fs 2013-11-10    Line := TextBefore(Line, ' film', '');
+//fs 2013-11-10    SetField(fieldMediaType, Line);
+//fs 2013-11-10  end;
+
+  // Country
+  LineNr := FindLine('<span class="name">Paese</span>', Page, 0);
+  if LineNr > -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Line := GHtmlDecodeAndClean(TextBetween(Line, '<span class="name">Paese</span>', '</span>'),True,True);
+    Line := StringReplace(Line, ']', '');  //fs2013-11-10
+    SetField(fieldCountry, Line);
+  end;
+
+end;
+
+procedure AddMoviesTitles(Page: TStringList);
+var
+  LineNr: Integer;
+
+  Line: string;
+  i: Integer;
+  MovieTitle, MovieAddress, Description: string;
+  BeginPos, EndPos: Integer;
+  begin
+  LineNr := 0;
+  LineNr := FindLine('<div id="risultatiRicerca">',Page,LineNr);   //fs 2013-11-10
+   while LineNr > -1 do
+     begin
+       //Line:= GJoinMultipleLines(Page, '<div id="risultatiRicerca">','<div class="product-pagination">' , LineNr);
+       Line := Page.GetString(LineNr);
+       
+       MovieAddress:= GHtmlDecodeAndClean(TextBetween(Line, '<div class="description"><h3><a href="', '"'),True,True);
+
+       MovieTitle:= GHtmlDecodeAndClean(TextBetween(Line, '<div class="description">', '</a></h3><h4>'),True,True);
+
+       Description := GHtmlDecodeAndClean(TextBetween(Line, '</a></h3><h4>', '</a></h4><h5>'),True,True);
+
+       if Description = '' then Description := TextBetween(Line, 'Non disponibile', '</A>');
+       if MovieTitle > '' then PickTreeAdd(MovieTitle + ' (' + Description + ')', MovieAddress);
+
+       if TheMovieAddress='*' then
+         TheMovieAddress := MovieAddress
+       else
+         TheMovieAddress := '';
+
+//       LineNr := FindLine('<div class="block home video">',Page,LineNr+1);
+         LineNr := FindLine('<div class="add-to-cart">',Page,LineNr+1);   //fs 2013-11-10
+ 
+     end;
+ 
+  LineNr := FindLine('<p style="height: auto;" class="pagine">',Page,LineNr);
+  Line := Page.GetString(LineNr);
+
+  Line := TextBetween(Line, '<p style="height: auto;" class="pagine">', '</p>');
+
+  BeginPos := pos('href',Line);
+  if BeginPos>0 then
+  begin
+    Delete(Line,1,BeginPos + 5);
+    EndPos := pos('"',Line);
+    MovieAddress := copy(Line,1,EndPos-1);
+
+    PickTreeMoreLink('http://www.lafeltrinelli.it' + GHtmlDecode(MovieAddress,true));
+  end;
+  if TheMovieAddress='*' then TheMovieAddress := '';
+end;
+
+// -----------------------------
+// Questo è il main dello script
+// -----------------------------
+begin
+  if CheckVersion(3,5,0) then
+   begin
+   
+   NewGiLib;
+    TheMovieAddress := '*';
+    MovieName := StringReplace(GetField(fieldTranslatedTitle), '.', ' ');
+    if MovieName = '' then
+      MovieName := StringReplace(GetField(fieldOriginalTitle), '.', ' ');
+   While pos ('[', MovieName) > 0 Do begin
+   MovieName := TextBefore(MovieName, '[', '') + TextAfter(MovieName, ']');
+   end;
+    if Input('LaFeltrinelli Importazione Film', 'Digitare il titolo del film / Codice a Barre:', MovieName) then
+    begin
+      MovieName := StringReplace(MovieName, ' ', '+');
+//      indirizzo := (UrlBase + '/fcom/it/home/pages/catalogo/searchresults.html?prkw='+UrlEncode(MovieName)+'&srch=' + IntToStr(GetOption('CercaTitoloEsatto')) + '&Cerca.x=0&Cerca.y=0&cat1=5&prm=');
+      indirizzo := (UrlBase + '/fcom/it/home/pages/catalogo/searchresults.html?prkw='+MovieName+'&srch=' + IntToStr(GetOption('CercaTitoloEsatto')) + '&Cerca.x=0&Cerca.y=0&cat1=5&prm=');
+      AnalyzePage(indirizzo);
+    end;
+//http://www.lafeltrinelli.it/fcom/it/home/pages/catalogo/searchresults.html?prkw=il+padrino&x=25&y=15&cat1=5&prm=
+   FinalizeGiLib;
+   end
+  else
+    ShowMessage('Questo script richiede una versione più nuova di Ant Movie Catalog (almeno la versione 3.5.0)');
+end. 

@@ -1,0 +1,159 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Ronniewo2 (Ronnie Oliveira) / Previous author: NeiPCs
+Title=CinePlayers
+Description=Importação de dados através do site CinePlayers.com
+Site=http://www.cineplayers.com/
+Language=BR
+Version=1.10
+Requires=3.5.1
+Comments=Released 20/03/2013
+License=This program is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version.
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+program CinePlayers;
+var MovieName:string;
+uses StringUtils1;
+
+procedure AnalyzeFilmPage(Address:string);
+var Page:TStringList;
+    valor, valor2:String;
+    i:integer;
+begin
+  Page := TStringList.Create;
+//URL
+  valor:='http://www.cineplayers.com/'+Address;
+  Page.Text:=GetPage(valor);
+  //SetField(fieldURL,valor);
+ 
+  i:=FindLine('&nbsp;Gênero:',Page,0);
+  valor:=Page.GetString(i);
+  HTMLRemoveTags(valor);
+  i:=Pos('Gênero',valor);
+  //valor:=Copy(valor,1,i-1);
+  valor:=Copy(valor,i+8,Length(valor));
+  SetField(fieldCategory,valor);
+
+  SetField(fieldMediaType,'DVD');
+
+//fieldTranslatedTitle
+  i:=FindLine('<span class="tit">',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'">','</');
+  HTMLRemoveTags(valor);
+  SetField(fieldTranslatedTitle, valor);
+ 
+//fieldOriginalTitle
+  i:=FindLine('<span class="txt_italico">',Page,0);
+  valor:=Page.GetString(i);
+  valor:=TextBetween(valor,'">(',')</');
+  HTMLRemoveTags(valor);
+  valor2:=copy(valor,length(valor)-3,4);
+  valor:=copy(valor,1,length(valor)-6);
+  SetField(fieldOriginalTitle, valor);
+  SetField(fieldYear, valor2);
+
+//fieldDirector
+  valor:=TextBetween(Page.Text,'Direção:</span> ','<br>');
+  HTMLRemoveTags(valor);
+  SetField(fieldDirector,valor);
+
+//fieldProducer
+  //valor:=TextBetween(Page.Text,'Roteiro:</span> ','<br>');
+  //HTMLRemoveTags(valor);
+  //SetField(fieldProducer,valor);
+
+//fieldCategory
+  //valor:=TextBetween(Page.Text,'Gênero:</span> ','<br>');
+  //HTMLRemoveTags(valor);
+  //SetField(fieldCategory,valor);
+
+//fieldCountry
+  valor:=TextBetween(Page.Text,'Origem:</span> ','<br>');
+  SetField(fieldCountry,valor);
+
+//fieldLength
+  valor:=TextBetween(Page.Text,'Duração:</span> ',' minutos<br>');
+  SetField(fieldLength,valor);
+
+//fieldYear
+//  valor:=TextBetween(Page.Text,'index_filmes.php?ano=','</a>)</span>');
+//  SetField(fieldYear,valor);
+
+//Sinopse
+  valor:=TextBetween(Page.Text,'Sinopse:</span> ','         </p>');
+  HTMLRemoveTags(valor);
+  SetField(fieldDescription, valor);
+
+//Elenco
+  valor:=TextBetween(Page.Text,'Elenco','<!-- CRÍTICAS -->');
+  HTMLRemoveTags(valor);
+  while pos('&nbsp;',valor)>0 do
+     delete(valor,pos('&nbsp;',valor)-1,7);
+  while pos(chr(9),valor)>0 do
+     delete(valor,pos(chr(9),valor),1);
+  while pos(chr(13),valor)>0 do begin
+     insert('.',valor,pos(chr(13),valor));
+     delete(valor,pos(chr(13),valor),2);
+  end;
+  valor:=copy(valor,9,length(valor));
+  while pos('......',valor)>0 do begin
+     insert(#13#10,valor,pos('......',valor));
+     delete(valor,pos('......',valor),7);
+  end;
+  valor:=trim(valor);
+  valor:=copy(valor,1,length(valor)-2);
+  SetField(fieldActors, valor);
+
+//GetPicture
+  i:=FindLine('height="182"',Page,0);
+  valor:=Page.GetString(i);
+  valor:='http://www.cineplayers.com/'+TextBetween(valor,'src="','"');
+  GetPicture(valor);
+
+  Page.free;
+end;
+
+procedure AnalyzePage(Address: String);
+var Page:TStringList;
+    i:integer;
+    nome, url:string;
+begin
+  PickTreeClear;
+  Page := TStringList.Create;
+  Page.Text :=GetPage(Address);
+  i:=0;
+  repeat
+    i:=FindLine('<a href="filme',Page,i+1);
+    nome:=Page.GetString(i);
+    nome:=TextBetween(nome,'">','</a>');
+    if (length(nome)>0) then
+    begin
+      url:=Page.GetString(i);
+      url:=TextBetween(url,'href="','"');
+      PickTreeAdd(nome,url);
+    end;
+  until i=-1;
+ if PickTreeExec(Address) then
+      AnalyzeFilmPage(Address);
+  Page.free;
+end;
+
+
+begin
+  PickListClear;
+  MovieName := GetField(fieldOriginalTitle);
+  if Input('Importar dados do CinePlayers.com', 'Digite o nome do filme:', MovieName) then
+  begin
+    MovieName := StringReplace(MovieName, ' ', '+');
+    AnalyzePage('http://www.cineplayers.com/busca.php?busca='+MovieName);
+  end;
+end. 

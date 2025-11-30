@@ -1,0 +1,391 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Pietro Sorrentino
+Title=TerminalVideo
+Description=Get movie info from TerminalVideoItalia -
+Site=http://www.terminalvideo.com
+Language=IT
+Version=2.0
+Requires=3.5.0
+Comments=Script based on old (2007) script from Andrea Guglielmi & Federico Guidotti
+License=
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Capitalizza=0|0|1=Capitalizza i titoli originale e tradotto (es: il signore degli anelli -> Il Signore Degli Anelli)|0=NON Capitalizza
+
+[Parameters]
+
+***************************************************)
+
+program Terminalvideo;
+//Script based on old(2007)script from Andrea Guglielmi & Federico Guidotti
+uses
+StringUtils7552;
+
+var
+MovieName: string;
+TheMovieAddress: string;
+idx: integer;
+
+const
+DebugPath = 'd:\';
+BaseURL = 'http://www.terminalvideo.com';
+QueryURL = BaseUrl + '/ricerca?src=1&cat=10&nav=1&q=';
+
+function Capitalize (str: string): string;
+begin
+	str := AnsiLowerCase(str);
+	str := AnsiMixedCase(str, ' -/''');
+	Result := str;
+end;
+
+// -------------------------------------------------------------------------------------
+
+// simple string procedures
+
+function StringReplaceAll(S, Old, New: string): string;
+begin
+while Pos(Old, S) > 0 do
+S := StringReplace(S, Old, New);
+Result := S;
+end;
+
+
+function Space2Html(Url: string): string;
+var
+Temp : string;
+SpacePos : Integer;
+begin
+repeat
+SpacePos := pos(' ', Url);
+if SpacePos <> 0 then
+begin
+Temp := copy(Url, 1, SpacePos - 1);
+Delete(Url, 1, SpacePos);
+Temp := Temp + '%20' + Url;
+Url := Temp;
+end;
+until pos(' ', Url) = 0;
+result := Url;
+end;
+
+// ---
+function RemoveExtraChars(InStr: string): string;
+var
+Temp: string;
+PackedStr: string;
+CharPos: Integer;
+n: Integer;
+begin
+PackedStr := InStr;
+repeat
+CharPos := pos('', PackedStr);
+if CharPos = 0 then
+CharPos := pos(#9, PackedStr);
+if CharPos <> 0 then
+begin
+Temp := copy(PackedStr, 1, CharPos - 1);
+Delete(PackedStr, 1, CharPos);
+PackedStr := Temp + PackedStr;
+end;
+until((pos('', PackedStr) = 0) and (pos(#9, PackedStr) = 0));
+result := PackedStr;
+end;
+
+// Analisi ed estrazione dati dalla pagina del film
+procedure AnalyzeMoviePage(Page: TStringList);
+var
+Line, Line2, Line3,Fieldok, tramfix: string;
+MovieID, sDisk, sType, LastTwoMovieID, Article: string;
+LineNr, LineEnd: Integer;
+BeginPos, EndPos: Integer;
+CharPos: Integer;
+
+ begin
+ 
+LineNr := FindLine('origine:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 6;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+CharPos := pos(#32,Line);
+SetField (fieldLength,(left(Line,CharPos-1)));
+end;
+
+// Sottotitoli - Dato non fornito
+
+//Etichetta
+LineNr := FindLine('marca:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+SetField (fieldmedia,Line);
+end;
+
+//Lingue
+LineNr := FindLine('lingue:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+SetField (fieldLanguages,Line);
+end;
+
+// Regia
+LineNr := FindLine('regia:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+SetField (FieldDirector,Line);
+end;
+
+// Categoria
+LineNr := FindLine('genere:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+SetField (fieldCategory,(Line));
+end;
+
+//Paese d'origine
+LineNr := FindLine('origine:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+CharPos := pos(',',Line);
+SetField (fieldCountry,(left(Line,(charpos-1))));
+end;
+
+// Titolo
+begin
+LineNr := FindLine('-title">', Page, 0);
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+CharPos := pos('(',Line);
+if CharPos>0 then
+begin
+Article :=(textBetween(Line,'(',')'));//Posiziona il titolo all'inizio
+SetField (fieldTranslatedTitle,(Article+' '+(Left(Line,CharPos-2))));
+end
+else
+// senza articolo
+SetField (fieldTranslatedTitle,(Line));
+end;
+
+//Anno
+begin
+LineNr := FindLine('origine:', Page, 0);
+if LineNr>-1 then
+LineNr := LineNr + 2;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+CharPos := pos(',',Line);
+SetField (fieldYear,(left(Line,(charpos-1))));
+end;
+
+//Durata
+begin
+LineNr := FindLine('origine:', Page, 0);
+if LineNr>-1 then
+LineNr := LineNr + 3;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+CharPos := pos('m',Line);
+Line := StringReplaceAll(Line,' ','');
+SetField (fieldLength,(left(Line,(length(Line)-6))));
+end;
+
+// Trama -migliorare chiarezza-migliorare chiarezza-migliorare chiarezza
+begin
+LineNr := FindLine('trama:', Page, 0);
+if LineNr>-1 then
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+CharPos := pos('</h2>',Line);
+Line := utf8decode(line);
+SetField (fieldDescription,(textBetween(Line,'/h2>','</dd>')));
+end;
+
+
+//extra -migliorare chiarezza-migliorare chiarezza-migliorare chiarezza
+begin
+LineNr := FindLine('extra:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+CharPos := pos('</dd>',Line);
+if length(Line)>1then
+SetField (fieldComments,'Extra: ' + (textBetween(Line,'<dd>','</dd>')));
+end
+else
+begin
+// senza extra
+end
+end;
+
+//immagine
+begin
+LineNr := FindLine('data-zoom-image="', Page, 0);
+if LineNr>-1 then
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+GetPicture(textBetween(Line,'src="','" />'));
+end;
+ 
+// Attori
+begin
+LineNr := FindLine('cast:<', Page, 0);
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+Line := StringReplaceAll(Line,' (Attore)','');
+SetField (fieldActors,(Line));
+end;
+
+// Colore
+LineNr := FindLine('dettagli edizione:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 2;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+end;
+
+// Formato Disco
+LineNr := FindLine('FORMATO:', Page, 0);
+if LineNr>-1 then
+begin
+HTMLRemoveTags(Line);
+CharPos := pos(',',Line);
+SetField(fieldMediaType,left(Line,(charpos-1)));
+end;
+
+// Sistema
+LineNr := FindLine('dettagli edizione:', Page, 0);
+if LineNr>-1 then
+begin
+LineNr := LineNr + 1;
+Line := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line);
+LineNr := LineNr + 2;
+Line2 := Trim(RemoveExtraChars(Page.GetString(LineNr)));
+HTMLRemoveTags(Line2);
+if Line <> '' then
+Line := Line + ' - ';
+Line := Line + Line2;
+SetField (fieldVideoFormat, Line);
+end;
+SetField(fieldURL,SearchURL);
+end;
+
+// Riempie la lista con i film trovati
+procedure AddMoviesTitles(Page: TStringList);
+
+var
+PrevLine, LineNr: integer;
+Line, TempStr: string;
+MovieTitle, MovieID: string;
+Punta, EndPos: Integer;
+
+begin
+TheMovieAddress := '*';
+PrevLine := 0;
+LineNr := 0;
+LineNr := FindLine('<a class="title" href="',Page,0);
+if LineNr > 0 then
+begin
+repeat
+LineNr := FindLine('<a class="title" href="',Page,PrevLine);
+Line := Page.GetString(LineNr);
+Line := Line + Page.GetString(LineNr+1);
+Line := RemoveExtraChars(Line);
+//ShowMessage (Line);
+Punta := pos('<a class="title" href=', Line);
+Delete (Line, 1, Punta+21);
+EndPos := pos('>', Line);
+MovieID := Copy(Line, 1, EndPos-1);
+//ShowMessage (MovieID);
+Delete (Line, 1, EndPos);
+EndPos := pos('<', Line);
+MovieTitle := Copy(Line, 1, EndPos-1);
+//ShowMessage (MovieTitle);
+PickTreeAdd(MovieTitle, MovieID);
+PrevLine := LineNr+1;
+until(FindLine('<a class="title" href="',Page,PrevLine)=-1);
+end;
+end;
+
+// ----
+procedure AnalyzePage(Address: string);
+var
+Page: TStringList;
+LineNr: integer;
+BeginPos: integer;
+begin
+Page := TStringList.Create;
+Page.Text := GetPage(Address);
+idx := 0;
+LineNr := FindLine('Non è stato trovato <strong>nessun titolo', Page, 0);
+if LineNr <> -1 then
+begin
+ShowError('Nessun film trovato in archivio');
+end
+else
+begin
+LineNr := FindLine('<a id="btnNext" class="title"', Page, 0);
+if LineNr > -1 then
+begin
+if not ShowWarning('Trovati più di 20 film, verranno visualizzati soltanto i primi 20 titoli.' + #13#10 + 'Desideri continuare?') then
+begin
+Page.Free;
+Exit;
+end;
+end;
+PickTreeClear;
+PickTreeAdd('Risultati ricerca per "' + MovieName + '":', '');
+AddMoviesTitles(Page);
+if PickTreeExec(Address) then
+begin
+Page.Text := GetPage(Address);// Richiede la pagina del film
+AnalyzeMoviePage(Page); // Analizza la pagina del film
+end;
+end;
+Page.Free;
+end;
+
+// ----- main()
+
+Var
+SearchURL: String;
+trantitle : String;
+begin
+if CheckVersion(3,5,0) then
+begin
+trantitle := MovieName;
+MovieName := RemoveArticles(GetField(fieldTranslatedTitle));
+if MovieName = '' then
+MovieName := RemoveArticles(GetField(fieldOriginalTitle));
+
+if Input('Terminal Video Italia', 'Inserire il titolo del film:', MovieName) then
+begin
+SearchURL := 'http://www.terminalvideo.com/ricerca?src=1&cat=10&nav=1&q='+(StringReplaceAll(Moviename,' ','+'));
+AnalyzePage(SearchURL);
+end;
+end else
+ShowMessage('This script requires a newer version of Ant Movie Catalog (at least version 3.5.0)');
+end.

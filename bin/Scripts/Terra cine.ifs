@@ -1,0 +1,373 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=Legrad
+Title=Terra cine
+Description=La pagina no contiene dato nacionalidad, en algunas hay caratula en otras solo una fotograma del film
+Site=www.terra.es/cine/
+Language=ES
+Version=1.0
+Requires=3.5.0
+Comments=
+License=
+GetInfo=1
+
+[Options]
+
+***************************************************)
+
+ program Terra Cine;
+
+
+
+var
+  MovieName: string;
+  MovieURL: string;
+//------------------------------------------------------------------------------------
+function BorraComillas(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+   tag := 0;
+   t := '';
+   len := length(s);
+   for n :=1 to len do
+   begin
+     c := Copy(s,n,1);
+     if c = '''' then
+        c := ' ';
+        t := t + c;
+   end
+   s := t;
+   result := t;
+end;
+//---------------------------------------------------------------------
+function Acentos(str1: string) :string;
+begin
+          str1  := AnsiLowerCase(str1);
+          str1  := AnsiUpFirstLetter(str1);
+          str1 := StringReplace(str1, '„°' , '·');
+          str1 := StringReplace(str1, '„©' , 'È');
+          str1 := StringReplace(str1, '„≠', 'Ì');
+          str1 := StringReplace(str1, 'i„≥' , '·');
+          str1 := StringReplace(str1, '√Å' , '·');
+          Str1 := StringReplace(Str1, '„±', 'Ò');
+          Str1 := StringReplace(Str1, '„≥', 'Û');
+          Str1 := StringReplace(Str1, '„™', 'È');
+           Str1 := StringReplace(Str1, '„', '·');
+            Str1 := StringReplace(Str1, '¬', '');
+result := str1;
+end;
+
+//------------------------------------------------------------------
+                              function FindLine(Pattern: string; List: TStringList; StartAt: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if StartAt < 0 then
+    StartAt := 0;
+  for i := StartAt to List.Count-1 do
+    if Pos(Pattern, List.GetString(i)) <> 0 then
+    begin
+      Result := i;
+      Break;
+    end;
+end;
+//------------------------------------------------------------------------------------
+                      function TextBetween(var S: string; StartTag: string; EndTag: string): string;
+var
+  InitialPos: Integer;
+begin
+  InitialPos := Pos(StartTag, S);
+  if InitialPos = 0 then
+    result := ''
+  else
+  begin
+    Delete(S, 1, InitialPos + Length(StartTag) - 1);
+    InitialPos := Pos(EndTag, S);
+    if InitialPos = 0 then
+      result := S
+    else
+    begin
+      result := copy(S, 1, InitialPos - 1);
+      Delete(S, 1, InitialPos + 1);
+    end;
+  end;
+end;
+
+//------------------------------------------------------------------------------------
+                               function DeleteTags(var S: string): string;
+var
+   n,len, tag: Integer;
+   c: char;
+   t: String;
+begin
+
+   tag := 0;
+   t := '';
+   len := length(s);
+
+   for n :=1 to len do
+   begin
+      c := Copy(s,n,1);
+
+
+      if c = #9 then
+         c := ' ';
+
+      if(tag=1) then
+      begin
+         if(c='>') then tag := 0;
+         continue;
+      end
+      else
+      begin
+         if(c='<') then
+         begin
+            tag := 1;
+            continue;
+         end;
+         t := t + c;
+      end;
+   end
+   s := t;
+   result := t;
+end;
+
+
+//------------------------------------------------------------------------------------
+procedure AnalyzePage(Address: string);
+var
+  strPage, MovieAddr, MovieTitle, MovieDate, MovieID, Movie: string;
+  BeginPos, EndPos: Integer;
+  BeginPoss, EndPoss: Integer;
+begin
+  strPage := GetPage(Address);
+  BeginPos := Pos('en el dominio <b>www.terra.es', strPage);
+  if(BeginPos > -1)then
+    begin
+      PickTreeClear;
+      Delete(strPage, 1, BeginPos);
+      BeginPos := Pos('href="http://www.terra.es/cine/nuestra_filmoteca/pelicula.cfm?ID=', strPage);
+      EndPos := 1;
+      while ((BeginPos > 0) and (EndPos > 0)) do
+
+        begin
+          Delete(strPage, 1, BeginPos);
+          EndPos := Pos('" clas', strPage);
+          MovieId := Copy(strPage,+65, EndPos-65);
+          MovieAddr := 'http://www.terra.es/cine/nuestra_filmoteca/pelicula.cfm?ID=' + MovieId;
+          BeginPoss := Pos(')"',strPage);
+          EndPoss := Pos('</h2>', strPage);
+          MovieTitle := Copy(strPage,BeginPoss, EndPoss);
+          DeleteTags(MovieTitle);
+          MovieTitle := TextBetween (MovieTitle, '>', '</a>');
+          MovieTitle := StringReplace(MovieTitle , '¬∑ Filmoteca ¬∑ Cine ¬∑ Terra', '');
+          MovieTitle := Acentos(MovieTitle);
+          PickTreeAdd(MovieTitle, MovieAddr);
+          BeginPos := Pos('href="http://www.terra.es/cine/nuestra_filmoteca/pelicula.cfm?ID=', strPage);
+          if(Pos('</body>', strPage) < BeginPos) then
+           BeginPos := -1;
+        end;
+
+    end;
+    PickTreeExec(Address)
+    AnalyzeMoviePage(Address);
+end;
+//------------------------------------------------------------------------------------
+procedure AnalyzeMoviePage(Address: string);
+var
+  Page: TStringList;
+  LineNr: Integer;
+  Line: string;
+  Item: string;
+  Comments: string;
+  Actors: string;
+  Directors: string;
+  Description: string;
+
+
+begin
+  Description := '';
+
+  // URL
+  SetField(fieldURL, Address);
+
+  Page := TStringList.Create;
+  Page.Text := GetPage(Address);
+
+  // Traducido
+  LineNr := FindLine('<title>', Page, 0);
+  Line := Page.GetString(LineNr);
+  Item := TextBetween (Line, '<title>', '∑ Filmoteca');
+  Item  := AnsiLowerCase(Item);
+  Item   := AnsiUpFirstLetter(Item );
+  HTMLDecode(Item);
+  SetField(fieldTranslatedTitle, Trim (Item));
+
+  // Original
+  LineNr := FindLine('>T&iacute;tulo original:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '&nbsp;&nbsp;&nbsp;', '</font></td></tr>');
+    DeleteTags (Item);
+    Item  := AnsiLowerCase(Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldOriginalTitle, Trim (Item));
+  end;
+
+// Categoria
+  LineNr := FindLine('G&eacute;nero:<', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '&nbsp;&nbsp;&nbsp;', '</font></td></tr>');
+    DeleteTags (Item);
+    Item  := AnsiLowerCase(Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldCategory, Trim (Item));
+  end;
+  // AÒo
+  LineNr := FindLine('producci&oacute;n:', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '&nbsp;&nbsp;&nbsp;', '</font></td></tr>');
+    DeleteTags (Item);
+    Item  := AnsiLowerCase(Item);
+    Item   := AnsiUpFirstLetter(Item );
+    HTMLDecode(Item);
+    SetField(fieldYear, Trim (Item));
+  end;
+ 
+  // director
+  LineNr := FindLine('<b>DirecciÛn:</b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('href="&nbsp;&nbsp;&nbsp;',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<font color="000000">', '</font></a>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    HTMLDecode(Item);
+    SetField(fieldDirector, Trim (Item));
+  end;
+ 
+  // productor
+  LineNr := FindLine('<b>Producci&oacute;n:</b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<b>Producci&oacute;n:</b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '</font></td><td><font face="Verdana, Arial, Helvetica, sans-serif" size="1">', '</font></td></tr>');
+    Item := StringReplace(Item , #13#10, ' ');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    Item  := StringReplace(Item , '                     ', '');
+    SetField(fieldProducer, Trim (Item));
+  end;
+ 
+  // Duracion
+  LineNr := FindLine('<b>Duraci', Page, 0);
+  if LineNr <> -1 then
+  begin
+    Line := Page.GetString(LineNr);
+    Item := TextBetween (Line, '&nbsp;&nbsp;&nbsp;', 'minutos');
+    DeleteTags (Item);
+    HTMLDecode(Item);
+    SetField(fieldLength, Trim (Item));
+  end;
+ 
+ 
+  // Reparto
+  LineNr := FindLine('color="CF05A2">', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('color="CF05A2">',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, '<b>', '</table><BR>');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '</b></font></td>', ' : ');
+    Item  := StringReplace(Item , '</font></a></td></tr>', #13#10);
+    Item  := StringReplace(Item , '&nbsp;&nbsp;&nbsp;', '');
+    DeleteTags (Item);
+    Item  := StringReplace(Item , '       ', '');
+    Item  := StringReplace(Item , '      ', '');
+    Item  := StringReplace(Item , ':', ' -:- ');
+    Item   := AnsiUpFirstLetter(Item );
+    SetField(fieldActors, Trim (Item));
+  end;
+ 
+  // sinopsis
+  LineNr := FindLine('<img src="/cine/img/estrella_neg.gif"', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('<img src="/cine/img/estrella_neg.gif"',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'color=ffffff>', '<table width="294"');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '   ', '');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item  := Trim(Item );
+    SetField(fieldDescription, Trim (Item));
+  end;
+ // Comentarios
+  LineNr := FindLine('GuiÛn:</b>', Page, 0);
+  if LineNr > 0 then
+  begin
+    Item := copy(Page.Text, pos('GuiÛn:</b>',Page.Text), length(Page.Text));
+    Item := TextBetween (Item, 'size="1">', 'Idioma:');
+    Item := StringReplace(Item , #13#10, '');
+    Item  := StringReplace(Item , '</font></td></tr>', #13#10);
+    Item := StringReplace(Item , '&nbsp;&nbsp;&nbsp;', '');
+    Item := StringReplace(Item , 'Producci&oacute;n:', 'ProducciÛn:');
+    Item := StringReplace(Item , 'Fotograf&iacute;a:', 'FotografÌa:');
+    Item := StringReplace(Item , 'M&uacute;sica:', 'M˙sica:');
+    DeleteTags (Item);
+    Item   := AnsiUpFirstLetter(Item );
+    Item := StringReplace(Item , 'ProducciÛn:      ', 'ProducciÛn: ');
+    Item := StringReplace(Item , 'FotografÌa:      ', 'FotografÌa: ');
+    Item := StringReplace(Item , 'M˙sica:      ', 'M˙sica: ');
+    Item := StringReplace(Item , '      ', ' ');
+    Item := StringReplace(Item , '   ', '');
+    SetField(fieldComments, Trim ('GuiÛn:'+Item));
+  end;
+
+// Picture
+  LineNr := FindLine('href="javascript:abrir_imagen_directa', Page, 0);
+  if LineNr <> -1 then
+  begin
+     Line := Page.GetString(LineNr);
+     Item := TextBetween (Line, '/', ',');
+     Item:= BorraComillas(Item);
+     GetPicture ('http://www.terra.es/'+Item);
+  end;
+end;
+ //-------------------------------------------------------------------------
+begin
+       if (CheckVersion(3,5,0)=FALSe) then
+   begin
+      ShowMessage('Se requiere Ant Movie Catalog versiÛn 3.5 o superior');
+      exit;
+   end;
+
+   MovieName := GetField(fieldTranslatedTitle);
+   if MovieName = '' then
+            MovieName := GetField(fieldOriginalTitle);
+Input('Terra Cine', 'Buscar:', MovieName);
+
+     if(GetOption('Sin resultado') = 0) then  Input('Terra Cine', 'Buscar:', MovieName);
+
+   AnalyzePage('http://www.google.es/search?num=100&hl=es&as_qdr=all&q=%22' + UrlEncode(MovieName)+'%22+site%3Awww.terra.es%2Fcine%2Fnuestra_filmoteca%2F&btnG=B%C3%BAsqueda&meta=');
+end. 

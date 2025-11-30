@@ -1,0 +1,280 @@
+(***************************************************
+
+Ant Movie Catalog importation script
+www.antp.be/software/moviecatalog/
+
+[Infos]
+Authors=bad4u, J
+Title=Adult DVD Empire
+Description=Adult DVD Empire
+Site=http://www.adultdvdempire.com/
+Language=EN
+Version=2.1.8 - 21/07/2023
+Requires=4.2.1
+Comments=Inspired by ADE script from Karagarga and Stryker   ;)|Itself based on Twink's ADME script
+License=IMPORTANT NOTICE:||THIS SCRIPT IS FOR PERSONAL USE ONLY ! |DO NOT REDISTRIBUTE ANY DATA WITHOUT THE PERMISSION OF THE COPYRIGHT OWNER ! RESPECT COPYRIGHTS !||The script itself is free software; you can redistribute it and/or modify it under the  terms of the GNU General Public License as published by the Free Software Foundation;  either version 2 of the License, or (at your option) any later version. |
+GetInfo=1
+RequiresMovies=1
+
+[Options]
+Merge sources=1|1|0=Do NOT merge sources (DVD,VOD,BR)|1=Merge sources (default)
+Description=1|1|0=Do NOT import description|1=Import description (default)
+Review=1|1|0=Do NOT import review to comments|1=Import review to comments (default)
+Back cover=0|1|0=Do NOT import back cover|1=Import back cover (default)
+Actor images=1|1|0=Do NOT import actor image|1=Import actor image (default)
+Actor image size=1|1|0=small|1=normal (default)|2=big!
+
+[Parameters]
+
+***************************************************)
+
+// v1.0.0 - 25/11/2007 - first public release
+// v1.0.1 - 01/05/2008 - fixed: movie address on search list
+// v1.0.2 - 09/10/2008 - fixed: extended results list partially broken
+// v1.1.0 - 26/10/2009 - fixed: cover import, detailed results list
+// v1.2.0 - 29/10/2009 - fixed: import of comments / reviews
+// v1.3.0 - 30/10/2009 - fixed: cover import for specific movies
+// v1.5.0 - 03/11/2012 - updated for new site structure
+// v2.0.0 - 01/09/2015 - complete rewritten for new site structure and AMC v4.2 features (by J)
+// v2.0.1 - 02/09/2015 - some fixes for title and description
+// v2.0.2 - 15/10/2015 - changed search link from "dvd" to "allsearch" (which covers VOD/BR too);
+// 						 sort result with source info (DVD, VOD, ...); fixed actors
+// v2.1.0 - 10/10/2016 - new title selection, option to merge same items (DVD, BR, VOD) to one, 
+//						 eliminates unwanted toys/books etc.
+// v2.1.1 - 25/10/2016 - Added option for actor image size
+// v2.1.2 - 12/07/2017 - Links changed to https
+// v2.1.3 - 17/10/2017 - Picture links changed from https to http
+// v2.1.4 - 27/03/2018 - Fixed studio
+// v2.1.5 - 14/12/2018 - Fixed category, movie name added to titel search result window
+// v2.1.6 - 07/01/2019 - Set search result page to 'list view'
+// v2.1.7 - 11/03/2019 - Fixed actor images
+// v2.1.8 - 21/07/2023 - Small fixes for original title, actor names, director, review format
+
+program ADE;
+
+uses
+  StringUtils1;
+const
+  BaseAddress = 'https://www.adultdvdempire.com';
+var
+  MovieName: string;
+
+ 
+function FastFormatText(Value: string): string;
+begin
+	Value := StringReplace(Value, #09, '');
+	Value := StringReplace(Value, #13#10, '');
+	HTMLDecode(Value);
+	Result := Value;
+end;
+  
+procedure AnalyzePage(Address: string);
+var
+  counter, found: Integer;
+  PageText, MovieData, MovieTitle, MovieAddress, NextPage: String;
+  MovieList: TStringList;
+  
+begin
+  PageText := GetPage(Address);
+  if Pos('No Results Found', PageText) > 0 then
+    begin
+      ShowMessage('No match found');
+    end
+  else
+    begin
+      MovieList := TStringList.Create;
+	  PickTreeClear;
+      PickTreeAdd('Title Search for "' + MovieName + '":', '');
+		repeat
+			found := 0;
+			MovieData := TextBetween(PageText, '<h3><small>', '<h3>');
+			MovieTitle := TextBetween(MovieData, '"Title">', '<');
+			If MovieTitle <> '' then // Not a toy
+			  begin
+				MovieTitle := MovieTitle + ' ' + TextBetween(MovieData, '<small>', '</small>');
+				MovieTitle := MovieTitle + ' - ' + TextBetween(MovieData, 'studio</small>', '</a>');
+				MovieTitle := FastFormatText(MovieTitle);
+				if (GetOption('Merge sources') = 1) then
+				  begin
+					for counter := 0 to MovieList.Count do
+					  begin
+						if MovieList.GetString(counter) = MovieTitle then
+						  begin
+							found := 1;
+							break;
+						  end;
+					  end;
+				  end;
+				if found = 0 then
+				  begin
+					Movielist.Add(MovieTitle);
+					MovieAddress := BaseAddress + TextBetween(MovieData, '<a href="', '"');
+					if (GetOption('Merge sources') = 0) then // add source to selection
+					  begin
+						MovieData := TextBetween(MovieData, 'display:block;margin:5px auto;', 'small');
+						MovieTitle := MovieTitle + ' - ' + TextBetween(MovieData, '>', '<');
+						MovieTitle := FastFormatText(MovieTitle);
+					  end;
+					PickTreeAdd(MovieTitle, MovieAddress);
+				  end;
+			  end;
+			PageText := TextAfter(PageText, '<h3><small>');
+        until Pos('<h3><small>', PageText) = 0;
+		MovieList.Free;
+		PickTreeSort;
+      if PickTreeExec(Address) then AnalyzeMoviePage(Address);
+    end;
+end;
+
+
+procedure AnalyzeMoviePage(Address: string);
+var
+	PageText, TextBody, Value: string;
+	counter: integer;
+		
+begin
+	PageText := TextAfter(GetPage(Address), '<div id="content">');
+	  
+    // URL //
+    SetField(fieldURL, Address);
+
+    // Original Title //
+    Value := TextBetween(PageText, 'heading__title">', '<');
+//	if pos('(', Value) > 0 then Value := TextBefore(Value, ' (', '');
+//	if pos('<', Value) > 0 then Value := TextBefore(Value, '<', '');
+	setField(fOriginalTitle, FastFormatText(Value));
+
+    // Studio //
+	Value := TextBetween(PageText, 'Label="Studio - Details">', '</a>');
+	setField(fProducer, FastFormatText(Value));
+	
+	// Year //
+	Value := TextBetween(PageText, '<small>(', ')</small>');
+	setField(fYear, Value);
+
+	// Cover //
+	TextBody := TextBetween(PageText, 'class="magnify"', 'id="front-cover"');
+	Value := TextBetween(TextBody, 'href="', '"');
+//	Value := StringReplace( Value, 'https', 'http');
+	GetPicture(Value);
+	
+	// Description //
+	if GetOption('Description') = 1 then
+	  begin
+		Value := TextBetween(PageText, 'synopsis"><p>', '</h4>');
+		Value := StringReplace(Value, '</p><p>', #13#10);
+		HTMLRemoveTags(Value);
+		setField(fDescription, Value);
+	  end;
+	
+	// Back-Cover //
+	if (GetOption('Back cover') = 1) AND CheckVersion(4,2,0) then
+	  begin
+		TextBody := TextBetween(PageText, 'class="overlay overlay-preview"', 'id="back-cover"');
+		Value := TextBetween(TextBody, 'href="', '"');
+//		Value := StringReplace( Value, 'https', 'http');
+		Counter := AddExtra;
+		SetExtraField(Counter, eCategory, 'Coverback');
+		GetExtraPicture(Counter, Value);
+	  end
+	
+	// Actor images //
+	if (GetOption('Actor images') = 1) AND CheckVersion(4,2,0) then
+	  begin
+		TextBody := TextBetween(PageText, 'Label="Performer"', 'class="clearfix"');
+		While Pos('Label="Performer"', TextBody) > 0 do
+		  begin
+			Value := TextBetween(TextBody, 'container">', '<');
+			Counter := AddExtra;
+			SetExtraField(Counter, eCategory, 'Actors');
+			SetExtraField(Counter, eTitle, FastFormatText(Value));
+			Value := TextBetween(TextBody, 'img src="', '"');
+			case GetOption('Actor image size') of
+			  0:
+				begin
+				  Delete (Value, length(Value) - 4, 5);
+				  Value := Value + 's.jpg';
+				end;
+			  1:
+				begin
+				  Delete (Value, length(Value) - 4, 5);
+				  Value := Value + '.jpg';
+				end;
+			end;
+//			Value := StringReplace(Value, 'https', 'http');
+			GetExtraPicture(Counter, Value);
+			TextBody := TextAfter(TextBody, 'Category="Item Page"');			
+		  end;
+	  end
+	  	
+	// Actors //
+	Value := '';
+	TextBody := TextBetween(PageText, 'Cast</h2>', 'class="clearfix"');
+	TextBody := TextAfter(TextBody, 'Item Page');
+	While Pos('Performers - detail', TextBody) > 0 do
+	  begin
+	  	TextBody := TextAfter(TextBody, 'Performers - detail');
+		Value := Value + TextBetween(TextBody, 'PerformerName">', '</') + ', ';
+		TextBody := TextAfter(TextBody, 'Item Page');
+	  end;
+	Delete (Value, length(Value) - 1, 1);
+	setField(fActors, FastFormatText(Value));
+	
+	// Director //
+	Value := '';
+	While Pos('Director - details', TextBody) > 0 do
+	  begin
+		Value := Value + TextBetween(TextBody, '">', '</') + ', ';
+		If Value = 'bio, ' then Value := '';
+		TextBody := TextAfter(TextBody, 'Item Page');
+	  end;
+	Delete (Value, length(Value) - 1, 1);
+	setField(fDirector, FastFormatText(Value));
+	
+	// Category //
+	Value := '';
+	While Pos('Label="Category"', TextBody) > 0 do
+	  begin
+		Value := Value + TextBetween(TextBody, '">', '</') + ', ';
+		TextBody := TextAfter(TextBody, 'Item Page');
+	  end;
+	Delete (Value, length(Value) - 1, 1);
+	setField(fCategory, FastFormatText(Value));
+	
+	// Lenght //
+	if Pos('<small>Length:', PageText) > 0 then
+	  begin
+		TextBody := TextBetween(PageText, 'Product Information</h2>', '<small>Rating:');
+		Value := TextBetween(TextBody, '</small>', '</li>');
+		Value := FloatToStr(StrToFloat(TextBetween(Value, ' ', ' '))*60 + StrToFloat(TextBetween(Value, '. ', ' m')));
+	  end
+	else Value := '0';
+	setField(fLength, Value);
+
+	// Review //
+	if GetOption('Review') = 1 then
+	  begin
+		Address := BaseAddress + TextBetween(PageText, '.load("', '"');
+		PageText := GetPage(Address);
+		if Pos('</h5>', PageText) > 0 then
+		  begin
+			Value := TextBetween(PageText, '</h5>', '</div>');
+//			HTMLRemoveTags(Value);
+			setField(fComments, FastFormatText(Value));
+		  end
+	  end
+	
+end;
+
+begin
+  if CheckVersion(4,2,1) then
+    begin
+      MovieName := GetField(fieldOriginalTitle);
+      if MovieName = '' then
+        MovieName := GetField(fieldTranslatedTitle);
+      if Input('Adult DVD Empire Import', 'Enter the title of the movie:', MovieName) then
+        AnalyzePage(BaseAddress+'/AllSearch/search?pageSize=50&q='+UrlEncode(MovieName)+'&view=list');
+    end
+  else
+    ShowMessage('This script requires a newer version of Ant Movie Catalog (at least the version 4.2.1)');
+end.
