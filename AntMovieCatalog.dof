@@ -94,7 +94,7 @@ OutputDir=bin
 UnitOutputDir=dcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=Common;ifps;DelphiFix
+SearchPath=Common;ifps;DelphiFix;D:\Projetos\Componentes\AntComponents\ElTree\Code\Design;D:\Projetos\Componentes\AntComponents\ElTree\Code\Source;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Protocols;D:\Projetos\Componentes\AntComponents\Indy10\Lib\System;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Core;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Design;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Security;D:\Projetos\Componentes\AntComponents\Indy10\Lib\SuperCore
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;dclOffice2k;HTMLParser;FthGUI60;embedwb;GR32_D6;GR32_DSGN_D6;GR32_Add;GXOutD6;mxFlatPack_D5;mylittlebase;OfficeVCL6;SynEdit_D6;tb2k_d6;tms;mozilla;dclDesignExperienceD6;FreeRep6;ThemeManager6;VirtualTreesD6;DJCL60;eltreeD6;FlatStyle_D6;Indy60;Ant_D6;tb2k_add
 Conditionals=FR_MANUALINIT;ANTTRANSLATOR;JPEG
 DebugSourceDirs=
@@ -141,10 +141,12 @@ Item0=FR_MANUALINIT;ANTTRANSLATOR;JPEG
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=3
-Item0=Common;ifps;DelphiFix
-Item1=Movie Catalog\Common;ifps;Movie Catalog\DelphiFix
-Item2=Common;ifps
+Count=5
+Item0=Common;ifps;DelphiFix;D:\Projetos\Componentes\AntComponents\ElTree\Code\Design;D:\Projetos\Componentes\AntComponents\ElTree\Code\Source;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Protocols;D:\Projetos\Componentes\AntComponents\Indy10\Lib\System;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Core;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Design;D:\Projetos\Componentes\AntComponents\Indy10\Lib\Security;D:\Projetos\Componentes\AntComponents\Indy10\Lib\SuperCore
+Item1=Common;ifps;DelphiFix;D:\Projetos\Componentes\AntComponents\ElTree\Code\Design;D:\Projetos\Componentes\AntComponents\ElTree\Code\Source
+Item2=Common;ifps;DelphiFix
+Item3=Movie Catalog\Common;ifps;Movie Catalog\DelphiFix
+Item4=Common;ifps
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=dcu
